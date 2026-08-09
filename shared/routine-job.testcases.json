@@ -215,12 +215,7 @@
       ],
       "existing": [],
       "expectedInstances": [],
-      "expectedSkipped": [
-        {
-          "templateId": "tpl-c",
-          "reason": "offset_dias_ausente"
-        }
-      ]
+      "expectedSkipped": [{ "templateId": "tpl-c", "reason": "offset_dias_ausente" }]
     },
     {
       "nome": "offsetDias=0 e invalido para du_fixo (precisa ser >=1)",
@@ -237,12 +232,7 @@
       ],
       "existing": [],
       "expectedInstances": [],
-      "expectedSkipped": [
-        {
-          "templateId": "tpl-d",
-          "reason": "offset_dias_invalido"
-        }
-      ]
+      "expectedSkipped": [{ "templateId": "tpl-d", "reason": "offset_dias_invalido" }]
     },
     {
       "nome": "regraCompetencia 'manual' significa 'sem geracao automatica', nunca um default adivinhado",
@@ -259,12 +249,7 @@
       ],
       "existing": [],
       "expectedInstances": [],
-      "expectedSkipped": [
-        {
-          "templateId": "tpl-e",
-          "reason": "regra_competencia_nao_suportada"
-        }
-      ]
+      "expectedSkipped": [{ "templateId": "tpl-e", "reason": "regra_competencia_nao_suportada" }]
     },
     {
       "nome": "corrido_fixo offsetDias=10, hoje antes do dia 10: gera os dois meses",
@@ -413,28 +398,385 @@
       "expectedSkipped": []
     },
     {
-      "nome": "tipoGeracao 'encadeado' ainda nao implementado neste commit (Task 2 substitui este branch)",
+      "nome": "encadeado: cadeia de um nivel, dataPrevista = antecessor + offsetDias dias uteis, competencia herdada mesmo com regraCompetencia 'manual' (D-05-D), dataPrevistaEstimada presente pois antecessor ainda nao persistido (D-05-E)",
       "today": "2026-08-09",
       "templates": [
         {
-          "id": "tpl-g",
+          "id": "tpl-a2",
+          "tipoGeracao": "du_fixo",
+          "regraCompetencia": "M0",
+          "offsetDias": 2,
+          "ativo": true,
+          "antecessor": null
+        },
+        {
+          "id": "tpl-b2",
+          "tipoGeracao": "encadeado",
+          "regraCompetencia": "manual",
+          "offsetDias": 3,
+          "ativo": true,
+          "antecessor": { "id": "tpl-a2" }
+        }
+      ],
+      "existing": [],
+      "expectedInstances": [
+        {
+          "dedupeKey": "tpl-a2:2026-09:2026-09-02",
+          "templateId": "tpl-a2",
+          "competencia": "2026-09",
+          "dataPrevista": "2026-09-02",
+          "tipoPrazo": "soft"
+        },
+        {
+          "dedupeKey": "tpl-b2:2026-09:2026-09-08",
+          "templateId": "tpl-b2",
+          "competencia": "2026-09",
+          "dataPrevista": "2026-09-08",
+          "dataPrevistaEstimada": "2026-09-08",
+          "tipoPrazo": "soft"
+        }
+      ],
+      "expectedSkipped": []
+    },
+    {
+      "nome": "encadeado: cadeia de dois niveis A->B->C resolve em uma chamada; C e datado a partir da data ja computada de B",
+      "today": "2026-08-09",
+      "templates": [
+        {
+          "id": "tpl-a3",
+          "tipoGeracao": "du_fixo",
+          "regraCompetencia": "M0",
+          "offsetDias": 2,
+          "ativo": true,
+          "antecessor": null
+        },
+        {
+          "id": "tpl-b3",
+          "tipoGeracao": "encadeado",
+          "regraCompetencia": "M0",
+          "offsetDias": 3,
+          "ativo": true,
+          "antecessor": { "id": "tpl-a3" }
+        },
+        {
+          "id": "tpl-c3",
           "tipoGeracao": "encadeado",
           "regraCompetencia": "M0",
           "offsetDias": 2,
           "ativo": true,
-          "antecessor": {
-            "id": "tpl-a"
-          }
+          "antecessor": { "id": "tpl-b3" }
+        }
+      ],
+      "existing": [],
+      "expectedInstances": [
+        {
+          "dedupeKey": "tpl-a3:2026-09:2026-09-02",
+          "templateId": "tpl-a3",
+          "competencia": "2026-09",
+          "dataPrevista": "2026-09-02",
+          "tipoPrazo": "soft"
+        },
+        {
+          "dedupeKey": "tpl-b3:2026-09:2026-09-08",
+          "templateId": "tpl-b3",
+          "competencia": "2026-09",
+          "dataPrevista": "2026-09-08",
+          "dataPrevistaEstimada": "2026-09-08",
+          "tipoPrazo": "soft"
+        },
+        {
+          "dedupeKey": "tpl-c3:2026-09:2026-09-10",
+          "templateId": "tpl-c3",
+          "competencia": "2026-09",
+          "dataPrevista": "2026-09-10",
+          "dataPrevistaEstimada": "2026-09-10",
+          "tipoPrazo": "soft"
+        }
+      ],
+      "expectedSkipped": []
+    },
+    {
+      "nome": "encadeado: antecessor com instancia PERSISTIDA e status 'concluida' -> dataPrevistaEstimada AUSENTE",
+      "today": "2026-08-09",
+      "templates": [
+        {
+          "id": "tpl-b4",
+          "tipoGeracao": "encadeado",
+          "regraCompetencia": "M0",
+          "offsetDias": 3,
+          "ativo": true,
+          "antecessor": { "id": "tpl-ext-1" }
+        }
+      ],
+      "existing": [
+        {
+          "dedupeKey": "tpl-ext-1:2026-09:2026-09-02",
+          "templateId": "tpl-ext-1",
+          "competencia": "2026-09",
+          "dataPrevista": "2026-09-02",
+          "status": "concluida"
+        }
+      ],
+      "expectedInstances": [
+        {
+          "dedupeKey": "tpl-b4:2026-09:2026-09-08",
+          "templateId": "tpl-b4",
+          "competencia": "2026-09",
+          "dataPrevista": "2026-09-08",
+          "tipoPrazo": "soft"
+        }
+      ],
+      "expectedSkipped": []
+    },
+    {
+      "nome": "encadeado: antecessor com instancia PERSISTIDA e status 'pendente' -> dataPrevistaEstimada presente",
+      "today": "2026-08-09",
+      "templates": [
+        {
+          "id": "tpl-b5",
+          "tipoGeracao": "encadeado",
+          "regraCompetencia": "M0",
+          "offsetDias": 3,
+          "ativo": true,
+          "antecessor": { "id": "tpl-ext-2" }
+        }
+      ],
+      "existing": [
+        {
+          "dedupeKey": "tpl-ext-2:2026-09:2026-09-02",
+          "templateId": "tpl-ext-2",
+          "competencia": "2026-09",
+          "dataPrevista": "2026-09-02",
+          "status": "pendente"
+        }
+      ],
+      "expectedInstances": [
+        {
+          "dedupeKey": "tpl-b5:2026-09:2026-09-08",
+          "templateId": "tpl-b5",
+          "competencia": "2026-09",
+          "dataPrevista": "2026-09-08",
+          "dataPrevistaEstimada": "2026-09-08",
+          "tipoPrazo": "soft"
+        }
+      ],
+      "expectedSkipped": []
+    },
+    {
+      "nome": "encadeado sem link de antecessor -> skipped com motivo distinto, nunca quebra",
+      "today": "2026-08-09",
+      "templates": [
+        {
+          "id": "tpl-b6",
+          "tipoGeracao": "encadeado",
+          "regraCompetencia": "M0",
+          "offsetDias": 3,
+          "ativo": true,
+          "antecessor": null
         }
       ],
       "existing": [],
       "expectedInstances": [],
-      "expectedSkipped": [
+      "expectedSkipped": [{ "templateId": "tpl-b6", "reason": "antecessor_ausente" }]
+    },
+    {
+      "nome": "encadeado cujo antecessor nao produziu instancia (nem computada nem persistida) -> antecessor_sem_instancia; nunca uma data adivinhada",
+      "today": "2026-08-09",
+      "templates": [
         {
-          "templateId": "tpl-g",
-          "reason": "tipo_geracao_desconhecido"
+          "id": "tpl-b7",
+          "tipoGeracao": "encadeado",
+          "regraCompetencia": "M0",
+          "offsetDias": 3,
+          "ativo": true,
+          "antecessor": { "id": "tpl-nonexistent" }
         }
+      ],
+      "existing": [],
+      "expectedInstances": [],
+      "expectedSkipped": [{ "templateId": "tpl-b7", "reason": "antecessor_sem_instancia" }]
+    },
+    {
+      "nome": "encadeado: ciclo B<->C reportado como antecessor_ciclico para ambos; template saudavel na mesma chamada nao e afetado (blast radius)",
+      "today": "2026-08-09",
+      "templates": [
+        {
+          "id": "tpl-healthy8",
+          "tipoGeracao": "du_fixo",
+          "regraCompetencia": "M0",
+          "offsetDias": 6,
+          "ativo": true,
+          "antecessor": null
+        },
+        {
+          "id": "tpl-cycle-b",
+          "tipoGeracao": "encadeado",
+          "regraCompetencia": "M0",
+          "offsetDias": 1,
+          "ativo": true,
+          "antecessor": { "id": "tpl-cycle-c" }
+        },
+        {
+          "id": "tpl-cycle-c",
+          "tipoGeracao": "encadeado",
+          "regraCompetencia": "M0",
+          "offsetDias": 1,
+          "ativo": true,
+          "antecessor": { "id": "tpl-cycle-b" }
+        }
+      ],
+      "existing": [],
+      "expectedInstances": [
+        {
+          "dedupeKey": "tpl-healthy8:2026-08:2026-08-10",
+          "templateId": "tpl-healthy8",
+          "competencia": "2026-08",
+          "dataPrevista": "2026-08-10",
+          "tipoPrazo": "soft"
+        },
+        {
+          "dedupeKey": "tpl-healthy8:2026-09:2026-09-09",
+          "templateId": "tpl-healthy8",
+          "competencia": "2026-09",
+          "dataPrevista": "2026-09-09",
+          "tipoPrazo": "soft"
+        }
+      ],
+      "expectedSkipped": [
+        { "templateId": "tpl-cycle-b", "reason": "antecessor_ciclico" },
+        { "templateId": "tpl-cycle-c", "reason": "antecessor_ciclico" }
       ]
+    },
+    {
+      "nome": "encadeado: propria dataPrevista fora de [hoje, fim do proximo mes] e filtrada mesmo com a do antecessor dentro do range",
+      "today": "2026-08-09",
+      "templates": [
+        {
+          "id": "tpl-wide9",
+          "tipoGeracao": "du_fixo",
+          "regraCompetencia": "M0",
+          "offsetDias": 6,
+          "ativo": true,
+          "antecessor": null
+        },
+        {
+          "id": "tpl-child9",
+          "tipoGeracao": "encadeado",
+          "regraCompetencia": "M0",
+          "offsetDias": 36,
+          "ativo": true,
+          "antecessor": { "id": "tpl-wide9" }
+        }
+      ],
+      "existing": [],
+      "expectedInstances": [
+        {
+          "dedupeKey": "tpl-child9:2026-08:2026-09-30",
+          "templateId": "tpl-child9",
+          "competencia": "2026-08",
+          "dataPrevista": "2026-09-30",
+          "dataPrevistaEstimada": "2026-09-30",
+          "tipoPrazo": "soft"
+        },
+        {
+          "dedupeKey": "tpl-wide9:2026-08:2026-08-10",
+          "templateId": "tpl-wide9",
+          "competencia": "2026-08",
+          "dataPrevista": "2026-08-10",
+          "tipoPrazo": "soft"
+        },
+        {
+          "dedupeKey": "tpl-wide9:2026-09:2026-09-09",
+          "templateId": "tpl-wide9",
+          "competencia": "2026-09",
+          "dataPrevista": "2026-09-09",
+          "tipoPrazo": "soft"
+        }
+      ],
+      "expectedSkipped": []
+    },
+    {
+      "nome": "encadeado cujo antecessor esta inativo (ativo=false) mas tem instancia PERSISTIDA ainda gera a partir dela",
+      "today": "2026-08-09",
+      "templates": [
+        {
+          "id": "tpl-inactive10",
+          "tipoGeracao": "du_fixo",
+          "regraCompetencia": "M0",
+          "offsetDias": 6,
+          "ativo": false,
+          "antecessor": null
+        },
+        {
+          "id": "tpl-child10",
+          "tipoGeracao": "encadeado",
+          "regraCompetencia": "M0",
+          "offsetDias": 3,
+          "ativo": true,
+          "antecessor": { "id": "tpl-inactive10" }
+        }
+      ],
+      "existing": [
+        {
+          "dedupeKey": "tpl-inactive10:2026-09:2026-09-02",
+          "templateId": "tpl-inactive10",
+          "competencia": "2026-09",
+          "dataPrevista": "2026-09-02",
+          "status": "pendente"
+        }
+      ],
+      "expectedInstances": [
+        {
+          "dedupeKey": "tpl-child10:2026-09:2026-09-08",
+          "templateId": "tpl-child10",
+          "competencia": "2026-09",
+          "dataPrevista": "2026-09-08",
+          "dataPrevistaEstimada": "2026-09-08",
+          "tipoPrazo": "soft"
+        }
+      ],
+      "expectedSkipped": []
+    },
+    {
+      "nome": "encadeado com offsetDias=0 (D-05-B permite >=0): mesma data do antecessor",
+      "today": "2026-08-09",
+      "templates": [
+        {
+          "id": "tpl-a11",
+          "tipoGeracao": "du_fixo",
+          "regraCompetencia": "M0",
+          "offsetDias": 2,
+          "ativo": true,
+          "antecessor": null
+        },
+        {
+          "id": "tpl-b11",
+          "tipoGeracao": "encadeado",
+          "regraCompetencia": "M0",
+          "offsetDias": 0,
+          "ativo": true,
+          "antecessor": { "id": "tpl-a11" }
+        }
+      ],
+      "existing": [],
+      "expectedInstances": [
+        {
+          "dedupeKey": "tpl-a11:2026-09:2026-09-02",
+          "templateId": "tpl-a11",
+          "competencia": "2026-09",
+          "dataPrevista": "2026-09-02",
+          "tipoPrazo": "soft"
+        },
+        {
+          "dedupeKey": "tpl-b11:2026-09:2026-09-02",
+          "templateId": "tpl-b11",
+          "competencia": "2026-09",
+          "dataPrevista": "2026-09-02",
+          "dataPrevistaEstimada": "2026-09-02",
+          "tipoPrazo": "soft"
+        }
+      ],
+      "expectedSkipped": []
     },
     {
       "nome": "template mal configurado nao suprime um template saudavel na mesma chamada",
@@ -474,12 +816,7 @@
           "tipoPrazo": "soft"
         }
       ],
-      "expectedSkipped": [
-        {
-          "templateId": "tpl-h",
-          "reason": "offset_dias_ausente"
-        }
-      ]
+      "expectedSkipped": [{ "templateId": "tpl-h", "reason": "offset_dias_ausente" }]
     },
     {
       "nome": "offsetDias grande o suficiente para estourar CALENDAR_END (CalendarRangeError) e reportado como skipped; template saudavel na mesma chamada nao e afetado",
@@ -519,12 +856,7 @@
           "tipoPrazo": "soft"
         }
       ],
-      "expectedSkipped": [
-        {
-          "templateId": "tpl-j",
-          "reason": "offset_dias_invalido"
-        }
-      ]
+      "expectedSkipped": [{ "templateId": "tpl-j", "reason": "offset_dias_invalido" }]
     },
     {
       "nome": "template inativo (ativo=false) nunca aparece em expected nem em skipped",

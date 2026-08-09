@@ -30,8 +30,36 @@
  * a calendar-day rule means exactly that, including landing on a weekend or
  * an ANBIMA holiday.
  *
- * `encadeado` is reserved for this plan's Task 2, which replaces its
- * `tipo_geracao_desconhecido` fall-through with real chained resolution.
+ * `encadeado`'s semantics are the phase's one interpretive decision,
+ * recorded here so a reader never has to reconstruct them from the plan:
+ *
+ * - **D-05-B**: `offsetDias` counts BUSINESS days after the antecessor
+ *   instance's `dataPrevista`, via `addBusinessDays`.
+ * - **D-05-D**: `competencia` is INHERITED verbatim from the antecessor
+ *   instance being chained off; the encadeado template's own
+ *   `regraCompetencia` is never consulted. An encadeado template with
+ *   `regraCompetencia: "manual"` still generates instances — that field is
+ *   simply not part of its date derivation.
+ * - **D-05-E**: `dataPrevistaEstimada` (mirroring `dataPrevista`) is set
+ *   when the antecessor's instance for that competencia is EITHER not yet
+ *   persisted (computed in this same run) OR persisted with
+ *   `status !== "concluida"`. It is omitted once the antecessor's instance
+ *   reads `concluida`.
+ * - **D-05-F**: the antecessor's own PLANNED `dataPrevista` is used even
+ *   when the antecessor is late — delay propagation is out of scope
+ *   (PROJECT.md C-09). This keeps the encadeado `dedupeKey` stable across
+ *   runs; a key derived from a moving date would re-create the successor on
+ *   every run and destroy idempotency.
+ *
+ * `propagarAtrasoSoft` is stored on the template but never read anywhere in
+ * this module (C-09) — delay propagation is explicitly out of scope.
+ *
+ * Chained (`encadeado`) templates are resolved via a bounded multi-pass
+ * topological sweep (at most `templates.length` passes): non-chained
+ * templates resolve first, then chained templates resolve once their
+ * antecessor's instance set is known. Anything still unresolved after the
+ * bound has a cycle or a dangling antecessor and is reported in `skipped`
+ * as `antecessor_ciclico` rather than looping forever.
  */
 
 import { addBusinessDays, isBusinessDay } from "./bizdays";
@@ -245,23 +273,107 @@ function computeFixedInstances(
   return { instances };
 }
 
+interface AntecessorRecord {
+  competencia: string;
+  dataPrevista: string;
+  status: string;
+  persisted: boolean;
+}
+
+/**
+ * Merges this run's freshly-computed instances for `antecessorId` with any
+ * already-persisted `existing` rows for the same template, keyed by
+ * competencia. Persisted entries take precedence over computed ones for the
+ * same competencia (an existing row reflects real, possibly-mutated status;
+ * a freshly-computed one does not exist in the database yet).
+ */
+function lookupAntecessorInstances(
+  antecessorId: string,
+  computedByTemplateId: ReadonlyMap<string, readonly ExpectedInstance[]>,
+  existingByTemplateId: ReadonlyMap<string, readonly ExistingInstance[]>,
+): Map<string, AntecessorRecord> {
+  const byCompetencia = new Map<string, AntecessorRecord>();
+
+  for (const inst of computedByTemplateId.get(antecessorId) ?? []) {
+    byCompetencia.set(inst.competencia, {
+      competencia: inst.competencia,
+      dataPrevista: inst.dataPrevista,
+      status: STATUS_INICIAL,
+      persisted: false,
+    });
+  }
+
+  for (const row of existingByTemplateId.get(antecessorId) ?? []) {
+    byCompetencia.set(row.competencia, {
+      competencia: row.competencia,
+      dataPrevista: row.dataPrevista,
+      status: row.status,
+      persisted: true,
+    });
+  }
+
+  return byCompetencia;
+}
+
+interface PendingEncadeado {
+  template: TemplateRow;
+  offsetDias: number;
+}
+
 export function computeExpectedInstances(
   templates: readonly TemplateRow[],
   today: string,
-  // Accepted for interface stability across plans (Task 2 of this plan uses
-  // this for encadeado antecessor resolution); intentionally unused here.
   existing: readonly ExistingInstance[],
 ): ComputeResult {
-  void existing;
-
   const rangeStart = today;
   const rangeEnd = endOfNextMonth(today);
 
   const expected: ExpectedInstance[] = [];
   const skipped: SkippedTemplate[] = [];
 
+  // Instances computed THIS run, keyed by templateId — grows across both the
+  // fixed-offset loop below and the encadeado sweep, so a two-level chain
+  // (A -> B -> C) can resolve C off B's freshly-computed (not-yet-persisted)
+  // instances within the same call.
+  const computedByTemplateId = new Map<string, ExpectedInstance[]>();
+
+  // Already-persisted instances, grouped by templateId regardless of that
+  // template's own `ativo` flag — an inactive antecessor's persisted
+  // instances must still be visible to an active encadeado successor.
+  const existingByTemplateId = new Map<string, ExistingInstance[]>();
+  for (const row of existing) {
+    const bucket = existingByTemplateId.get(row.templateId);
+    if (bucket) {
+      bucket.push(row);
+    } else {
+      existingByTemplateId.set(row.templateId, [row]);
+    }
+  }
+
+  // Pass 1: fixed-offset types (du_fixo, corrido_fixo) and genuinely-unknown
+  // tipoGeracao values. encadeado is deliberately excluded here — it is
+  // resolved in the topological sweep below, once antecessor instance sets
+  // are known.
+  const pendingEncadeado: PendingEncadeado[] = [];
+
   for (const template of templates) {
     if (template.ativo === false) {
+      continue;
+    }
+
+    if (template.tipoGeracao === "encadeado") {
+      if (!template.antecessor?.id) {
+        skipped.push({ templateId: template.id, reason: "antecessor_ausente" });
+        continue;
+      }
+      // D-05-B: offsetDias counts business days after the antecessor's
+      // dataPrevista and may be 0 (same day) — never negative.
+      const offsetValidation = validateOffsetDias(template.offsetDias, 0);
+      if (!offsetValidation.ok) {
+        skipped.push({ templateId: template.id, reason: offsetValidation.reason as SkipReason });
+        continue;
+      }
+      pendingEncadeado.push({ template, offsetDias: template.offsetDias as number });
       continue;
     }
 
@@ -286,8 +398,6 @@ export function computeExpectedInstances(
           nthCalendarDayOfMonth,
         );
       } else {
-        // encadeado is reserved for this plan's Task 2, which replaces this
-        // branch with real topological resolution.
         skipped.push({ templateId: template.id, reason: "tipo_geracao_desconhecido" });
         continue;
       }
@@ -296,6 +406,7 @@ export function computeExpectedInstances(
         skipped.push({ templateId: template.id, reason: result.skipReason });
         continue;
       }
+      computedByTemplateId.set(template.id, result.instances);
       expected.push(...result.instances);
     } catch {
       // Per-template isolation (RESEARCH Pitfall 4): any thrown error
@@ -307,6 +418,89 @@ export function computeExpectedInstances(
       // drove the computation out of bounds.
       skipped.push({ templateId: template.id, reason: "offset_dias_invalido" });
     }
+  }
+
+  // Pass 2: bounded topological sweep over encadeado templates. `pendingIds`
+  // tracks which encadeado templates are still unresolved; a template is
+  // "ready" the moment its antecessor id is no longer in that set — which is
+  // true immediately for non-chained/inactive antecessors, and becomes true
+  // for a chained antecessor once ITS turn resolves (possibly within the
+  // same pass, if array order cooperates; always within `templates.length`
+  // passes otherwise). Anything still pending when the bound is exhausted
+  // has a cycle or a dangling antecessor id and is reported, never hung on.
+  const pendingIds = new Set(pendingEncadeado.map((p) => p.template.id));
+  let remaining = pendingEncadeado;
+
+  for (let pass = 0; pass < templates.length && remaining.length > 0; pass++) {
+    const stillPending: PendingEncadeado[] = [];
+
+    for (const { template, offsetDias } of remaining) {
+      const antecessorId = template.antecessor?.id as string;
+
+      if (pendingIds.has(antecessorId)) {
+        stillPending.push({ template, offsetDias });
+        continue;
+      }
+
+      const antecessorInstances = lookupAntecessorInstances(
+        antecessorId,
+        computedByTemplateId,
+        existingByTemplateId,
+      );
+
+      if (antecessorInstances.size === 0) {
+        skipped.push({ templateId: template.id, reason: "antecessor_sem_instancia" });
+        pendingIds.delete(template.id);
+        continue;
+      }
+
+      try {
+        const instances: ExpectedInstance[] = [];
+        for (const record of antecessorInstances.values()) {
+          // D-05-B: business days after the antecessor's PLANNED
+          // dataPrevista (D-05-F — never a re-derived/late date, which would
+          // move the dedupeKey and break idempotency).
+          const dataPrevista = addBusinessDays(record.dataPrevista, offsetDias);
+          if (dataPrevista < rangeStart || dataPrevista > rangeEnd) {
+            continue;
+          }
+
+          // D-05-D: competencia is inherited verbatim from the antecessor
+          // instance — this template's own regraCompetencia is never
+          // consulted.
+          const competencia = record.competencia;
+
+          // D-05-E: mark the date as provisional whenever the antecessor's
+          // instance is not yet persisted, or is persisted but not yet
+          // "concluida".
+          const estimada = !record.persisted || record.status !== "concluida";
+
+          instances.push({
+            dedupeKey: buildDedupeKey(template.id, competencia, dataPrevista),
+            templateId: template.id,
+            competencia,
+            dataPrevista,
+            ...(estimada ? { dataPrevistaEstimada: dataPrevista } : {}),
+            tipoPrazo: TIPO_PRAZO_GERADO,
+          });
+        }
+        computedByTemplateId.set(template.id, instances);
+        expected.push(...instances);
+      } catch {
+        // Same per-template isolation as the fixed-offset loop above.
+        skipped.push({ templateId: template.id, reason: "offset_dias_invalido" });
+      }
+
+      pendingIds.delete(template.id);
+    }
+
+    remaining = stillPending;
+  }
+
+  // Bound exhausted: whatever is left forms a cycle (or chains through a
+  // dangling antecessor id that never resolves) — report, never loop.
+  for (const { template } of remaining) {
+    skipped.push({ templateId: template.id, reason: "antecessor_ciclico" });
   }
 
   expected.sort((a, b) => (a.dedupeKey < b.dedupeKey ? -1 : a.dedupeKey > b.dedupeKey ? 1 : 0));
