@@ -37,7 +37,7 @@ estilo/cores padrão, sem tocar em lógica de negócio, sem criar o painel de 5 
 100% via Playwright (sem UAT humano).
 
 - [x] **Phase 7: Design System Setup** - Tailwind v4 + shadcn-svelte wired into `web/`, default tokens, automatic dark mode (completed 2026-08-09)
-- [ ] **Phase 8: Auth & Shell Restyle** - LoginScreen and Shell rebuilt with shadcn-svelte primitives, flow unchanged
+- [x] **Phase 8: Auth & Shell Restyle** - LoginScreen and Shell rebuilt with shadcn-svelte primitives, flow unchanged (completed 2026-08-09)
 - [ ] **Phase 9: Entity Table Restyle** - EntityScreen list view rebuilt with shadcn Table/Badge across all 9 entities, no capability regression
 - [ ] **Phase 10: Entity Form Restyle & Feedback** - EntityScreen create/edit forms rebuilt with shadcn Dialog/Sheet + per-field-type inputs; Sonner toasts on every write
 - [ ] **Phase 11: Full Verification & Quality Gates** - Playwright suite updated/extended and green live against InstantDB, Biome + svelte-check clean
@@ -76,7 +76,7 @@ Plans:
   4. The currently active entity/section is marked in the nav using a shadcn active-state convention (e.g. a distinct `Button` variant/aria-current) while all other nav entries are not — Playwright asserts exactly one active indicator matches the current route as navigation changes.
   5. Clicking Logout (a shadcn `Button`) ends the live session and returns to the restyled LoginScreen.
 
-**Plans:** 1/1 plans executed
+**Plans:** 1/1 plans complete
 Plans:
 
 - [x] 08-01-PLAN.md — Install shadcn button/input/label/card/alert; restyle LoginScreen.svelte and Shell.svelte in place; add login-flow.spec.ts + shell-nav.spec.ts proving all 5 success criteria live
@@ -143,7 +143,7 @@ Phases execute in numeric order: 7 → 8 → 9 → 10 → 11
 | 5. Idempotent Routine-Instance Job | v1.0 | 6/6 | Complete | 2026-08-09 |
 | 6. End-to-End Verification | v1.0 | 3/3 | Complete | 2026-08-09 |
 | 7. Design System Setup | v1.1 | 1/1 | Complete    | 2026-08-09 |
-| 8. Auth & Shell Restyle | v1.1 | 1/1 | In Progress|  |
+| 8. Auth & Shell Restyle | v1.1 | 1/1 | Complete    | 2026-08-09 |
 | 9. Entity Table Restyle | v1.1 | 0/TBD | Not started | - |
 | 10. Entity Form Restyle & Feedback | v1.1 | 0/TBD | Not started | - |
 | 11. Full Verification & Quality Gates | v1.1 | 0/TBD | Not started | - |
