@@ -36,7 +36,7 @@ EntityScreen genérica das 9 entidades) usando Tailwind CSS + componentes shadcn
 estilo/cores padrão, sem tocar em lógica de negócio, sem criar o painel de 5 áreas, verificado
 100% via Playwright (sem UAT humano).
 
-- [ ] **Phase 7: Design System Setup** - Tailwind v4 + shadcn-svelte wired into `web/`, default tokens, automatic dark mode
+- [x] **Phase 7: Design System Setup** - Tailwind v4 + shadcn-svelte wired into `web/`, default tokens, automatic dark mode (completed 2026-08-09)
 - [ ] **Phase 8: Auth & Shell Restyle** - LoginScreen and Shell rebuilt with shadcn-svelte primitives, flow unchanged
 - [ ] **Phase 9: Entity Table Restyle** - EntityScreen list view rebuilt with shadcn Table/Badge across all 9 entities, no capability regression
 - [ ] **Phase 10: Entity Form Restyle & Feedback** - EntityScreen create/edit forms rebuilt with shadcn Dialog/Sheet + per-field-type inputs; Sonner toasts on every write
@@ -56,7 +56,7 @@ estilo/cores padrão, sem tocar em lógica de negócio, sem criar o painel de 5 
   3. Emulating `prefers-color-scheme: dark` vs `light` in a Playwright browser context changes the resolved token values (or the `dark` class on `<html>`) automatically, with no toggle control present or clicked anywhere in the DOM.
   4. The existing app still boots to the (still unstyled-beyond-this) login screen with zero console errors after the Tailwind/shadcn wiring — the swap from `app.css` is a clean replacement, not a breaking one.
 
-**Plans:** 1/1 plans executed
+**Plans:** 1/1 plans complete
 Plans:
 
 - [x] 07-01-PLAN.md — Wire Tailwind v4 + shadcn-svelte (`--preset b0`) into `web/`, convert dark mode to a bare `prefers-color-scheme` media query, and prove all 4 success criteria via a new auth-free Playwright spec
@@ -138,7 +138,7 @@ Phases execute in numeric order: 7 → 8 → 9 → 10 → 11
 | 4. Web SPA Auth & CRUD Smoke UI | v1.0 | 6/6 | Complete | 2026-08-09 |
 | 5. Idempotent Routine-Instance Job | v1.0 | 6/6 | Complete | 2026-08-09 |
 | 6. End-to-End Verification | v1.0 | 3/3 | Complete | 2026-08-09 |
-| 7. Design System Setup | v1.1 | 1/1 | In Progress|  |
+| 7. Design System Setup | v1.1 | 1/1 | Complete    | 2026-08-09 |
 | 8. Auth & Shell Restyle | v1.1 | 0/TBD | Not started | - |
 | 9. Entity Table Restyle | v1.1 | 0/TBD | Not started | - |
 | 10. Entity Form Restyle & Feedback | v1.1 | 0/TBD | Not started | - |

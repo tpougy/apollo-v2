@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: UI bonita com Tailwind + shadcn-svelte
-current_phase: 7
-current_phase_name: Design System Setup
-status: executing
+current_phase: 8
+current_phase_name: Auth & Shell Restyle
+status: planning
 stopped_at: Completed 07-01-PLAN.md — Phase 7 (Design System Setup) fully executed
-last_updated: "2026-08-09T22:03:26.869Z"
+last_updated: "2026-08-09T22:21:42.200Z"
 last_activity: 2026-08-09
 last_activity_desc: "`/gsd-execute-phase 7` executed `07-01-PLAN.md`; `.planning/phases/07-design-system-setup/07-01-SUMMARY.md` written"
 progress:
@@ -28,10 +28,10 @@ See: .planning/PROJECT.md (updated 2026-08-09)
 
 ## Current Position
 
-Phase: 7 of 11 (Design System Setup) — first phase of v1.1
-Plan: 07-01-PLAN.md (1 plan, 3 tasks, wave 1) — complete
-Status: Phase 7 complete — Tailwind v4 + shadcn-svelte (`nova`/`neutral`/`lucide` zero-config preset) wired, dark mode converted to a bare `prefers-color-scheme` media query, all 4 ROADMAP success criteria proven via `web/e2e/design-system.spec.ts`
-Last activity: 2026-08-09 — `/gsd-execute-phase 7` executed `07-01-PLAN.md`; `.planning/phases/07-design-system-setup/07-01-SUMMARY.md` written
+Phase: 8 of 11 (Auth & Shell Restyle)
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-08-09 — Phase 7 complete, transitioned to Phase 8
 
 Progress: [██████████] 100% (v1.1)
 
@@ -39,7 +39,7 @@ Progress: [██████████] 100% (v1.1)
 
 **Velocity:**
 
-- Total plans completed: 15 (v1.0)
+- Total plans completed: 16 (v1.0)
 - Average duration: N/A
 - Total execution time: 0 hours (v1.1)
 
@@ -47,9 +47,8 @@ Progress: [██████████] 100% (v1.1)
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 4 | 6 | - | - |
-| 5 | 6 | - | - |
 | 6 | 3 | - | - |
+| 7 | 1 | - | - |
 
 **Recent Trend:**
 
