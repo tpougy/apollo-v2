@@ -7,6 +7,7 @@ import {
   endOfNextMonth,
   nthBusinessDayOfMonth,
   nthCalendarDayOfMonth,
+  type SkipReason,
   shiftCompetencia,
   type TemplateRow,
 } from "./routineJob";
@@ -52,7 +53,7 @@ interface Scenario {
     dataPrevista: string;
     tipoPrazo: string;
   }>;
-  expectedSkipped: Array<{ templateId: string; reason: string }>;
+  expectedSkipped: Array<{ templateId: string; reason: SkipReason }>;
 }
 
 const dayMath = fixture.dayMath as {
