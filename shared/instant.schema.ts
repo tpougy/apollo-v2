@@ -48,12 +48,22 @@ const _schema = i.schema({
     // `ativo` is not in the SPEC field table but is required by SPEC
     // §"Job de geração de instâncias de rotina" ("para cada templatesRotina
     // ativo") — added here, flagged in the plan's SUMMARY for review.
+    // A single dual-purpose optional number field is added below (Phase 5,
+    // NOT in the original SPEC field table above), per 05-01-PLAN.md
+    // D-05-A/D-05-B: interpreted per `tipoGeracao` as (a) `du_fixo` -> Nth
+    // BUSINESS day of the month, (b) `corrido_fixo` -> Nth CALENDAR day of
+    // the month (clamped to the month's last day), (c) `encadeado` -> number
+    // of BUSINESS days after the antecessor instance's `dataPrevista`.
+    // Marked `.optional()` because Phase 3/4 test templates already exist
+    // live without it and InstantDB cannot backfill a required attribute
+    // onto existing rows.
     templatesRotina: i.entity({
       nome: i.string(),
       tipoGeracao: i.string(),
       regraCompetencia: i.string(),
       propagarAtrasoSoft: i.boolean(),
       ativo: i.boolean(),
+      offsetDias: i.number().optional(),
       donoId: i.string().indexed(),
     }),
     // SPEC row: instanciasRotina | dedupeKey (unique+indexed), dataPrevista, dataPrevistaEstimada, competencia, tipoPrazo, status, donoId
