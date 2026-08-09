@@ -41,3 +41,8 @@ extend-select = ["I", "ANN"]
 
 [tool.ty.environment]
 python-version = "3.12"
+
+[tool.pytest.ini_options]
+markers = [
+    "live: exercises the real InstantDB app over the network using the persisted session (skips when no session exists)",
+]
