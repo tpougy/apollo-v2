@@ -1,4 +1,4 @@
-import { init, id, lookup } from "@instantdb/svelte";
+import { id, init, lookup } from "@instantdb/svelte";
 import schema from "../../../shared/instant.schema";
 
 export const db = init({

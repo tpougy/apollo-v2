@@ -1,8 +1,8 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { defineConfig } from "vite";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 import { parse } from "dotenv";
+import { defineConfig } from "vite";
 
 // `shared/*.ts` lives outside web/ and has no node_modules of its own
 // (LOCKED layout, PROJECT.md C-01). Bare-specifier resolution normally

@@ -8,6 +8,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json",
+    "lint": "cd .. && biome check shared web/src web/vite.config.ts",
+    "lint:fix": "cd .. && biome check --write shared web/src web/vite.config.ts",
+    "format:check": "cd .. && biome format shared web/src web/vite.config.ts",
     "instant:push": "INSTANT_SCHEMA_FILE_PATH=../shared/instant.schema.ts INSTANT_PERMS_FILE_PATH=../shared/instant.perms.ts instant-cli push all --env ../.env.instantdb --package svelte --yes",
     "instant:pull": "INSTANT_SCHEMA_FILE_PATH=../shared/instant.schema.ts INSTANT_PERMS_FILE_PATH=../shared/instant.perms.ts instant-cli pull all --env ../.env.instantdb --package svelte --yes",
     "instant:verify": "INSTANT_SCHEMA_FILE_PATH=.instant-verify/instant.schema.ts INSTANT_PERMS_FILE_PATH=.instant-verify/instant.perms.ts instant-cli pull all --env ../.env.instantdb --package svelte --yes"
@@ -16,6 +19,7 @@
     "@instantdb/svelte": "^1.0.63"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.5.7",
     "@sveltejs/vite-plugin-svelte": "^7.3.0",
     "@tsconfig/svelte": "^5.0.8",
     "@types/bun": "latest",
