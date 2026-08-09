@@ -76,7 +76,11 @@ Plans:
   4. The currently active entity/section is marked in the nav using a shadcn active-state convention (e.g. a distinct `Button` variant/aria-current) while all other nav entries are not — Playwright asserts exactly one active indicator matches the current route as navigation changes.
   5. Clicking Logout (a shadcn `Button`) ends the live session and returns to the restyled LoginScreen.
 
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+
+- [ ] 08-01-PLAN.md — Install shadcn button/input/label/card/alert; restyle LoginScreen.svelte and Shell.svelte in place; add login-flow.spec.ts + shell-nav.spec.ts proving all 5 success criteria live
+
 **UI hint**: yes
 
 ### Phase 9: Entity Table Restyle
@@ -139,7 +143,7 @@ Phases execute in numeric order: 7 → 8 → 9 → 10 → 11
 | 5. Idempotent Routine-Instance Job | v1.0 | 6/6 | Complete | 2026-08-09 |
 | 6. End-to-End Verification | v1.0 | 3/3 | Complete | 2026-08-09 |
 | 7. Design System Setup | v1.1 | 1/1 | Complete    | 2026-08-09 |
-| 8. Auth & Shell Restyle | v1.1 | 0/TBD | Not started | - |
+| 8. Auth & Shell Restyle | v1.1 | 0/1 | Not started | - |
 | 9. Entity Table Restyle | v1.1 | 0/TBD | Not started | - |
 | 10. Entity Form Restyle & Feedback | v1.1 | 0/TBD | Not started | - |
 | 11. Full Verification & Quality Gates | v1.1 | 0/TBD | Not started | - |
