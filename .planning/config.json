@@ -49,7 +49,7 @@
     "security_block_on": "high",
     "use_worktrees": false,
     "_auto_chain_active": true,
-    "plan_chunked": true
+    "plan_chunked": false
   },
   "ship": {
     "pr_body_sections": []
