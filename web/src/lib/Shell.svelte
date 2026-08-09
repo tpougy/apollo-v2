@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import { Button } from "$lib/components/ui/button";
   import { db } from "./db";
   import EntityScreen from "./entities/EntityScreen.svelte";
   import { configByEtype, entityConfigs } from "./entities/registry";
@@ -48,18 +49,21 @@
 {#if !auth.isLoading && auth.user}
   <p>autenticado como {auth.user.email}</p>
 {/if}
-<button type="button" data-testid="logout" onclick={() => db.auth.signOut()}>Sair</button>
+<Button type="button" variant="outline" data-testid="logout" onclick={() => db.auth.signOut()}>
+  Sair
+</Button>
 
-<nav>
+<nav class="flex gap-2">
   {#each entityConfigs as cfg (cfg.etype)}
-    <button
+    <Button
       type="button"
+      variant={ativo === cfg.etype ? "secondary" : "ghost"}
       data-testid={`nav-${cfg.etype}`}
       aria-current={ativo === cfg.etype}
       onclick={() => (ativo = cfg.etype)}
     >
       {cfg.titulo}
-    </button>
+    </Button>
   {/each}
 </nav>
 
