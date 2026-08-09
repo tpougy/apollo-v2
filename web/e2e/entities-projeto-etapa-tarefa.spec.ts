@@ -291,7 +291,7 @@ test("WEB-05: tarefas tipoPrazo is a strict hard/soft select, and optional dates
   const optionValues = await tipoPrazoSelect
     .locator("option")
     .evaluateAll((opts) =>
-      (opts as { value: string }[]).map((o) => o.value).filter((v) => v !== ""),
+      (opts as unknown as { value: string }[]).map((o) => o.value).filter((v) => v !== ""),
     );
   expect(optionValues.sort()).toEqual(["hard", "soft"]);
 

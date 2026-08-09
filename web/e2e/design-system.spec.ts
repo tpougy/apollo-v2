@@ -36,3 +36,38 @@ test("app boots to the login screen with zero console or page errors", async ({ 
   await expect(page.getByTestId("login-screen")).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+const TOKENS = ["--background", "--foreground", "--primary"] as const;
+
+async function readTokens(page: import("@playwright/test").Page) {
+  return page.evaluate((tokens) => {
+    const cs = getComputedStyle(document.documentElement);
+    return Object.fromEntries(tokens.map((t) => [t, cs.getPropertyValue(t).trim()]));
+  }, TOKENS);
+}
+
+test("shadcn-svelte design tokens are present and swap under prefers-color-scheme", async ({
+  page,
+}) => {
+  await page.emulateMedia({ colorScheme: "light" });
+  await page.goto("/");
+  const light = await readTokens(page);
+  for (const t of TOKENS) expect(light[t]).not.toBe("");
+
+  await page.emulateMedia({ colorScheme: "dark" });
+  const dark = await readTokens(page);
+  for (const t of TOKENS) expect(dark[t]).not.toBe(light[t]);
+});
+
+test("dark mode never applies a .dark class under either color scheme", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "light" });
+  await page.goto("/");
+  expect(await page.evaluate(() => document.documentElement.classList.contains("dark"))).toBe(
+    false,
+  );
+
+  await page.emulateMedia({ colorScheme: "dark" });
+  expect(await page.evaluate(() => document.documentElement.classList.contains("dark"))).toBe(
+    false,
+  );
+});

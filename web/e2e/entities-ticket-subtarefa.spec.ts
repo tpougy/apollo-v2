@@ -175,7 +175,7 @@ test("WEB-08: tickets full browser CRUD round trip, including a long multi-line 
   const optionValues = await tipoPrazoSelect
     .locator("option")
     .evaluateAll((opts) =>
-      (opts as { value: string }[]).map((o) => o.value).filter((v) => v !== ""),
+      (opts as unknown as { value: string }[]).map((o) => o.value).filter((v) => v !== ""),
     );
   expect(optionValues.sort()).toEqual(["hard", "soft"]);
 

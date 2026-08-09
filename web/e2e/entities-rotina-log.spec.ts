@@ -123,7 +123,7 @@ test("WEB-06: templatesRotina full CRUD, including the self-referential antecess
   const optionValues = await tipoGeracaoSelect
     .locator("option")
     .evaluateAll((opts) =>
-      (opts as { value: string }[]).map((o) => o.value).filter((v) => v !== ""),
+      (opts as unknown as { value: string }[]).map((o) => o.value).filter((v) => v !== ""),
     );
   expect(optionValues.sort()).toEqual(["corrido_fixo", "du_fixo", "encadeado"]);
 

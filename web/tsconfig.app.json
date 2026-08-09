@@ -11,7 +11,9 @@
     "moduleDetection": "force",
     "baseUrl": ".",
     "paths": {
-      "@instantdb/svelte": ["./node_modules/@instantdb/svelte"]
+      "@instantdb/svelte": ["./node_modules/@instantdb/svelte"],
+      "$lib": ["./src/lib"],
+      "$lib/*": ["./src/lib/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.svelte", "../shared/*.ts"]
