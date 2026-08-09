@@ -1,9 +1,17 @@
 node_modules/
+**/node_modules/
 dist/
+**/dist/
 .env
 .env.*
 !.env.example
+.env.instantdb
 .venv/
 __pycache__/
 *.pyc
 .DS_Store
+web/.instant-verify/
+.instant-verify/
+.ruff_cache/
+.ty_cache/
+*.egg-info/
