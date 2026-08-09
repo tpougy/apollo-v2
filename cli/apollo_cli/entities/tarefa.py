@@ -191,7 +191,7 @@ def editar(
 @group.command()
 @click.option("--id", "eid", required=True, help="Id of the tarefa to delete.")
 def deletar(eid: str) -> None:
-    """Delete a tarefa."""
+    """Delete a tarefa permanently. This cannot be undone."""
     delete_entity(etype=_ETYPE, eid=eid)
     emit({"id": eid, "deleted": True})
 

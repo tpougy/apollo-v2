@@ -166,7 +166,7 @@ def editar(
 @group.command()
 @click.option("--id", "eid", required=True, help="Id of the projeto to delete.")
 def deletar(eid: str) -> None:
-    """Delete a projeto."""
+    """Delete a projeto permanently. This cannot be undone."""
     delete_entity(etype=_ETYPE, eid=eid)
     emit({"id": eid, "deleted": True})
 

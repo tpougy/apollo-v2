@@ -79,7 +79,7 @@ def editar(eid: str, nome: str | None, codigo: str | None, ativo: bool | None) -
 @group.command()
 @click.option("--id", "eid", required=True, help="Id of the fundo to delete.")
 def deletar(eid: str) -> None:
-    """Delete a fundo."""
+    """Delete a fundo permanently. This cannot be undone."""
     delete_entity(etype=_ETYPE, eid=eid)
     emit({"id": eid, "deleted": True})
 

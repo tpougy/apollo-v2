@@ -120,7 +120,7 @@ def editar(
 @group.command()
 @click.option("--id", "eid", required=True, help="Id of the etapa to delete.")
 def deletar(eid: str) -> None:
-    """Delete an etapa."""
+    """Delete an etapa permanently. This cannot be undone."""
     delete_entity(etype=_ETYPE, eid=eid)
     emit({"id": eid, "deleted": True})
 

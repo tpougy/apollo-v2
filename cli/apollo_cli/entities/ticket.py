@@ -193,7 +193,7 @@ def editar(
 @group.command()
 @click.option("--id", "eid", required=True, help="Id of the ticket to delete.")
 def deletar(eid: str) -> None:
-    """Delete a ticket."""
+    """Delete a ticket permanently. This cannot be undone."""
     delete_entity(etype=_ETYPE, eid=eid)
     emit({"id": eid, "deleted": True})
 

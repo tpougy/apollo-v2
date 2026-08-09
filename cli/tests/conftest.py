@@ -9,17 +9,21 @@ runs never accumulate junk in the real app.
 from __future__ import annotations
 
 import json
+import logging
 import secrets
 from collections.abc import Callable, Iterator
 from typing import NamedTuple
 
+import httpx
 import pytest
 from click.testing import CliRunner, Result
-from instantdb import Instant
+from instantdb import Instant, InstantAPIError
 
 from apollo_cli.cli import apollo
 from apollo_cli.instant_client import session_client
 from apollo_cli.session import MissingSessionError, Session, load_session
+
+_logger = logging.getLogger(__name__)
 
 
 @pytest.fixture(scope="session")
@@ -94,8 +98,10 @@ def cleanup_records(live_client: Instant) -> Iterator[list[tuple[str, str]]]:
     for etype, eid in records:
         try:
             live_client.transact(live_client.tx[etype][eid].delete())
-        except Exception:  # noqa: BLE001, S112 -- best-effort teardown, must never fail the suite
-            continue
+        except (InstantAPIError, httpx.HTTPError) as error:
+            # Best-effort teardown, must never fail the suite (e.g. the test
+            # itself already deleted the record as part of its assertions).
+            _logger.debug("cleanup_records: failed to delete %s/%s: %s", etype, eid, error)
 
 
 def unique_suffix() -> str:

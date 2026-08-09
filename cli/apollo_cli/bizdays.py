@@ -40,8 +40,14 @@ _PAYLOAD: Final[dict[str, object]] = json.loads(_CALENDAR_PATH.read_text(encodin
 CALENDAR_START: Final[str] = str(_PAYLOAD["start"])
 CALENDAR_END: Final[str] = str(_PAYLOAD["end"])
 
+_holidays_raw: object = _PAYLOAD["holidays"]
+if not isinstance(_holidays_raw, list):
+    msg = f"{_CALENDAR_PATH}: 'holidays' is not a list"
+    raise TypeError(msg)
+_HOLIDAYS: Final[list[str]] = _holidays_raw
+
 _CALENDAR: Final[Calendar] = Calendar(
-    holidays=_PAYLOAD["holidays"],  # type: ignore[arg-type]
+    holidays=_HOLIDAYS,
     weekdays=["Saturday", "Sunday"],
 )
 

@@ -18,8 +18,8 @@ import click
 def discover_entity_groups() -> list[click.Group]:
     """Import every sibling module and collect its `group` attribute.
 
-    Raises `RuntimeError` naming the offending module when a module is
-    missing the `group` attribute or it is not a `click.Group` — a silently
+    Raises `TypeError` naming the offending module when a module is missing
+    the `group` attribute or it is not a `click.Group` — a silently
     unregistered entity command is exactly the failure this must not allow.
 
     Returns groups sorted by `group.name` for a deterministic `--help` order.
@@ -34,7 +34,7 @@ def discover_entity_groups() -> list[click.Group]:
                 "`group: click.Group` attribute, as required by the entity "
                 "discovery contract."
             )
-            raise RuntimeError(msg)  # noqa: TRY004 -- intentionally RuntimeError, see docstring
+            raise TypeError(msg)
         groups.append(group)
     return sorted(groups, key=lambda group: group.name or "")
 
