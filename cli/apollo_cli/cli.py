@@ -12,6 +12,7 @@ from importlib.metadata import version
 
 import click
 
+from apollo_cli import auth
 from apollo_cli.config import load_instant_config
 
 
@@ -23,10 +24,13 @@ def apollo() -> None:
     This is the AI-operated channel for Apollo v2, with full parity with the
     web SPA: every write available in the browser is also available here.
 
-    The full entity subcommand surface (fundo, projeto, etapa, tarefa, ticket,
-    subtarefa, rotina, log-inferencia, auth) is under construction — it lands
-    in Phase 3 of the migration. This scaffold only provides `doctor`.
+    `auth` (login, logout, whoami) is available. The remaining entity
+    subcommand surface (fundo, projeto, etapa, tarefa, ticket, subtarefa,
+    rotina, log-inferencia) lands as each is implemented later in Phase 3.
     """
+
+
+apollo.add_command(auth.group)
 
 
 @apollo.command()
