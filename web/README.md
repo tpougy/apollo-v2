@@ -154,3 +154,57 @@ bash ../.planning/phases/04-web-spa-auth-crud-smoke-ui/verify-phase-04.sh --with
 # or:
 VERIFY_MAGIC_CODE=1 bash ../.planning/phases/04-web-spa-auth-crud-smoke-ui/verify-phase-04.sh
 ```
+
+## The routine-instance generation job trigger (`Shell.svelte`)
+
+`Shell.svelte` fires the idempotent routine-instance generation job
+(`runRoutineInstanceJob`, `src/lib/routineJob.ts`) exactly once per authenticated mount:
+
+```typescript
+let jobStarted = false; // plain, non-reactive -- deliberately NOT $state
+
+onMount(() => {
+  if (jobStarted) return;
+  jobStarted = true;
+  runRoutineInstanceJob({ donoId: user.id })
+    .then(() => { jobState = "done"; })
+    .catch((error) => {
+      console.error("[routineJob] failed to run on mount", error);
+      jobState = "done"; // a job failure must never block rendering
+    });
+});
+```
+
+This is `onMount`, never `$effect`: the trigger must fire exactly once per session, not
+re-fire on every reactive dependency change a `$effect` would track (e.g. `user` object
+identity churn on token refresh). `jobStarted` is a plain `let`, not `$state`, specifically so
+nothing can make this guard itself reactive — grep-verified (`verify-phase-05.sh`) that no
+`$effect` exists anywhere in this file.
+
+Completion is exposed via a hidden test-only hook:
+
+```svelte
+<div data-testid="routine-job-state" data-job-state={jobState} hidden></div>
+```
+
+`web/e2e/routine-job.spec.ts` and `web/e2e/routine-job-cross-channel.spec.ts` poll this
+element's `data-job-state` attribute for `"done"` instead of a fixed sleep, since the job's
+own query -> compute -> write cycle against InstantDB has no other externally-observable
+completion signal.
+
+**No job UI exists by design** (PROJECT.md C-09: this milestone builds the data layer, auth,
+CLI, and job end-to-end — no panel/dashboard UI design is in scope). There is no progress
+indicator, no toast, no list of what the job did on this load; an operator who wants to see
+the job's report runs `apollo rotina gerar-instancias --dry-run` from the CLI instead, which
+prints the full JSON report.
+
+## Verifying Phase 5
+
+```bash
+bash ../.planning/phases/05-idempotent-routine-instance-job/verify-phase-05.sh
+```
+
+Re-proves every JOB-01/JOB-02 gate — including this project's own `routine-job.spec.ts` and
+`routine-job-cross-channel.spec.ts` — in one command, printing `PHASE 05 VERIFIED` on success.
+See `../README.md`'s "Routine-instance generation job" section for what the job does and the
+"Re-verifying Phase 5" section for the full gate list.

@@ -158,6 +158,7 @@ apollo ticket          criar | editar | deletar | listar
 apollo subtarefa       criar | editar | deletar | listar
 apollo rotina template  criar | editar | deletar | listar
 apollo rotina instancia listar | status
+apollo rotina gerar-instancias
 apollo log-inferencia   registrar | listar
 ```
 
@@ -166,22 +167,54 @@ apollo log-inferencia   registrar | listar
 idempotent generation job's `dedupeKey` invariant; a hand-created or
 hand-re-dated instance would desynchronize from that key and cause the next
 job run to create a duplicate. `apollo rotina gerar-instancias` (the job
-trigger) does not exist yet — it arrives in Phase 5 (JOB-02).
+trigger, at the top level of the `rotina` group, not under `instancia`) is
+the ONLY sanctioned creator of `instanciasRotina` records.
 
 `apollo log-inferencia` is **append-only** — `registrar`/`listar` only, no
 `editar`/`deletar` — so the user can always audit Claude's past inferences.
+
+### `apollo rotina gerar-instancias`
+
+Runs the idempotent routine-instance generation job (Phase 5, JOB-02): queries the
+authenticated user's active `templatesRotina` and existing `instanciasRotina`, computes the
+expected set for `[--data-base (default: today), end of next month]`, and writes — via a
+lookup-keyed upsert on `dedupeKey` — only the instances that do not already exist. Never
+duplicates, never deletes.
+
+| Flag | Meaning |
+|---|---|
+| `--data-base YYYY-MM-DD` | Overrides "today" for the range computation. Omit to use the real current UTC date. |
+| `--dry-run` / `--no-dry-run` | `--dry-run` performs every query and the full diff but writes nothing, reporting the same JSON shape with the would-be keys under `created`. Defaults to `--no-dry-run`. |
+
+Emits exactly one JSON document: `{"created": [...], "existing": [...], "skipped": [...]}`, all
+three lists of `dedupeKey`/skip-entries sorted.
+
+**Skip-reason table** — a misconfigured or unresolvable template is reported, never crashed on,
+and never blocks any other template from generating:
+
+| Reason | Generation type(s) | What the operator should do |
+|---|---|---|
+| `tipo_geracao_desconhecido` | any | Fix `--tipo-geracao` to one of `du_fixo`/`corrido_fixo`/`encadeado` via `apollo rotina template editar`. |
+| `offset_dias_ausente` | all | Set `--offset-dias` on the template — it is required for every generation type. |
+| `offset_dias_invalido` | all | Set `--offset-dias` to an integer within range: >= 1 for `du_fixo`/`corrido_fixo`, >= 0 for `encadeado`. A value that pushes the computed date past the vendored ANBIMA calendar's range also lands here. |
+| `regra_competencia_nao_suportada` | `du_fixo`, `corrido_fixo` | Set `--regra-competencia` to one of `M0`/`M-1`/`M-2`/`M+1` (encadeado templates never hit this — their `regraCompetencia` is never consulted, D-05-D in `README.md`). |
+| `antecessor_ausente` | `encadeado` | Set `--antecessor-id` to an existing `templatesRotina` id. |
+| `antecessor_sem_instancia` | `encadeado` | The antecessor template has no instance yet (computed this run or persisted) for any competencia — run the job again once the antecessor itself has generated at least one instance. |
+| `antecessor_ciclico` | `encadeado` | The antecessor chain never resolves within the sweep bound — a genuine cycle (A -> B -> A) or a chain through a dangling antecessor id. Break the cycle by editing one template's `--antecessor-id`. |
 
 ## Verificação
 
 ```bash
 bash ../.planning/phases/03-cli-auth-crud/verify-phase-03.sh
+bash ../.planning/phases/05-idempotent-routine-instance-job/verify-phase-05.sh
 ```
 
-(from `cli/`; or `bash .planning/phases/03-cli-auth-crud/verify-phase-03.sh`
-from the repo root — the script resolves its own location and `cd`s to the
-repo root regardless of the caller's cwd). Exits `0` and prints
-`PHASE 03 VERIFIED` as its final line only when every one of CLI-01..CLI-11
-plus the ruff/ruff-format/ty/zero-suppression quality gates pass, re-running
-twice in a row without leaving any test record behind in the live app. It
-never sends a magic code and never authenticates with the admin token — it
-re-verifies the session already persisted by a prior `apollo auth login`.
+(from `cli/`; or with the full path from the repo root — each script resolves its own location
+and `cd`s to the repo root regardless of the caller's cwd). `verify-phase-03.sh` exits `0` and
+prints `PHASE 03 VERIFIED` as its final line only when every one of CLI-01..CLI-11 plus the
+ruff/ruff-format/ty/zero-suppression quality gates pass, re-running twice in a row without
+leaving any test record behind in the live app. `verify-phase-05.sh` does the same for
+JOB-01/JOB-02 — the idempotent `gerar-instancias` job, its cross-channel recognition in both
+directions, and its genuine-concurrency non-duplication proof — printing `PHASE 05 VERIFIED`
+on success. Neither script sends a magic code or authenticates with the admin token by
+default — both re-verify the session already persisted by a prior `apollo auth login`.
