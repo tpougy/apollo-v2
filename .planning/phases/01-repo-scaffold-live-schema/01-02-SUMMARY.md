@@ -155,3 +155,7 @@ None - no external service configuration required. `.env.instantdb` already exis
 ---
 *Phase: 01-repo-scaffold-live-schema*
 *Completed: 2026-08-09*
+
+## Self-Check: PASSED
+
+All 8 claimed files verified present on disk (`cli/pyproject.toml`, `cli/uv.lock`, `cli/.python-version`, `cli/README.md`, `cli/apollo_cli/__init__.py`, `cli/apollo_cli/config.py`, `cli/apollo_cli/cli.py`, `.planning/phases/01-repo-scaffold-live-schema/01-02-SUMMARY.md`). All 3 commit hashes (`5b456cf`, `3f83d41`, `0b02588`) verified present in git history.
