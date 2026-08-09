@@ -19,6 +19,13 @@ import { parse } from "dotenv";
 // this fixture seeds and tears down exactly one record via the InstantDB
 // admin API, deliberately bypassing both forbidden channels rather than
 // adding a create affordance to either.
+//
+// `listInstancesByTemplate`/`deleteInstancesByTemplate` (plan 05-03) extend
+// this same rationale to the live idempotency spec (`routine-job.spec.ts`):
+// instances have no delete path on either channel by design, so admin-only
+// teardown is the only way that spec avoids leaving permanent debris (real
+// `instanciasRotina` rows) in the live app after asserting on job-generated
+// server state.
 const envPath = fileURLToPath(new URL("../../../.env.instantdb", import.meta.url));
 const parsed = parse(readFileSync(envPath));
 const appId = parsed.NEXT_PUBLIC_INSTANT_APP_ID ?? parsed.INSTANT_APP_ID;
@@ -95,5 +102,34 @@ export async function deleteAdminRecord(etype: string, eid: string): Promise<voi
     await adminDb.transact(tx[etype][eid].delete() as never);
   } catch {
     // Already deleted — fine.
+  }
+}
+
+/**
+ * Reads every `instanciasRotina` record linked to `templateId`, via the
+ * admin API. Used by `routine-job.spec.ts` to assert on server state
+ * produced by the live generation job without going through the SPA's
+ * reactive query layer (which could mask a stale read).
+ */
+export async function listInstancesByTemplate(
+  templateId: string,
+): Promise<Record<string, unknown>[]> {
+  const result = (await adminDb.query({
+    instanciasRotina: { $: { where: { "template.id": templateId } } },
+  } as never)) as { instanciasRotina: Record<string, unknown>[] };
+  return result.instanciasRotina;
+}
+
+/**
+ * TEST-ONLY teardown: deletes every `instanciasRotina` record linked to
+ * `templateId` via the admin API. `instanciasRotina` has no delete path on
+ * either the SPA or the CLI by design (C-06) — this is the only way
+ * `routine-job.spec.ts` can avoid leaving permanent debris in the live app
+ * after proving the job's idempotent-generation behavior.
+ */
+export async function deleteInstancesByTemplate(templateId: string): Promise<void> {
+  const records = await listInstancesByTemplate(templateId);
+  for (const record of records) {
+    await deleteAdminRecord("instanciasRotina", record.id as string);
   }
 }
