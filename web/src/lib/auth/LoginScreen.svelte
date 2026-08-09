@@ -1,4 +1,11 @@
 <script lang="ts">
+  import CircleAlert from "@lucide/svelte/icons/circle-alert";
+  import LoaderCircle from "@lucide/svelte/icons/loader-circle";
+  import { Alert, AlertDescription } from "$lib/components/ui/alert";
+  import { Button } from "$lib/components/ui/button";
+  import { Card, CardContent } from "$lib/components/ui/card";
+  import { Input } from "$lib/components/ui/input";
+  import { Label } from "$lib/components/ui/label";
   import { db } from "../db";
 
   let step = $state<"email" | "code">("email");
@@ -51,40 +58,63 @@
 </script>
 
 <div data-testid="login-screen">
-  {#if step === "email"}
-    <form onsubmit={onSubmitEmail}>
-      <label for="login-email">E-mail</label>
-      <input
-        id="login-email"
-        data-testid="login-email"
-        type="email"
-        bind:value={email}
-        required
-        disabled={ocupado}
-      />
-      <button type="submit" data-testid="login-submit" disabled={ocupado}>Enviar código</button>
-    </form>
-  {:else}
-    <p>Código enviado para {email}</p>
-    <form onsubmit={onSubmitCode}>
-      <label for="login-code">Código</label>
-      <input
-        id="login-code"
-        data-testid="login-code"
-        type="text"
-        inputmode="numeric"
-        bind:value={code}
-        required
-        disabled={ocupado}
-      />
-      <button type="submit" data-testid="login-submit" disabled={ocupado}>Entrar</button>
-      <button type="button" data-testid="login-resend" onclick={reenviar} disabled={ocupado}>
-        Reenviar código
-      </button>
-    </form>
-  {/if}
+  <Card>
+    <CardContent>
+      {#if step === "email"}
+        <form onsubmit={onSubmitEmail}>
+          <Label for="login-email">E-mail</Label>
+          <Input
+            id="login-email"
+            data-testid="login-email"
+            type="email"
+            bind:value={email}
+            required
+            disabled={ocupado}
+          />
+          <Button type="submit" data-testid="login-submit" disabled={ocupado}>
+            {#if ocupado}
+              <LoaderCircle class="size-4 animate-spin" />
+            {/if}
+            Enviar código
+          </Button>
+        </form>
+      {:else}
+        <p>Código enviado para {email}</p>
+        <form onsubmit={onSubmitCode}>
+          <Label for="login-code">Código</Label>
+          <Input
+            id="login-code"
+            data-testid="login-code"
+            type="text"
+            inputmode="numeric"
+            bind:value={code}
+            required
+            disabled={ocupado}
+          />
+          <Button type="submit" data-testid="login-submit" disabled={ocupado}>
+            {#if ocupado}
+              <LoaderCircle class="size-4 animate-spin" />
+            {/if}
+            Entrar
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            data-testid="login-resend"
+            onclick={reenviar}
+            disabled={ocupado}
+          >
+            Reenviar código
+          </Button>
+        </form>
+      {/if}
 
-  {#if erro}
-    <p data-testid="login-error">{erro}</p>
-  {/if}
+      {#if erro}
+        <Alert variant="destructive">
+          <CircleAlert class="size-4" />
+          <AlertDescription data-testid="login-error">{erro}</AlertDescription>
+        </Alert>
+      {/if}
+    </CardContent>
+  </Card>
 </div>
