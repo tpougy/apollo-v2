@@ -9,14 +9,14 @@ Requirements for this migration milestone. Each maps to exactly one roadmap phas
 
 ### Setup (SETUP)
 
-- [ ] **SETUP-01**: Monorepo layout exists exactly as specified (`shared/`, `web/`, `cli/`, `.env.instantdb`) — *C-01*
-- [ ] **SETUP-02**: `cli/` is a `uv`-managed Python 3.12 package that installs cleanly (`uv sync`) with entrypoint `apollo` — *C-01, C-07*
-- [ ] **SETUP-03**: `web/` is a `bun`-managed pure Svelte 5 + Vite SPA (no SvelteKit) that installs and runs a dev server cleanly — *C-01, C-08*
-- [ ] **SETUP-04**: `ruff` (curated rule set) and `ty` are configured for `cli/` and pass clean (zero errors/warnings) on scaffold files — *C-08*
-- [ ] **SETUP-05**: A formatter (Prettier or Biome) and lint/type checker (ESLint or Biome + `svelte-check`) are configured for `web/` and pass clean on scaffold files — *C-08*
-- [ ] **SETUP-06**: Developer can authenticate to InstantDB (CLI login) using the app's `APP_ID` stored in `.env.instantdb`, with no admin token required for normal operation — *C-05*
-- [ ] **SETUP-07**: `shared/instant.schema.ts` defines all 8 domain entities and their links per the SPEC schema table and is pushed live to InstantDB — *C-04*
-- [ ] **SETUP-08**: `shared/instant.perms.ts` defines the `donoId`-based permission rules (identical across entities) and is pushed live to InstantDB — *C-05*
+- [x] **SETUP-01**: Monorepo layout exists exactly as specified (`shared/`, `web/`, `cli/`, `.env.instantdb`) — *C-01*
+- [x] **SETUP-02**: `cli/` is a `uv`-managed Python 3.12 package that installs cleanly (`uv sync`) with entrypoint `apollo` — *C-01, C-07*
+- [x] **SETUP-03**: `web/` is a `bun`-managed pure Svelte 5 + Vite SPA (no SvelteKit) that installs and runs a dev server cleanly — *C-01, C-08*
+- [x] **SETUP-04**: `ruff` (curated rule set) and `ty` are configured for `cli/` and pass clean (zero errors/warnings) on scaffold files — *C-08*
+- [x] **SETUP-05**: A formatter (Prettier or Biome) and lint/type checker (ESLint or Biome + `svelte-check`) are configured for `web/` and pass clean on scaffold files — *C-08*
+- [x] **SETUP-06**: Developer can authenticate to InstantDB (CLI login) using the app's `APP_ID` stored in `.env.instantdb`, with no admin token required for normal operation — *C-05*
+- [x] **SETUP-07**: `shared/instant.schema.ts` defines all 8 domain entities and their links per the SPEC schema table and is pushed live to InstantDB — *C-04*
+- [x] **SETUP-08**: `shared/instant.perms.ts` defines the `donoId`-based permission rules (identical across entities) and is pushed live to InstantDB — *C-05*
 
 ### ANBIMA Calendar (CAL)
 
@@ -87,14 +87,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SETUP-01 | Phase 1 | Pending |
-| SETUP-02 | Phase 1 | Pending |
-| SETUP-03 | Phase 1 | Pending |
-| SETUP-04 | Phase 1 | Pending |
-| SETUP-05 | Phase 1 | Pending |
-| SETUP-06 | Phase 1 | Pending |
-| SETUP-07 | Phase 1 | Pending |
-| SETUP-08 | Phase 1 | Pending |
+| SETUP-01 | Phase 1 | Complete |
+| SETUP-02 | Phase 1 | Complete |
+| SETUP-03 | Phase 1 | Complete |
+| SETUP-04 | Phase 1 | Complete |
+| SETUP-05 | Phase 1 | Complete |
+| SETUP-06 | Phase 1 | Complete |
+| SETUP-07 | Phase 1 | Complete |
+| SETUP-08 | Phase 1 | Complete |
 | CAL-01 | Phase 2 | Pending |
 | CAL-02 | Phase 2 | Pending |
 | CAL-03 | Phase 2 | Pending |
@@ -130,6 +130,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | VERIFY-05 | Phase 6 | Pending |
 
 **Coverage:**
+
 - v1 requirements: 41 total
 - Mapped to phases: 41
 - Unmapped: 0 ✓
