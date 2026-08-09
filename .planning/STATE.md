@@ -22,8 +22,8 @@ current_phase_name: End-to-End Verification
 
 See: .planning/PROJECT.md (updated 2026-08-09)
 
-**Core value:** The user can execute every piece of controladoria data-entry work from either the Svelte SPA or the Python CLI, both authenticated as the same real user under the same InstantDB permission rules.
-**Current focus:** Phase 1 — Repo Scaffold & Live Schema
+**Core value:** The user can execute every piece of controladoria data-entry work from either the Svelte SPA or the Python CLI, both authenticated as the same real user under the same InstantDB permission rules. Validated in v1.0.
+**Current focus:** Planning next milestone
 
 ## Current Position
 
@@ -69,8 +69,7 @@ None yet.
 
 ### Blockers/Concerns
 
-- InstantDB app must exist and `.env.instantdb` (`APP_ID`) must be provisioned before Phase 1 can push `instant.schema.ts`/`instant.perms.ts` — first concrete task of Phase 1.
-- No formatter/linter choice made yet for `web/` (Prettier vs Biome, ESLint vs Biome) — SPEC leaves this "to be decided during implementation" (C-08); Phase 1 planning must resolve it.
+None — all v1.0 blockers were resolved during execution (see .planning/RETROSPECTIVE.md for details).
 
 ## Deferred Items
 
