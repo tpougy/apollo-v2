@@ -8,11 +8,16 @@ must never hardcode fixture data — see plan 02-02's acceptance criteria.
 from __future__ import annotations
 
 import json
+import random
+from datetime import date, timedelta
 from typing import Any, Final
 
 import pytest
 
+from apollo_cli import bizdays as bizdays_module
 from apollo_cli.bizdays import (
+    CALENDAR_END,
+    CALENDAR_START,
     CalendarRangeError,
     InvalidDateError,
     add_business_days,
@@ -65,3 +70,54 @@ def test_fixture_case(case: dict[str, Any]) -> None:
         assert type(exc_info.value).__name__ == error_name
     else:
         assert _run(case) == case["expected"]
+
+
+def _sample_business_days(count: int, seed: int) -> list[str]:
+    """Deterministically sample `count` distinct business-day ISO strings
+    spread across the vendored calendar range.
+    """
+    rng = random.Random(seed)
+    start_bound = date.fromisoformat(CALENDAR_START)
+    end_bound = date.fromisoformat(CALENDAR_END)
+    span_days = (end_bound - start_bound).days
+
+    sampled: list[str] = []
+    seen: set[str] = set()
+    attempts = 0
+    while len(sampled) < count and attempts < count * 200:
+        attempts += 1
+        candidate = start_bound + timedelta(days=rng.randint(0, span_days))
+        iso = candidate.isoformat()
+        if iso in seen:
+            continue
+        if not is_business_day(iso):
+            continue
+        seen.add(iso)
+        sampled.append(iso)
+    return sampled
+
+
+_OFFSET_SAMPLE: Final[list[str]] = _sample_business_days(50, seed=20260808)
+_OFFSET_N_VALUES: Final[tuple[int, ...]] = (1, 5, 20)
+
+
+@pytest.mark.parametrize("start_iso", _OFFSET_SAMPLE)
+@pytest.mark.parametrize("n", _OFFSET_N_VALUES)
+def test_offset_agrees_with_walk(start_iso: str, n: int) -> None:
+    """Independent sanity check: our hand-written day-by-day walk
+    (`add_business_days`) must agree with `bizdays.Calendar.offset()`, the
+    library's own primitive, for unambiguous business-day starting points.
+
+    This is NOT a substitute for the shared fixture (CAL-04 requires
+    byte-identical semantics between TS and Python by construction, not by
+    trusting a third library primitive) — it is an extra cross-check that our
+    hand-rolled walk isn't quietly wrong in a way that happens to match itself
+    on both runtimes but diverges from the underlying library's own notion of
+    "N business days from here".
+    """
+    walked = add_business_days(start_iso, n)
+    offset_result = bizdays_module._CALENDAR.offset(start_iso, n)
+    offset_iso = str(offset_result)[:10]
+    assert offset_iso == walked, (
+        f"offset({start_iso!r}, {n}) = {offset_iso!r} but add_business_days = {walked!r}"
+    )

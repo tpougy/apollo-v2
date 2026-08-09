@@ -77,7 +77,9 @@ def _assert_in_range(iso: str) -> None:
     zero-padded ISO strings.
     """
     if iso < CALENDAR_START or iso > CALENDAR_END:
-        msg = f"Date {iso} is outside the vendored calendar range [{CALENDAR_START}, {CALENDAR_END}]"
+        msg = (
+            f"Date {iso} is outside the vendored calendar range [{CALENDAR_START}, {CALENDAR_END}]"
+        )
         raise CalendarRangeError(msg)
 
 

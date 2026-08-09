@@ -28,5 +28,114 @@
     "op": "isBusinessDay",
     "date": "2024-12-25",
     "expected": false
+  },
+  {
+    "id": "add-business-days-n0-on-business-day",
+    "op": "addBusinessDays",
+    "date": "2024-03-06",
+    "n": 0,
+    "expected": "2024-03-06"
+  },
+  {
+    "id": "add-business-days-n0-on-saturday",
+    "op": "addBusinessDays",
+    "date": "2024-03-09",
+    "n": 0,
+    "expected": "2024-03-09"
+  },
+  {
+    "id": "add-business-days-n1-friday-to-monday",
+    "op": "addBusinessDays",
+    "date": "2024-03-08",
+    "n": 1,
+    "expected": "2024-03-11"
+  },
+  {
+    "id": "add-business-days-n1-from-saturday",
+    "op": "addBusinessDays",
+    "date": "2024-03-09",
+    "n": 1,
+    "expected": "2024-03-11"
+  },
+  {
+    "id": "add-business-days-n5-full-week",
+    "op": "addBusinessDays",
+    "date": "2024-03-04",
+    "n": 5,
+    "expected": "2024-03-11"
+  },
+  {
+    "id": "add-business-days-n20-spans-carnival",
+    "op": "addBusinessDays",
+    "date": "2024-02-01",
+    "n": 20,
+    "expected": "2024-03-04"
+  },
+  {
+    "id": "add-business-days-n-neg1",
+    "op": "addBusinessDays",
+    "date": "2024-03-11",
+    "n": -1,
+    "expected": "2024-03-08"
+  },
+  {
+    "id": "add-business-days-n-neg5",
+    "op": "addBusinessDays",
+    "date": "2024-03-15",
+    "n": -5,
+    "expected": "2024-03-08"
+  },
+  {
+    "id": "add-business-days-n-neg20-spans-carnival",
+    "op": "addBusinessDays",
+    "date": "2024-04-01",
+    "n": -20,
+    "expected": "2024-03-01"
+  },
+  {
+    "id": "add-business-days-roundtrip-forward-leg",
+    "op": "addBusinessDays",
+    "date": "2024-03-06",
+    "n": 7,
+    "expected": "2024-03-15"
+  },
+  {
+    "id": "add-business-days-roundtrip-backward-leg",
+    "op": "addBusinessDays",
+    "date": "2024-03-15",
+    "n": -7,
+    "expected": "2024-03-06"
+  },
+  {
+    "id": "next-business-day-from-friday",
+    "op": "nextBusinessDay",
+    "date": "2024-03-08",
+    "expected": "2024-03-11"
+  },
+  {
+    "id": "next-business-day-from-saturday",
+    "op": "nextBusinessDay",
+    "date": "2024-03-09",
+    "expected": "2024-03-11"
+  },
+  {
+    "id": "next-business-day-from-holiday",
+    "op": "nextBusinessDay",
+    "date": "2024-12-25",
+    "expected": "2024-12-26"
+  },
+  {
+    "id": "next-business-day-equals-add-one-friday",
+    "op": "addBusinessDays",
+    "date": "2024-03-08",
+    "n": 1,
+    "expected": "2024-03-11"
+  },
+  {
+    "id": "next-business-day-equals-add-one-holiday",
+    "op": "addBusinessDays",
+    "date": "2024-12-25",
+    "n": 1,
+    "expected": "2024-12-26"
   }
 ]
