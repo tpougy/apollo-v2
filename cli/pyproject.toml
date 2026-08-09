@@ -1,0 +1,30 @@
+[project]
+name = "apollo-cli"
+version = "0.1.0"
+description = "Apollo v2 CLI — AI-operated channel with full parity with the web SPA"
+readme = "README.md"
+authors = [
+    { name = "tpougy", email = "thomazpougy@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "click>=8.4,<9",
+    "python-dotenv>=1.2,<2",
+    "instantdb>=1.0.63,<2",
+]
+
+[project.scripts]
+apollo = "apollo_cli.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.9.21,<0.10.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-root = ""
+
+[dependency-groups]
+dev = [
+    "ruff>=0.16,<0.17",
+    "ty>=0.0.69",
+]
