@@ -42,16 +42,16 @@ Requirements for this migration milestone. Each maps to exactly one roadmap phas
 
 ### Web SPA (WEB)
 
-- [ ] **WEB-01**: User can log into the Svelte SPA via InstantDB magic-code email auth, with session persisted across page reloads (localStorage) — *C-05*
-- [ ] **WEB-02**: SPA has a minimal functional screen for full CRUD on `fundos` — *C-02*
-- [ ] **WEB-03**: SPA has a minimal functional screen for full CRUD on `projetos` — *C-02*
-- [ ] **WEB-04**: SPA has a minimal functional screen for full CRUD on `etapas` — *C-02*
-- [ ] **WEB-05**: SPA has a minimal functional screen for full CRUD on `tarefas` — *C-02*
-- [ ] **WEB-06**: SPA has a minimal functional screen for full CRUD on `templatesRotina` — *C-02*
-- [ ] **WEB-07**: SPA has a minimal functional screen to list/update-status `instanciasRotina` — *C-02*
-- [ ] **WEB-08**: SPA has a minimal functional screen for full CRUD on `tickets` and `subtarefas` — *C-02*
-- [ ] **WEB-09**: SPA has a minimal functional screen to view `logInferenciaClaude` entries — *C-02*
-- [ ] **WEB-10**: Unauthenticated access to app data redirects to/shows the login screen (no data leakage) — *C-05*
+- [x] **WEB-01**: User can log into the Svelte SPA via InstantDB magic-code email auth, with session persisted across page reloads (localStorage) — *C-05*
+- [x] **WEB-02**: SPA has a minimal functional screen for full CRUD on `fundos` — *C-02*
+- [x] **WEB-03**: SPA has a minimal functional screen for full CRUD on `projetos` — *C-02*
+- [x] **WEB-04**: SPA has a minimal functional screen for full CRUD on `etapas` — *C-02*
+- [x] **WEB-05**: SPA has a minimal functional screen for full CRUD on `tarefas` — *C-02*
+- [x] **WEB-06**: SPA has a minimal functional screen for full CRUD on `templatesRotina` — *C-02*
+- [x] **WEB-07**: SPA has a minimal functional screen to list/update-status `instanciasRotina` — *C-02*
+- [x] **WEB-08**: SPA has a minimal functional screen for full CRUD on `tickets` and `subtarefas` — *C-02*
+- [x] **WEB-09**: SPA has a minimal functional screen to view `logInferenciaClaude` entries — *C-02*
+- [x] **WEB-10**: Unauthenticated access to app data redirects to/shows the login screen (no data leakage) — *C-05*
 
 ### Idempotent Job (JOB)
 
@@ -111,16 +111,16 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CLI-09 | Phase 3 | Complete |
 | CLI-10 | Phase 3 | Complete |
 | CLI-11 | Phase 3 | Complete |
-| WEB-01 | Phase 4 | Pending |
-| WEB-02 | Phase 4 | Pending |
-| WEB-03 | Phase 4 | Pending |
-| WEB-04 | Phase 4 | Pending |
-| WEB-05 | Phase 4 | Pending |
-| WEB-06 | Phase 4 | Pending |
-| WEB-07 | Phase 4 | Pending |
-| WEB-08 | Phase 4 | Pending |
-| WEB-09 | Phase 4 | Pending |
-| WEB-10 | Phase 4 | Pending |
+| WEB-01 | Phase 4 | Complete |
+| WEB-02 | Phase 4 | Complete |
+| WEB-03 | Phase 4 | Complete |
+| WEB-04 | Phase 4 | Complete |
+| WEB-05 | Phase 4 | Complete |
+| WEB-06 | Phase 4 | Complete |
+| WEB-07 | Phase 4 | Complete |
+| WEB-08 | Phase 4 | Complete |
+| WEB-09 | Phase 4 | Complete |
+| WEB-10 | Phase 4 | Complete |
 | JOB-01 | Phase 5 | Pending |
 | JOB-02 | Phase 5 | Pending |
 | VERIFY-01 | Phase 6 | Pending |

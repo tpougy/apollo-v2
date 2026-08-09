@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Repo Scaffold & Live Schema** - Monorepo, tooling, and InstantDB schema/perms are live for both `web/` and `cli/` (completed 2026-08-09)
 - [x] **Phase 2: Shared ANBIMA Calendar** - Business-day math is correct and identical on both sides, powered by one vendored data file (completed 2026-08-09)
 - [x] **Phase 3: CLI Auth & CRUD** - Full magic-code auth and CRUD for every domain entity from the terminal (completed 2026-08-09)
-- [ ] **Phase 4: Web SPA Auth & CRUD Smoke UI** - Full magic-code auth and minimal CRUD screens for every domain entity in the browser
+- [x] **Phase 4: Web SPA Auth & CRUD Smoke UI** - Full magic-code auth and minimal CRUD screens for every domain entity in the browser (completed 2026-08-09)
 - [ ] **Phase 5: Idempotent Routine-Instance Job** - Recurring instance generation runs safely from either channel, never duplicating or deleting
 - [ ] **Phase 6: End-to-End Verification** - Cross-channel parity, interrupted-run idempotency, and full-repo quality gates all proven green
 
@@ -105,12 +105,12 @@ Plans:
 
 Plans:
 
-- [ ] 04-01-PLAN.md — Playwright harness + magic-code LoginScreen + SignedIn/SignedOut gate, proven by a REAL magic-code email round trip in Chromium and an unauthenticated no-leakage assertion (wave 1)
-- [ ] 04-02-PLAN.md — EntityConfig contract, import.meta.glob registry, generic EntityScreen.svelte + Shell, tracer entity `fundos` proven live incl. CLI-created-record visibility (wave 2)
-- [ ] 04-03-PLAN.md — `projetos`/`etapas`/`tarefas` screen definitions with links, number and optional date fields, proven live (wave 3)
-- [ ] 04-04-PLAN.md — `tickets` full CRUD and `subtarefas` with the XOR tarefa/ticket parent, verified server-side via CLI readback (wave 3)
-- [ ] 04-05-PLAN.md — `templatesRotina` (self-link antecessor), `instanciasRotina` (status-only, no create/delete), `logInferenciaClaude` (view-only) (wave 3)
-- [ ] 04-06-PLAN.md — schema-driven screen-coverage test, `verify-phase-04.sh` re-proving WEB-01..WEB-10, operator README (wave 4)
+- [x] 04-01-PLAN.md — Playwright harness + magic-code LoginScreen + SignedIn/SignedOut gate, proven by a REAL magic-code email round trip in Chromium and an unauthenticated no-leakage assertion (wave 1)
+- [x] 04-02-PLAN.md — EntityConfig contract, import.meta.glob registry, generic EntityScreen.svelte + Shell, tracer entity `fundos` proven live incl. CLI-created-record visibility (wave 2)
+- [x] 04-03-PLAN.md — `projetos`/`etapas`/`tarefas` screen definitions with links, number and optional date fields, proven live (wave 3)
+- [x] 04-04-PLAN.md — `tickets` full CRUD and `subtarefas` with the XOR tarefa/ticket parent, verified server-side via CLI readback (wave 3)
+- [x] 04-05-PLAN.md — `templatesRotina` (self-link antecessor), `instanciasRotina` (status-only, no create/delete), `logInferenciaClaude` (view-only) (wave 3)
+- [x] 04-06-PLAN.md — schema-driven screen-coverage test, `verify-phase-04.sh` re-proving WEB-01..WEB-10, operator README (wave 4)
 
 ### Phase 5: Idempotent Routine-Instance Job
 
@@ -159,6 +159,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 1. Repo Scaffold & Live Schema | 3/3 | Complete    | 2026-08-09 |
 | 2. Shared ANBIMA Calendar | 3/3 | Complete    | 2026-08-09 |
 | 3. CLI Auth & CRUD | 6/6 | Complete    | 2026-08-09 |
-| 4. Web SPA Auth & CRUD Smoke UI | 0/6 | Planned | - |
+| 4. Web SPA Auth & CRUD Smoke UI | 6/6 | Complete    | 2026-08-09 |
 | 5. Idempotent Routine-Instance Job | 0/TBD | Not started | - |
 | 6. End-to-End Verification | 0/TBD | Not started | - |
