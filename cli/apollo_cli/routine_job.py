@@ -308,9 +308,7 @@ def compute_expected_instances(
             # dataPrevista and may be 0 (same day) — never negative.
             validation = _validate_offset_dias(template.get("offsetDias"), 0)
             if not validation.ok:
-                skipped.append(
-                    {"templateId": template["id"], "reason": validation.reason}
-                )
+                skipped.append({"templateId": template["id"], "reason": validation.reason})
                 continue
             pending_encadeado.append((template, template["offsetDias"]))
             continue
@@ -375,9 +373,7 @@ def compute_expected_instances(
             )
 
             if not antecessor_instances:
-                skipped.append(
-                    {"templateId": template["id"], "reason": "antecessor_sem_instancia"}
-                )
+                skipped.append({"templateId": template["id"], "reason": "antecessor_sem_instancia"})
                 pending_ids.discard(template["id"])
                 continue
 
@@ -558,9 +554,7 @@ def _query_existing_instances(
 
 
 def _query_by_dedupe_keys(client: Instant, keys: list[str]) -> list[dict[str, Any]]:
-    result = client.query(
-        {"instanciasRotina": {"$": {"where": {"dedupeKey": {"$in": keys}}}}}
-    )
+    result = client.query({"instanciasRotina": {"$": {"where": {"dedupeKey": {"$in": keys}}}}})
     return result.get("instanciasRotina", [])
 
 
@@ -654,7 +648,9 @@ def run_routine_instance_job(
         return {
             "created": created_keys,
             "existing": sorted(
-                instance["dedupeKey"] for instance in expected if instance["dedupeKey"] in existing_keys
+                instance["dedupeKey"]
+                for instance in expected
+                if instance["dedupeKey"] in existing_keys
             ),
             "skipped": skipped,
         }

@@ -255,9 +255,7 @@ def _assert_live_schema_still_declares_dedupe_key_unique() -> None:
     assert completed.returncode == 0, (
         f"bun run instant:verify must succeed to pull the live schema: {completed.stderr!r}"
     )
-    pulled_schema = (web_dir / ".instant-verify" / "instant.schema.ts").read_text(
-        encoding="utf-8"
-    )
+    pulled_schema = (web_dir / ".instant-verify" / "instant.schema.ts").read_text(encoding="utf-8")
     dedupe_key_line = next(
         (line for line in pulled_schema.splitlines() if "dedupeKey" in line), None
     )
