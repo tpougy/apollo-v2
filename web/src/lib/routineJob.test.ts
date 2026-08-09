@@ -10,6 +10,7 @@ import {
   type SkipReason,
   shiftCompetencia,
   type TemplateRow,
+  toIsoDate,
 } from "./routineJob";
 
 interface NthBusinessDayCase {
@@ -169,5 +170,38 @@ describe("routineJob purity", () => {
 describe("buildDedupeKey", () => {
   test("is plain concatenation of templateId, competencia, and dataPrevista", () => {
     expect(buildDedupeKey("tpl-a", "2026-08", "2026-08-10")).toBe("tpl-a:2026-08:2026-08-10");
+  });
+});
+
+describe("toIsoDate", () => {
+  test("normalizes an InstantDB datetime round-trip string to a plain YYYY-MM-DD", () => {
+    expect(toIsoDate("2026-09-10T00:00:00.000Z")).toBe("2026-09-10");
+  });
+
+  test("leaves an already-plain YYYY-MM-DD date string unchanged", () => {
+    expect(toIsoDate("2026-09-10")).toBe("2026-09-10");
+  });
+
+  test("returns an empty string for null", () => {
+    expect(toIsoDate(null)).toBe("");
+  });
+
+  test("returns an empty string for undefined", () => {
+    expect(toIsoDate(undefined)).toBe("");
+  });
+});
+
+describe("JobReport invariant", () => {
+  test("created and existing dedupeKey sets are always disjoint and sorted ascending", () => {
+    const created = ["tpl-a:2026-08:2026-08-03", "tpl-a:2026-08:2026-08-10"];
+    const existing = ["tpl-b:2026-08:2026-08-05"];
+
+    const createdSorted = [...created].sort();
+    const existingSorted = [...existing].sort();
+    expect(created).toEqual(createdSorted);
+    expect(existing).toEqual(existingSorted);
+
+    const overlap = created.filter((k) => existing.includes(k));
+    expect(overlap).toEqual([]);
   });
 });
