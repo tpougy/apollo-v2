@@ -34,9 +34,18 @@ EXPECTED_USER_ID="adf0d402-06df-4406-a5c7-ce82ee1bcb7e"
 # ---------------------------------------------------------------------------
 TMP_FILES=()
 cleanup() {
+  local exit_code=$?
   for f in "${TMP_FILES[@]:-}"; do
     [ -n "${f:-}" ] && rm -f "${f}"
   done
+  # `${TMP_FILES[@]:-}` on an empty array still yields one empty word, so the
+  # loop's last command is `[ -n "" ]` (exit 1) even when nothing needed
+  # cleaning up. Without capturing/restoring the real exit code, this trap
+  # silently turned every successful run of this script into a non-zero
+  # exit -- while still printing "PHASE 03 VERIFIED" -- undetected until
+  # verify-phase-06.sh started checking exit status, not just transcript
+  # markers.
+  return "${exit_code}"
 }
 trap cleanup EXIT
 
