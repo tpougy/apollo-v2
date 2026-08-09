@@ -7,7 +7,11 @@
     "types": ["svelte", "vite/client"],
     "allowArbitraryExtensions": true,
     "noEmit": true,
-    "moduleDetection": "force"
+    "moduleDetection": "force",
+    "baseUrl": ".",
+    "paths": {
+      "@instantdb/svelte": ["./node_modules/@instantdb/svelte"]
+    }
   },
   "include": ["src/**/*.ts", "src/**/*.svelte", "../shared/*.ts"]
 }

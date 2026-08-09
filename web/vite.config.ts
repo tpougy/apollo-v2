@@ -4,6 +4,16 @@ import { defineConfig } from "vite";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 import { parse } from "dotenv";
 
+// `shared/*.ts` lives outside web/ and has no node_modules of its own
+// (LOCKED layout, PROJECT.md C-01). Bare-specifier resolution normally
+// walks up from the *importing file's* directory, which would never reach
+// web/node_modules for a file under shared/. Alias the one package shared/
+// files import so `shared/instant.schema.ts` / `shared/instant.perms.ts`
+// resolve `@instantdb/svelte` from web/node_modules at build time.
+const instantdbSveltePath = fileURLToPath(
+  new URL("./node_modules/@instantdb/svelte", import.meta.url),
+);
+
 // Vite's built-in env loader only recognizes `.env`, `.env.local`,
 // `.env.[mode]`, `.env.[mode].local` — the locked filename `.env.instantdb`
 // (see PROJECT.md C-01) is invisible to it. Parse it manually into a local
@@ -25,6 +35,11 @@ if (!appId) {
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [svelte()],
+  resolve: {
+    alias: {
+      "@instantdb/svelte": instantdbSveltePath,
+    },
+  },
   define: {
     "import.meta.env.VITE_INSTANT_APP_ID": JSON.stringify(appId),
   },
