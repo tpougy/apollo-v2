@@ -1,0 +1,33 @@
+{
+  "name": "apollo-web",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json",
+    "instant:push": "INSTANT_SCHEMA_FILE_PATH=../shared/instant.schema.ts INSTANT_PERMS_FILE_PATH=../shared/instant.perms.ts instant-cli push all --env ../.env.instantdb --package svelte --yes",
+    "instant:pull": "INSTANT_SCHEMA_FILE_PATH=../shared/instant.schema.ts INSTANT_PERMS_FILE_PATH=../shared/instant.perms.ts instant-cli pull all --env ../.env.instantdb --package svelte --yes",
+    "instant:verify": "INSTANT_SCHEMA_FILE_PATH=.instant-verify/instant.schema.ts INSTANT_PERMS_FILE_PATH=.instant-verify/instant.perms.ts instant-cli pull all --env ../.env.instantdb --package svelte --yes"
+  },
+  "dependencies": {
+    "@instantdb/svelte": "^1.0.63"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^7.3.0",
+    "@tsconfig/svelte": "^5.0.8",
+    "@types/bun": "latest",
+    "@types/node": "^24",
+    "dotenv": "^17",
+    "instant-cli": "^1.0.63",
+    "svelte": "^5.56.8",
+    "svelte-check": "^4.7.5",
+    "typescript": "~5.9.3",
+    "vite": "^8.2.1"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
