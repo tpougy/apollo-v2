@@ -55,11 +55,13 @@ Plans:
   3. Neither side computes holidays algorithmically or via a third-party calendar package — both read exclusively from the vendored JSON.
   4. `shared/scripts/update_calendar.py` exists and can regenerate the vendored JSON on demand, never invoked at runtime.
 
-**Plans**: TBD
+**Plans**: 3 plans in 3 waves
 
 Plans:
 
-- [ ] 02-01: TBD
+- [ ] 02-01-PLAN.md — vendor `shared/anbima-calendar.json` (2000-2078) from the MIT-licensed `bizdays` bundled `ANBIMA.cal`, add the offline `shared/scripts/update_calendar.py` regenerator, and gate the data with a pytest structural suite (wave 1)
+- [ ] 02-02-PLAN.md — tracer-first business-day math on both runtimes (`web/src/lib/bizdays.ts`, `cli/apollo_cli/bizdays.py`) proven identical by one shared 40+ case fixture consumed by `bun test` and `pytest` (wave 2)
+- [ ] 02-03-PLAN.md — extend ruff/ty scope to `shared/scripts/`, document the calendar + test workflow, and add `verify-phase-02.sh` as the single re-runnable CAL-01..05 proof (wave 3)
 
 ### Phase 3: CLI Auth & CRUD
 
@@ -145,7 +147,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Repo Scaffold & Live Schema | 3/3 | Complete    | 2026-08-09 |
-| 2. Shared ANBIMA Calendar | 0/TBD | Not started | - |
+| 2. Shared ANBIMA Calendar | 0/3 | Planned | - |
 | 3. CLI Auth & CRUD | 0/TBD | Not started | - |
 | 4. Web SPA Auth & CRUD Smoke UI | 0/TBD | Not started | - |
 | 5. Idempotent Routine-Instance Job | 0/TBD | Not started | - |
