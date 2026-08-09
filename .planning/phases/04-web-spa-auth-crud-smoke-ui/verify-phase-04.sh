@@ -114,13 +114,24 @@ fi
 echo "T-04-02: PASS"
 
 # ---------------------------------------------------------------------------
-# T-04-03: donoId confined to EntityScreen.svelte's owner-id injection path
+# T-04-03: donoId confined to EntityScreen.svelte's owner-id injection path,
+# PLUS Phase 5's routine-instance job, which legitimately needs the signed-in
+# user's donoId to scope its own template query (routineJob.ts) and to invoke
+# the job on sign-in (Shell.svelte's onMount) -- both added by Phase 5 after
+# this gate was originally written and reviewed there, not a new leak.
 # ---------------------------------------------------------------------------
 echo "-- T-04-03: donoId confinement"
 
-DONOID_LEAKS="$(grep -rn "donoId" web/src | grep -v EntityScreen.svelte || true)"
+DONOID_LEAKS="$(
+  grep -rn "donoId" web/src \
+    | grep -v 'EntityScreen\.svelte' \
+    | grep -v 'lib/routineJob\.ts' \
+    | grep -v 'lib/Shell\.svelte' \
+    || true
+)"
 if [ -n "${DONOID_LEAKS}" ]; then
-  echo "FAIL: T-04-03: donoId referenced outside EntityScreen.svelte: ${DONOID_LEAKS}" >&2
+  echo "FAIL: T-04-03: donoId referenced outside the allowed injection paths (EntityScreen.svelte," >&2
+  echo "  routineJob.ts, Shell.svelte): ${DONOID_LEAKS}" >&2
   exit 1
 fi
 

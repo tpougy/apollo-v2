@@ -138,10 +138,11 @@ test("WEB-06: templatesRotina full CRUD, including the self-referential antecess
   const eidA = await rowA.getAttribute("data-eid");
   expect(eidA).toBeTruthy();
 
-  // Both link columns blank (listColumns: nome, tipoGeracao, ativo, fundo, antecessor).
+  // Both link columns blank (listColumns: nome, tipoGeracao, offsetDias,
+  // ativo, fundo, antecessor).
   const cellsA = rowA.locator("td");
-  await expect(cellsA.nth(3)).toHaveText("");
   await expect(cellsA.nth(4)).toHaveText("");
+  await expect(cellsA.nth(5)).toHaveText("");
 
   // Create B with antecessor = A.
   await page.getByTestId("entity-create-start").click();
@@ -156,7 +157,7 @@ test("WEB-06: templatesRotina full CRUD, including the self-referential antecess
   const eidB = await rowB.getAttribute("data-eid");
   expect(eidB).toBeTruthy();
   const cellsB = rowB.locator("td");
-  await expect(cellsB.nth(4)).toHaveText(nomeA);
+  await expect(cellsB.nth(5)).toHaveText(nomeA);
 
   // Open B's edit form: the antecessor select must NOT contain B itself.
   await waitForSettle(page);
@@ -176,7 +177,7 @@ test("WEB-06: templatesRotina full CRUD, including the self-referential antecess
   await page.reload();
   await page.getByTestId("nav-templatesRotina").click();
   const reloadedRowB = page.getByTestId("row").filter({ hasText: nomeB });
-  await expect(reloadedRowB.locator("td").nth(2)).toHaveText("não", {
+  await expect(reloadedRowB.locator("td").nth(3)).toHaveText("não", {
     timeout: RESYNC_TIMEOUT,
   });
 
@@ -210,12 +211,15 @@ test("WEB-07: instanciasRotina offers no create, no delete, and status-only edit
   // rows are present.
   await expect(page.getByTestId("row-delete")).toHaveCount(0);
 
-  // If the live app currently has zero instances, the empty state renders
-  // instead of erroring (expected: none exist until Phase 5's generation
-  // job).
+  // Let the initial InstantDB subscription settle before counting rows: right
+  // after `nav-instanciasRotina` is clicked the query is still `isLoading`,
+  // which also reports zero "row" testids, so an immediate count() races the
+  // subscription rather than reflecting the live app's actual instance count
+  // (which is non-zero once Phase 5's job has run at least once for real).
+  await waitForSettle(page);
   const hasRows = (await page.getByTestId("row").count()) > 0;
   if (!hasRows) {
-    await expect(page.getByTestId("empty-state")).toBeVisible();
+    await expect(page.getByTestId("empty-state")).toBeVisible({ timeout: RESYNC_TIMEOUT });
   }
 
   // Seed exactly ONE instance via the admin-only test fixture (see
