@@ -1,9 +1,9 @@
 ---
 phase: 9
 slug: entity-table-restyle
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: validated
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-08-09
 ---
 
@@ -48,8 +48,8 @@ created: 2026-08-09
 
 ## Wave 0 Requirements
 
-- [ ] New/extended e2e spec proving `role="table"` + `Badge` rendering + row-count-matches-query, across at least one entity per capability class (full-CRUD: `fundos`; restricted create-only/status-only: `instanciasRotina`; read-only: `logInferenciaClaude`).
-- [ ] Confirm existing `entities-*.spec.ts` specs still pass unmodified against the restyled markup (they use `data-testid` locators exclusively, preserved verbatim this phase).
+- [x] New/extended e2e spec proving `role="table"` + `Badge` rendering + row-count-matches-query, across at least one entity per capability class (full-CRUD: `fundos`; restricted create-only/status-only: `instanciasRotina`; read-only: `logInferenciaClaude`) — satisfied by 09-01-PLAN.md's Task 2 (`entities-table-restyle.spec.ts`).
+- [x] Confirm existing `entities-*.spec.ts` specs still pass unmodified against the restyled markup — satisfied by 09-01-PLAN.md's Task 3 full-suite regression.
 
 ---
 
@@ -61,11 +61,11 @@ created: 2026-08-09
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify — no `<human-check>` blocks anywhere (C-12)
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers table/badge e2e coverage across all capability classes
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 2 min
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify — no `<human-check>` blocks anywhere (C-12)
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers table/badge e2e coverage across all capability classes
+- [x] No watch-mode flags
+- [x] Feedback latency < 2 min
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** approved 2026-08-09 (gsd-plan-checker verified 09-01-PLAN.md satisfies this checklist)
