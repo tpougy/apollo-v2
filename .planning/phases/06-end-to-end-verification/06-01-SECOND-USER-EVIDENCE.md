@@ -112,4 +112,18 @@ All four ordered guards passed before the delete call executed:
 
 ### Re-bootstrap status
 
-`delete_user` invalidates the second user's refresh token, so `cli/.auth/second-user-session` now holds a dead credential. Per this task's requirement, a fresh second-user session must be re-bootstrapped immediately afterward so `verify-phase-06.sh` (plan 06-03) remains runnable. Re-bootstrapping requires a new real magic-code round trip, which requires the same orchestrator-level mailbox-reading MCP tool access used in the original Task 1 login (this executor subagent does not inherit that tool set — see the mechanism note above). This re-bootstrap is recorded as a follow-up authentication gate for the orchestrator to complete using the same procedure as Task 1, after which this section will be updated with the new round trip's timestamp and `user_id`.
+`delete_user` invalidates the second user's refresh token, so `cli/.auth/second-user-session` held a dead credential immediately after the teardown above. Per this task's requirement, a fresh second-user session needed to be re-bootstrapped so `verify-phase-06.sh` (plan 06-03) remains runnable. As predicted in the note this section previously carried, re-bootstrapping required a new real magic-code round trip via the same orchestrator-level mailbox-reading MCP tool access used in the original Task 1 login (this executor subagent does not inherit that tool set).
+
+The orchestrator performed this second, post-teardown magic-code round trip using the same mechanism as the original Task 1 login (mailbox `admin@rbrasset.com.br`, `mcp__claude_ai_Microsoft_365__outlook_email_search`), producing a brand-new InstantDB user:
+
+- **New second-user email:** `admin@rbrasset.com.br` (re-registered — `delete_user` removed the prior `$users` row entirely, so this magic-code login created a fresh account rather than resuming the deleted one).
+- **New second-user `user_id`:** `a18628c8-5d25-4dd7-9ae5-389eb4ca273b` (different from the deleted `b5e0b47d-3891-4ef9-9a5a-c9e82c244d8c`, as expected for a freshly created `$users` record).
+- **Session file:** `cli/.auth/second-user-session` (same path, contents replaced).
+- **Verification performed by this executor after the hand-off:**
+
+```
+$ APOLLO_SESSION_FILE=/home/thomaz/pessoal/apollo-v2/cli/.auth/second-user-session uv run --project cli apollo auth whoami
+{"user_id": "a18628c8-5d25-4dd7-9ae5-389eb4ca273b", "email": "admin@rbrasset.com.br", "session_file": ".../cli/.auth/second-user-session"}
+```
+
+Exit 0, `.user_id` matches the value handed off, `.email` matches the allowlisted address. Re-bootstrap confirmed successful; `verify-phase-06.sh` (plan 06-03) has a working second-user session to consume again. As with the original login, no magic code or refresh token is recorded in this file or anywhere else in this repository.
