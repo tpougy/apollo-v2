@@ -83,8 +83,8 @@ group = click.Group(
     help=(
         "Manage recurring-routine templates (`templatesRotina`) and their "
         "generated instances (`instanciasRotina`). Instances are created "
-        "and dated only by the generation job (`apollo rotina "
-        "gerar-instancias`, Phase 5) — never by hand from this CLI."
+        "and dated only by the Phase 5 generation job — never by hand from "
+        "this CLI."
     ),
 )
 
