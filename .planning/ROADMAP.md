@@ -18,7 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: CLI Auth & CRUD** - Full magic-code auth and CRUD for every domain entity from the terminal (completed 2026-08-09)
 - [x] **Phase 4: Web SPA Auth & CRUD Smoke UI** - Full magic-code auth and minimal CRUD screens for every domain entity in the browser (completed 2026-08-09)
 - [x] **Phase 5: Idempotent Routine-Instance Job** - Recurring instance generation runs safely from either channel, never duplicating or deleting (completed 2026-08-09)
-- [ ] **Phase 6: End-to-End Verification** - Cross-channel parity, interrupted-run idempotency, and full-repo quality gates all proven green
+- [x] **Phase 6: End-to-End Verification** - Cross-channel parity, interrupted-run idempotency, and full-repo quality gates all proven green (completed 2026-08-09)
 
 ## Phase Details
 
@@ -152,9 +152,9 @@ Plans:
 
 Plans:
 
-- [ ] 06-01-PLAN.md — VERIFY-05 tracer: a SECOND real InstantDB user via genuine magic-code login into an isolated `APOLLO_SESSION_FILE`, write-based create/update/delete denial proof against a tp@-owned record, and a four-guard `delete_user` teardown that provably leaves tp@ untouched (wave 1)
-- [ ] 06-02-PLAN.md — VERIFY-04: env-var-gated sentinel hook around `routine_job.py`'s single atomic transact, plus a live SIGKILL harness killing at both known boundaries and proving 0-or-all then full convergence on re-run (wave 2)
-- [ ] 06-03-PLAN.md — VERIFY-01/02/03: `verify-phase-06.sh` composing `verify-phase-01..05.sh` with anti-silent-skip coverage assertions, wiring the new VERIFY-04/05 gates and the `--final` cleanup pass, plus the recorded green milestone run (wave 3)
+- [x] 06-01-PLAN.md — VERIFY-05 tracer: a SECOND real InstantDB user via genuine magic-code login into an isolated `APOLLO_SESSION_FILE`, write-based create/update/delete denial proof against a tp@-owned record, and a four-guard `delete_user` teardown that provably leaves tp@ untouched (wave 1)
+- [x] 06-02-PLAN.md — VERIFY-04: env-var-gated sentinel hook around `routine_job.py`'s single atomic transact, plus a live SIGKILL harness killing at both known boundaries and proving 0-or-all then full convergence on re-run (wave 2)
+- [x] 06-03-PLAN.md — VERIFY-01/02/03: `verify-phase-06.sh` composing `verify-phase-01..05.sh` with anti-silent-skip coverage assertions, wiring the new VERIFY-04/05 gates and the `--final` cleanup pass, plus the recorded green milestone run (wave 3)
 
 ## Progress
 
@@ -168,4 +168,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 3. CLI Auth & CRUD | 6/6 | Complete    | 2026-08-09 |
 | 4. Web SPA Auth & CRUD Smoke UI | 6/6 | Complete    | 2026-08-09 |
 | 5. Idempotent Routine-Instance Job | 6/6 | Complete    | 2026-08-09 |
-| 6. End-to-End Verification | 0/TBD | Not started | - |
+| 6. End-to-End Verification | 3/3 | Complete    | 2026-08-09 |

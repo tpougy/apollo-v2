@@ -60,11 +60,11 @@ Requirements for this migration milestone. Each maps to exactly one roadmap phas
 
 ### Verification & Quality (VERIFY)
 
-- [ ] **VERIFY-01**: A record created/edited/deleted via CLI is visible/reflected in the SPA without manual intervention, and vice versa, for at least one entity per CLI category — *Core value*
-- [ ] **VERIFY-02**: `ruff` and `ty` run clean (zero errors/warnings) across every `.py` file in `cli/` and `shared/scripts/` — *C-08*
-- [ ] **VERIFY-03**: The configured `web/` formatter, linter, and `svelte-check` run clean (zero errors/warnings) across every file in `web/` — *C-08*
-- [ ] **VERIFY-04**: Simulating an interrupted job run (killing the process mid-generation, then re-running) leaves no duplicate and no missing `instanciasRotina` records — *C-06*
-- [ ] **VERIFY-05**: InstantDB perms correctly deny cross-user access — a second test user cannot view/edit/delete another user's `donoId`-scoped records — *C-05*
+- [x] **VERIFY-01**: A record created/edited/deleted via CLI is visible/reflected in the SPA without manual intervention, and vice versa, for at least one entity per CLI category — *Core value*
+- [x] **VERIFY-02**: `ruff` and `ty` run clean (zero errors/warnings) across every `.py` file in `cli/` and `shared/scripts/` — *C-08*
+- [x] **VERIFY-03**: The configured `web/` formatter, linter, and `svelte-check` run clean (zero errors/warnings) across every file in `web/` — *C-08*
+- [x] **VERIFY-04**: Simulating an interrupted job run (killing the process mid-generation, then re-running) leaves no duplicate and no missing `instanciasRotina` records — *C-06*
+- [x] **VERIFY-05**: InstantDB perms correctly deny cross-user access — a second test user cannot view/edit/delete another user's `donoId`-scoped records — *C-05*
 
 ## v2 Requirements
 
@@ -123,11 +123,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | WEB-10 | Phase 4 | Complete |
 | JOB-01 | Phase 5 | Complete |
 | JOB-02 | Phase 5 | Complete |
-| VERIFY-01 | Phase 6 | Pending |
-| VERIFY-02 | Phase 6 | Pending |
-| VERIFY-03 | Phase 6 | Pending |
-| VERIFY-04 | Phase 6 | Pending |
-| VERIFY-05 | Phase 6 | Pending |
+| VERIFY-01 | Phase 6 | Complete |
+| VERIFY-02 | Phase 6 | Complete |
+| VERIFY-03 | Phase 6 | Complete |
+| VERIFY-04 | Phase 6 | Complete |
+| VERIFY-05 | Phase 6 | Complete |
 
 **Coverage:**
 
