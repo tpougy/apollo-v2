@@ -10,7 +10,7 @@ Requirements for this milestone. Each maps to roadmap phases.
 ### Setup
 
 - [ ] **SETUP-01**: `web/` has Tailwind v4 installed and wired via `@tailwindcss/vite`, replacing the current plain `app.css` reset
-- [ ] **SETUP-02**: `web/` has `shadcn-svelte` initialized (default style, default/slate base color, `@lucide/svelte` icons) with `components.json` committed
+- [ ] **SETUP-02**: `web/` has `shadcn-svelte` initialized via its own CLI default (`--preset b0` = style `nova` + base color `neutral` — the literal current-CLI equivalent of "default style/base color", see PROJECT.md C-11), `@lucide/svelte` icons, with `components.json` committed
 - [ ] **SETUP-03**: Dark mode follows `prefers-color-scheme` automatically (shadcn-svelte default tokens) — no manual toggle
 
 ### Auth Screen
