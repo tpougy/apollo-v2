@@ -207,3 +207,62 @@ command, exiting `0` and printing `PHASE 05 VERIFIED` as its final line only whe
 passes. On a normal run it reuses the already-persisted CLI session and Playwright
 `storageState` and never sends a magic-code email; pass `--with-magic-code` /
 `VERIFY_MAGIC_CODE=1` to also re-prove the real magic-code round trip.
+
+## Re-verifying the whole milestone (the v1 done gate)
+
+```bash
+bash .planning/phases/06-end-to-end-verification/verify-phase-06.sh
+```
+
+This is the single command that answers "is Apollo v2 v1 done?". It composes
+`verify-phase-01.sh` through `verify-phase-05.sh` (asserting each one's own `PHASE 0N
+VERIFIED` transcript marker, not just its exit code) and adds six more gates: VERIFY-01
+(cross-channel parity, re-running the four pre-existing Playwright specs
+`entities-fundos.spec.ts`, `entities-ticket-subtarefa.spec.ts`, `entities-rotina-log.spec.ts`,
+and `routine-job-cross-channel.spec.ts` directly), VERIFY-02 (repo-wide `ruff`/`ruff
+format`/`ty` across `cli/` and `shared/scripts/`, with an anti-vacuity file-count check),
+VERIFY-03 (repo-wide `web/` quality gates, same anti-vacuity check), VERIFY-04 (the
+interrupted-job SIGKILL harness from plan 06-02), VERIFY-05 (the cross-user isolation proof
+from plan 06-01), and an opt-in final cleanup gate. Exits `0` and prints `PHASE 06 VERIFIED`
+as its final line only when every non-skipped gate passes.
+
+**Flags** (each has a `VERIFY_*` env-var equivalent):
+
+- `--with-magic-code` / `VERIFY_MAGIC_CODE=1` — passed through to the composed
+  `verify-phase-04.sh` / `verify-phase-05.sh` runs, additionally re-sending a real magic-code
+  email to re-prove WEB-01/JOB's login round trip. Omitted by default so a normal run never
+  spams the inbox.
+- `--final` / `VERIFY_FINAL=1` — runs Gate 11: re-runs the guarded `delete_user` teardown from
+  `cli/tests/test_cross_user_isolation.py` (with `APOLLO_VERIFY05_DELETE_SECOND_USER=1`) and
+  then re-asserts tp@'s account and `fundos` count are unchanged. **This invalidates the
+  second-user session at `cli/.auth/second-user-session`** — it must be re-bootstrapped (see
+  below) before the next VERIFY-05 run. Without `--final`, Gate 11 prints an explicit
+  `Gate 11: SKIPPED` line; this is the one deliberately conditional gate in the script.
+- `--skip-composed` / `VERIFY_SKIP_COMPOSED=1` — skips Gates 1-5 for fast iteration on Gates
+  9/10 only. Prints a `WARNING: composed phases skipped` line and deliberately never prints
+  `PHASE 06 VERIFIED`, so a partial run can never be mistaken for a certified milestone.
+
+**Prerequisites Gate 0 enforces** (every one a hard failure, never a silent skip):
+
+| Missing prerequisite | Fix |
+|---|---|
+| `uv`, `bun`, or `jq` not on PATH | Install the missing tool |
+| `~/.config/apollo-cli/session` absent/expired | `uv run --project cli apollo auth login --email tp@rbrasset.com.br` (two-step magic-code login) |
+| `web/e2e/.auth/user.json` absent | From `web/`: `bun run test:e2e:auth` |
+| `cli/.auth/second-user-session` absent | See the bootstrap command below |
+
+**Bootstrapping the second-user session** (needed by VERIFY-05 / Gates 10-11):
+
+```bash
+APOLLO_SESSION_FILE="$PWD/cli/.auth/second-user-session" \
+  uv run --project cli apollo auth login --email <admin@rbrasset.com.br|rm@rbrasset.com.br>
+APOLLO_SESSION_FILE="$PWD/cli/.auth/second-user-session" \
+  uv run --project cli apollo auth login --email <same-email> --code <codigo-do-email>
+```
+
+See `.planning/phases/06-end-to-end-verification/06-01-SECOND-USER-EVIDENCE.md` for the full
+mechanism. Running with `--final` deletes that second user's account, so this bootstrap must be
+re-run afterward before the gate can pass again.
+
+`cli/.auth/` is gitignored and must **never** be committed — it holds a live, working
+refresh-token-backed session file.

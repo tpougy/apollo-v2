@@ -172,15 +172,22 @@ echo "     entities-ticket-subtarefa.spec.ts   -> full-CRUD, SPA -> CLI (reverse
 echo "     entities-rotina-log.spec.ts         -> log-only, CLI -> SPA"
 echo "     routine-job-cross-channel.spec.ts   -> instanciasRotina, both directions"
 
+# entities-rotina-log.spec.ts also contains WEB-06/WEB-07 (unrelated to
+# VERIFY-01's log-only category); it is filtered to the WEB-09 test only so
+# this gate stays scoped to cross-channel parity, not the full Phase 4 WEB-06
+# /WEB-07 CRUD surface (already covered by verify-phase-04.sh's own Gate).
 VERIFY01_OUTPUT_FILE="$(mktemp)"
 trap 'rm -f "${VERIFY01_OUTPUT_FILE}"' EXIT
 
 if ! (
-  cd web && bunx playwright test --project=authed --no-deps \
-    e2e/entities-fundos.spec.ts \
-    e2e/entities-ticket-subtarefa.spec.ts \
-    e2e/entities-rotina-log.spec.ts \
-    e2e/routine-job-cross-channel.spec.ts
+  cd web && {
+    bunx playwright test --project=authed --no-deps \
+      e2e/entities-fundos.spec.ts \
+      e2e/entities-ticket-subtarefa.spec.ts \
+      e2e/routine-job-cross-channel.spec.ts
+    bunx playwright test --project=authed --no-deps \
+      e2e/entities-rotina-log.spec.ts -g "WEB-09"
+  }
 ) >"${VERIFY01_OUTPUT_FILE}" 2>&1; then
   cat "${VERIFY01_OUTPUT_FILE}" >&2
   if grep -qiE "not authenticated|unauthorized|401|please.*login" "${VERIFY01_OUTPUT_FILE}"; then
