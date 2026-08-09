@@ -9,9 +9,9 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Setup
 
-- [ ] **SETUP-01**: `web/` has Tailwind v4 installed and wired via `@tailwindcss/vite`, replacing the current plain `app.css` reset
-- [ ] **SETUP-02**: `web/` has `shadcn-svelte` initialized via its own CLI default (`--preset b0` = style `nova` + base color `neutral` — the literal current-CLI equivalent of "default style/base color", see PROJECT.md C-11), `@lucide/svelte` icons, with `components.json` committed
-- [ ] **SETUP-03**: Dark mode follows `prefers-color-scheme` automatically (shadcn-svelte default tokens) — no manual toggle
+- [x] **SETUP-01**: `web/` has Tailwind v4 installed and wired via `@tailwindcss/vite`, replacing the current plain `app.css` reset
+- [x] **SETUP-02**: `web/` has `shadcn-svelte` initialized via its own CLI default (`--preset b0` = style `nova` + base color `neutral` — the literal current-CLI equivalent of "default style/base color", see PROJECT.md C-11), `@lucide/svelte` icons, with `components.json` committed
+- [x] **SETUP-03**: Dark mode follows `prefers-color-scheme` automatically (shadcn-svelte default tokens) — no manual toggle
 
 ### Auth Screen
 
@@ -70,9 +70,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SETUP-01 | Phase 7 | Pending |
-| SETUP-02 | Phase 7 | Pending |
-| SETUP-03 | Phase 7 | Pending |
+| SETUP-01 | Phase 7 | Complete |
+| SETUP-02 | Phase 7 | Complete |
+| SETUP-03 | Phase 7 | Complete |
 | AUTHUI-01 | Phase 8 | Pending |
 | AUTHUI-02 | Phase 8 | Pending |
 | SHELLUI-01 | Phase 8 | Pending |
@@ -91,6 +91,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | QUAL-01 | Phase 11 | Pending |
 
 **Coverage:**
+
 - v1.1 requirements: 19 total
 - Mapped to phases: 19/19 ✓
 - Unmapped: 0 ✓

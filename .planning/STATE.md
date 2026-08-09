@@ -2,15 +2,19 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: UI bonita com Tailwind + shadcn-svelte
-status: planning
-last_updated: "2026-08-09T00:00:00.000Z"
+current_phase: 7
+current_phase_name: Design System Setup
+status: executing
+stopped_at: Completed 07-01-PLAN.md — Phase 7 (Design System Setup) fully executed
+last_updated: "2026-08-09T22:03:26.869Z"
 last_activity: 2026-08-09
+last_activity_desc: "`/gsd-execute-phase 7` executed `07-01-PLAN.md`; `.planning/phases/07-design-system-setup/07-01-SUMMARY.md` written"
 progress:
   total_phases: 5
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  completed_phases: 1
+  total_plans: 1
+  completed_plans: 1
+  percent: 20
 ---
 
 # Project State
@@ -25,11 +29,11 @@ See: .planning/PROJECT.md (updated 2026-08-09)
 ## Current Position
 
 Phase: 7 of 11 (Design System Setup) — first phase of v1.1
-Plan: 07-01-PLAN.md (1 plan, 3 tasks, wave 1) — ready to execute
-Status: Phase 7 planned — Tailwind v4 + shadcn-svelte (`--preset b0`) wiring, dark-mode media-query conversion, auth-free Playwright proof of all 4 ROADMAP success criteria
-Last activity: 2026-08-09 — `/gsd-plan-phase 7` produced `.planning/phases/07-design-system-setup/07-01-PLAN.md`; ROADMAP.md Phase 7 Plans list finalized
+Plan: 07-01-PLAN.md (1 plan, 3 tasks, wave 1) — complete
+Status: Phase 7 complete — Tailwind v4 + shadcn-svelte (`nova`/`neutral`/`lucide` zero-config preset) wired, dark mode converted to a bare `prefers-color-scheme` media query, all 4 ROADMAP success criteria proven via `web/e2e/design-system.spec.ts`
+Last activity: 2026-08-09 — `/gsd-execute-phase 7` executed `07-01-PLAN.md`; `.planning/phases/07-design-system-setup/07-01-SUMMARY.md` written
 
-Progress: [░░░░░░░░░░] 0% (v1.1)
+Progress: [██████████] 100% (v1.1)
 
 ## Performance Metrics
 
@@ -53,6 +57,11 @@ Progress: [░░░░░░░░░░] 0% (v1.1)
 - Trend: N/A
 
 *Updated after each plan completion*
+**Per-Plan Metrics:**
+
+| Plan | Duration | Tasks | Files |
+|------|----------|-------|-------|
+| Phase 07 P01 | 8min | 3 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -63,6 +72,9 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - v1.1 kickoff: UI stack locked to Tailwind v4 + shadcn-svelte default style/tokens, `@lucide/svelte` icons, dark mode via `prefers-color-scheme` only (C-11).
 - v1.1 kickoff: No human UAT gate anywhere this milestone — every phase's success criteria must be Playwright-provable against the live InstantDB app (C-12).
 - Roadmap derivation: 19 v1.1 requirements grouped into 5 phases (7-11) — setup, auth/shell, entity table, entity form+feedback, full verification — following the natural build order (foundation before consumers, table before form since dialogs are triggered from table row/create actions, verification last).
+- [Phase 7]: Phase 7: wired $lib alias before running shadcn-svelte init (CLI preflight validates alias resolution, stricter than research found)
+- [Phase 7]: Phase 7: added DOM lib to tsconfig.e2e.json for Playwright page.evaluate() DOM assertions, fixed 3 pre-existing evaluateAll() casts it exposed
+- [Phase 7]: Phase 7: replaced any with unknown in shadcn-svelte-generated utils.ts type helpers to keep Biome at zero suppressions
 
 ### Pending Todos
 
@@ -83,11 +95,10 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-09
-Stopped at: Phase 7 planned. `.planning/phases/07-design-system-setup/07-01-PLAN.md` created (1 plan, wave 1, autonomous, 3 tasks: Tailwind v4 wiring + Preflight tracer, shadcn-svelte init + $lib alias + dark-mode conversion, auth-free regression + quality gates). ROADMAP.md Phase 7 Plans list and Progress table updated. Awaiting `/gsd-execute-phase 7`.
+Last session: 2026-08-09T22:03:26.862Z
+Stopped at: Completed 07-01-PLAN.md — Phase 7 (Design System Setup) fully executed
 Resume file: None
 
 ## Operator Next Steps
 
-- Run `/clear` for a fresh context window, then `/gsd-execute-phase 7` to execute Design System Setup
-- After execution, `/gsd-plan-phase 8` to plan Auth & Shell Restyle
+- Run `/clear` for a fresh context window, then `/gsd-plan-phase 8` to plan Auth & Shell Restyle
