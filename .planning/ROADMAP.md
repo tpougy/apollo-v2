@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Repo Scaffold & Live Schema** - Monorepo, tooling, and InstantDB schema/perms are live for both `web/` and `cli/` (completed 2026-08-09)
 - [x] **Phase 2: Shared ANBIMA Calendar** - Business-day math is correct and identical on both sides, powered by one vendored data file (completed 2026-08-09)
-- [ ] **Phase 3: CLI Auth & CRUD** - Full magic-code auth and CRUD for every domain entity from the terminal
+- [x] **Phase 3: CLI Auth & CRUD** - Full magic-code auth and CRUD for every domain entity from the terminal (completed 2026-08-09)
 - [ ] **Phase 4: Web SPA Auth & CRUD Smoke UI** - Full magic-code auth and minimal CRUD screens for every domain entity in the browser
 - [ ] **Phase 5: Idempotent Routine-Instance Job** - Recurring instance generation runs safely from either channel, never duplicating or deleting
 - [ ] **Phase 6: End-to-End Verification** - Cross-channel parity, interrupted-run idempotency, and full-repo quality gates all proven green
@@ -80,12 +80,12 @@ Plans:
 
 Plans:
 
-- [ ] 03-01-PLAN.md — 0600 session store, admin/session two-client separation, `apollo auth login|logout|whoami`, proven by a REAL magic-code email round trip (wave 1)
-- [ ] 03-02-PLAN.md — `crud_helpers` (donoId injection, not-found guards, JSON output), `entities/` auto-discovery, tracer entity `apollo fundo`, and the CLI-11 write-based permission-denial probe (wave 2)
-- [ ] 03-03-PLAN.md — `apollo projeto|etapa|tarefa` full CRUD with parent links and boundary date validation (wave 3)
-- [ ] 03-04-PLAN.md — `apollo ticket` full CRUD and `apollo subtarefa` with XOR tarefa/ticket parent linking (wave 3)
-- [ ] 03-05-PLAN.md — `apollo rotina template` CRUD, `apollo rotina instancia listar|status` (structurally no-create), `apollo log-inferencia registrar|listar` (append-only) (wave 3)
-- [ ] 03-06-PLAN.md — schema-driven CLI coverage + help-completeness test, `verify-phase-03.sh` re-proving CLI-01..CLI-11, operator README (wave 4)
+- [x] 03-01-PLAN.md — 0600 session store, admin/session two-client separation, `apollo auth login|logout|whoami`, proven by a REAL magic-code email round trip (wave 1)
+- [x] 03-02-PLAN.md — `crud_helpers` (donoId injection, not-found guards, JSON output), `entities/` auto-discovery, tracer entity `apollo fundo`, and the CLI-11 write-based permission-denial probe (wave 2)
+- [x] 03-03-PLAN.md — `apollo projeto|etapa|tarefa` full CRUD with parent links and boundary date validation (wave 3)
+- [x] 03-04-PLAN.md — `apollo ticket` full CRUD and `apollo subtarefa` with XOR tarefa/ticket parent linking (wave 3)
+- [x] 03-05-PLAN.md — `apollo rotina template` CRUD, `apollo rotina instancia listar|status` (structurally no-create), `apollo log-inferencia registrar|listar` (append-only) (wave 3)
+- [x] 03-06-PLAN.md — schema-driven CLI coverage + help-completeness test, `verify-phase-03.sh` re-proving CLI-01..CLI-11, operator README (wave 4)
 
 ### Phase 4: Web SPA Auth & CRUD Smoke UI
 
@@ -153,7 +153,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 |-------|----------------|--------|-----------|
 | 1. Repo Scaffold & Live Schema | 3/3 | Complete    | 2026-08-09 |
 | 2. Shared ANBIMA Calendar | 3/3 | Complete    | 2026-08-09 |
-| 3. CLI Auth & CRUD | 0/6 | Planned | - |
+| 3. CLI Auth & CRUD | 6/6 | Complete    | 2026-08-09 |
 | 4. Web SPA Auth & CRUD Smoke UI | 0/TBD | Not started | - |
 | 5. Idempotent Routine-Instance Job | 0/TBD | Not started | - |
 | 6. End-to-End Verification | 0/TBD | Not started | - |

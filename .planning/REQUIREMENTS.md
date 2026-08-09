@@ -28,17 +28,17 @@ Requirements for this migration milestone. Each maps to exactly one roadmap phas
 
 ### CLI (CLI)
 
-- [ ] **CLI-01**: `apollo auth login` completes a magic-code email auth flow and persists a session at `~/.config/apollo-cli/session` that survives process restarts — *C-05*
-- [ ] **CLI-02**: `apollo fundo criar|editar|deletar|listar` performs full CRUD on `fundos`, scoped to the authenticated user's `donoId` — *C-07*
-- [ ] **CLI-03**: `apollo projeto criar|editar|deletar|listar` performs full CRUD on `projetos` — *C-07*
-- [ ] **CLI-04**: `apollo etapa criar|editar|deletar|listar` performs full CRUD on `etapas` — *C-02, C-07*
-- [ ] **CLI-05**: `apollo tarefa criar|editar|deletar|listar` performs full CRUD on `tarefas` — *C-07*
-- [ ] **CLI-06**: `apollo rotina template criar|editar|deletar` (+ `listar`) performs full CRUD on `templatesRotina` — *C-07*
-- [ ] **CLI-07**: CLI can list `instanciasRotina` and update their status (creation is exclusively via the generation job, not direct create) — *C-02, C-04*
-- [ ] **CLI-08**: `apollo ticket criar|editar|deletar|listar` performs full CRUD on `tickets` — *C-07*
-- [ ] **CLI-09**: `apollo subtarefa criar|editar|deletar|listar` performs full CRUD on `subtarefas` (linked to a `tarefa` or a `ticket`) — *C-02, C-04, C-07*
-- [ ] **CLI-10**: `apollo log-inferencia registrar` creates a `logInferenciaClaude` record, and it can be listed — *C-07*
-- [ ] **CLI-11**: Every CLI write is scoped to the authenticated user's `donoId`, and is rejected by InstantDB perms if attempted without a valid session — *C-05*
+- [x] **CLI-01**: `apollo auth login` completes a magic-code email auth flow and persists a session at `~/.config/apollo-cli/session` that survives process restarts — *C-05*
+- [x] **CLI-02**: `apollo fundo criar|editar|deletar|listar` performs full CRUD on `fundos`, scoped to the authenticated user's `donoId` — *C-07*
+- [x] **CLI-03**: `apollo projeto criar|editar|deletar|listar` performs full CRUD on `projetos` — *C-07*
+- [x] **CLI-04**: `apollo etapa criar|editar|deletar|listar` performs full CRUD on `etapas` — *C-02, C-07*
+- [x] **CLI-05**: `apollo tarefa criar|editar|deletar|listar` performs full CRUD on `tarefas` — *C-07*
+- [x] **CLI-06**: `apollo rotina template criar|editar|deletar` (+ `listar`) performs full CRUD on `templatesRotina` — *C-07*
+- [x] **CLI-07**: CLI can list `instanciasRotina` and update their status (creation is exclusively via the generation job, not direct create) — *C-02, C-04*
+- [x] **CLI-08**: `apollo ticket criar|editar|deletar|listar` performs full CRUD on `tickets` — *C-07*
+- [x] **CLI-09**: `apollo subtarefa criar|editar|deletar|listar` performs full CRUD on `subtarefas` (linked to a `tarefa` or a `ticket`) — *C-02, C-04, C-07*
+- [x] **CLI-10**: `apollo log-inferencia registrar` creates a `logInferenciaClaude` record, and it can be listed — *C-07*
+- [x] **CLI-11**: Every CLI write is scoped to the authenticated user's `donoId`, and is rejected by InstantDB perms if attempted without a valid session — *C-05*
 
 ### Web SPA (WEB)
 
@@ -100,17 +100,17 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CAL-03 | Phase 2 | Complete |
 | CAL-04 | Phase 2 | Complete |
 | CAL-05 | Phase 2 | Complete |
-| CLI-01 | Phase 3 | Pending |
-| CLI-02 | Phase 3 | Pending |
-| CLI-03 | Phase 3 | Pending |
-| CLI-04 | Phase 3 | Pending |
-| CLI-05 | Phase 3 | Pending |
-| CLI-06 | Phase 3 | Pending |
-| CLI-07 | Phase 3 | Pending |
-| CLI-08 | Phase 3 | Pending |
-| CLI-09 | Phase 3 | Pending |
-| CLI-10 | Phase 3 | Pending |
-| CLI-11 | Phase 3 | Pending |
+| CLI-01 | Phase 3 | Complete |
+| CLI-02 | Phase 3 | Complete |
+| CLI-03 | Phase 3 | Complete |
+| CLI-04 | Phase 3 | Complete |
+| CLI-05 | Phase 3 | Complete |
+| CLI-06 | Phase 3 | Complete |
+| CLI-07 | Phase 3 | Complete |
+| CLI-08 | Phase 3 | Complete |
+| CLI-09 | Phase 3 | Complete |
+| CLI-10 | Phase 3 | Complete |
+| CLI-11 | Phase 3 | Complete |
 | WEB-01 | Phase 4 | Pending |
 | WEB-02 | Phase 4 | Pending |
 | WEB-03 | Phase 4 | Pending |
