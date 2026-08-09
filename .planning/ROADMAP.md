@@ -148,11 +148,13 @@ Plans:
   4. Simulating an interrupted job run (killing the process mid-generation, then re-running) leaves no duplicate and no missing `instanciasRotina` records.
   5. InstantDB perms correctly deny cross-user access: a second test user cannot view/edit/delete another user's `donoId`-scoped records.
 
-**Plans**: TBD
+**Plans**: 3 plans in 3 waves
 
 Plans:
 
-- [ ] 06-01: TBD
+- [ ] 06-01-PLAN.md — VERIFY-05 tracer: a SECOND real InstantDB user via genuine magic-code login into an isolated `APOLLO_SESSION_FILE`, write-based create/update/delete denial proof against a tp@-owned record, and a four-guard `delete_user` teardown that provably leaves tp@ untouched (wave 1)
+- [ ] 06-02-PLAN.md — VERIFY-04: env-var-gated sentinel hook around `routine_job.py`'s single atomic transact, plus a live SIGKILL harness killing at both known boundaries and proving 0-or-all then full convergence on re-run (wave 2)
+- [ ] 06-03-PLAN.md — VERIFY-01/02/03: `verify-phase-06.sh` composing `verify-phase-01..05.sh` with anti-silent-skip coverage assertions, wiring the new VERIFY-04/05 gates and the `--final` cleanup pass, plus the recorded green milestone run (wave 3)
 
 ## Progress
 
