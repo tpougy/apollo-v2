@@ -26,6 +26,7 @@
     "@instantdb/admin": "^1.0.63",
     "@playwright/test": "^1.62.1",
     "@sveltejs/vite-plugin-svelte": "^7.3.0",
+    "@tailwindcss/vite": "^4.3.3",
     "@tsconfig/svelte": "^5.0.8",
     "@types/bun": "latest",
     "@types/node": "^24",
@@ -33,6 +34,7 @@
     "instant-cli": "^1.0.63",
     "svelte": "^5.56.8",
     "svelte-check": "^4.7.5",
+    "tailwindcss": "^4.3.3",
     "typescript": "~5.9.3",
     "vite": "^8.2.1"
   },

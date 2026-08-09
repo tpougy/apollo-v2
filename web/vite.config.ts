@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
+import tailwindcss from "@tailwindcss/vite";
 import { parse } from "dotenv";
 import { defineConfig } from "vite";
 
@@ -34,7 +35,7 @@ if (!appId) {
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [svelte()],
+  plugins: [svelte(), tailwindcss()],
   resolve: {
     alias: {
       "@instantdb/svelte": instantdbSveltePath,
