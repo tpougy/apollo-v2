@@ -100,12 +100,17 @@ Plans:
   4. Attempting to load app data while unauthenticated shows the login screen instead (no data leakage).
   5. Every `web/` TypeScript file passes the configured formatter + linter with zero errors.
 
-**Plans**: TBD
+**Plans**: 6 plans in 4 waves
 **UI hint**: yes
 
 Plans:
 
-- [ ] 04-01: TBD
+- [ ] 04-01-PLAN.md — Playwright harness + magic-code LoginScreen + SignedIn/SignedOut gate, proven by a REAL magic-code email round trip in Chromium and an unauthenticated no-leakage assertion (wave 1)
+- [ ] 04-02-PLAN.md — EntityConfig contract, import.meta.glob registry, generic EntityScreen.svelte + Shell, tracer entity `fundos` proven live incl. CLI-created-record visibility (wave 2)
+- [ ] 04-03-PLAN.md — `projetos`/`etapas`/`tarefas` screen definitions with links, number and optional date fields, proven live (wave 3)
+- [ ] 04-04-PLAN.md — `tickets` full CRUD and `subtarefas` with the XOR tarefa/ticket parent, verified server-side via CLI readback (wave 3)
+- [ ] 04-05-PLAN.md — `templatesRotina` (self-link antecessor), `instanciasRotina` (status-only, no create/delete), `logInferenciaClaude` (view-only) (wave 3)
+- [ ] 04-06-PLAN.md — schema-driven screen-coverage test, `verify-phase-04.sh` re-proving WEB-01..WEB-10, operator README (wave 4)
 
 ### Phase 5: Idempotent Routine-Instance Job
 
@@ -154,6 +159,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 1. Repo Scaffold & Live Schema | 3/3 | Complete    | 2026-08-09 |
 | 2. Shared ANBIMA Calendar | 3/3 | Complete    | 2026-08-09 |
 | 3. CLI Auth & CRUD | 6/6 | Complete    | 2026-08-09 |
-| 4. Web SPA Auth & CRUD Smoke UI | 0/TBD | Not started | - |
+| 4. Web SPA Auth & CRUD Smoke UI | 0/6 | Planned | - |
 | 5. Idempotent Routine-Instance Job | 0/TBD | Not started | - |
 | 6. End-to-End Verification | 0/TBD | Not started | - |
