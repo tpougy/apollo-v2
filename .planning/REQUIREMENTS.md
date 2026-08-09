@@ -55,8 +55,8 @@ Requirements for this migration milestone. Each maps to exactly one roadmap phas
 
 ### Idempotent Job (JOB)
 
-- [ ] **JOB-01**: On authenticated SPA load, the job computes expected `instanciasRotina` for all active `templatesRotina` in range today→end of next month across all three generation types (`du_fixo`, `corrido_fixo`, `encadeado`), and upserts each via `dedupeKey`-based atomic transact — never duplicating, never deleting existing instances — *C-06*
-- [ ] **JOB-02**: `apollo rotina gerar-instancias` runs the same generation logic from the CLI with the same non-duplicating, non-deleting guarantee, interoperable with instances the SPA already generated (and vice versa) — *C-06, C-07*
+- [x] **JOB-01**: On authenticated SPA load, the job computes expected `instanciasRotina` for all active `templatesRotina` in range today→end of next month across all three generation types (`du_fixo`, `corrido_fixo`, `encadeado`), and upserts each via `dedupeKey`-based atomic transact — never duplicating, never deleting existing instances — *C-06*
+- [x] **JOB-02**: `apollo rotina gerar-instancias` runs the same generation logic from the CLI with the same non-duplicating, non-deleting guarantee, interoperable with instances the SPA already generated (and vice versa) — *C-06, C-07*
 
 ### Verification & Quality (VERIFY)
 
@@ -121,8 +121,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | WEB-08 | Phase 4 | Complete |
 | WEB-09 | Phase 4 | Complete |
 | WEB-10 | Phase 4 | Complete |
-| JOB-01 | Phase 5 | Pending |
-| JOB-02 | Phase 5 | Pending |
+| JOB-01 | Phase 5 | Complete |
+| JOB-02 | Phase 5 | Complete |
 | VERIFY-01 | Phase 6 | Pending |
 | VERIFY-02 | Phase 6 | Pending |
 | VERIFY-03 | Phase 6 | Pending |

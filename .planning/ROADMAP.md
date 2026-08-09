@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Shared ANBIMA Calendar** - Business-day math is correct and identical on both sides, powered by one vendored data file (completed 2026-08-09)
 - [x] **Phase 3: CLI Auth & CRUD** - Full magic-code auth and CRUD for every domain entity from the terminal (completed 2026-08-09)
 - [x] **Phase 4: Web SPA Auth & CRUD Smoke UI** - Full magic-code auth and minimal CRUD screens for every domain entity in the browser (completed 2026-08-09)
-- [ ] **Phase 5: Idempotent Routine-Instance Job** - Recurring instance generation runs safely from either channel, never duplicating or deleting
+- [x] **Phase 5: Idempotent Routine-Instance Job** - Recurring instance generation runs safely from either channel, never duplicating or deleting (completed 2026-08-09)
 - [ ] **Phase 6: End-to-End Verification** - Cross-channel parity, interrupted-run idempotency, and full-repo quality gates all proven green
 
 ## Phase Details
@@ -128,12 +128,12 @@ Plans:
 
 Plans:
 
-- [ ] 05-01-PLAN.md — add `templatesRotina.offsetDias` to the schema, push it live, and expose it on both the CLI (`--offset-dias`) and the SPA template screen; records D-05-A/B/C (wave 1)
-- [ ] 05-02-PLAN.md — pure TS compute core (day math, competencia shift, dedupeKey, `du_fixo` tracer) driven by the new cross-runtime fixture `shared/routine-job.testcases.json` (wave 2)
-- [ ] 05-03-PLAN.md — query/diff/lookup-upsert orchestration + `Shell.svelte` onMount trigger, proven by a live double-run SPA e2e with zero duplicates and preserved `concluida` status (wave 3)
-- [ ] 05-04-PLAN.md — `corrido_fixo` (clamped calendar day) and `encadeado` (topological, inherited competencia, business-day offset, `dataPrevistaEstimada`), re-proven live (wave 4)
-- [ ] 05-05-PLAN.md — `cli/apollo_cli/routine_job.py` Python twin proven fixture-identical offline, plus `apollo rotina gerar-instancias` with live CLI double-run idempotency (wave 5)
-- [ ] 05-06-PLAN.md — cross-channel interop both directions, concurrent double-run non-duplication proof, `verify-phase-05.sh`, operator READMEs (wave 6)
+- [x] 05-01-PLAN.md — add `templatesRotina.offsetDias` to the schema, push it live, and expose it on both the CLI (`--offset-dias`) and the SPA template screen; records D-05-A/B/C (wave 1)
+- [x] 05-02-PLAN.md — pure TS compute core (day math, competencia shift, dedupeKey, `du_fixo` tracer) driven by the new cross-runtime fixture `shared/routine-job.testcases.json` (wave 2)
+- [x] 05-03-PLAN.md — query/diff/lookup-upsert orchestration + `Shell.svelte` onMount trigger, proven by a live double-run SPA e2e with zero duplicates and preserved `concluida` status (wave 3)
+- [x] 05-04-PLAN.md — `corrido_fixo` (clamped calendar day) and `encadeado` (topological, inherited competencia, business-day offset, `dataPrevistaEstimada`), re-proven live (wave 4)
+- [x] 05-05-PLAN.md — `cli/apollo_cli/routine_job.py` Python twin proven fixture-identical offline, plus `apollo rotina gerar-instancias` with live CLI double-run idempotency (wave 5)
+- [x] 05-06-PLAN.md — cross-channel interop both directions, concurrent double-run non-duplication proof, `verify-phase-05.sh`, operator READMEs (wave 6)
 
 ### Phase 6: End-to-End Verification
 
@@ -165,5 +165,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 2. Shared ANBIMA Calendar | 3/3 | Complete    | 2026-08-09 |
 | 3. CLI Auth & CRUD | 6/6 | Complete    | 2026-08-09 |
 | 4. Web SPA Auth & CRUD Smoke UI | 6/6 | Complete    | 2026-08-09 |
-| 5. Idempotent Routine-Instance Job | 0/TBD | Not started | - |
+| 5. Idempotent Routine-Instance Job | 6/6 | Complete    | 2026-08-09 |
 | 6. End-to-End Verification | 0/TBD | Not started | - |
