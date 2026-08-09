@@ -16,5 +16,8 @@ web/.instant-verify/
 .ty_cache/
 *.egg-info/
 web/e2e/.auth/
+# Holds the second verification (VERIFY-05) user's InstantDB refresh token —
+# never commit.
+cli/.auth/
 web/test-results/
 web/playwright-report/
