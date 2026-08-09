@@ -70,31 +70,31 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SETUP-01 | TBD | Pending |
-| SETUP-02 | TBD | Pending |
-| SETUP-03 | TBD | Pending |
-| AUTHUI-01 | TBD | Pending |
-| AUTHUI-02 | TBD | Pending |
-| SHELLUI-01 | TBD | Pending |
-| SHELLUI-02 | TBD | Pending |
-| ENTTBL-01 | TBD | Pending |
-| ENTTBL-02 | TBD | Pending |
-| ENTTBL-03 | TBD | Pending |
-| ENTFRM-01 | TBD | Pending |
-| ENTFRM-02 | TBD | Pending |
-| ENTFRM-03 | TBD | Pending |
-| ENTFRM-04 | TBD | Pending |
-| FDBK-01 | TBD | Pending |
-| VERIFY-01 | TBD | Pending |
-| VERIFY-02 | TBD | Pending |
-| VERIFY-03 | TBD | Pending |
-| QUAL-01 | TBD | Pending |
+| SETUP-01 | Phase 7 | Pending |
+| SETUP-02 | Phase 7 | Pending |
+| SETUP-03 | Phase 7 | Pending |
+| AUTHUI-01 | Phase 8 | Pending |
+| AUTHUI-02 | Phase 8 | Pending |
+| SHELLUI-01 | Phase 8 | Pending |
+| SHELLUI-02 | Phase 8 | Pending |
+| ENTTBL-01 | Phase 9 | Pending |
+| ENTTBL-02 | Phase 9 | Pending |
+| ENTTBL-03 | Phase 9 | Pending |
+| ENTFRM-01 | Phase 10 | Pending |
+| ENTFRM-02 | Phase 10 | Pending |
+| ENTFRM-03 | Phase 10 | Pending |
+| ENTFRM-04 | Phase 10 | Pending |
+| FDBK-01 | Phase 10 | Pending |
+| VERIFY-01 | Phase 11 | Pending |
+| VERIFY-02 | Phase 11 | Pending |
+| VERIFY-03 | Phase 11 | Pending |
+| QUAL-01 | Phase 11 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 19 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 19 ⚠️ (resolved by `/gsd-roadmapper` next)
+- Mapped to phases: 19/19 ✓
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-08-09*
-*Last updated: 2026-08-09 after initial v1.1 definition*
+*Last updated: 2026-08-09 — roadmap created (Phases 7-11), full traceability mapped by `/gsd-roadmapper`*
