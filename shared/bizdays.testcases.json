@@ -137,5 +137,135 @@
     "date": "2024-12-25",
     "n": 1,
     "expected": "2024-12-26"
+  },
+  {
+    "id": "boundary-isBusinessDay-at-start",
+    "op": "isBusinessDay",
+    "date": "2000-01-01",
+    "expected": false
+  },
+  {
+    "id": "boundary-isBusinessDay-at-end",
+    "op": "isBusinessDay",
+    "date": "2078-12-25",
+    "expected": false
+  },
+  {
+    "id": "boundary-nearest-business-day-after-start",
+    "op": "isBusinessDay",
+    "date": "2000-01-03",
+    "expected": true
+  },
+  {
+    "id": "boundary-nearest-business-day-before-end",
+    "op": "isBusinessDay",
+    "date": "2078-12-23",
+    "expected": true
+  },
+  {
+    "id": "year-boundary-walk-forward",
+    "op": "addBusinessDays",
+    "date": "2024-12-27",
+    "n": 3,
+    "expected": "2025-01-02"
+  },
+  {
+    "id": "year-boundary-walk-backward",
+    "op": "addBusinessDays",
+    "date": "2025-01-03",
+    "n": -3,
+    "expected": "2024-12-30"
+  },
+  {
+    "id": "holiday-cluster-walk-carnival",
+    "op": "nextBusinessDay",
+    "date": "2024-02-09",
+    "expected": "2024-02-14"
+  },
+  {
+    "id": "leap-day-is-business-day",
+    "op": "isBusinessDay",
+    "date": "2024-02-29",
+    "expected": true
+  },
+  {
+    "id": "range-rejected-one-day-before-start",
+    "op": "isBusinessDay",
+    "date": "1999-12-31",
+    "error": "CalendarRangeError"
+  },
+  {
+    "id": "range-rejected-one-day-after-end",
+    "op": "isBusinessDay",
+    "date": "2078-12-26",
+    "error": "CalendarRangeError"
+  },
+  {
+    "id": "range-rejected-far-after-end",
+    "op": "isBusinessDay",
+    "date": "2079-01-01",
+    "error": "CalendarRangeError"
+  },
+  {
+    "id": "walk-off-end-raises",
+    "op": "addBusinessDays",
+    "date": "2078-12-20",
+    "n": 10,
+    "error": "CalendarRangeError"
+  },
+  {
+    "id": "walk-off-start-raises",
+    "op": "addBusinessDays",
+    "date": "2000-01-10",
+    "n": -10,
+    "error": "CalendarRangeError"
+  },
+  {
+    "id": "malformed-empty-string",
+    "op": "isBusinessDay",
+    "date": "",
+    "error": "InvalidDateError"
+  },
+  {
+    "id": "malformed-single-digit-month-day",
+    "op": "isBusinessDay",
+    "date": "2000-1-1",
+    "error": "InvalidDateError"
+  },
+  {
+    "id": "malformed-slash-format",
+    "op": "isBusinessDay",
+    "date": "01/01/2000",
+    "error": "InvalidDateError"
+  },
+  {
+    "id": "malformed-month-13",
+    "op": "isBusinessDay",
+    "date": "2000-13-01",
+    "error": "InvalidDateError"
+  },
+  {
+    "id": "malformed-day-32",
+    "op": "isBusinessDay",
+    "date": "2000-01-32",
+    "error": "InvalidDateError"
+  },
+  {
+    "id": "malformed-not-a-date-string",
+    "op": "isBusinessDay",
+    "date": "not-a-date",
+    "error": "InvalidDateError"
+  },
+  {
+    "id": "nonexistent-leap-day-2001",
+    "op": "isBusinessDay",
+    "date": "2001-02-29",
+    "error": "InvalidDateError"
+  },
+  {
+    "id": "nonexistent-leap-day-2100-format-before-range",
+    "op": "isBusinessDay",
+    "date": "2100-02-29",
+    "error": "InvalidDateError"
   }
 ]
