@@ -15,6 +15,15 @@ import type { EntityConfig } from "../types";
 // self-exclusion flag on that link below removes the record currently being
 // edited from its own options list so a template can never select itself as
 // its own antecessor.
+//
+// `offsetDias` (Phase 5 addition, NOT in the original SPEC field table
+// above — see 05-01-PLAN.md D-05-A) is a single dual-purpose optional number,
+// interpreted per `tipoGeracao`: "du_fixo" -> Nth BUSINESS day of the month;
+// "corrido_fixo" -> Nth CALENDAR day of the month, clamped to the month's
+// last day; "encadeado" -> number of BUSINESS days after the antecessor
+// instance's dataPrevista (05-01-PLAN.md D-05-B). `required: false` matches
+// the schema's `.optional()` — Phase 3/4 templates have no value and must
+// remain editable through this screen.
 const templatesRotinaConfig: EntityConfig = {
   etype: "templatesRotina",
   titulo: "Templates de rotina",
@@ -28,6 +37,12 @@ const templatesRotinaConfig: EntityConfig = {
       required: true,
       kind: "select",
       options: ["du_fixo", "corrido_fixo", "encadeado"],
+    },
+    {
+      name: "offsetDias",
+      label: "Offset (dias)",
+      required: false,
+      kind: "number",
     },
     {
       name: "regraCompetencia",
@@ -53,7 +68,7 @@ const templatesRotinaConfig: EntityConfig = {
       excludeSelf: true,
     },
   ],
-  listColumns: ["nome", "tipoGeracao", "ativo", "fundo", "antecessor"],
+  listColumns: ["nome", "tipoGeracao", "offsetDias", "ativo", "fundo", "antecessor"],
 };
 
 export default templatesRotinaConfig;

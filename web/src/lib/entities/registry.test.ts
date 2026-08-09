@@ -262,9 +262,7 @@ describe("registry structural integrity", () => {
     const field = config.fields.find((f) => f.name === "offsetDias");
     expect(field, "templatesRotina: no field named offsetDias").toBeDefined();
     expect(field?.kind, "templatesRotina.offsetDias: expected kind 'number'").toBe("number");
-    expect(field?.required, "templatesRotina.offsetDias: expected required === false").toBe(
-      false,
-    );
+    expect(field?.required, "templatesRotina.offsetDias: expected required === false").toBe(false);
     expect(
       config.listColumns.includes("offsetDias"),
       "templatesRotina.listColumns: expected to include 'offsetDias'",
