@@ -31,10 +31,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. `ruff` + `ty` exit 0 against the `cli/` scaffold.
   4. The configured `web/` formatter + linter exit 0 against the scaffold.
   5. A developer/CI process can authenticate to InstantDB using only the `APP_ID` in `.env.instantdb` — no admin token needed.
-**Plans**: TBD
+**Plans**: 3 plans in 2 waves
 
 Plans:
-- [ ] 01-01: TBD
+- [ ] 01-01-PLAN.md — web/ Svelte 5 + Vite SPA scaffold, shared/ 9-entity schema + donoId perms, pushed live to InstantDB and verified server-side (wave 1)
+- [ ] 01-02-PLAN.md — cli/ uv-managed Python 3.12 package with `apollo` entrypoint, repo-root env discovery, ruff + ty green (wave 1)
+- [ ] 01-03-PLAN.md — repo-root Biome covering shared/ + web/, hardened .gitignore, README, one-command SETUP-01..08 verification script (wave 2)
 
 ### Phase 2: Shared ANBIMA Calendar
 **Goal**: Business-day math is correct and identical on both client and CLI, powered by one vendored data file.
@@ -117,7 +119,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Repo Scaffold & Live Schema | 0/TBD | Not started | - |
+| 1. Repo Scaffold & Live Schema | 0/3 | Planned | - |
 | 2. Shared ANBIMA Calendar | 0/TBD | Not started | - |
 | 3. CLI Auth & CRUD | 0/TBD | Not started | - |
 | 4. Web SPA Auth & CRUD Smoke UI | 0/TBD | Not started | - |
