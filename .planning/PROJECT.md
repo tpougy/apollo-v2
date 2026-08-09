@@ -26,7 +26,16 @@ The user can execute every piece of controladoria data-entry work — full CRUD 
 
 <!-- Current scope. Building toward these. -->
 
-(None yet — run `/gsd-new-milestone` to define v1.1 scope, e.g. the panel/dashboard UI deferred below)
+## Current Milestone: v1.1 UI bonita com Tailwind + shadcn-svelte
+
+**Goal:** Refazer visualmente as 4 telas existentes da SPA (LoginScreen, Shell, EntityScreen genérica das 9 entidades) usando Tailwind CSS + componentes shadcn-svelte no estilo/cores padrão, sem tocar em lógica de negócio, sem criar o painel de 5 áreas (fora de escopo, ver abaixo), verificado 100% via Playwright (sem UAT humano).
+
+**Target features:**
+- Tailwind v4 + shadcn-svelte inicializados em `web/` (estilo/baseColor padrão, ícones lucide, dark via `prefers-color-scheme`)
+- LoginScreen refeita com componentes shadcn (Input/Button/Label/Card/Alert)
+- Shell/nav refeita com componentes shadcn (Button + layout primitivo — sem dashboard)
+- EntityScreen (tabela + formulário genérico das 9 entidades) refeita com shadcn Table/Data Table, Dialog/Sheet para criar/editar, Input/Label/Select/Checkbox/Calendar/date-picker por tipo de campo, Badge para status, Sonner para feedback
+- Suite Playwright existente (`web/e2e/`) atualizada/estendida para cobrir cada tela refeita, sem gate de UAT humano em nenhuma fase
 
 ### Out of Scope
 
@@ -60,6 +69,8 @@ All constraints below originate from the approved SPEC and are **LOCKED** — do
 - **CLI surface (LOCKED)**: Package `cli/` (uv-managed), entrypoint `apollo`, built with `click`, subcommands organized by entity + action mirroring former MCP tool names (`apollo auth login`, `apollo fundo criar|editar|deletar|listar`, `apollo projeto ...`, `apollo tarefa ...`, `apollo ticket ...`, `apollo rotina template criar|editar|deletar`, `apollo rotina gerar-instancias`, `apollo log-inferencia registrar`), extended with equivalent CRUD subcommands for `etapa` and `subtarefa` to satisfy full-entity-coverage scope. Every subcommand needs rich `--help`. — *C-07*
 - **Quality gates (LOCKED)**: `cli/` — 100% typed Python, `ruff` (curated rule set, not `ALL`) and `ty` both clean (zero errors/warnings) on every `.py` file, including `bizdays.py` and `shared/scripts/*.py`. `web/` — `bun` is the sole JS/TS executor; all frontend logic is `.ts` (never `.js`), including `.svelte` files using `<script lang="ts">`; a formatter (Prettier or Biome) and lint/type checker (ESLint or Biome + `svelte-check`) must run clean before a file is done. — *C-08*
 - **Out of scope for this migration (LOCKED)**: No SQLite data migration; no panel/dashboard UI design; no advanced v2 rules (soft-deadline reallocation, chained delay propagation). — *C-09*
+- **UI stack for v1.1 (LOCKED, added 2026-08-09)**: `web/` UI styling runs on Tailwind CSS + `shadcn-svelte`, default style/baseColor and default theme tokens only — no custom color palette, no bespoke design tokens, no CSS beyond Tailwind utilities + the shadcn-svelte init output. Icon library `@lucide/svelte` (shadcn-svelte default). Dark mode via `prefers-color-scheme`, no toggle. Tables use shadcn Table/Data Table; date fields use the shadcn Calendar/date-picker pattern — no external table/calendar library unless a phase's research proves shadcn-svelte's own primitive insufficient. — *C-11*
+- **v1.1 verification (LOCKED, added 2026-08-09)**: This milestone runs fully unattended — every phase is verified via real Playwright e2e runs against the live InstantDB app (extending `web/e2e/`), never via a human UAT checkpoint. Consistent with the project-wide autonomous-execution pattern already established in v1.0 (see Context). — *C-12*
 - **Autonomous magic-code auth testing (LOCKED, user-authorized 2026-08-09, mechanism corrected 2026-08-09)**: This project runs unattended for hours via `/gsd:autonomous` — no human is available to relay magic-code emails. The user explicitly authorized reading the magic-code email from their real inbox (`tp@rbrasset.com.br`) whenever a phase needs to complete or test the magic-code login flow (CLI `apollo auth login`, SPA login screen, or any auth-flow test/e2e verification). **Actual working channel (Phase 3 discovery):** the `mcp__claude_ai_Microsoft_365__outlook_email_search` MCP tool does NOT have access to `tp@rbrasset.com.br` on this machine (it resolves to a different mailbox). The real channel is Outlook Classic (desktop, COM-accessible) running on the Windows host under WSL, read via the local tool at `/mnt/c/Users/thomaz.pougy/Documents/RBR/Sandbox/outlook-rules`, invoked from WSL as `powershell.exe -NoProfile -Command "Set-Location 'C:\Users\thomaz.pougy\Documents\RBR\Sandbox\outlook-rules'; .\orules.ps1 peek --folder Inbox --days 1 --grep 'nstant' --body 0 --max 5"` — the InstantDB magic-code subject line itself contains the numeric code (e.g. "423630 is your verification code for apollo"), sender `verify@auth-pm.instantdb.com`. **Codes expire fast (~60-90s observed)** — the send→peek→verify sequence must be tight, with no pause between reading the code and submitting it; on `record-expired`, immediately resend and retry the tight loop. Whichever real channel is reachable in a given environment, search for the most recent InstantDB magic-code message, extract the code, use it immediately, and do not otherwise read/act on unrelated mail in the inbox. This is scoped strictly to fetching that one code — never use this access for anything else. — *C-10*
 
 ## Key Decisions
@@ -76,5 +87,22 @@ All constraints below originate from the approved SPEC and are **LOCKED** — do
 | `templatesRotina.offsetDias` added mid-milestone as an optional dual-purpose field (Phase 5) | Original SPEC schema table lacked a field for the Nth-day/offset rule that `du_fixo`/`corrido_fixo`/`encadeado` generation needed; had to be optional since InstantDB can't backfill required attrs onto existing live rows | ✓ Good |
 | Orchestrator (not subagents) performs all magic-code email round trips | Subagents don't inherit the orchestrator's MCP/tool scoping (Outlook COM bridge, M365 mailbox access) — discovered live in Phase 3 and recurred through Phase 6 | ✓ Good — durable pattern, worked every time |
 
+## Evolution
+
+This document evolves at phase transitions and milestone boundaries.
+
+**After each phase transition** (via `/gsd-transition`):
+1. Requirements invalidated? → Move to Out of Scope with reason
+2. Requirements validated? → Move to Validated with phase reference
+3. New requirements emerged? → Add to Active
+4. Decisions to log? → Add to Key Decisions
+5. "What This Is" still accurate? → Update if drifted
+
+**After each milestone** (via `/gsd-complete-milestone`):
+1. Full review of all sections
+2. Core Value check — still the right priority?
+3. Audit Out of Scope — reasons still valid?
+4. Update Context with current state
+
 ---
-*Last updated: 2026-08-09 after v1.0 milestone*
+*Last updated: 2026-08-09 — milestone v1.1 (UI bonita com Tailwind + shadcn-svelte) started*
