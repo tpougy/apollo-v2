@@ -1,0 +1,37 @@
+# Milestones
+
+## v1.0 Apollo v2 MVP (Shipped: 2026-08-09)
+
+**Phases completed:** 6 phases, 27 plans, 70 tasks
+
+**Key accomplishments:**
+
+- Pure Svelte 5 + Vite SPA scaffolded under `web/`, and the 9-entity InstantDB domain schema + donoId permission rules are live on the real InstantDB app, with a write-based guest rejection proving server-side enforcement.
+- uv-managed `apollo-cli` Python 3.12 package with the `apollo` click entrypoint, cwd-independent `.env.instantdb` discovery, and both `ruff`/`ty` quality gates green with zero suppressions on the first pass.
+- Repo-root Biome (formatter+linter) covering `shared/` and `web/src`, a hardened `.gitignore`, a root `README.md`, and a single `verify-phase-01.sh` that re-proves all eight SETUP requirements — including a write-based live guest-permission-denial probe — in one command.
+- Vendored `shared/anbima-calendar.json` (1003 federal ANBIMA holidays, 2000-01-01..2078-12-25) extracted offline from the MIT-licensed `bizdays` package's bundled `ANBIMA.cal`, plus a byte-idempotent, network-free regenerator and a 32-assertion structural pytest gate.
+- Byte-identical `isBusinessDay`/`addBusinessDays`/`nextBusinessDay` across TypeScript and Python, both reading exclusively from the vendored ANBIMA JSON, proven by a single 42-case shared fixture (13 error cases) driving both `bun test` and `pytest` to green.
+- Locked and mutation-proved the `--config pyproject.toml . ../shared/scripts` ruff/ty gate scope, documented the calendar workflow in both READMEs, and shipped `verify-phase-02.sh` as a single re-runnable, negative-control-tested proof of CAL-01 through CAL-05.
+- Magic-code auth CLI (`apollo auth login|logout|whoami`) with 0600 session persistence and structural admin/session client separation, proven end-to-end with a real InstantDB magic-code email round trip.
+- `crud_helpers` + `entities/` auto-discovery + `apollo fundo criar|editar|deletar|listar` proven live against the real InstantDB app, with CLI-11 proven via three real server-side `permission-denied`/rejection errors on writes (guest, fake-token, mismatched-donoId).
+- `apollo projeto`
+- `apollo ticket` and `apollo subtarefa` live CRUD, with subtarefa's tarefa/ticket parent enforced as a structural exclusive-or validated client-side before any InstantDB transact.
+- `apollo rotina template` full CRUD (with fundo link and templateAntecessor self-link), `apollo rotina instancia listar|status` with no create/delete, and `apollo log-inferencia registrar|listar` append-only — all three surfaces structurally pinned against widening.
+- A single `verify-phase-03.sh` re-proves CLI-01..CLI-11 end-to-end against the live InstantDB app; `test_cli_surface.py` asserts every schema entity has its mandated CLI surface (parsed from `shared/instant.schema.ts`, not a hand-maintained list) with rich `--help` everywhere and zero lint/type suppressions; `cli/README.md` now documents the full auth/session/output/exit-code contract for an operator.
+- Real magic-code login proven end-to-end in headless Chromium via Playwright, with `@instantdb/svelte`'s `SignedIn`/`SignedOut` gate and a persisted `storageState({indexedDB: true})` reused by downstream specs.
+- Config-driven `EntityScreen.svelte` (one table+form engine for all 9 future entity screens) proven end-to-end on `fundos` in real Chromium against the live InstantDB app, including a Phase 3 CLI-created record appearing in the SPA (SC-3).
+- 1. [Rule 1 - Bug] `entity-submit` click occasionally reported "element detached from the DOM" despite the submit having actually landed
+- Ticket and subtarefa CRUD screens shipped via declarative EntityConfig, plus a fix to EntityScreen.svelte's shared edit path that was silently leaving stale XOR links after a parent-type switch.
+- Three restricted-capability entity screens (full-CRUD template with a self-link, status-only instance updates, and a pure read-only audit log) added as declarative config, with all three restrictions proven live in Chromium against the real hosted InstantDB backend.
+- Closed Phase 4 with a schema-driven `bun test` coverage gate proving every entity in `shared/instant.schema.ts` has a correctly-capabilitied screen, a single `verify-phase-04.sh` that re-proves WEB-01..WEB-10 plus every C-08/T-04-02/T-04-03 gate end-to-end (twice in a row, from any cwd, `PHASE 04 VERIFIED`), and `web/README.md` documenting the SPA for the next operator (human or Claude).
+- Added `templatesRotina.offsetDias: i.number().optional()`, pushed it live to the real InstantDB app, and wired it through both `apollo rotina template criar|editar --offset-dias` and the SPA templatesRotina screen — closing the schema gap that blocked the entire Phase 5 generation job.
+- Built `web/src/lib/routineJob.ts` — a pure, zero-I/O TypeScript module that computes exactly which `du_fixo` routine instances should exist for `[today, endOfNextMonth(today)]`, proven correct via a hand-derived ANBIMA fixture and now the locked cross-runtime contract for the rest of Phase 5.
+- Wired the pure `du_fixo` compute core to the live InstantDB app via a query -> diff -> lookup-upsert `runRoutineInstanceJob`, triggered once per authenticated SPA mount from `Shell.svelte`, and proved against the real app that two consecutive SPA loads produce zero duplicate `instanciasRotina` and never clobber a manually-set `concluida` status.
+- Completed all three routine-generation types by implementing `corrido_fixo` (clamped Nth-calendar-day) and `encadeado` (bounded multi-pass topological chain resolution with inherited competencia and business-day offsets), then re-proved zero-duplicate idempotency live against the real InstantDB app with all three types running together.
+- Ported the complete `web/src/lib/routineJob.ts` algorithm (all three generation types + bounded topological sweep) to `cli/apollo_cli/routine_job.py`, proved it byte-identical to the TypeScript implementation via the shared fixture, wired `apollo rotina gerar-instancias` to the same query -> diff -> lookup-upsert orchestration, and proved live against the real InstantDB app that two consecutive CLI runs produce zero duplicates, zero deletes, and preserve a manually-set `concluida` status.
+- Proved ROADMAP SC-4 (records one channel writes are recognized, not duplicated, by the other) in both directions, proved the non-duplication guarantee holds under two genuinely overlapping real OS processes racing on `instanciasRotina.dedupeKey.unique()`, and packaged every JOB-01/JOB-02 gate into `verify-phase-05.sh`, a single command that re-proves the whole phase and ends `PHASE 05 VERIFIED`.
+- Live write-based proof that InstantDB `donoRules` reject create/update/delete from a second real authenticated user against tp@'s records, with a guarded `delete_user` teardown and re-bootstrap, both magic-code round trips performed by the orchestrator due to subagent MCP-tool scoping.
+- Env-var-gated sentinel hook around routine_job.py's single atomic transact, plus a live SIGKILL harness proving an interrupted `apollo rotina gerar-instancias` run always converges to exactly 0-or-all of its new `instanciasRotina` records, never a partial write.
+- `verify-phase-06.sh` composes all five prior phase scripts plus the new VERIFY-04/05 gates into one command; running it for real (twice) surfaced and fixed eight genuine pre-existing defects in Phases 2-5's own verification tooling, then recorded two fully green runs certifying the entire v1 milestone.
+
+---

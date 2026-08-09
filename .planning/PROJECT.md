@@ -2,11 +2,11 @@
 
 ## What This Is
 
-Apollo v2 is a from-scratch rewrite of Apollo, a local, single-user system for a fund-controladoria professional. It replaces the original Python/Litestar/SvelteKit/SQLite stack with InstantDB as the sole backend, a pure Svelte 5 SPA (no SvelteKit), and a documented Python CLI that replaces the old MCP server for Claude-operated workflows. This milestone builds the data layer, auth, CLI, and idempotent routine-generation job end-to-end — no UI panel/dashboard design is in scope yet.
+Apollo v2 is a from-scratch rewrite of Apollo, a local, single-user system for a fund-controladoria professional. It replaces the original Python/Litestar/SvelteKit/SQLite stack with InstantDB as the sole backend, a pure Svelte 5 SPA (no SvelteKit), and a documented Python CLI that replaces the old MCP server for Claude-operated workflows. v1.0 shipped the full data layer: live InstantDB schema/perms, the shared ANBIMA business-day calendar, full magic-code-authenticated CRUD on both the CLI and the SPA for every domain entity, and the idempotent routine-instance-generation job running identically from both channels. No UI panel/dashboard design is in scope yet.
 
 ## Core Value
 
-The user can execute every piece of controladoria data-entry work — full CRUD across all domain entities — from either the Svelte SPA or the Python CLI, with both channels authenticated as the same real user and governed by the exact same InstantDB permission rules. If everything else fails, this UI ↔ CLI parity at the data layer must hold.
+The user can execute every piece of controladoria data-entry work — full CRUD across all domain entities — from either the Svelte SPA or the Python CLI, with both channels authenticated as the same real user and governed by the exact same InstantDB permission rules. If everything else fails, this UI ↔ CLI parity at the data layer must hold. **Validated in v1.0**: proven live, cross-channel, in both directions, including under process interruption and cross-user permission attack.
 
 ## Requirements
 
@@ -14,19 +14,19 @@ The user can execute every piece of controladoria data-entry work — full CRUD 
 
 <!-- Shipped and confirmed valuable. -->
 
-(None yet — ship to validate)
+- ✓ Monorepo scaffold (`shared/`, `web/`, `cli/`) with working tooling for both runtimes — v1.0
+- ✓ InstantDB schema (9 domain entities, including `templatesRotina.offsetDias` added mid-milestone) and permission rules live and pushed — v1.0
+- ✓ Shared vendored ANBIMA business-day calendar, byte-identical between TS and Python — v1.0
+- ✓ Python CLI: magic-code auth + full CRUD for all domain entities — v1.0
+- ✓ Svelte SPA: magic-code auth + full functional CRUD screens for all domain entities — v1.0
+- ✓ Client-side idempotent routine-instance-generation job (+ CLI equivalent), all 3 generation types, proven safe under real process kill and real concurrency — v1.0
+- ✓ End-to-end parity verification + quality gates (ruff+ty on cli/, formatter+linter+svelte-check on web/) green — v1.0
 
 ### Active
 
 <!-- Current scope. Building toward these. -->
 
-- [ ] Monorepo scaffold (`shared/`, `web/`, `cli/`) with working tooling for both runtimes
-- [ ] InstantDB schema (8 domain entities) and permission rules live and pushed
-- [ ] Shared vendored ANBIMA business-day calendar, consumed identically by both sides
-- [ ] Python CLI: magic-code auth + full CRUD for all domain entities
-- [ ] Svelte SPA: magic-code auth + minimal functional CRUD screens for all domain entities
-- [ ] Client-side idempotent routine-instance-generation job (+ CLI equivalent)
-- [ ] End-to-end parity verification + quality gates (ruff+ty on cli/, formatter+linter on web/) green
+(None yet — run `/gsd-new-milestone` to define v1.1 scope, e.g. the panel/dashboard UI deferred below)
 
 ### Out of Scope
 
@@ -41,8 +41,10 @@ The user can execute every piece of controladoria data-entry work — full CRUD 
 - Original `apollo` (`~/pessoal/apollo`) was planned/partially implemented on Python 3.12 + Litestar + litestar-vite + SvelteKit + AdvancedAlchemy + SQLite + `cofin/litestar-mcp`. It stays intact as reference/archive; not touched by this rewrite.
 - Reference implementation for Svelte 5 + InstantDB patterns: `~/pessoal/ultima-missao` (Svelte 5 + Vite + `@instantdb/svelte`, no SvelteKit, Cloudflare Pages deploy).
 - Source spec: `docs/superpowers/specs/2026-08-09-migracao-instantdb-design.md` ("Migração Apollo → InstantDB + Svelte SPA + CLI Python", status: Aprovado para planejamento de implementação).
-- Vendored ANBIMA holiday table source: `github.com/ianliu/feriados-anbima`.
+- Vendored ANBIMA holiday table source: extracted from the MIT-licensed `bizdays` PyPI package's bundled `ANBIMA.cal` (1003 dates, 2000-2078), not the originally-cited `feriados-anbima` scraper.
 - This project executes autonomously via `/gsd:autonomous` for extended unattended stretches — no phase in the roadmap depends on human UAT/interaction to proceed.
+- **v1.0 shipped 2026-08-09**: 6 phases, 27 plans, 70 tasks, ~10.4k LOC across `cli/`, `shared/`, `web/src`. Every phase's requirements were proven against the live InstantDB app (never mocked), including real magic-code email round trips and a real cross-user permission-denial proof.
+- Known technical debt / follow-ups for a future milestone: the panel/dashboard UI (5 fixed panels, ordering, `.eml` drag-and-drop) is still unbuilt; automatic soft-deadline reallocation and chained delay propagation remain deferred v2 rules.
 
 ## Constraints
 
@@ -64,13 +66,15 @@ All constraints below originate from the approved SPEC and are **LOCKED** — do
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| InstantDB as sole backend (no custom API server) | Native realtime sync; eliminates the Litestar/SQLAlchemy layer that was slowing iteration for a solo user | — Pending |
-| Pure Svelte 5 + Vite SPA, no SvelteKit | Simpler deploy (static site on Cloudflare Pages); matches reference implementation `ultima-missao` | — Pending |
-| Python CLI replaces MCP server | Same UI↔AI parity guarantee, now enforced by "same backend + same perms + two authenticated clients" instead of "same service layer behind two adapters" | — Pending |
-| `donoId` denormalized on every entity | Simpler permission checks than walking relationship chains; duplication cost negligible in a single-user system | — Pending |
-| `subtarefas` as a real linked entity, not embedded JSON | Trivial in InstantDB relationships; improves queryability over original `apollo` | — Pending |
-| ANBIMA calendar vendored as static JSON, shared by both runtimes | No JS package guarantees ANBIMA-exact holiday matching; single source of truth prevents client/CLI drift | — Pending |
+| InstantDB as sole backend (no custom API server) | Native realtime sync; eliminates the Litestar/SQLAlchemy layer that was slowing iteration for a solo user | ✓ Good |
+| Pure Svelte 5 + Vite SPA, no SvelteKit | Simpler deploy (static site on Cloudflare Pages); matches reference implementation `ultima-missao` | ✓ Good |
+| Python CLI replaces MCP server | Same UI↔AI parity guarantee, now enforced by "same backend + same perms + two authenticated clients" instead of "same service layer behind two adapters" | ✓ Good |
+| `donoId` denormalized on every entity | Simpler permission checks than walking relationship chains; duplication cost negligible in a single-user system | ✓ Good |
+| `subtarefas` as a real linked entity, not embedded JSON | Trivial in InstantDB relationships; improves queryability over original `apollo` | ✓ Good |
+| ANBIMA calendar vendored as static JSON, shared by both runtimes | No JS package guarantees ANBIMA-exact holiday matching; single source of truth prevents client/CLI drift | ✓ Good — proven byte-identical across TS/Python via shared fixture |
 | No data migration from original `apollo` SQLite | No real production data exists yet | ✓ Good |
+| `templatesRotina.offsetDias` added mid-milestone as an optional dual-purpose field (Phase 5) | Original SPEC schema table lacked a field for the Nth-day/offset rule that `du_fixo`/`corrido_fixo`/`encadeado` generation needed; had to be optional since InstantDB can't backfill required attrs onto existing live rows | ✓ Good |
+| Orchestrator (not subagents) performs all magic-code email round trips | Subagents don't inherit the orchestrator's MCP/tool scoping (Outlook COM bridge, M365 mailbox access) — discovered live in Phase 3 and recurred through Phase 6 | ✓ Good — durable pattern, worked every time |
 
 ---
-*Last updated: 2026-08-09 after initial roadmap creation*
+*Last updated: 2026-08-09 after v1.0 milestone*
