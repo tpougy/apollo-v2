@@ -122,6 +122,13 @@
   let selectedLinks = $state<Record<string, string>>({});
   let xorParentType = $state<string | null>(null);
   let xorParentId = $state<string>("");
+  // Snapshot of the xorLink parent as it existed on the server when edit
+  // started. Used at submit time to detect a parent-type switch and unlink
+  // the stale choice — the shipped edit path only ever added the new link,
+  // which could leave a record with both a tarefa and a ticket link after
+  // switching. See EntityScreen.svelte fix in 04-04.
+  let originalXorParentType = $state<string | null>(null);
+  let originalXorParentId = $state<string>("");
   let formError = $state<string | null>(null);
 
   function startCreate() {
@@ -138,6 +145,8 @@
     selectedLinks = links;
     xorParentType = config.xorLink ? config.xorLink.choices[0].label : null;
     xorParentId = "";
+    originalXorParentType = null;
+    originalXorParentId = "";
   }
 
   function startEdit(row: Row) {
@@ -167,6 +176,8 @@
     selectedLinks = links;
     xorParentType = null;
     xorParentId = "";
+    originalXorParentType = null;
+    originalXorParentId = "";
     if (config.xorLink) {
       for (const choice of config.xorLink.choices) {
         const linked = row[choice.label] as LinkedRow | LinkedRow[] | undefined;
@@ -174,6 +185,8 @@
         if (one?.id) {
           xorParentType = choice.label;
           xorParentId = one.id;
+          originalXorParentType = choice.label;
+          originalXorParentId = one.id;
         }
       }
     }
@@ -236,6 +249,19 @@
       if (choice) linkTargets[xorParentType] = choice.targetEtype;
     }
 
+    // On edit, if the xorLink parent type was switched away from the
+    // originally-loaded choice, unlink the stale parent so the record never
+    // ends up linked to both choices at once (the XOR invariant).
+    const unlinkPayload: Record<string, string> = {};
+    if (
+      mode === "edit" &&
+      config.xorLink &&
+      originalXorParentType &&
+      originalXorParentType !== xorParentType
+    ) {
+      unlinkPayload[originalXorParentType] = originalXorParentId;
+    }
+
     for (const [label, targetId] of Object.entries(linkPayload)) {
       const targetEtype = linkTargets[label];
       const result = await db.queryOnce({
@@ -249,14 +275,16 @@
     }
 
     try {
+      type TxLinkChunk = {
+        link: (links: Record<string, string>) => TxLinkChunk;
+        unlink: (links: Record<string, string>) => TxLinkChunk;
+      };
       const tx = db.tx as unknown as Record<
         string,
         Record<
           string,
           {
-            update: (fields: Record<string, unknown>) => {
-              link: (links: Record<string, string>) => unknown;
-            };
+            update: (fields: Record<string, unknown>) => TxLinkChunk;
           }
         >
       >;
@@ -274,8 +302,10 @@
         await db.transact(finalChunk as never);
       } else if (mode === "edit" && editingId) {
         const chunk = tx[config.etype][editingId].update(payload);
-        const finalChunk =
+        const linked =
           Object.keys(linkPayload).length > 0 ? chunk.link(linkPayload) : chunk;
+        const finalChunk =
+          Object.keys(unlinkPayload).length > 0 ? linked.unlink(unlinkPayload) : linked;
         await db.transact(finalChunk as never);
       }
       mode = null;
