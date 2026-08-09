@@ -31,11 +31,11 @@ export default defineConfig({
         storageState: STORAGE_STATE,
       },
       testMatch: /.*\.spec\.ts/,
-      testIgnore: /no-leakage\.spec\.ts|design-system\.spec\.ts/,
+      testIgnore: /no-leakage\.spec\.ts|design-system\.spec\.ts|login-flow\.spec\.ts/,
     },
     {
       name: "anon",
-      testMatch: /no-leakage\.spec\.ts|design-system\.spec\.ts/,
+      testMatch: /no-leakage\.spec\.ts|design-system\.spec\.ts|login-flow\.spec\.ts/,
       use: {
         ...devices["Desktop Chrome"],
         storageState: { cookies: [], origins: [] },
