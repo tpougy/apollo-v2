@@ -110,6 +110,16 @@ apollo log-inferencia registrar       # LogInferenciaClaude
 
 Implementada com `click`, cada subcomando com `--help` rico (descrição, exemplos, campos obrigatórios) — essa superfície documentada é o que substitui o MCP server para uso por Claude Code local.
 
+## Qualidade e tooling
+
+**Python (`cli/`):** tipagem 100% obrigatória em todo arquivo `.py` — toda função, parâmetro, retorno e variável onde aplicável. Um arquivo Python só é considerado finalizado quando **ambos** rodam sem nenhum erro nem warning:
+- `ruff` — conjunto de regras razoável e deliberadamente curado (não o ruleset completo/`ALL`); cobre lint + formatação.
+- `ty` (verificador de tipos da Astral) — precisa fechar limpo contra a tipagem 100% dos arquivos.
+
+Isso vale para todo o pacote `cli/`, incluindo `cli/apollo_cli/bizdays.py` e os scripts em `shared/scripts/` (ex. `update_calendar.py`).
+
+**JS/TS (`web/`):** `bun` é o executor único (dev, build, scripts) — mesmo padrão já usado no `apollo` atual e no `ultima-missao`. Lógica de frontend é **sempre** escrita em arquivos `.ts` — nunca `.js` puro, sem exceção, em 100% dos casos (`instant.schema.ts`, `instant.perms.ts`, `bizdays.ts`, componentes `.svelte` com `<script lang="ts">`). O projeto usa sempre um formatter (Prettier ou Biome, a definir na fase de implementação) e um verificador de lint/tipos (ESLint ou Biome + `svelte-check`) rodando limpo antes de considerar um arquivo finalizado.
+
 ## Fora de escopo desta migração
 
 - Portar dados existentes do SQLite do `apollo` atual — o domínio ainda não tinha dados reais em produção (scaffold implementado, mas sem uso real registrado no `PROJECT.md` do projeto atual).
