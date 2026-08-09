@@ -257,6 +257,20 @@ describe("registry structural integrity", () => {
     }
   });
 
+  test('templatesRotina: has a non-required "number" field named offsetDias, listed in listColumns', () => {
+    const config = configByEtype("templatesRotina") as EntityConfig;
+    const field = config.fields.find((f) => f.name === "offsetDias");
+    expect(field, "templatesRotina: no field named offsetDias").toBeDefined();
+    expect(field?.kind, "templatesRotina.offsetDias: expected kind 'number'").toBe("number");
+    expect(field?.required, "templatesRotina.offsetDias: expected required === false").toBe(
+      false,
+    );
+    expect(
+      config.listColumns.includes("offsetDias"),
+      "templatesRotina.listColumns: expected to include 'offsetDias'",
+    ).toBe(true);
+  });
+
   test("every LinkDef.targetEtype and every XorLinkDef choice target resolves to a real schema entity", () => {
     const schemaSet = new Set(SCHEMA_ENTITY_NAMES);
     function checkLink(etype: string, link: LinkDef) {
