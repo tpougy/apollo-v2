@@ -15,3 +15,6 @@ web/.instant-verify/
 .ruff_cache/
 .ty_cache/
 *.egg-info/
+web/e2e/.auth/
+web/test-results/
+web/playwright-report/

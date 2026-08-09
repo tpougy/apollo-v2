@@ -6,7 +6,14 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["shared/**/*.ts", "web/src/**/*.ts", "web/src/**/*.svelte", "web/vite.config.ts"],
+    "includes": [
+      "shared/**/*.ts",
+      "web/src/**/*.ts",
+      "web/src/**/*.svelte",
+      "web/vite.config.ts",
+      "web/e2e/**/*.ts",
+      "web/playwright.config.ts"
+    ],
     "ignoreUnknown": true
   },
   "html": {
