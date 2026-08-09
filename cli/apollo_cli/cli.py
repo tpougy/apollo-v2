@@ -14,6 +14,7 @@ import click
 
 from apollo_cli import auth
 from apollo_cli.config import load_instant_config
+from apollo_cli.entities import register_entity_groups
 
 
 @click.group()
@@ -24,13 +25,16 @@ def apollo() -> None:
     This is the AI-operated channel for Apollo v2, with full parity with the
     web SPA: every write available in the browser is also available here.
 
-    `auth` (login, logout, whoami) is available. The remaining entity
-    subcommand surface (fundo, projeto, etapa, tarefa, ticket, subtarefa,
-    rotina, log-inferencia) lands as each is implemented later in Phase 3.
+    `auth` (login, logout, whoami) is available. Every entity subcommand
+    group (fundo, projeto, etapa, tarefa, ticket, subtarefa, rotina,
+    log-inferencia) is auto-discovered from `apollo_cli/entities/` as each
+    module lands — no edit to this file is required per new entity, see
+    `apollo_cli.entities.register_entity_groups`.
     """
 
 
 apollo.add_command(auth.group)
+register_entity_groups(apollo)
 
 
 @apollo.command()
