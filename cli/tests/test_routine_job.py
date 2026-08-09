@@ -126,6 +126,16 @@ def test_instancia_command_set_is_exactly_listar_and_status() -> None:
     )
 
 
+def test_gerar_instancias_help_documents_options_and_idempotency(run_cli: RunCli) -> None:
+    result: CliInvocation = run_cli(["rotina", "gerar-instancias", "--help"])
+    assert result.result.exit_code == 0, result.result.output
+    output = result.result.output
+    normalized = " ".join(output.split())
+    assert "--data-base" in output
+    assert "--dry-run" in output
+    assert "nunca duplica" in normalized
+
+
 # --- live: double-run idempotency + status preservation ---------------------
 
 pytestmark_live = pytest.mark.live

@@ -555,7 +555,7 @@ def run_routine_instance_job(
     """Orchestrates the full query -> compute -> diff -> transact cycle
     against the live InstantDB app for one `dono_id`. Never carries an admin
     token (the caller must pass a `session_client()`-built `client`) and
-    never issues a `.delete()`.
+    never issues a delete operation.
 
     Step 1: query active templates (with the `antecessor` self-link selected
     for encadeado resolution). Zero rows short-circuits before ever issuing
@@ -571,12 +571,12 @@ def run_routine_instance_job(
     filtered out here and therefore never appears in any transact payload,
     so there is no code path through which `status` can be overwritten.
 
-    Step 5: write — one transact, one lookup-keyed `.update()` chunk per new
-    dedupeKey (never `.create()` — the SDK rejects a lookup sentinel there),
-    always carrying `donoId`. The `dedupeKey` attribute itself is
-    deliberately absent from the update payload: `lookup("dedupeKey", ...)`
-    already sets it on create, and re-including it causes InstantDB to
-    reject the write (05-03's live-discovered bug).
+    Step 5: write — one transact, one lookup-keyed update chunk per new
+    dedupeKey (never a strict-insert — the SDK rejects a lookup sentinel
+    there), always carrying `donoId`. The `dedupeKey` attribute itself is
+    deliberately absent from the update payload: the lookup sentinel already
+    sets it on write, and re-including it causes InstantDB to reject the
+    write (05-03's live-discovered bug).
 
     Step 6: concurrency tolerance — on a transact failure, re-query the
     exact keys attempted; if every one now exists, report them as

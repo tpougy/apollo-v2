@@ -38,10 +38,14 @@ def test_instancia_command_set_is_exactly_listar_and_status() -> None:
     assert "deletar" not in commands, "C-06: instances are never hand-deleted from the CLI"
 
 
-def test_gerar_instancias_does_not_exist_yet() -> None:
-    assert "gerar-instancias" not in rotina.group.commands, (
-        "apollo rotina gerar-instancias is Phase 5 scope (JOB-02) — no stub or "
-        "placeholder may pre-empt it in Phase 3"
+def test_gerar_instancias_exists_at_group_level() -> None:
+    assert "gerar-instancias" in rotina.group.commands, (
+        "apollo rotina gerar-instancias (Phase 5, JOB-02) must exist at the "
+        "top level of the rotina group"
+    )
+    assert "gerar-instancias" not in rotina.instancia.commands, (
+        "gerar-instancias must never live under `rotina instancia` — it "
+        "operates across all templates, not a single instance"
     )
 
 

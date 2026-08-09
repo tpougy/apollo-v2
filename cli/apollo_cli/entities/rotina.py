@@ -7,14 +7,17 @@
 LOCKED (PROJECT.md C-07).
 
 By design (PROJECT.md C-06), `instanciasRotina` has NO `criar` and NO
-`deletar` command here, and NO `gerar-instancias` command lands in this
-phase. Instances exist to satisfy Phase 5's idempotent generation job, keyed
-by a unique `dedupeKey = hash(templateId + competencia + dataPrevista)`. A
+`deletar` command here. Instances exist to satisfy Phase 5's idempotent
+generation job, keyed by a unique `dedupeKey` (plain
+`f"{templateId}:{competencia}:{dataPrevista}"` concatenation — see
+`apollo_cli.routine_job`'s module docstring for why it is not a hash). A
 hand-created or hand-re-dated instance would carry a wrong or absent
 `dedupeKey`, and the very next job run would then create a duplicate
 alongside it — silently breaking the one idempotency guarantee this system
-promises. `apollo rotina gerar-instancias` (the job trigger) is Phase 5
-scope (JOB-02) and must not be stubbed here.
+promises. `apollo rotina gerar-instancias` (Phase 5, JOB-02) is now wired at
+the top level of this group and is the ONLY sanctioned creator of
+`instanciasRotina` records — this is still the reasoning behind
+`instancia` having no `criar`/`deletar`.
 
 The owner-id field is never referenced by its schema name in this module —
 grep-verified to be absent here — because it is injected exclusively by
@@ -37,6 +40,7 @@ import click
 
 from apollo_cli.crud_helpers import (
     EXIT_API_ERROR,
+    client_for_session,
     create_entity,
     delete_entity,
     drop_none,
@@ -44,7 +48,9 @@ from apollo_cli.crud_helpers import (
     get_entity,
     list_entities,
     update_entity,
+    validate_iso_date,
 )
+from apollo_cli.routine_job import run_routine_instance_job, today_utc_iso_date
 
 _ETYPE_TEMPLATE = "templatesRotina"
 _ETYPE_INSTANCIA = "instanciasRotina"
@@ -83,8 +89,8 @@ group = click.Group(
     help=(
         "Manage recurring-routine templates (`templatesRotina`) and their "
         "generated instances (`instanciasRotina`). Instances are created "
-        "and dated only by the Phase 5 generation job — never by hand from "
-        "this CLI."
+        "and dated only by `apollo rotina gerar-instancias` — never by hand "
+        "from this CLI."
     ),
 )
 
@@ -322,3 +328,47 @@ def status(eid: str, status: str) -> None:
     """
     update_entity(etype=_ETYPE_INSTANCIA, eid=eid, fields={"status": status})
     emit({"id": eid, "updated": True})
+
+
+@group.command(name="gerar-instancias")
+@click.option(
+    "--data-base",
+    default=None,
+    callback=validate_iso_date,
+    help=(
+        "Data base (YYYY-MM-DD) usada como 'hoje' para o range de geracao "
+        "[data-base, fim do proximo mes]. Omitir usa a data UTC atual."
+    ),
+)
+@click.option(
+    "--dry-run/--no-dry-run",
+    default=False,
+    help=(
+        "Com --dry-run, executa toda a consulta e o diff mas NAO escreve nada "
+        "— apenas reporta o que seria criado. Default: --no-dry-run (escreve)."
+    ),
+)
+def gerar_instancias(data_base: str | None, dry_run: bool) -> None:
+    """Executa o job idempotente de geracao de `instanciasRotina`.
+
+    Consulta os templates ativos e as instancias ja existentes para o dono
+    autenticado, calcula o conjunto esperado de instancias para o range
+    [hoje (ou --data-base), fim do proximo mes] e grava — via upsert
+    lookup-keyed por `dedupeKey` — apenas as instancias que ainda nao
+    existem. Este comando nunca duplica e nunca deleta uma instanciaRotina
+    existente; rodar duas vezes seguidas produz o mesmo resultado.
+
+    Templates com `regraCompetencia` 'manual' ou desconhecida nunca geram
+    instancia automaticamente (aparecem em `skipped`, com o motivo). Um
+    template 'encadeado' herda a `competencia` e conta dias uteis a partir
+    da `dataPrevista` do seu antecessor (nunca do proprio `regraCompetencia`
+    do encadeado) — ver o docstring de `apollo_cli.routine_job` para as
+    regras completas (D-05-B/D-05-D/D-05-E/D-05-F).
+
+    Emite exatamente um documento JSON: `{"created": [...], "existing": [...],
+    "skipped": [...]}`, todas as listas de dedupeKey ordenadas.
+    """
+    client, session = client_for_session()
+    today = data_base or today_utc_iso_date()
+    report = run_routine_instance_job(client, session.user_id, today, dry_run=dry_run)
+    emit(report)
