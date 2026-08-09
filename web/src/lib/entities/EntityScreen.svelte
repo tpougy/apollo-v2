@@ -1,4 +1,7 @@
 <script lang="ts">
+  import { Badge } from "$lib/components/ui/badge";
+  import { Button } from "$lib/components/ui/button";
+  import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "$lib/components/ui/table";
   import { db, id } from "../db";
   import type { EntityConfig, LinkDef } from "./types";
 
@@ -112,6 +115,24 @@
     const choice = config.xorLink?.choices.find((c) => c.label === columnName);
     if (choice) return labelForLinkedValue(row, columnName, choice.targetLabelField);
     return "";
+  }
+
+  // Column-name allowlist for Badge rendering (ENTTBL-02), value-blind and
+  // never per-entity special-cased: any listColumn named "status",
+  // "tipoGeracao", or "tipoPrazo", plus any field of kind "boolean".
+  const BADGE_COLUMN_NAMES = new Set(["status", "tipoGeracao", "tipoPrazo"]);
+
+  function isBadgeColumn(columnName: string): boolean {
+    const field = config.fields.find((f) => f.name === columnName);
+    if (field?.kind === "boolean") return true;
+    return BADGE_COLUMN_NAMES.has(columnName);
+  }
+
+  function badgeVariantFor(columnName: string, row: Row): "secondary" | "outline" {
+    const field = config.fields.find((f) => f.name === columnName);
+    if (field?.kind === "boolean") return row[field.name] ? "secondary" : "outline";
+    if (columnName === "status") return "secondary";
+    return "outline";
   }
 
   type FormValues = Record<string, string | number | boolean>;
@@ -340,52 +361,66 @@
   {:else if query.error}
     <p data-testid="entity-error">{query.error.message}</p>
   {:else}
-    <table>
-      <thead>
-        <tr>
+    <Table>
+      <TableHeader>
+        <TableRow>
           {#each config.listColumns as column}
-            <th>{column}</th>
+            <TableHead>{column}</TableHead>
           {/each}
-          <th>ações</th>
-        </tr>
-      </thead>
-      <tbody>
+          <TableHead>ações</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
         {#if rowsOf().length === 0}
-          <tr data-testid="empty-state">
-            <td colspan={config.listColumns.length + 1}>Nenhum registro.</td>
-          </tr>
+          <TableRow data-testid="empty-state">
+            <TableCell colspan={config.listColumns.length + 1}>Nenhum registro.</TableCell>
+          </TableRow>
         {:else}
           {#each rowsOf() as row (row.id)}
-            <tr data-testid="row" data-eid={row.id}>
+            <TableRow data-testid="row" data-eid={row.id}>
               {#each config.listColumns as column}
-                <td>{columnValue(row, column)}</td>
+                <TableCell>
+                  {#if isBadgeColumn(column)}
+                    <Badge variant={badgeVariantFor(column, row)}>
+                      {columnValue(row, column)}
+                    </Badge>
+                  {:else}
+                    {columnValue(row, column)}
+                  {/if}
+                </TableCell>
               {/each}
-              <td>
+              <TableCell>
                 {#if config.capabilities.update}
-                  <button type="button" data-testid="row-edit" onclick={() => startEdit(row)}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    data-testid="row-edit"
+                    onclick={() => startEdit(row)}
+                  >
                     editar
-                  </button>
+                  </Button>
                 {/if}
                 {#if config.capabilities.delete}
-                  <button
-                    type="button"
+                  <Button
+                    variant="destructive"
+                    size="sm"
                     data-testid="row-delete"
                     onclick={() => handleDelete(row)}
                   >
                     excluir
-                  </button>
+                  </Button>
                 {/if}
-              </td>
-            </tr>
+              </TableCell>
+            </TableRow>
           {/each}
         {/if}
-      </tbody>
-    </table>
+      </TableBody>
+    </Table>
 
     {#if mode === null && config.capabilities.create}
-      <button type="button" data-testid="entity-create-start" onclick={startCreate}>
+      <Button type="button" data-testid="entity-create-start" onclick={startCreate}>
         novo
-      </button>
+      </Button>
     {/if}
 
     {#if mode !== null}
