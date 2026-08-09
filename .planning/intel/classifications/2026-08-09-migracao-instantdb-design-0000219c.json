@@ -1,0 +1,27 @@
+{
+  "source_path": "/home/thomaz/pessoal/apollo-v2/docs/superpowers/specs/2026-08-09-migracao-instantdb-design.md",
+  "type": "SPEC",
+  "confidence": "high",
+  "manifest_override": true,
+  "title": "Migração Apollo → InstantDB + Svelte SPA + CLI Python",
+  "summary": "Technical design spec for rewriting Apollo onto InstantDB, a pure Svelte 5 SPA, and a Python CLI replacing the MCP server.",
+  "scope": [
+    "InstantDB schema (instant.schema.ts)",
+    "InstantDB permissions (instant.perms.ts)",
+    "Svelte 5 SPA (web/)",
+    "Python CLI (cli/)",
+    "ANBIMA business-day calendar (bizdays)",
+    "instanciasRotina idempotent generation job",
+    "authentication via magic code",
+    "monorepo structure (apollo-v2)"
+  ],
+  "cross_refs": [
+    "~/pessoal/apollo",
+    "~/pessoal/ultima-missao",
+    "github.com/ianliu/feriados-anbima",
+    "PROJECT.md"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}
