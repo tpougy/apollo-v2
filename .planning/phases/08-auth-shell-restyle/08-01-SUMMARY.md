@@ -24,7 +24,7 @@ actuals:
 
 # Tech tracking
 tech-stack:
-  added: ["bits-ui@^2.16.3 (transitive, via shadcn-svelte Label)"]
+  added: ["bits-ui@^2.16.3 (transitive, via shadcn-svelte Label)", "@internationalized/date@^3.12.0 (transitive, bits-ui's declared peerDependency — required by bits-ui@2.18.1 per its package.json even though no Phase 8 component imports it directly; not dead weight)"]
   patterns:
     - "shadcn-svelte Button defaults type=\"button\" — every restyled submit Button needs explicit type=\"submit\""
     - "Loading state = disabled Button + LoaderCircle icon child (animate-spin), no dedicated Spinner component"
@@ -148,7 +148,7 @@ Each task was committed atomically:
 - `web/e2e/login-flow.spec.ts` - new, live loading/error-state proof (anon project)
 - `web/e2e/shell-nav.spec.ts` - new, live nav/active-state/logout proof (authed project)
 - `web/playwright.config.ts` - additive edit broadening `anon` testMatch / `authed` testIgnore to include `login-flow.spec.ts`
-- `web/package.json`, `web/bun.lock` - `bits-ui` added as a new dependency
+- `web/package.json`, `web/bun.lock` - `bits-ui` added as a new dependency, plus `@internationalized/date` (bits-ui's declared peerDependency, pulled in by the same `shadcn-svelte add` run)
 
 ## Decisions Made
 
