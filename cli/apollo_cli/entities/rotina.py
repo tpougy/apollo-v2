@@ -149,6 +149,19 @@ group.add_command(instancia)
         "already exist."
     ),
 )
+@click.option(
+    "--offset-dias",
+    type=int,
+    default=None,
+    help=(
+        "Meaning depends on --tipo-geracao (PROJECT.md/05-01-PLAN.md D-05-A): "
+        "'du_fixo' = Nth BUSINESS day of the month (integer >= 1); "
+        "'corrido_fixo' = Nth CALENDAR day of the month, clamped to the "
+        "month's last day (integer >= 1); 'encadeado' = number of BUSINESS "
+        "days after the antecessor instance's dataPrevista (integer >= 0, "
+        "D-05-B). Omit to leave the field unset entirely (never writes 0)."
+    ),
+)
 def criar(
     nome: str,
     tipo_geracao: str,
@@ -157,6 +170,7 @@ def criar(
     ativo: bool,
     fundo_id: str | None,
     antecessor_id: str | None,
+    offset_dias: int | None,
 ) -> None:
     """Create a routine template. The owner comes from the authenticated
     session — it cannot be supplied as a flag."""
@@ -172,6 +186,7 @@ def criar(
             "regraCompetencia": regra_competencia,
             "propagarAtrasoSoft": propagar_atraso_soft,
             "ativo": ativo,
+            "offsetDias": offset_dias,
         },
         links=links,
     )
@@ -208,6 +223,20 @@ def criar(
     default=None,
     help="New id of the predecessor `templatesRotina` self-link. Must already exist.",
 )
+@click.option(
+    "--offset-dias",
+    type=int,
+    default=None,
+    help=(
+        "New offset value. Meaning depends on --tipo-geracao "
+        "(PROJECT.md/05-01-PLAN.md D-05-A): 'du_fixo' = Nth BUSINESS day of "
+        "the month (integer >= 1); 'corrido_fixo' = Nth CALENDAR day of the "
+        "month, clamped to the month's last day (integer >= 1); "
+        "'encadeado' = number of BUSINESS days after the antecessor "
+        "instance's dataPrevista (integer >= 0, D-05-B). Omit to leave the "
+        "stored value unchanged — never resets it to 0."
+    ),
+)
 def editar(
     eid: str,
     nome: str | None,
@@ -217,6 +246,7 @@ def editar(
     ativo: bool | None,
     fundo_id: str | None,
     antecessor_id: str | None,
+    offset_dias: int | None,
 ) -> None:
     """Update a routine template. Ownership is immutable and never accepted
     here. Boolean flags default to unset (`None`) so omitting a flag never
@@ -235,6 +265,7 @@ def editar(
                 "regraCompetencia": regra_competencia,
                 "propagarAtrasoSoft": propagar_atraso_soft,
                 "ativo": ativo,
+                "offsetDias": offset_dias,
             }
         ),
         links=links,
