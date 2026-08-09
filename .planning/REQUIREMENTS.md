@@ -15,13 +15,13 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Auth Screen
 
-- [ ] **AUTHUI-01**: `LoginScreen.svelte` (magic-code email + code entry) is rebuilt with shadcn-svelte `Input`, `Label`, `Button`, and `Card`/`Alert` for error states, preserving the existing two-step auth flow exactly
-- [ ] **AUTHUI-02**: Loading/error/success states of the login flow are visually distinguishable using shadcn-svelte primitives (no bespoke CSS)
+- [x] **AUTHUI-01**: `LoginScreen.svelte` (magic-code email + code entry) is rebuilt with shadcn-svelte `Input`, `Label`, `Button`, and `Card`/`Alert` for error states, preserving the existing two-step auth flow exactly
+- [x] **AUTHUI-02**: Loading/error/success states of the login flow are visually distinguishable using shadcn-svelte primitives (no bespoke CSS)
 
 ### Shell / Navigation
 
-- [ ] **SHELLUI-01**: `Shell.svelte` (top-level authenticated layout: entity nav + logout) is rebuilt with shadcn-svelte `Button` and standard layout utilities (flex/grid via Tailwind) — no dashboard/panel layout (out of scope, see below)
-- [ ] **SHELLUI-02**: The active entity/section is visually indicated in the nav using shadcn-svelte conventions (e.g. active nav state), not a bespoke indicator
+- [x] **SHELLUI-01**: `Shell.svelte` (top-level authenticated layout: entity nav + logout) is rebuilt with shadcn-svelte `Button` and standard layout utilities (flex/grid via Tailwind) — no dashboard/panel layout (out of scope, see below)
+- [x] **SHELLUI-02**: The active entity/section is visually indicated in the nav using shadcn-svelte conventions (e.g. active nav state), not a bespoke indicator
 
 ### Entity Screen — Table
 
@@ -73,10 +73,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SETUP-01 | Phase 7 | Complete |
 | SETUP-02 | Phase 7 | Complete |
 | SETUP-03 | Phase 7 | Complete |
-| AUTHUI-01 | Phase 8 | Pending |
-| AUTHUI-02 | Phase 8 | Pending |
-| SHELLUI-01 | Phase 8 | Pending |
-| SHELLUI-02 | Phase 8 | Pending |
+| AUTHUI-01 | Phase 8 | Complete |
+| AUTHUI-02 | Phase 8 | Complete |
+| SHELLUI-01 | Phase 8 | Complete |
+| SHELLUI-02 | Phase 8 | Complete |
 | ENTTBL-01 | Phase 9 | Pending |
 | ENTTBL-02 | Phase 9 | Pending |
 | ENTTBL-03 | Phase 9 | Pending |

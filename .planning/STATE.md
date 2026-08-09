@@ -4,17 +4,17 @@ milestone: v1.1
 milestone_name: UI bonita com Tailwind + shadcn-svelte
 current_phase: 8
 current_phase_name: Auth & Shell Restyle
-status: planning
-stopped_at: Completed 07-01-PLAN.md — Phase 7 (Design System Setup) fully executed
-last_updated: "2026-08-09T22:21:42.200Z"
+status: verifying
+stopped_at: Completed 08-01-PLAN.md — Phase 8 (Auth & Shell Restyle) fully executed
+last_updated: "2026-08-09T22:57:37.716Z"
 last_activity: 2026-08-09
 last_activity_desc: "`/gsd-execute-phase 7` executed `07-01-PLAN.md`; `.planning/phases/07-design-system-setup/07-01-SUMMARY.md` written"
 progress:
   total_phases: 5
-  completed_phases: 1
-  total_plans: 1
-  completed_plans: 1
-  percent: 20
+  completed_phases: 2
+  total_plans: 2
+  completed_plans: 2
+  percent: 40
 ---
 
 # Project State
@@ -29,9 +29,9 @@ See: .planning/PROJECT.md (updated 2026-08-09)
 ## Current Position
 
 Phase: 8 of 11 (Auth & Shell Restyle)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-08-09 — Phase 7 complete, transitioned to Phase 8
+Plan: 1 of 1
+Status: Phase complete — ready for verification
+Last activity: 2026-08-09 — Executing 08-01-PLAN.md
 
 Progress: [██████████] 100% (v1.1)
 
@@ -61,6 +61,7 @@ Progress: [██████████] 100% (v1.1)
 | Plan | Duration | Tasks | Files |
 |------|----------|-------|-------|
 | Phase 07 P01 | 8min | 3 tasks | 14 files |
+| Phase 8 P1 | 20min | 3 tasks | 26 files |
 
 ## Accumulated Context
 
@@ -74,6 +75,9 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase 7]: Phase 7: wired $lib alias before running shadcn-svelte init (CLI preflight validates alias resolution, stricter than research found)
 - [Phase 7]: Phase 7: added DOM lib to tsconfig.e2e.json for Playwright page.evaluate() DOM assertions, fixed 3 pre-existing evaluateAll() casts it exposed
 - [Phase 7]: Phase 7: replaced any with unknown in shadcn-svelte-generated utils.ts type helpers to keep Biome at zero suppressions
+- [Phase 8]: Card wraps the whole two-step login form (not only the error branch), matching ROADMAP Phase 8 success criterion 1's literal Card-at-each-step requirement
+- [Phase 8]: secondary/ghost Button variant pair chosen for nav active-state — gives a resting-state background-color difference assertable via getComputedStyle
+- [Phase 8]: login-flow.spec.ts induces the live auth error via a deliberately-wrong-but-real-derived code instead of waiting for natural ~60-90s expiry
 
 ### Pending Todos
 
@@ -94,8 +98,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-09T22:03:26.862Z
-Stopped at: Completed 07-01-PLAN.md — Phase 7 (Design System Setup) fully executed
+Last session: 2026-08-09T22:57:37.709Z
+Stopped at: Completed 08-01-PLAN.md — Phase 8 (Auth & Shell Restyle) fully executed
 Resume file: None
 
 ## Operator Next Steps
