@@ -215,7 +215,12 @@
       ],
       "existing": [],
       "expectedInstances": [],
-      "expectedSkipped": [{ "templateId": "tpl-c", "reason": "offset_dias_ausente" }]
+      "expectedSkipped": [
+        {
+          "templateId": "tpl-c",
+          "reason": "offset_dias_ausente"
+        }
+      ]
     },
     {
       "nome": "offsetDias=0 e invalido para du_fixo (precisa ser >=1)",
@@ -232,7 +237,12 @@
       ],
       "existing": [],
       "expectedInstances": [],
-      "expectedSkipped": [{ "templateId": "tpl-d", "reason": "offset_dias_invalido" }]
+      "expectedSkipped": [
+        {
+          "templateId": "tpl-d",
+          "reason": "offset_dias_invalido"
+        }
+      ]
     },
     {
       "nome": "regraCompetencia 'manual' significa 'sem geracao automatica', nunca um default adivinhado",
@@ -249,10 +259,15 @@
       ],
       "existing": [],
       "expectedInstances": [],
-      "expectedSkipped": [{ "templateId": "tpl-e", "reason": "regra_competencia_nao_suportada" }]
+      "expectedSkipped": [
+        {
+          "templateId": "tpl-e",
+          "reason": "regra_competencia_nao_suportada"
+        }
+      ]
     },
     {
-      "nome": "tipoGeracao 'corrido_fixo' ainda nao implementado nesta plan (05-04 substitui este branch)",
+      "nome": "corrido_fixo offsetDias=10, hoje antes do dia 10: gera os dois meses",
       "today": "2026-08-09",
       "templates": [
         {
@@ -265,11 +280,140 @@
         }
       ],
       "existing": [],
-      "expectedInstances": [],
-      "expectedSkipped": [{ "templateId": "tpl-f", "reason": "tipo_geracao_desconhecido" }]
+      "expectedInstances": [
+        {
+          "dedupeKey": "tpl-f:2026-08:2026-08-10",
+          "templateId": "tpl-f",
+          "competencia": "2026-08",
+          "dataPrevista": "2026-08-10",
+          "tipoPrazo": "soft"
+        },
+        {
+          "dedupeKey": "tpl-f:2026-09:2026-09-10",
+          "templateId": "tpl-f",
+          "competencia": "2026-09",
+          "dataPrevista": "2026-09-10",
+          "tipoPrazo": "soft"
+        }
+      ],
+      "expectedSkipped": []
     },
     {
-      "nome": "tipoGeracao 'encadeado' ainda nao implementado nesta plan (05-04 substitui este branch)",
+      "nome": "corrido_fixo offsetDias=10, hoje depois do dia 10 deste mes: so o dia 10 do proximo mes retorna",
+      "today": "2026-08-15",
+      "templates": [
+        {
+          "id": "tpl-f2",
+          "tipoGeracao": "corrido_fixo",
+          "regraCompetencia": "M0",
+          "offsetDias": 10,
+          "ativo": true,
+          "antecessor": null
+        }
+      ],
+      "existing": [],
+      "expectedInstances": [
+        {
+          "dedupeKey": "tpl-f2:2026-09:2026-09-10",
+          "templateId": "tpl-f2",
+          "competencia": "2026-09",
+          "dataPrevista": "2026-09-10",
+          "tipoPrazo": "soft"
+        }
+      ],
+      "expectedSkipped": []
+    },
+    {
+      "nome": "corrido_fixo offsetDias=31 em fevereiro nao bissexto: clampa para 28, nunca some (marco nao clampa)",
+      "today": "2026-02-20",
+      "templates": [
+        {
+          "id": "tpl-f3",
+          "tipoGeracao": "corrido_fixo",
+          "regraCompetencia": "M0",
+          "offsetDias": 31,
+          "ativo": true,
+          "antecessor": null
+        }
+      ],
+      "existing": [],
+      "expectedInstances": [
+        {
+          "dedupeKey": "tpl-f3:2026-02:2026-02-28",
+          "templateId": "tpl-f3",
+          "competencia": "2026-02",
+          "dataPrevista": "2026-02-28",
+          "tipoPrazo": "soft"
+        },
+        {
+          "dedupeKey": "tpl-f3:2026-03:2026-03-31",
+          "templateId": "tpl-f3",
+          "competencia": "2026-03",
+          "dataPrevista": "2026-03-31",
+          "tipoPrazo": "soft"
+        }
+      ],
+      "expectedSkipped": []
+    },
+    {
+      "nome": "corrido_fixo offsetDias=31 em mes de 30 dias: clampa para 30; mes de 31 dias cai em domingo e NAO e ajustado (prova do nao-snap)",
+      "today": "2026-04-15",
+      "templates": [
+        {
+          "id": "tpl-f4",
+          "tipoGeracao": "corrido_fixo",
+          "regraCompetencia": "M0",
+          "offsetDias": 31,
+          "ativo": true,
+          "antecessor": null
+        }
+      ],
+      "existing": [],
+      "expectedInstances": [
+        {
+          "dedupeKey": "tpl-f4:2026-04:2026-04-30",
+          "templateId": "tpl-f4",
+          "competencia": "2026-04",
+          "dataPrevista": "2026-04-30",
+          "tipoPrazo": "soft"
+        },
+        {
+          "dedupeKey": "tpl-f4:2026-05:2026-05-31",
+          "templateId": "tpl-f4",
+          "competencia": "2026-05",
+          "dataPrevista": "2026-05-31",
+          "tipoPrazo": "soft"
+        }
+      ],
+      "expectedSkipped": []
+    },
+    {
+      "nome": "corrido_fixo cujo dia alvo cai em feriado ANBIMA (2026-09-07, Independencia): NAO e movido para o proximo dia util",
+      "today": "2026-08-09",
+      "templates": [
+        {
+          "id": "tpl-f5",
+          "tipoGeracao": "corrido_fixo",
+          "regraCompetencia": "M0",
+          "offsetDias": 7,
+          "ativo": true,
+          "antecessor": null
+        }
+      ],
+      "existing": [],
+      "expectedInstances": [
+        {
+          "dedupeKey": "tpl-f5:2026-09:2026-09-07",
+          "templateId": "tpl-f5",
+          "competencia": "2026-09",
+          "dataPrevista": "2026-09-07",
+          "tipoPrazo": "soft"
+        }
+      ],
+      "expectedSkipped": []
+    },
+    {
+      "nome": "tipoGeracao 'encadeado' ainda nao implementado neste commit (Task 2 substitui este branch)",
       "today": "2026-08-09",
       "templates": [
         {
@@ -278,12 +422,19 @@
           "regraCompetencia": "M0",
           "offsetDias": 2,
           "ativo": true,
-          "antecessor": { "id": "tpl-a" }
+          "antecessor": {
+            "id": "tpl-a"
+          }
         }
       ],
       "existing": [],
       "expectedInstances": [],
-      "expectedSkipped": [{ "templateId": "tpl-g", "reason": "tipo_geracao_desconhecido" }]
+      "expectedSkipped": [
+        {
+          "templateId": "tpl-g",
+          "reason": "tipo_geracao_desconhecido"
+        }
+      ]
     },
     {
       "nome": "template mal configurado nao suprime um template saudavel na mesma chamada",
@@ -323,7 +474,12 @@
           "tipoPrazo": "soft"
         }
       ],
-      "expectedSkipped": [{ "templateId": "tpl-h", "reason": "offset_dias_ausente" }]
+      "expectedSkipped": [
+        {
+          "templateId": "tpl-h",
+          "reason": "offset_dias_ausente"
+        }
+      ]
     },
     {
       "nome": "offsetDias grande o suficiente para estourar CALENDAR_END (CalendarRangeError) e reportado como skipped; template saudavel na mesma chamada nao e afetado",
@@ -363,7 +519,12 @@
           "tipoPrazo": "soft"
         }
       ],
-      "expectedSkipped": [{ "templateId": "tpl-j", "reason": "offset_dias_invalido" }]
+      "expectedSkipped": [
+        {
+          "templateId": "tpl-j",
+          "reason": "offset_dias_invalido"
+        }
+      ]
     },
     {
       "nome": "template inativo (ativo=false) nunca aparece em expected nem em skipped",

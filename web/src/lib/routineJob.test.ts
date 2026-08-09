@@ -52,6 +52,7 @@ interface Scenario {
     templateId: string;
     competencia: string;
     dataPrevista: string;
+    dataPrevistaEstimada?: string;
     tipoPrazo: string;
   }>;
   expectedSkipped: Array<{ templateId: string; reason: SkipReason }>;

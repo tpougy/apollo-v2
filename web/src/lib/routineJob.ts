@@ -22,9 +22,16 @@
  * `apollo rotina instancia listar` output and removes any risk of a TS/Python
  * hash-output mismatch.
  *
- * Only `tipoGeracao: "du_fixo"` is implemented in this plan (05-02).
- * `corrido_fixo` and `encadeado` are reserved for plan 05-04, which replaces
- * their `tipo_geracao_desconhecido` branch below.
+ * Plan 05-04 completes the type coverage with `corrido_fixo` and
+ * `encadeado`. `corrido_fixo` reuses the same range/dedupeKey/competencia
+ * tail as `du_fixo` (factored into `computeFixedInstances`) but dates each
+ * instance off `nthCalendarDayOfMonth` instead of `nthBusinessDayOfMonth`,
+ * and — deliberately — never snaps the resulting date onto a business day;
+ * a calendar-day rule means exactly that, including landing on a weekend or
+ * an ANBIMA holiday.
+ *
+ * `encadeado` is reserved for this plan's Task 2, which replaces its
+ * `tipo_geracao_desconhecido` fall-through with real chained resolution.
  */
 
 import { addBusinessDays, isBusinessDay } from "./bizdays";
@@ -65,9 +72,9 @@ export type SkipReason =
   | "offset_dias_ausente"
   | "offset_dias_invalido"
   | "regra_competencia_nao_suportada"
-  | "antecessor_ausente" // reserved for 05-04
-  | "antecessor_sem_instancia" // reserved for 05-04
-  | "antecessor_ciclico"; // reserved for 05-04
+  | "antecessor_ausente" // encadeado template has no antecessor link
+  | "antecessor_sem_instancia" // antecessor produced no instance, persisted or computed
+  | "antecessor_ciclico"; // unresolved after the bounded sweep: cycle or dangling antecessor
 
 export interface SkippedTemplate {
   templateId: string;
@@ -176,20 +183,28 @@ function validateOffsetDias(
   return { ok: true };
 }
 
+type NthDayFn = (year: number, month: number, n: number) => string;
+
 /**
- * Compute the `du_fixo` expected instances for a single template across the
- * two candidate months touching `[today, endOfNextMonth(today)]`. Throws on
- * any underlying business-day computation error (e.g. `CalendarRangeError`)
- * so the caller's per-template try/catch can convert it into a `skipped`
- * entry — this function itself never catches.
+ * Compute the `du_fixo`/`corrido_fixo` expected instances for a single
+ * template across the two candidate months touching
+ * `[today, endOfNextMonth(today)]`. `nthDayFn` supplies the type-specific
+ * date rule (`nthBusinessDayOfMonth` or `nthCalendarDayOfMonth`) — everything
+ * else (range filter, competencia derivation, dedupeKey, tipoPrazo) is
+ * shared between the two fixed-offset generation types. Throws on any
+ * underlying business-day computation error (e.g. `CalendarRangeError`) so
+ * the caller's per-template try/catch can convert it into a `skipped` entry
+ * — this function itself never catches.
  */
-function computeDuFixoInstances(
+function computeFixedInstances(
   template: TemplateRow,
   today: string,
   rangeStart: string,
   rangeEnd: string,
+  minOffsetDias: number,
+  nthDayFn: NthDayFn,
 ): { instances: ExpectedInstance[] } | { skipReason: SkipReason } {
-  const offsetValidation = validateOffsetDias(template.offsetDias, 1);
+  const offsetValidation = validateOffsetDias(template.offsetDias, minOffsetDias);
   if (!offsetValidation.ok) {
     return { skipReason: offsetValidation.reason as SkipReason };
   }
@@ -208,7 +223,7 @@ function computeDuFixoInstances(
 
   const instances: ExpectedInstance[] = [];
   for (const [y, m] of candidateMonths) {
-    const dataPrevista = nthBusinessDayOfMonth(y, m, offsetDias);
+    const dataPrevista = nthDayFn(y, m, offsetDias);
     if (dataPrevista < rangeStart || dataPrevista > rangeEnd) {
       continue;
     }
@@ -233,8 +248,8 @@ function computeDuFixoInstances(
 export function computeExpectedInstances(
   templates: readonly TemplateRow[],
   today: string,
-  // Accepted for interface stability across plans (05-04 uses this for
-  // encadeado antecessor resolution); intentionally unused in this plan.
+  // Accepted for interface stability across plans (Task 2 of this plan uses
+  // this for encadeado antecessor resolution); intentionally unused here.
   existing: readonly ExistingInstance[],
 ): ComputeResult {
   void existing;
@@ -251,14 +266,32 @@ export function computeExpectedInstances(
     }
 
     try {
-      if (template.tipoGeracao !== "du_fixo") {
-        // corrido_fixo and encadeado are reserved for plan 05-04, which
-        // replaces this branch with real computation for both types.
+      let result: { instances: ExpectedInstance[] } | { skipReason: SkipReason };
+      if (template.tipoGeracao === "du_fixo") {
+        result = computeFixedInstances(
+          template,
+          today,
+          rangeStart,
+          rangeEnd,
+          1,
+          nthBusinessDayOfMonth,
+        );
+      } else if (template.tipoGeracao === "corrido_fixo") {
+        result = computeFixedInstances(
+          template,
+          today,
+          rangeStart,
+          rangeEnd,
+          1,
+          nthCalendarDayOfMonth,
+        );
+      } else {
+        // encadeado is reserved for this plan's Task 2, which replaces this
+        // branch with real topological resolution.
         skipped.push({ templateId: template.id, reason: "tipo_geracao_desconhecido" });
         continue;
       }
 
-      const result = computeDuFixoInstances(template, today, rangeStart, rangeEnd);
       if ("skipReason" in result) {
         skipped.push({ templateId: template.id, reason: result.skipReason });
         continue;
