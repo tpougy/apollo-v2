@@ -124,11 +124,16 @@ Plans:
   3. The job never deletes an existing `instanciasRotina` record.
   4. `apollo rotina gerar-instancias` triggers the same generation logic from the CLI and produces the same non-duplicating result whether run against records the SPA already generated or vice versa.
 
-**Plans**: TBD
+**Plans**: 6 plans in 6 waves
 
 Plans:
 
-- [ ] 05-01: TBD
+- [ ] 05-01-PLAN.md — add `templatesRotina.offsetDias` to the schema, push it live, and expose it on both the CLI (`--offset-dias`) and the SPA template screen; records D-05-A/B/C (wave 1)
+- [ ] 05-02-PLAN.md — pure TS compute core (day math, competencia shift, dedupeKey, `du_fixo` tracer) driven by the new cross-runtime fixture `shared/routine-job.testcases.json` (wave 2)
+- [ ] 05-03-PLAN.md — query/diff/lookup-upsert orchestration + `Shell.svelte` onMount trigger, proven by a live double-run SPA e2e with zero duplicates and preserved `concluida` status (wave 3)
+- [ ] 05-04-PLAN.md — `corrido_fixo` (clamped calendar day) and `encadeado` (topological, inherited competencia, business-day offset, `dataPrevistaEstimada`), re-proven live (wave 4)
+- [ ] 05-05-PLAN.md — `cli/apollo_cli/routine_job.py` Python twin proven fixture-identical offline, plus `apollo rotina gerar-instancias` with live CLI double-run idempotency (wave 5)
+- [ ] 05-06-PLAN.md — cross-channel interop both directions, concurrent double-run non-duplication proof, `verify-phase-05.sh`, operator READMEs (wave 6)
 
 ### Phase 6: End-to-End Verification
 
