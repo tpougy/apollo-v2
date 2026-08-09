@@ -1,0 +1,32 @@
+[
+  {
+    "id": "biz-day-ordinary-wednesday",
+    "op": "isBusinessDay",
+    "date": "2024-03-06",
+    "expected": true
+  },
+  {
+    "id": "biz-day-saturday",
+    "op": "isBusinessDay",
+    "date": "2024-03-09",
+    "expected": false
+  },
+  {
+    "id": "biz-day-sunday",
+    "op": "isBusinessDay",
+    "date": "2024-03-10",
+    "expected": false
+  },
+  {
+    "id": "biz-day-holiday-on-saturday",
+    "op": "isBusinessDay",
+    "date": "2024-09-07",
+    "expected": false
+  },
+  {
+    "id": "biz-day-holiday-on-wednesday",
+    "op": "isBusinessDay",
+    "date": "2024-12-25",
+    "expected": false
+  }
+]
