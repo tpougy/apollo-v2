@@ -108,8 +108,15 @@ echo "CAL-02 / CAL-03: PASS"
 # ---------------------------------------------------------------------------
 echo "-- CAL-04: cross-runtime parity"
 
-(cd web && bun test)
-(cd cli && uv run pytest -q)
+# Scoped to `src` (web/e2e/*.spec.ts are Playwright specs added in Phase 4,
+# incompatible with bun's native test runner) and to `-m "not live"` (this is
+# an OFFLINE parity gate, per this echo's own "no network" framing -- the
+# unscoped `pytest -q` this used to run would, now that later phases have
+# added `@pytest.mark.live` modules, re-run the ENTIRE live suite including
+# CRUD, auth-rejection, routine-job, cross-user-isolation and interrupted-job
+# tests every time CAL-04 runs, none of which this gate is about).
+(cd web && bun test src)
+(cd cli && uv run pytest -q -m "not live")
 
 if grep -rnE '"op"\s*:' web/src/lib/bizdays.test.ts cli/tests/test_bizdays.py; then
   echo "FAIL: test-case data inlined in a consumer instead of the shared fixture" >&2
