@@ -4,17 +4,17 @@ milestone: v1.1
 milestone_name: UI bonita com Tailwind + shadcn-svelte
 current_phase: 9
 current_phase_name: Entity Table Restyle
-status: planning
-stopped_at: Completed 08-01-PLAN.md — Phase 8 (Auth & Shell Restyle) fully executed
-last_updated: "2026-08-09T23:12:26.006Z"
+status: executing
+stopped_at: Completed 09-01-PLAN.md — Phase 9 (Entity Table Restyle) fully executed
+last_updated: "2026-08-09T23:49:50.469Z"
 last_activity: 2026-08-09
-last_activity_desc: "`/gsd-execute-phase 7` executed `07-01-PLAN.md`; `.planning/phases/07-design-system-setup/07-01-SUMMARY.md` written"
+last_activity_desc: "`/gsd-execute-phase 9` executed `09-01-PLAN.md`; `.planning/phases/09-entity-table-restyle/09-01-SUMMARY.md` written"
 progress:
   total_phases: 5
-  completed_phases: 2
-  total_plans: 2
-  completed_plans: 2
-  percent: 40
+  completed_phases: 3
+  total_plans: 3
+  completed_plans: 3
+  percent: 60
 ---
 
 # Project State
@@ -24,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-09)
 
 **Core value:** The user can execute every piece of controladoria data-entry work from either the Svelte SPA or the Python CLI, both authenticated as the same real user under the same InstantDB permission rules. Validated in v1.0. v1.1 makes the SPA side of that value visually coherent (Tailwind + shadcn-svelte), with no new functional capability.
-**Current focus:** Phase 7 — Design System Setup (Tailwind v4 + shadcn-svelte init)
+**Current focus:** Phase 9 — Entity Table Restyle (shadcn Table/Badge across all 9 entities)
 
 ## Current Position
 
 Phase: 9 of 11 (Entity Table Restyle)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-08-09 — Phase 8 complete, transitioned to Phase 9
+Plan: 09-01-PLAN.md (1 plan, 3 tasks, wave 1) — complete
+Status: Phase 9 complete — EntityScreen.svelte's list-view restyled onto shadcn Table/Badge/Button across all 9 domain entities, zero new npm dependency, all 4 ROADMAP success criteria proven via `web/e2e/entities-table-restyle.spec.ts` plus the full pre-existing suite (34/34) green
+Last activity: 2026-08-09 — `/gsd-execute-phase 9` executed `09-01-PLAN.md`; `.planning/phases/09-entity-table-restyle/09-01-SUMMARY.md` written
 
 Progress: [██████████] 100% (v1.1)
 
@@ -49,6 +49,7 @@ Progress: [██████████] 100% (v1.1)
 |-------|-------|-------|----------|
 | 7 | 1 | - | - |
 | 8 | 1 | - | - |
+| 9 | 1 | 16min | 16min |
 
 **Recent Trend:**
 
@@ -62,6 +63,7 @@ Progress: [██████████] 100% (v1.1)
 |------|----------|-------|-------|
 | Phase 07 P01 | 8min | 3 tasks | 14 files |
 | Phase 8 P1 | 20min | 3 tasks | 26 files |
+| Phase 09 P01 | 16min | 3 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -78,6 +80,8 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase 8]: Card wraps the whole two-step login form (not only the error branch), matching ROADMAP Phase 8 success criterion 1's literal Card-at-each-step requirement
 - [Phase 8]: secondary/ghost Button variant pair chosen for nav active-state — gives a resting-state background-color difference assertable via getComputedStyle
 - [Phase 8]: login-flow.spec.ts induces the live auth error via a deliberately-wrong-but-real-derived code instead of waiting for natural ~60-90s expiry
+- [Phase 9]: tipoPrazo is Badge-worthy by column name across all entities, including instanciasRotina where it's kind:"text" not "select" — matches ROADMAP SC#2's example list
+- [Phase 9]: status columns always render variant="secondary" regardless of free-text value — no keyword-matching color logic invented, per C-11's "não precisa inventar moda" intent
 
 ### Pending Todos
 
@@ -98,10 +102,10 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-09T22:57:37.709Z
-Stopped at: Completed 08-01-PLAN.md — Phase 8 (Auth & Shell Restyle) fully executed
+Last session: 2026-08-09T23:49:50.461Z
+Stopped at: Completed 09-01-PLAN.md — Phase 9 (Entity Table Restyle) fully executed
 Resume file: None
 
 ## Operator Next Steps
 
-- Run `/clear` for a fresh context window, then `/gsd-plan-phase 8` to plan Auth & Shell Restyle
+- Run `/clear` for a fresh context window, then `/gsd-plan-phase 10` to plan Entity Form Restyle

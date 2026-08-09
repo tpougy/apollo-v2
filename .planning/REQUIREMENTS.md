@@ -25,9 +25,9 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Entity Screen — Table
 
-- [ ] **ENTTBL-01**: `EntityScreen.svelte`'s list view for all 9 domain entities (`fundos`, `projetos`, `etapas`, `tarefas`, `templatesRotina`, `instanciasRotina`, `tickets`, `subtarefas`, `logInferenciaClaude`) renders via the shadcn-svelte `Table` (or its Data Table pattern) driven by the existing `EntityConfig`, with row actions (edit/delete) as shadcn `Button`s
-- [ ] **ENTTBL-02**: Status/enum-like fields (e.g. `status`, `tipoGeracao`, `tipoPrazo`) render as shadcn `Badge` instead of plain text
-- [ ] **ENTTBL-03**: Every entity's restricted capability (create-only, status-only update, read-only log) remains visually and functionally identical after the table restyle — no capability regression
+- [x] **ENTTBL-01**: `EntityScreen.svelte`'s list view for all 9 domain entities (`fundos`, `projetos`, `etapas`, `tarefas`, `templatesRotina`, `instanciasRotina`, `tickets`, `subtarefas`, `logInferenciaClaude`) renders via the shadcn-svelte `Table` (or its Data Table pattern) driven by the existing `EntityConfig`, with row actions (edit/delete) as shadcn `Button`s
+- [x] **ENTTBL-02**: Status/enum-like fields (e.g. `status`, `tipoGeracao`, `tipoPrazo`) render as shadcn `Badge` instead of plain text
+- [x] **ENTTBL-03**: Every entity's restricted capability (create-only, status-only update, read-only log) remains visually and functionally identical after the table restyle — no capability regression
 
 ### Entity Screen — Form
 
@@ -77,9 +77,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUTHUI-02 | Phase 8 | Complete |
 | SHELLUI-01 | Phase 8 | Complete |
 | SHELLUI-02 | Phase 8 | Complete |
-| ENTTBL-01 | Phase 9 | Pending |
-| ENTTBL-02 | Phase 9 | Pending |
-| ENTTBL-03 | Phase 9 | Pending |
+| ENTTBL-01 | Phase 9 | Complete |
+| ENTTBL-02 | Phase 9 | Complete |
+| ENTTBL-03 | Phase 9 | Complete |
 | ENTFRM-01 | Phase 10 | Pending |
 | ENTFRM-02 | Phase 10 | Pending |
 | ENTFRM-03 | Phase 10 | Pending |
