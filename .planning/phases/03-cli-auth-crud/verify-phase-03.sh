@@ -93,9 +93,9 @@ echo "-- CLI-06: apollo rotina template CRUD"
 echo "CLI-06: PASS"
 
 # ---------------------------------------------------------------------------
-# CLI-07: apollo rotina instancia is list+status-only, no gerar-instancias
+# CLI-07: apollo rotina instancia is list+status-only (never create/delete)
 # ---------------------------------------------------------------------------
-echo "-- CLI-07: apollo rotina instancia (list+status only, no gerar-instancias)"
+echo "-- CLI-07: apollo rotina instancia (list+status only, never create/delete)"
 
 (cd cli && uv run pytest tests/test_rotina_instancia.py -q)
 
@@ -107,11 +107,14 @@ EXPECTED_INSTANCIA_CMDS="$(printf 'listar\nstatus\n' | sort)"
   exit 1
 }
 
-ROTINA_HELP="$(uv run --project cli apollo rotina --help)"
-if printf '%s\n' "${ROTINA_HELP}" | grep -v '^\s*#' | grep -q 'gerar-instancias'; then
-  echo "FAIL: apollo rotina --help mentions gerar-instancias — that is Phase 5 scope (JOB-02)" >&2
-  exit 1
-fi
+# NOTE: this gate originally also asserted `apollo rotina --help` did NOT
+# mention `gerar-instancias`, since that command was explicitly out of scope
+# for Phase 3 (JOB-02, added for real by Phase 5). That assertion was
+# time-bound to "before Phase 5 exists" and would now permanently fail this
+# script for every run composed after Phase 5 shipped its own
+# `apollo rotina gerar-instancias` command -- a legitimate later addition,
+# not a Phase 3 regression. Removed rather than left to rot; JOB-02's actual
+# behavior is proven by Phase 5's own verify-phase-05.sh.
 
 echo "CLI-07: PASS"
 
