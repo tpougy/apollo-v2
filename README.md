@@ -34,14 +34,19 @@ cd web && bun install
 A file is not "done" until its half of the monorepo passes its gate with zero findings and
 zero suppressions.
 
-**`cli/` (Python):**
+**`cli/` (Python — always covers `shared/scripts/` alongside `cli/` itself):**
 
 ```bash
 cd cli
-uv run ruff check .
-uv run ruff format --check .
-uv run ty check
+uv run ruff check --config pyproject.toml . ../shared/scripts
+uv run ruff format --check --config pyproject.toml . ../shared/scripts
+uv run ty check . ../shared/scripts
 ```
+
+`--config pyproject.toml` is required on the ruff commands because ruff's config
+discovery does not reach outside `cli/` on its own — see `cli/README.md` "Quality
+gates" for the full explanation. These are the exact commands Phase 6's
+VERIFY-02/VERIFY-03 reuse verbatim; do not narrow this scope.
 
 **`web/` (TypeScript/Svelte):**
 
@@ -50,6 +55,13 @@ cd web
 bun run lint
 bun run format:check
 bun run check
+```
+
+**Both test suites:**
+
+```bash
+cd web && bun test
+cd cli && uv run pytest
 ```
 
 `bun run lint` / `bun run format:check` run Biome (formatter + linter) over `../shared`,
@@ -62,6 +74,35 @@ TypeScript correctness.
 lockfile should ever exist under `web/`. All frontend logic is `.ts`, including `<script
 lang="ts">` inside `.svelte` files. The single exception is `web/svelte.config.js`, which the
 Svelte tooling loads through bare Node with no transpile step and therefore cannot be `.ts`.
+
+## Shared ANBIMA calendar
+
+`shared/anbima-calendar.json` is vendored, static data: a table of ANBIMA federal
+business-day holidays from 2000-01-01 through 2078-12-25. Both
+`web/src/lib/bizdays.ts` and `cli/apollo_cli/bizdays.py` read exclusively from
+this JSON file — it is **never computed at runtime** by either runtime, and
+neither one ever calls a library's built-in/algorithmic calendar
+(`Calendar.load(...)`).
+
+To regenerate it (roughly yearly, by hand, offline — never as part of any
+runtime code path):
+
+```bash
+uv run --project cli python shared/scripts/update_calendar.py
+uv run --project cli python shared/scripts/update_calendar.py --check   # idempotence check only, no write
+```
+
+`shared/bizdays.testcases.json` is the cross-runtime parity fixture: the single
+source of truth for expected business-day-math results, consumed by both
+`bun test` (`web/`) and `uv run pytest` (`cli/`). Any new date-math behavior or
+edge case must be added to this shared fixture, never inlined into only one
+runtime's test file — that is what keeps the two implementations provably
+identical.
+
+Both `shared/anbima-calendar.json` and `shared/bizdays.testcases.json` are
+intentionally excluded from `biome.json`'s `files.includes`: they are data
+files owned by their producers (the generator script and the test-fixture
+author, respectively), not source code needing a JS/TS formatter or linter.
 
 ## Schema workflow
 

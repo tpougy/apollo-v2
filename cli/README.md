@@ -30,13 +30,45 @@ are present — without ever printing either value in full.
 
 ## Quality gates
 
-A Python file in this package is not done until all three of these exit 0:
+A Python file in this package is not done until all three of these exit 0 — run
+from `cli/`, and always covering `shared/scripts/` alongside `cli/` itself:
 
 ```bash
-uv run ruff check .
-uv run ruff format --check .
-uv run ty check
+uv run ruff check --config pyproject.toml . ../shared/scripts
+uv run ruff format --check --config pyproject.toml . ../shared/scripts
+uv run ty check . ../shared/scripts
 ```
+
+`--config pyproject.toml` is required on the ruff commands whenever a path outside
+`cli/` (such as `../shared/scripts`) is passed alongside `.`: ruff discovers
+configuration by walking up from *each file being linted*, and neither `shared/`
+nor the repo root has a `[tool.ruff]` section, so without an explicit `--config`
+flag, files under `../shared/scripts` would silently fall back to ruff's defaults
+and miss this project's `extend-select = ["I", "ANN"]` rules. `ty check` does not
+have this problem — it resolves `cli/pyproject.toml`'s `[tool.ty]` settings by
+walking up from the project root regardless of which paths are passed, so no extra
+flag is needed there (confirmed via `uv run ty check --help`: a `--project <PATH>`
+flag exists for pinning a different project root explicitly, but the default
+walk-up behavior already covers `../shared/scripts` correctly).
+
+These are the same three commands Phase 6's VERIFY-02/VERIFY-03 will run — do not
+let this scope silently shrink back to `uv run ruff check .` with no `shared/scripts`
+argument in future changes.
+
+## Tests
+
+```bash
+uv run pytest
+uv run pytest tests/test_bizdays.py -x
+```
+
+`uv run pytest` (no arguments) discovers and runs every test under `cli/tests/`,
+including `test_calendar_json.py` (CAL-01 structural gate, which validates the
+vendored `../shared/anbima-calendar.json` produced by
+`../shared/scripts/update_calendar.py`) and `test_bizdays.py` (CAL-02/03/04
+cross-runtime parity gate, driven by the shared fixture at
+`../shared/bizdays.testcases.json`). See the repo-root `README.md` for
+`update_calendar.py`'s regeneration command.
 
 ## About the admin token
 
