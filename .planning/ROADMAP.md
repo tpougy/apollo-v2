@@ -95,7 +95,11 @@ Plans:
   3. Row-level edit/delete actions render as shadcn `Button`s and, on a full-CRUD entity, still open the edit path and perform a live delete against InstantDB exactly as before the restyle.
   4. `instanciasRotina`'s table shows no create action and only a status-changing row action (no full edit/delete), and `logInferenciaClaude`'s table shows zero row actions of any kind — both proven live post-restyle, matching each entity's pre-restyle capability exactly.
 
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+
+- [ ] 09-01-PLAN.md — Install shadcn table/badge; restyle EntityScreen.svelte's list-view (Table/Badge/Button) for all 9 entities in place; add entities-table-restyle.spec.ts proving all 4 success criteria live across capability classes
+
 **UI hint**: yes
 
 ### Phase 10: Entity Form Restyle & Feedback
@@ -144,6 +148,6 @@ Phases execute in numeric order: 7 → 8 → 9 → 10 → 11
 | 6. End-to-End Verification | v1.0 | 3/3 | Complete | 2026-08-09 |
 | 7. Design System Setup | v1.1 | 1/1 | Complete    | 2026-08-09 |
 | 8. Auth & Shell Restyle | v1.1 | 1/1 | Complete    | 2026-08-09 |
-| 9. Entity Table Restyle | v1.1 | 0/TBD | Not started | - |
+| 9. Entity Table Restyle | v1.1 | 0/1 | Not started | - |
 | 10. Entity Form Restyle & Feedback | v1.1 | 0/TBD | Not started | - |
 | 11. Full Verification & Quality Gates | v1.1 | 0/TBD | Not started | - |
