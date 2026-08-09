@@ -183,6 +183,147 @@ def test_full_crud_round_trip(
     assert _query_template(live_client, eid) is None
 
 
+def test_criar_with_offset_dias_persists_value(
+    run_cli: RunCli,
+    live_client: Instant,
+    cleanup_records: list[tuple[str, str]],
+) -> None:
+    suffix = unique_suffix()
+    result: CliInvocation = run_cli(
+        [
+            "rotina",
+            "template",
+            "criar",
+            "--nome",
+            f"Template Offset {suffix}",
+            "--tipo-geracao",
+            "du_fixo",
+            "--regra-competencia",
+            "M0",
+            "--offset-dias",
+            "5",
+        ]
+    )
+    assert result.result.exit_code == 0, result.result.output
+    eid = cast("dict[str, Any]", result.json_out())["id"]
+    cleanup_records.append(("templatesRotina", eid))
+    record = _query_template(live_client, eid)
+    assert record is not None
+    assert record["offsetDias"] == 5
+
+
+def test_criar_without_offset_dias_omits_key_entirely(
+    run_cli: RunCli,
+    live_client: Instant,
+    cleanup_records: list[tuple[str, str]],
+) -> None:
+    suffix = unique_suffix()
+    result: CliInvocation = run_cli(
+        [
+            "rotina",
+            "template",
+            "criar",
+            "--nome",
+            f"Template Sem Offset {suffix}",
+            "--tipo-geracao",
+            "du_fixo",
+            "--regra-competencia",
+            "M0",
+        ]
+    )
+    assert result.result.exit_code == 0, result.result.output
+    eid = cast("dict[str, Any]", result.json_out())["id"]
+    cleanup_records.append(("templatesRotina", eid))
+    record = _query_template(live_client, eid)
+    assert record is not None
+    assert "offsetDias" not in record
+
+    listar_result: CliInvocation = run_cli(["rotina", "template", "listar", "--limit", "50"])
+    assert listar_result.result.exit_code == 0, listar_result.result.output
+    listed = cast("list[dict[str, Any]]", listar_result.json_out())
+    listed_record = next(r for r in listed if r["id"] == eid)
+    assert "offsetDias" not in listed_record
+
+
+def test_editar_offset_dias_changes_only_that_field(
+    run_cli: RunCli,
+    live_client: Instant,
+    cleanup_records: list[tuple[str, str]],
+) -> None:
+    suffix = unique_suffix()
+    nome = f"Template Editar Offset {suffix}"
+    criar_result: CliInvocation = run_cli(
+        [
+            "rotina",
+            "template",
+            "criar",
+            "--nome",
+            nome,
+            "--tipo-geracao",
+            "du_fixo",
+            "--regra-competencia",
+            "M0",
+            "--offset-dias",
+            "3",
+        ]
+    )
+    assert criar_result.result.exit_code == 0, criar_result.result.output
+    eid = cast("dict[str, Any]", criar_result.json_out())["id"]
+    cleanup_records.append(("templatesRotina", eid))
+
+    editar_result: CliInvocation = run_cli(
+        ["rotina", "template", "editar", "--id", eid, "--offset-dias", "7"]
+    )
+    assert editar_result.result.exit_code == 0, editar_result.result.output
+    record = _query_template(live_client, eid)
+    assert record is not None
+    assert record["offsetDias"] == 7
+    assert record["nome"] == nome
+
+
+def test_editar_without_offset_dias_leaves_previous_value_unchanged(
+    run_cli: RunCli,
+    live_client: Instant,
+    cleanup_records: list[tuple[str, str]],
+) -> None:
+    suffix = unique_suffix()
+    criar_result: CliInvocation = run_cli(
+        [
+            "rotina",
+            "template",
+            "criar",
+            "--nome",
+            f"Template Offset Preservado {suffix}",
+            "--tipo-geracao",
+            "du_fixo",
+            "--regra-competencia",
+            "M0",
+            "--offset-dias",
+            "9",
+        ]
+    )
+    assert criar_result.result.exit_code == 0, criar_result.result.output
+    eid = cast("dict[str, Any]", criar_result.json_out())["id"]
+    cleanup_records.append(("templatesRotina", eid))
+
+    novo_nome = f"Renomeado Offset {suffix}"
+    editar_result: CliInvocation = run_cli(
+        ["rotina", "template", "editar", "--id", eid, "--nome", novo_nome]
+    )
+    assert editar_result.result.exit_code == 0, editar_result.result.output
+    record = _query_template(live_client, eid)
+    assert record is not None
+    assert record["nome"] == novo_nome
+    assert record["offsetDias"] == 9
+
+
+def test_listar_legacy_templates_without_offset_dias_do_not_raise(run_cli: RunCli) -> None:
+    result: CliInvocation = run_cli(["rotina", "template", "listar", "--limit", "5"])
+    assert result.result.exit_code == 0, result.result.output
+    records = cast("list[dict[str, Any]]", result.json_out())
+    assert isinstance(records, list)
+
+
 def test_editar_unknown_id_is_not_found_and_does_not_upsert(run_cli: RunCli) -> None:
     phantom_id = str(uuid.uuid4())
     result: CliInvocation = run_cli(
