@@ -64,8 +64,10 @@ it visually distinct from the vendored-ANBIMA "calendar" concept
 from __future__ import annotations
 
 import calendar as pycalendar
+import os
 from collections.abc import Callable
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any, Final, NamedTuple
 
 import httpx
@@ -440,6 +442,36 @@ def compute_expected_instances(
 # widening.
 
 
+_TRANSACT_SENTINEL_ENV_VAR: Final[str] = "APOLLO_TEST_TRANSACT_SENTINEL"
+
+
+def _signal_test_sentinel(suffix: str) -> None:
+    """Test-only instrumentation for VERIFY-04's kill-timing harness.
+
+    A no-op in every normal run: reads `APOLLO_TEST_TRANSACT_SENTINEL` from
+    the environment at CALL time (not import time, mirroring
+    `session.py::session_path`), and returns immediately when it is unset or
+    blank. When set to a path, touches `<path>.<suffix>` so an external
+    process can poll for that exact file's existence to know precisely when
+    execution is about to enter (or has just returned from) the single
+    atomic `client.transact(chunks)` call — a blind `sleep(random)` + kill
+    cannot distinguish "killed before any query" from "killed after a fully
+    committed but unprinted transact" (06-RESEARCH.md "Don't Hand-Roll").
+
+    Must never be referenced in any user-facing `--help` text or README
+    operator instructions. Any filesystem failure (e.g. a parent directory
+    that does not exist) is swallowed — instrumentation must never break a
+    real job run.
+    """
+    path = os.environ.get(_TRANSACT_SENTINEL_ENV_VAR)
+    if not path:
+        return
+    try:
+        Path(f"{path}.{suffix}").touch()
+    except OSError:
+        pass
+
+
 def to_iso_date(value: object) -> str:
     """Normalizes any DB-sourced date value to a plain `YYYY-MM-DD` string.
 
@@ -635,7 +667,9 @@ def run_routine_instance_job(
     ]
 
     try:
+        _signal_test_sentinel("about-to-transact")
         client.transact(chunks)
+        _signal_test_sentinel("transact-returned")
     except (InstantAPIError, httpx.HTTPError):
         with instant_errors():
             recheck_rows = _query_by_dedupe_keys(client, created_keys)
