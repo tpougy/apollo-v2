@@ -24,7 +24,6 @@ test("submit Button shows disabled + spinner while the send request is in flight
   await page.getByTestId("login-email").fill(EMAIL);
   const submit = page.getByTestId("login-submit");
 
-  const sentAt = Date.now();
   await submit.click();
 
   // Immediately after the click — no artificial delay — the live
@@ -38,13 +37,6 @@ test("submit Button shows disabled + spinner while the send request is in flight
   // so it doesn't leave a dangling live request racing into the next test's
   // own send against the same real inbox.
   await expect(page.getByTestId("login-code")).toBeVisible({ timeout: 30_000 });
-
-  // Drain the code this test itself triggered so it doesn't confuse a later
-  // readLatestMagicCode() call into treating it as unrelated stale state.
-  await readMagicCodeAfter(sentAt, null).catch(() => {
-    // Best-effort drain only — this test's assertions are already satisfied
-    // above; a slow/failed inbox read here must not fail the test.
-  });
 });
 
 test("submitting a deliberately wrong code renders the destructive Alert", async ({ page }) => {
