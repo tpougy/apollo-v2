@@ -576,11 +576,13 @@ export async function runRoutineInstanceJob(options: {
   const { donoId } = options;
   const today = options.today ?? todayUtcIsoDate();
 
-  // Step 1: read active templates for this owner. Zero rows -> short-circuit
-  // before ever issuing an instanciasRotina query (RESEARCH Pitfall 5: `$in:
-  // []` semantics are unverified and must never be relied on).
+  // Step 1: read active templates for this owner, including the
+  // `antecessor` self-link so `TemplateRow.antecessor.id` is populated for
+  // encadeado resolution. Zero rows -> short-circuit before ever issuing an
+  // instanciasRotina query (RESEARCH Pitfall 5: `$in: []` semantics are
+  // unverified and must never be relied on).
   const templatesResult = await db.queryOnce({
-    templatesRotina: { $: { where: { ativo: true, donoId } } },
+    templatesRotina: { antecessor: {}, $: { where: { ativo: true, donoId } } },
   } as never);
   const templates = (templatesResult.data as { templatesRotina: TemplateRow[] }).templatesRotina;
 
@@ -588,14 +590,23 @@ export async function runRoutineInstanceJob(options: {
     return { created: [], existing: [], skipped: [] };
   }
 
+  // Existing-instances lookup must cover the union of active template ids
+  // AND their antecessor ids — an encadeado template whose antecessor is
+  // INACTIVE (excluded from `templates` above) would otherwise never see
+  // that antecessor's persisted instances and would be wrongly skipped as
+  // antecessor_sem_instancia.
   const templateIds = templates.map((t) => t.id);
+  const antecessorIds = templates
+    .map((t) => t.antecessor?.id)
+    .filter((id): id is string => Boolean(id));
+  const instanceLookupIds = [...new Set([...templateIds, ...antecessorIds])];
 
   // Step 2: read existing instances for those templates, normalizing every
   // DB-sourced date before it touches compute or comparison.
   const existingResult = await db.queryOnce({
     instanciasRotina: {
       template: {},
-      $: { where: { "template.id": { $in: templateIds } } },
+      $: { where: { "template.id": { $in: instanceLookupIds } } },
     },
   } as never);
   type RawInstanceRow = {
