@@ -28,6 +28,7 @@
  */
 
 import { addBusinessDays, isBusinessDay } from "./bizdays";
+import { db, lookup } from "./db";
 
 export const TIPO_PRAZO_GERADO = "soft"; // D-05-C
 export const STATUS_INICIAL = "pendente";
@@ -284,4 +285,179 @@ export function computeExpectedInstances(
   });
 
   return { expected, skipped };
+}
+
+// --- I/O boundary: everything below this line talks to InstantDB ---
+//
+// Everything above this comment is the pure, zero-I/O compute core from
+// plan 05-02 and MUST stay that way (05-05's Python twin mirrors only that
+// part). Everything below orchestrates the live query -> diff -> transact
+// path against `web/src/lib/db.ts`'s `db` export, per this plan's
+// "Orchestration specification".
+
+/**
+ * Normalizes any DB-sourced date value to a plain `YYYY-MM-DD` string.
+ *
+ * `dataPrevista` is stored as an `i.date()` attribute and round-trips from
+ * InstantDB as an ISO *datetime* string (e.g. `"2026-09-10T00:00:00.000Z"`),
+ * NOT `YYYY-MM-DD` — proven by `cli/tests/test_rotina_instancia.py`, which
+ * asserts with `.startswith(...)`, not `==`. A missed normalization here
+ * would make every existing instance look "new" on every run and duplicate
+ * the entire table (RESEARCH pitfall referenced in this plan's context).
+ *
+ * Exported so 05-06's verification tooling can reuse the exact same
+ * normalization when reading server state.
+ */
+export function toIsoDate(value: unknown): string {
+  if (value === null || value === undefined) {
+    return "";
+  }
+  return String(value).slice(0, 10);
+}
+
+export interface JobReport {
+  created: string[]; // dedupeKeys newly written this run, sorted
+  existing: string[]; // dedupeKeys already present, left untouched, sorted
+  skipped: SkippedTemplate[]; // from computeExpectedInstances, unchanged
+}
+
+function sortedUnique(values: readonly string[]): string[] {
+  return [...values].sort();
+}
+
+/**
+ * Computes today's UTC date as `YYYY-MM-DD`, without ANY timezone-local
+ * `Date` accessor (`getFullYear`/`getMonth()`/`getDate()`) — a local-timezone
+ * read in a UTC-8 or UTC+9 environment would shift the whole `[today, ...]`
+ * range by a day and change every dedupeKey computed from it.
+ */
+function todayUtcIsoDate(): string {
+  const now = new Date();
+  return formatIso(now.getUTCFullYear(), now.getUTCMonth() + 1, now.getUTCDate());
+}
+
+/**
+ * Orchestrates the full query -> compute -> diff -> transact cycle against
+ * the live InstantDB app for one `donoId`. See this plan's context block,
+ * "Orchestration specification", for the numbered step-by-step contract this
+ * implements.
+ */
+export async function runRoutineInstanceJob(options: {
+  donoId: string;
+  today?: string;
+}): Promise<JobReport> {
+  const { donoId } = options;
+  const today = options.today ?? todayUtcIsoDate();
+
+  // Step 1: read active templates for this owner. Zero rows -> short-circuit
+  // before ever issuing an instanciasRotina query (RESEARCH Pitfall 5: `$in:
+  // []` semantics are unverified and must never be relied on).
+  const templatesResult = await db.queryOnce({
+    templatesRotina: { $: { where: { ativo: true, donoId } } },
+  } as never);
+  const templates = (templatesResult.data as { templatesRotina: TemplateRow[] }).templatesRotina;
+
+  if (templates.length === 0) {
+    return { created: [], existing: [], skipped: [] };
+  }
+
+  const templateIds = templates.map((t) => t.id);
+
+  // Step 2: read existing instances for those templates, normalizing every
+  // DB-sourced date before it touches compute or comparison.
+  const existingResult = await db.queryOnce({
+    instanciasRotina: {
+      template: {},
+      $: { where: { "template.id": { $in: templateIds } } },
+    },
+  } as never);
+  type RawInstanceRow = {
+    dedupeKey: string;
+    competencia: string;
+    dataPrevista: unknown;
+    status: string;
+    template?: { id: string } | { id: string }[] | null;
+  };
+  const rawInstances = (existingResult.data as { instanciasRotina: RawInstanceRow[] })
+    .instanciasRotina;
+  const existing: ExistingInstance[] = rawInstances.map((row) => {
+    const linked = Array.isArray(row.template) ? row.template[0] : row.template;
+    return {
+      dedupeKey: row.dedupeKey,
+      templateId: linked?.id ?? "",
+      competencia: row.competencia,
+      dataPrevista: toIsoDate(row.dataPrevista),
+      status: row.status,
+    };
+  });
+
+  // Step 3: compute (pure).
+  const { expected, skipped } = computeExpectedInstances(templates, today, existing);
+
+  // Step 4: diff. An already-present dedupeKey is filtered out here and
+  // therefore never appears in any transact payload, so there is no code
+  // path through which `status` can be overwritten (RESEARCH Pitfall 1).
+  const existingKeys = new Set(existing.map((e) => e.dedupeKey));
+  const toCreate = expected.filter((e) => !existingKeys.has(e.dedupeKey));
+
+  if (toCreate.length === 0) {
+    return {
+      created: [],
+      existing: sortedUnique(expected.map((e) => e.dedupeKey)),
+      skipped,
+    };
+  }
+
+  // Step 5: write — one transact, one chunk per new dedupeKey, `.update()`
+  // only (a lookup sentinel is illegal on `.create()` — RESEARCH Pitfall 2),
+  // always carrying `donoId` (required by instant.perms.ts's create rule —
+  // RESEARCH Pitfall 6).
+  const chunks = toCreate.map((e) =>
+    db.tx.instanciasRotina[lookup("dedupeKey", e.dedupeKey)]
+      .update({
+        dedupeKey: e.dedupeKey,
+        dataPrevista: e.dataPrevista,
+        competencia: e.competencia,
+        tipoPrazo: e.tipoPrazo,
+        status: STATUS_INICIAL,
+        donoId,
+        ...(e.dataPrevistaEstimada ? { dataPrevistaEstimada: e.dataPrevistaEstimada } : {}),
+      })
+      .link({ template: e.templateId }),
+  );
+
+  try {
+    await db.transact(chunks);
+  } catch (err) {
+    // Step 6: concurrency tolerance. A concurrent run may have already
+    // claimed one or more of these dedupeKeys between step 2's read and this
+    // transact. Re-query the exact keys we attempted; if every one now
+    // exists, report them as `existing` (a lost race, not a crash). If any
+    // is still missing, this was a genuine failure — rethrow.
+    const recheck = await db.queryOnce({
+      instanciasRotina: {
+        $: { where: { dedupeKey: { $in: toCreate.map((e) => e.dedupeKey) } } },
+      },
+    } as never);
+    const recheckKeys = new Set(
+      (recheck.data as { instanciasRotina: { dedupeKey: string }[] }).instanciasRotina.map(
+        (r) => r.dedupeKey,
+      ),
+    );
+    const stillMissing = toCreate.some((e) => !recheckKeys.has(e.dedupeKey));
+    if (stillMissing) {
+      throw err;
+    }
+    return {
+      created: [],
+      existing: sortedUnique(expected.map((e) => e.dedupeKey)),
+      skipped,
+    };
+  }
+
+  return {
+    created: sortedUnique(toCreate.map((e) => e.dedupeKey)),
+    existing: sortedUnique(expected.map((e) => e.dedupeKey).filter((k) => existingKeys.has(k))),
+    skipped,
+  };
 }
