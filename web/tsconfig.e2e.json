@@ -3,6 +3,17 @@
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.e2e.tsbuildinfo",
     "types": ["node"],
+    // DOM is only actually needed inside design-system.spec.ts's
+    // page.evaluate()/locator.evaluate() callbacks (document/getComputedStyle
+    // reads) and for the HTMLOptionElement casts in the entities-*.spec.ts
+    // evaluateAll() call sites — see 07-REVIEW.md WR-01/WR-02. A per-file
+    // `/// <reference lib="dom" />` was tried to scope this narrower, but all
+    // e2e/**/*.ts files compile as one TS program under this tsconfig, and a
+    // lib reference in any single file is program-wide (verified empirically:
+    // a second file with no reference still resolved `document`/`HTMLElement`
+    // fine). Splitting e2e/ into multiple tsconfig projects to get true
+    // file-level scoping would need a bigger restructure of `bun run check`;
+    // accepted here as the pragmatic tradeoff for a Playwright TS project.
     "lib": ["ES2023", "DOM"],
     "noEmit": true
   },
