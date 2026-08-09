@@ -1,19 +1,22 @@
 <script lang="ts">
+  import { SignedIn, SignedOut } from "@instantdb/svelte";
+  import LoginScreen from "./lib/auth/LoginScreen.svelte";
   import { db } from "./lib/db";
 
-  const appId = import.meta.env.VITE_INSTANT_APP_ID;
   const auth = db.useAuth();
 </script>
 
 <h1>Apollo v2</h1>
-<p>InstantDB app id: {appId}</p>
 
-{#if auth.isLoading}
-  <p>carregando...</p>
-{:else if auth.error}
-  <p>erro de autenticação: {auth.error.message}</p>
-{:else if auth.user}
-  <p>autenticado como {auth.user.email}</p>
-{:else}
-  <p>não autenticado</p>
-{/if}
+<SignedOut {db}>
+  <LoginScreen />
+</SignedOut>
+
+<SignedIn {db}>
+  <div data-testid="app-shell">
+    {#if !auth.isLoading && auth.user}
+      <p>autenticado como {auth.user.email}</p>
+    {/if}
+    <button type="button" data-testid="logout" onclick={() => db.auth.signOut()}>Sair</button>
+  </div>
+</SignedIn>
