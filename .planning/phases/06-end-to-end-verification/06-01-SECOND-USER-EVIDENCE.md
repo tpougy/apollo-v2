@@ -85,3 +85,31 @@ Both exit 0. The two `user_id` values are different, and the second matches
 tp@'s known, previously-recorded `user_id` from `03-01-LOGIN-EVIDENCE.md`.
 
 No refresh token or magic code appears anywhere else in this repository.
+
+## Second-user teardown
+
+Executed for real via `cli/tests/test_cross_user_isolation.py::test_06_zz_guarded_second_user_teardown`,
+opted in with `APOLLO_VERIFY05_DELETE_SECOND_USER=1`:
+
+```
+$ APOLLO_VERIFY05_DELETE_SECOND_USER=1 uv run --project cli pytest \
+    cli/tests/test_cross_user_isolation.py -m live -k zz -v
+tests/test_cross_user_isolation.py::test_06_zz_guarded_second_user_teardown PASSED
+```
+
+All four ordered guards passed before the delete call executed:
+
+1. **Allowlist guard:** `admin@rbrasset.com.br` is in `{admin@rbrasset.com.br, rm@rbrasset.com.br}` — the offline unit test `test_05_teardown_allowlist_guard_rejects_tp_offline` independently proves this same guard function rejects `tp@rbrasset.com.br`.
+2. **Identity guard:** `second_session.user_id` (`b5e0b47d-3891-4ef9-9a5a-c9e82c244d8c`) `!=` `live_session.user_id` (`adf0d402-06df-4406-a5c7-ce82ee1bcb7e`), and the emails differ.
+3. **Selector guard:** `login_client().auth.delete_user(id="b5e0b47d-3891-4ef9-9a5a-c9e82c244d8c")` — `id=`, never `email=`. The returned `deleted` payload's `id` was asserted equal to the requested id.
+4. **Inventory guard:** tp@'s `fundos` row count (scoped to `donoId == live_session.user_id`) was `0` both immediately before and immediately after the delete call. `apollo auth whoami` (primary session, no env override) still returned `user_id = adf0d402-06df-4406-a5c7-ce82ee1bcb7e` after the delete.
+
+- **Deletion UTC timestamp:** `2026-08-09T19:03:17Z` (captured immediately after the passing test run above).
+- **Deleted user id:** `b5e0b47d-3891-4ef9-9a5a-c9e82c244d8c` (`admin@rbrasset.com.br`).
+- **tp@'s `fundos` count before/after:** `0` / `0` (identical).
+- **tp@'s post-deletion `whoami`:** `{"user_id": "adf0d402-06df-4406-a5c7-ce82ee1bcb7e", "email": "tp@rbrasset.com.br", "session_file": "/home/thomaz/.config/apollo-cli/session"}` — exit 0, same `user_id` as before.
+- **Post-deletion dead-session probe:** the test itself, and a manual follow-up `apollo auth whoami` invocation with `APOLLO_SESSION_FILE` pointed at the now-invalidated `cli/.auth/second-user-session`, both confirm the second user is genuinely gone (`{"error": "invalid_session", "status": 400, "type": "record-not-found", "message": "Record not found: app-user", ...}`, exit 3) — `delete_user` did not silently no-op.
+
+### Re-bootstrap status
+
+`delete_user` invalidates the second user's refresh token, so `cli/.auth/second-user-session` now holds a dead credential. Per this task's requirement, a fresh second-user session must be re-bootstrapped immediately afterward so `verify-phase-06.sh` (plan 06-03) remains runnable. Re-bootstrapping requires a new real magic-code round trip, which requires the same orchestrator-level mailbox-reading MCP tool access used in the original Task 1 login (this executor subagent does not inherit that tool set — see the mechanism note above). This re-bootstrap is recorded as a follow-up authentication gate for the orchestrator to complete using the same procedure as Task 1, after which this section will be updated with the new round trip's timestamp and `user_id`.
