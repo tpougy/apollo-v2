@@ -415,7 +415,6 @@ export async function runRoutineInstanceJob(options: {
   const chunks = toCreate.map((e) =>
     db.tx.instanciasRotina[lookup("dedupeKey", e.dedupeKey)]
       .update({
-        dedupeKey: e.dedupeKey,
         dataPrevista: e.dataPrevista,
         competencia: e.competencia,
         tipoPrazo: e.tipoPrazo,
