@@ -20,11 +20,11 @@ Requirements for this migration milestone. Each maps to exactly one roadmap phas
 
 ### ANBIMA Calendar (CAL)
 
-- [ ] **CAL-01**: `shared/anbima-calendar.json` contains the vendored ANBIMA holiday table (2000-2078, federal-only), sourced from `github.com/ianliu/feriados-anbima` — *C-03*
-- [ ] **CAL-02**: `web/src/lib/bizdays.ts` implements `isBusinessDay`, `addBusinessDays`, `nextBusinessDay` reading exclusively from the vendored JSON — *C-03*
-- [ ] **CAL-03**: `cli/apollo_cli/bizdays.py` implements equivalent business-day math using Python `bizdays` configured with a custom calendar pointing at the same vendored JSON (not the library's built-in `ANBIMA` calendar) — *C-03*
-- [ ] **CAL-04**: For a shared set of test dates/operations, `web/src/lib/bizdays.ts` and `cli/apollo_cli/bizdays.py` produce identical results — *C-03*
-- [ ] **CAL-05**: `shared/scripts/update_calendar.py` exists as the sole (manual, non-runtime) path to regenerate the vendored calendar — *C-03*
+- [x] **CAL-01**: `shared/anbima-calendar.json` contains the vendored ANBIMA holiday table (2000-2078, federal-only), sourced from `github.com/ianliu/feriados-anbima` — *C-03*
+- [x] **CAL-02**: `web/src/lib/bizdays.ts` implements `isBusinessDay`, `addBusinessDays`, `nextBusinessDay` reading exclusively from the vendored JSON — *C-03*
+- [x] **CAL-03**: `cli/apollo_cli/bizdays.py` implements equivalent business-day math using Python `bizdays` configured with a custom calendar pointing at the same vendored JSON (not the library's built-in `ANBIMA` calendar) — *C-03*
+- [x] **CAL-04**: For a shared set of test dates/operations, `web/src/lib/bizdays.ts` and `cli/apollo_cli/bizdays.py` produce identical results — *C-03*
+- [x] **CAL-05**: `shared/scripts/update_calendar.py` exists as the sole (manual, non-runtime) path to regenerate the vendored calendar — *C-03*
 
 ### CLI (CLI)
 
@@ -95,11 +95,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SETUP-06 | Phase 1 | Complete |
 | SETUP-07 | Phase 1 | Complete |
 | SETUP-08 | Phase 1 | Complete |
-| CAL-01 | Phase 2 | Pending |
-| CAL-02 | Phase 2 | Pending |
-| CAL-03 | Phase 2 | Pending |
-| CAL-04 | Phase 2 | Pending |
-| CAL-05 | Phase 2 | Pending |
+| CAL-01 | Phase 2 | Complete |
+| CAL-02 | Phase 2 | Complete |
+| CAL-03 | Phase 2 | Complete |
+| CAL-04 | Phase 2 | Complete |
+| CAL-05 | Phase 2 | Complete |
 | CLI-01 | Phase 3 | Pending |
 | CLI-02 | Phase 3 | Pending |
 | CLI-03 | Phase 3 | Pending |

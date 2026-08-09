@@ -14,7 +14,7 @@ Apollo v2 replaces the original Litestar/SQLite backend with InstantDB as the so
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Repo Scaffold & Live Schema** - Monorepo, tooling, and InstantDB schema/perms are live for both `web/` and `cli/` (completed 2026-08-09)
-- [ ] **Phase 2: Shared ANBIMA Calendar** - Business-day math is correct and identical on both sides, powered by one vendored data file
+- [x] **Phase 2: Shared ANBIMA Calendar** - Business-day math is correct and identical on both sides, powered by one vendored data file (completed 2026-08-09)
 - [ ] **Phase 3: CLI Auth & CRUD** - Full magic-code auth and CRUD for every domain entity from the terminal
 - [ ] **Phase 4: Web SPA Auth & CRUD Smoke UI** - Full magic-code auth and minimal CRUD screens for every domain entity in the browser
 - [ ] **Phase 5: Idempotent Routine-Instance Job** - Recurring instance generation runs safely from either channel, never duplicating or deleting
@@ -59,9 +59,9 @@ Plans:
 
 Plans:
 
-- [ ] 02-01-PLAN.md — vendor `shared/anbima-calendar.json` (2000-2078) from the MIT-licensed `bizdays` bundled `ANBIMA.cal`, add the offline `shared/scripts/update_calendar.py` regenerator, and gate the data with a pytest structural suite (wave 1)
-- [ ] 02-02-PLAN.md — tracer-first business-day math on both runtimes (`web/src/lib/bizdays.ts`, `cli/apollo_cli/bizdays.py`) proven identical by one shared 40+ case fixture consumed by `bun test` and `pytest` (wave 2)
-- [ ] 02-03-PLAN.md — extend ruff/ty scope to `shared/scripts/`, document the calendar + test workflow, and add `verify-phase-02.sh` as the single re-runnable CAL-01..05 proof (wave 3)
+- [x] 02-01-PLAN.md — vendor `shared/anbima-calendar.json` (2000-2078) from the MIT-licensed `bizdays` bundled `ANBIMA.cal`, add the offline `shared/scripts/update_calendar.py` regenerator, and gate the data with a pytest structural suite (wave 1)
+- [x] 02-02-PLAN.md — tracer-first business-day math on both runtimes (`web/src/lib/bizdays.ts`, `cli/apollo_cli/bizdays.py`) proven identical by one shared 40+ case fixture consumed by `bun test` and `pytest` (wave 2)
+- [x] 02-03-PLAN.md — extend ruff/ty scope to `shared/scripts/`, document the calendar + test workflow, and add `verify-phase-02.sh` as the single re-runnable CAL-01..05 proof (wave 3)
 
 ### Phase 3: CLI Auth & CRUD
 
@@ -147,7 +147,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Repo Scaffold & Live Schema | 3/3 | Complete    | 2026-08-09 |
-| 2. Shared ANBIMA Calendar | 0/3 | Planned | - |
+| 2. Shared ANBIMA Calendar | 3/3 | Complete    | 2026-08-09 |
 | 3. CLI Auth & CRUD | 0/TBD | Not started | - |
 | 4. Web SPA Auth & CRUD Smoke UI | 0/TBD | Not started | - |
 | 5. Idempotent Routine-Instance Job | 0/TBD | Not started | - |
