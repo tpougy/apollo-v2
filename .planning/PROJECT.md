@@ -28,7 +28,11 @@ The user can execute every piece of controladoria data-entry work — full CRUD 
 
 <!-- Current scope. Building toward these. -->
 
-(None — run `/gsd-new-milestone` to define the next milestone, e.g. the panel/dashboard UI still deferred below, or the known tech debt: delete-confirmation dialog still native `window.confirm`, see `.planning/milestones/v1.1-MILESTONE-AUDIT.md`)
+**Current Milestone: v1.2 — Lapidação de UI (SaaS-grade polish)**
+
+v1.1 made the SPA functionally coherent on shadcn-svelte's default primitives, but did not focus on composition, spacing, and information density — it swapped components, not layout craft. v1.2 refines the same screens (login, shell/nav, entity table, entity form) so they read as a finished, real SaaS product rather than a components-checklist restyle: adequate spacing/rhythm, sensible content width, clearer page-level hierarchy, better empty/loading states, and consistent hover/focus/disabled microinteractions — all still using only shadcn-svelte's default style and tokens (no custom palette, no new component library). No new domain functionality, no dashboard/panel. Zero human UAT — Playwright-only verification, same pattern as v1.1.
+
+- User research pointer: the user has limited UI opinion and asked Claude to assume reasonable defaults; consulted a curated list of UI-focused agent skills (Reddit r/AgentContext_dev) as a research starting point for composition/spacing conventions, but the shadcn-svelte-only constraint takes precedence over any external convention that would require a new dependency.
 
 ### Out of Scope
 
