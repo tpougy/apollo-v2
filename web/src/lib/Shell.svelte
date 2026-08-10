@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import { toast } from "svelte-sonner";
   import { Button } from "$lib/components/ui/button";
   import { db } from "./db";
   import EntityScreen from "./entities/EntityScreen.svelte";
@@ -49,7 +50,15 @@
 {#if !auth.isLoading && auth.user}
   <p>autenticado como {auth.user.email}</p>
 {/if}
-<Button type="button" variant="outline" data-testid="logout" onclick={() => db.auth.signOut()}>
+<Button
+  type="button"
+  variant="outline"
+  data-testid="logout"
+  onclick={() => {
+    void db.auth.signOut();
+    toast.success("Você saiu.");
+  }}
+>
   Sair
 </Button>
 

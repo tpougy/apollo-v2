@@ -68,6 +68,11 @@ test("clicking Logout ends the session and returns to the restyled LoginScreen",
 
   await page.getByTestId("logout").click();
 
+  // FDBK-01: logging out produces a visible success toast — asserted before
+  // the navigation-away assertion below, since the toast and the auth-state
+  // flip can race.
+  await expect(page.locator('[data-sonner-toast][data-type="success"]')).toBeVisible();
+
   await expect(page.getByTestId("app-shell")).not.toBeVisible();
   await expect(page.getByTestId("login-screen")).toBeVisible();
 });

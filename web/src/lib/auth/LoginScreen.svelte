@@ -6,6 +6,7 @@
   import { Card, CardContent } from "$lib/components/ui/card";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
+  import { toast } from "svelte-sonner";
   import { db } from "../db";
 
   let step = $state<"email" | "code">("email");
@@ -21,8 +22,10 @@
     try {
       await db.auth.sendMagicCode({ email });
       step = "code";
+      toast.success("Código enviado.");
     } catch (err) {
       erro = (err as { body?: { message?: string } }).body?.message ?? "Falha ao enviar código.";
+      toast.error(erro);
     } finally {
       ocupado = false;
     }
@@ -35,8 +38,10 @@
     try {
       await db.auth.signInWithMagicCode({ email, code });
       // No manual navigation: db.useAuth() flips reactively and SignedIn takes over.
+      toast.success("Login realizado.");
     } catch (err) {
       erro = (err as { body?: { message?: string } }).body?.message ?? "Código inválido.";
+      toast.error(erro);
     } finally {
       ocupado = false;
     }

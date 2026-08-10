@@ -37,6 +37,9 @@ test("submit Button shows disabled + spinner while the send request is in flight
   // so it doesn't leave a dangling live request racing into the next test's
   // own send against the same real inbox.
   await expect(page.getByTestId("login-code")).toBeVisible({ timeout: 30_000 });
+
+  // FDBK-01: a successful send produces a visible success toast.
+  await expect(page.locator('[data-sonner-toast][data-type="success"]')).toBeVisible();
 });
 
 test("submitting a deliberately wrong code renders the destructive Alert", async ({ page }) => {
@@ -79,4 +82,8 @@ test("submitting a deliberately wrong code renders the destructive Alert", async
   const alertRoot = page.locator('[data-slot="alert"]').filter({ has: errorText });
   await expect(alertRoot).toHaveCount(1);
   await expect(alertRoot).toHaveClass(/destructive/);
+
+  // FDBK-01: the same login error also surfaces as an error toast, alongside
+  // the existing destructive Alert.
+  await expect(page.locator('[data-sonner-toast][data-type="error"]')).toBeVisible();
 });
