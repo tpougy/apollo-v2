@@ -48,7 +48,7 @@ Full detail archived at `.planning/milestones/v1.1-ROADMAP.md`.
 
 **Milestone goal:** Refine the same four screens v1.1 restyled (login, shell/nav, entity table, entity form) so they read as a finished, real SaaS product — composition, spacing rhythm, hierarchy, and microinteractions — still strictly on shadcn-svelte's default look. No new domain functionality, no dashboard/panel, zero human UAT.
 
-- [ ] **Phase 12: Login Screen Polish** - LoginScreen reads as a composed, centered auth Card with consistent step spacing
+- [x] **Phase 12: Login Screen Polish** - LoginScreen reads as a composed, centered auth Card with consistent step spacing (completed 2026-08-10)
 - [ ] **Phase 13: Shell Chrome — Header, Nav & Content Frame** - One header/toolbar, one nav strategy, one content-frame wrapper inherited by every entity screen
 - [ ] **Phase 14: Entity Screen — Header, Loading & Empty States** - Page-header row, Skeleton loading state, composed Empty state, bounded table container
 - [ ] **Phase 15: Entity Screen — Form & Dialog Composition** - Spaced form fields, Dialog.Description/Footer, busy submit state, required-field indicator
@@ -165,7 +165,7 @@ Plans:
 | 9. Entity Table Restyle | v1.1 | 1/1 | Complete    | 2026-08-09 |
 | 10. Entity Form Restyle & Feedback | v1.1 | 4/4 | Complete    | 2026-08-10 |
 | 11. Full Verification & Quality Gates | v1.1 | 1/1 | Complete    | 2026-08-10 |
-| 12. Login Screen Polish | v1.2 | 1/1 | In Progress|  |
+| 12. Login Screen Polish | v1.2 | 1/1 | Complete    | 2026-08-10 |
 | 13. Shell Chrome — Header, Nav & Content Frame | v1.2 | 0/TBD | Not started | - |
 | 14. Entity Screen — Header, Loading & Empty States | v1.2 | 0/TBD | Not started | - |
 | 15. Entity Screen — Form & Dialog Composition | v1.2 | 0/TBD | Not started | - |
