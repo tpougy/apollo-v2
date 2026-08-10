@@ -98,36 +98,36 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| LOGIN-01 | TBD | Pending |
-| LOGIN-02 | TBD | Pending |
-| SHELL-01 | TBD | Pending |
-| SHELL-02 | TBD | Pending |
-| SHELL-03 | TBD | Pending |
-| ENTTBL-04 | TBD | Pending |
-| ENTTBL-05 | TBD | Pending |
-| ENTTBL-06 | TBD | Pending |
-| ENTTBL-07 | TBD | Pending |
-| ENTTBL-08 | TBD | Pending |
-| ENTFRM-05 | TBD | Pending |
-| ENTFRM-06 | TBD | Pending |
-| ENTFRM-07 | TBD | Pending |
-| ENTFRM-08 | TBD | Pending |
-| DELCONF-01 | TBD | Pending |
-| POLISH-01 | TBD | Pending |
-| POLISH-02 | TBD | Pending |
-| POLISH-03 | TBD | Pending |
-| POLISH-04 | TBD | Pending |
-| VERIFY-04 | TBD | Pending |
-| VERIFY-05 | TBD | Pending |
-| VERIFY-06 | TBD | Pending |
-| VERIFY-07 | TBD | Pending |
-| QUAL-02 | TBD | Pending |
+| LOGIN-01 | Phase 12 | Pending |
+| LOGIN-02 | Phase 12 | Pending |
+| SHELL-01 | Phase 13 | Pending |
+| SHELL-02 | Phase 13 | Pending |
+| SHELL-03 | Phase 13 | Pending |
+| ENTTBL-04 | Phase 14 | Pending |
+| ENTTBL-05 | Phase 14 | Pending |
+| ENTTBL-06 | Phase 14 | Pending |
+| ENTTBL-07 | Phase 14 | Pending |
+| ENTTBL-08 | Phase 16 | Pending |
+| ENTFRM-05 | Phase 15 | Pending |
+| ENTFRM-06 | Phase 15 | Pending |
+| ENTFRM-07 | Phase 15 | Pending |
+| ENTFRM-08 | Phase 15 | Pending |
+| DELCONF-01 | Phase 16 | Pending |
+| POLISH-01 | Phase 17 | Pending |
+| POLISH-02 | Phase 17 | Pending |
+| POLISH-03 | Phase 17 | Pending |
+| POLISH-04 | Phase 17 | Pending |
+| VERIFY-04 | Phase 17 | Pending |
+| VERIFY-05 | Phase 17 | Pending |
+| VERIFY-06 | Phase 17 | Pending |
+| VERIFY-07 | Phase 17 | Pending |
+| QUAL-02 | Phase 17 | Pending |
 
 **Coverage:**
 
 - v1.2 requirements: 24 total
-- Mapped to phases: 0/24 (filled by roadmapper)
-- Unmapped: 24 ⚠️ (expected before roadmap creation)
+- Mapped to phases: 24/24 ✓
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-08-10*

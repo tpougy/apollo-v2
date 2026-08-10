@@ -3,10 +3,10 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Lapidação de UI (SaaS-grade polish)
 status: planning
-last_updated: "2026-08-10T11:37:51.744Z"
+last_updated: "2026-08-10T12:00:00.000Z"
 last_activity: 2026-08-10
 progress:
-  total_phases: 0
+  total_phases: 6
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -17,52 +17,45 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-08-09)
+See: .planning/PROJECT.md (updated 2026-08-10)
 
-**Core value:** The user can execute every piece of controladoria data-entry work from either the Svelte SPA or the Python CLI, both authenticated as the same real user under the same InstantDB permission rules. Validated in v1.0. v1.1 makes the SPA side of that value visually coherent (Tailwind + shadcn-svelte), with no new functional capability.
-**Current focus:** Phase 9 — Entity Table Restyle (shadcn Table/Badge across all 9 entities)
+**Core value:** The user can execute every piece of controladoria data-entry work from either the Svelte SPA or the Python CLI, both authenticated as the same real user under the same InstantDB permission rules. Validated in v1.0. v1.1 made the SPA visually coherent on shadcn-svelte defaults; v1.2 refines composition/spacing/hierarchy on the same four screens so they read as a finished SaaS product — no new functional capability.
+**Current focus:** Phase 12 — Login Screen Polish (Card composition, consistent step spacing)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-08-10 — Milestone v1.2 started
+Phase: 12 of 17 (Login Screen Polish)
+Plan: — (not yet planned)
+Status: Ready to plan
+Last activity: 2026-08-10 — ROADMAP.md created for v1.2: 6 phases (12-17), 24/24 requirements mapped, 100% coverage.
+
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 6 (v1.0)
-- Average duration: N/A
-- Total execution time: 0 hours (v1.1)
+- Total plans completed: 0 (v1.2 not yet started; 35 lifetime across v1.0+v1.1)
+- Average duration: N/A (no v1.2 plans yet)
+- Total execution time: 0 hours (v1.2)
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 9 | 1 | - | - |
-| 10 | 4 | - | - |
-| 11 | 1 | - | - |
+| 12 | TBD | - | - |
+| 13 | TBD | - | - |
+| 14 | TBD | - | - |
+| 15 | TBD | - | - |
+| 16 | TBD | - | - |
+| 17 | TBD | - | - |
 
 **Recent Trend:**
 
-- Last 5 plans: N/A
+- Last 5 plans: N/A (v1.1 closed; v1.2 not yet started)
 - Trend: N/A
 
 *Updated after each plan completion*
-**Per-Plan Metrics:**
-
-| Plan | Duration | Tasks | Files |
-|------|----------|-------|-------|
-| Phase 07 P01 | 8min | 3 tasks | 14 files |
-| Phase 8 P1 | 20min | 3 tasks | 26 files |
-| Phase 09 P01 | 16min | 3 tasks | 13 files |
-| Phase 10 P01 | 14min | 3 tasks | 47 files |
-| Phase 10 P02 | 19min | 3 tasks | 21 files |
-| Phase 10 P04 | 76min | 3 tasks | 3 files |
-| Phase 10 P03 | 71min | 3 tasks | 11 files |
-| Phase 11 P01 | 12min | 3 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -70,20 +63,14 @@ Last activity: 2026-08-10 — Milestone v1.2 started
 
 Decisions are logged in PROJECT.md Key Decisions table (all sourced from the locked SPEC, see PROJECT.md Constraints).
 
+- v1.2 roadmap derivation: 24 v1.2 requirements grouped into 6 phases (12-17), outside-in by DOM containment (`LoginScreen` → `Shell` → `EntityScreen` sub-steps) and risk-ascending within `EntityScreen` (header/loading/empty → form/dialog → row-actions/delete), per dedicated architecture/pitfalls research for this milestone.
+- v1.2 roadmap: `window.confirm()` → `AlertDialog` (DELCONF-01) is explicitly scoped IN as its own Phase 16 sub-scope with dedicated Playwright coverage — not silently folded into row-action spacing work, per research's Pitfall 5 (scope creep) guidance.
+- v1.2 roadmap: cross-cutting requirements (POLISH-01..04, VERIFY-04..07, QUAL-02) all map to the final Phase 17, since VERIFY-07 explicitly requires re-checking every earlier phase's surface together — none of them can be truly proven until all five polish phases have landed.
 - v1.1 kickoff: UI stack locked to Tailwind v4 + shadcn-svelte default style/tokens, `@lucide/svelte` icons, dark mode via `prefers-color-scheme` only (C-11).
-- v1.1 kickoff: No human UAT gate anywhere this milestone — every phase's success criteria must be Playwright-provable against the live InstantDB app (C-12).
-- Roadmap derivation: 19 v1.1 requirements grouped into 5 phases (7-11) — setup, auth/shell, entity table, entity form+feedback, full verification — following the natural build order (foundation before consumers, table before form since dialogs are triggered from table row/create actions, verification last).
-- [Phase 9]: tipoPrazo is Badge-worthy by column name across all entities, including instanciasRotina where it's kind:"text" not "select" — matches ROADMAP SC#2's example list
-- [Phase 9]: status columns always render variant="secondary" regardless of free-text value — no keyword-matching color logic invented, per C-11's "não precisa inventar moda" intent
-- [Phase 10]: Popover.Root uses explicit open/onOpenChange (not bind:open) for the date-picker — bind: to a dynamic Record key throws Svelte's props_invalid_value on first render
-- [Phase 10]: entities-rotina-log/entities-projeto-etapa-tarefa/entities-ticket-subtarefa.spec.ts's Select/date breakage deferred to 10-02/10-04, tracked in .planning/WINDOWS.md — fixing date-fill alone wouldn't get them green until the Select conversion lands
-- [Phase ?]: [Phase 10] Fundo fixture for the templatesRotina Select test created in a local beforeEach (not beforeAll) to avoid the outer file's PREFIX-scoped beforeEach/afterEach sweeping it away before the test body runs
-- [Phase ?]: [Phase 10] Added novalidate to EntityScreen.svelte's create/edit form (Rule 1 fix) — native HTML5 required-field constraint validation was silently blocking JS-level validation/Alert rendering, defeating ENTFRM-04
-- [Phase ?]: 10-04: Fixed remaining e2e specs' Select/date call sites via shared helpers; found and fixed a toHaveValue->toHaveText assertion bug on the xor-parent-type Select.Trigger; full test:e2e suite green (39/39) at phase boundary.
-- [Phase ?]: [Phase 10] svelte-sonner hand-installed via bun add (no shadcn-svelte add sonner) to keep mode-watcher out of the tree; toast.success/error wired into every EntityScreen CRUD write path and both LoginScreen/Shell auth actions (FDBK-01)
-- [Phase ?]: [Phase 10] Live InstantDB per-email magic-code rate limit (429) hit during 10-03 verification after a burst of sends — resolved by waiting ~25min with zero further sends rather than retrying; documented as a session-level constraint for future live-auth-heavy work
-- [Phase ?]: [Phase 11]: Full-suite live re-run (39/39) + explicit screen x capability-class coverage audit found zero gaps; no new spec needed
-- [Phase ?]: [Phase 11]: bun run check/lint re-confirmed clean at exactly the two named pre-existing findings (QUAL-01 holds, zero new suppressions)
+- v1.1/v1.2 kickoff: No human UAT gate anywhere — every phase's success criteria must be Playwright-provable against the live InstantDB app (C-12).
+- [Phase 10]: Added `novalidate` to `EntityScreen.svelte`'s create/edit form — native HTML5 required-field constraint validation was silently blocking JS-level validation/Alert rendering.
+- [Phase 10]: `svelte-sonner` hand-installed via `bun add` (no `shadcn-svelte add sonner`) to keep `mode-watcher` out of the tree.
+- [Phase 11]: Full-suite live re-run (39/39) + explicit screen x capability-class coverage audit found zero gaps at v1.1 close.
 
 ### Pending Todos
 
@@ -91,7 +78,7 @@ None yet.
 
 ### Blockers/Concerns
 
-None — all v1.0 blockers were resolved during execution (see .planning/RETROSPECTIVE.md for details).
+None — the one open judgment call research flagged (`window.confirm()` → `AlertDialog` in/out of scope) is resolved: DELCONF-01 is in scope, owned by Phase 16.
 
 ## Deferred Items
 
@@ -101,13 +88,14 @@ Items acknowledged and carried forward from previous milestone close:
 |----------|------|--------|-------------|
 | UI | 5-panel dashboard (Hoje/calendários/Projetos/Backlog, `.eml` drag-and-drop) | Deferred — separate future milestone | v1.0 close |
 | Rules | Automatic soft-deadline reallocation, chained delay propagation | Deferred v2 rules | v1.0 close |
+| UI | Occasional live-email-timing test flake (magic-code round trip) | Deferred — non-blocking, pre-existing | v1.1 close |
 
 ## Session Continuity
 
-Last session: 2026-08-10T03:32:42.781Z
-Stopped at: Completed 11-01-PLAN.md — Full Verification & Quality Gates (v1.1 milestone close)
+Last session: 2026-08-10T12:00:00.000Z
+Stopped at: ROADMAP.md + STATE.md written for v1.2 (Phases 12-17); REQUIREMENTS.md traceability update pending.
 Resume file: None
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- Run `/gsd-plan-phase 12` to create the first v1.2 plan (Login Screen Polish).
