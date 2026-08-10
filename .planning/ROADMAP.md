@@ -40,7 +40,7 @@ estilo/cores padrão, sem tocar em lógica de negócio, sem criar o painel de 5 
 - [x] **Phase 8: Auth & Shell Restyle** - LoginScreen and Shell rebuilt with shadcn-svelte primitives, flow unchanged (completed 2026-08-09)
 - [x] **Phase 9: Entity Table Restyle** - EntityScreen list view rebuilt with shadcn Table/Badge across all 9 entities, no capability regression (completed 2026-08-09)
 - [x] **Phase 10: Entity Form Restyle & Feedback** - EntityScreen create/edit forms rebuilt with shadcn Dialog/Sheet + per-field-type inputs; Sonner toasts on every write (completed 2026-08-10)
-- [ ] **Phase 11: Full Verification & Quality Gates** - Playwright suite updated/extended and green live against InstantDB, Biome + svelte-check clean
+- [x] **Phase 11: Full Verification & Quality Gates** - Playwright suite updated/extended and green live against InstantDB, Biome + svelte-check clean (completed 2026-08-10)
 
 ## Phase Details
 
@@ -137,7 +137,7 @@ Plans:
   3. A single documented command re-runs the complete `web/e2e/` suite from a clean checkout with no manual/human step anywhere in the sequence, ending in an all-green summary — the concrete proof of VERIFY-03 for this milestone.
   4. Biome (formatter + linter) and `svelte-check` both exit clean (zero errors/warnings) on `web/` after the full restyle, with zero new suppressions compared to the v1.0 baseline.
 
-**Plans:** 1/1 plans executed
+**Plans:** 1/1 plans complete
 Plans:
 
 - [x] 11-01-PLAN.md — Full-suite live re-confirmation + coverage audit, quality-gate re-confirmation, and the single-documented-command update to `web/README.md`
@@ -161,4 +161,4 @@ Phases execute in numeric order: 7 → 8 → 9 → 10 → 11
 | 8. Auth & Shell Restyle | v1.1 | 1/1 | Complete    | 2026-08-09 |
 | 9. Entity Table Restyle | v1.1 | 1/1 | Complete    | 2026-08-09 |
 | 10. Entity Form Restyle & Feedback | v1.1 | 4/4 | Complete    | 2026-08-10 |
-| 11. Full Verification & Quality Gates | v1.1 | 1/1 | In Progress|  |
+| 11. Full Verification & Quality Gates | v1.1 | 1/1 | Complete    | 2026-08-10 |
