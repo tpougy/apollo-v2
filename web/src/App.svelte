@@ -1,8 +1,8 @@
 <script lang="ts">
   import { SignedIn, SignedOut } from "@instantdb/svelte";
+  import { Toaster } from "$lib/components/ui/sonner";
   import LoginScreen from "./lib/auth/LoginScreen.svelte";
   import { db } from "./lib/db";
-  import { Toaster } from "$lib/components/ui/sonner";
   import Shell from "./lib/Shell.svelte";
 </script>
 

@@ -2,6 +2,7 @@
   import { DateFormatter, type DateValue, getLocalTimeZone, parseDate } from "@internationalized/date";
   import CalendarIcon from "@lucide/svelte/icons/calendar";
   import CircleAlert from "@lucide/svelte/icons/circle-alert";
+  import { toast } from "svelte-sonner";
   import { Alert, AlertDescription } from "$lib/components/ui/alert";
   import { Badge } from "$lib/components/ui/badge";
   import { Button } from "$lib/components/ui/button";
@@ -15,7 +16,6 @@
   import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "$lib/components/ui/table";
   import { Textarea } from "$lib/components/ui/textarea";
   import { cn } from "$lib/utils";
-  import { toast } from "svelte-sonner";
   import { db, id } from "../db";
   import type { EntityConfig, LinkDef } from "./types";
 
