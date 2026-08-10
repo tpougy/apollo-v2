@@ -52,7 +52,7 @@ Full detail archived at `.planning/milestones/v1.1-ROADMAP.md`.
 - [x] **Phase 13: Shell Chrome — Header, Nav & Content Frame** - One header/toolbar, one nav strategy, one content-frame wrapper inherited by every entity screen (completed 2026-08-10)
 - [x] **Phase 14: Entity Screen — Header, Loading & Empty States** - Page-header row, Skeleton loading state, composed Empty state, bounded table container (completed 2026-08-10)
 - [x] **Phase 15: Entity Screen — Form & Dialog Composition** - Spaced form fields, Dialog.Description/Footer, busy submit state, required-field indicator (completed 2026-08-10)
-- [ ] **Phase 16: Entity Screen — Row Actions & Delete Confirmation** - Aligned row actions plus a shadcn AlertDialog replacing `window.confirm()`
+- [x] **Phase 16: Entity Screen — Row Actions & Delete Confirmation** - Aligned row actions plus a shadcn AlertDialog replacing `window.confirm()` (completed 2026-08-10)
 - [ ] **Phase 17: Cross-Phase Verification & Quality Gates** - Earlier phases re-checked together, full Playwright suite + Biome/svelte-check green
 
 ## Phase Details
@@ -187,5 +187,5 @@ Plans:
 | 13. Shell Chrome — Header, Nav & Content Frame | v1.2 | 1/1 | Complete    | 2026-08-10 |
 | 14. Entity Screen — Header, Loading & Empty States | v1.2 | 2/2 | Complete    | 2026-08-10 |
 | 15. Entity Screen — Form & Dialog Composition | v1.2 | 1/1 | Complete    | 2026-08-10 |
-| 16. Entity Screen — Row Actions & Delete Confirmation | v1.2 | 2/2 | In Progress|  |
+| 16. Entity Screen — Row Actions & Delete Confirmation | v1.2 | 2/2 | Complete    | 2026-08-10 |
 | 17. Cross-Phase Verification & Quality Gates | v1.2 | 0/TBD | Not started | - |
