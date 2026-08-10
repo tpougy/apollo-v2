@@ -6,6 +6,7 @@ import {
   readInstance,
   seedInstance,
 } from "./fixtures/instancia-admin-fixture.ts";
+import { openAndReadSelectOptions, selectByText } from "./helpers/form-controls.ts";
 
 // This spec runs in the `authed` project (restores the storageState persisted
 // by auth.setup.ts — see 04-01). Every generated record uses the
@@ -119,17 +120,12 @@ test("WEB-06: templatesRotina full CRUD, including the self-referential antecess
   // tipoGeracao offers exactly du_fixo, corrido_fixo, encadeado — matching
   // the CLI's click.Choice(_TIPO_GERACAO_CHOICES), no free text.
   await page.getByTestId("entity-create-start").click();
-  const tipoGeracaoSelect = page.getByTestId("field-tipoGeracao");
-  const optionValues = await tipoGeracaoSelect
-    .locator("option")
-    .evaluateAll((opts) =>
-      (opts as HTMLOptionElement[]).map((o) => o.value).filter((v) => v !== ""),
-    );
+  const optionValues = await openAndReadSelectOptions(page, "field-tipoGeracao");
   expect(optionValues.sort()).toEqual(["corrido_fixo", "du_fixo", "encadeado"]);
 
   // Create A with neither fundo nor antecessor.
   await page.getByTestId("field-nome").fill(nomeA);
-  await tipoGeracaoSelect.selectOption("du_fixo");
+  await selectByText(page, "field-tipoGeracao", "du_fixo");
   await page.getByTestId("field-regraCompetencia").fill("mes-corrente");
   await submitForm(page);
 
@@ -147,9 +143,9 @@ test("WEB-06: templatesRotina full CRUD, including the self-referential antecess
   // Create B with antecessor = A.
   await page.getByTestId("entity-create-start").click();
   await page.getByTestId("field-nome").fill(nomeB);
-  await page.getByTestId("field-tipoGeracao").selectOption("encadeado");
+  await selectByText(page, "field-tipoGeracao", "encadeado");
   await page.getByTestId("field-regraCompetencia").fill("encadeado-de-a");
-  await page.getByTestId("link-antecessor").selectOption({ label: nomeA });
+  await selectByText(page, "link-antecessor", nomeA);
   await submitForm(page);
 
   const rowB = page.getByTestId("row").filter({ hasText: nomeB });
@@ -162,10 +158,7 @@ test("WEB-06: templatesRotina full CRUD, including the self-referential antecess
   // Open B's edit form: the antecessor select must NOT contain B itself.
   await waitForSettle(page);
   await rowB.getByTestId("row-edit").click();
-  const antecessorOptionLabels = await page
-    .getByTestId("link-antecessor")
-    .locator("option")
-    .allTextContents();
+  const antecessorOptionLabels = await openAndReadSelectOptions(page, "link-antecessor");
   expect(antecessorOptionLabels).not.toContain(nomeB);
 
   // Set ativo false, reload, assert the column reads "não".
