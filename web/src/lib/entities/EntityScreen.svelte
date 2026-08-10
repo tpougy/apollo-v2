@@ -15,6 +15,7 @@
   import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "$lib/components/ui/table";
   import { Textarea } from "$lib/components/ui/textarea";
   import { cn } from "$lib/utils";
+  import { toast } from "svelte-sonner";
   import { db, id } from "../db";
   import type { EntityConfig, LinkDef } from "./types";
 
@@ -244,12 +245,14 @@
 
     if (config.xorLink && (!xorParentType || !xorParentId)) {
       formError = `Selecione exatamente um vínculo para "${config.xorLink.label}".`;
+      toast.error(formError);
       return;
     }
 
     for (const link of config.links ?? []) {
       if (link.required && !selectedLinks[link.label]) {
         formError = `Campo obrigatório: ${link.label}`;
+        toast.error(formError);
         return;
       }
     }
@@ -261,6 +264,7 @@
       if (raw === undefined || raw === "") {
         if (f.required) {
           formError = `Campo obrigatório: ${f.label}`;
+          toast.error(formError);
           return;
         }
         continue;
@@ -310,6 +314,7 @@
       const rows = (result.data as Record<string, unknown[]>)[targetEtype] ?? [];
       if (rows.length === 0) {
         formError = `parent_not_found: ${label}`;
+        toast.error(formError);
         return;
       }
     }
@@ -333,6 +338,7 @@
         const donoId = auth.user?.id;
         if (!donoId) {
           formError = "Sessão não autenticada.";
+          toast.error(formError);
           return;
         }
         const newId = id();
@@ -348,10 +354,13 @@
           Object.keys(unlinkPayload).length > 0 ? linked.unlink(unlinkPayload) : linked;
         await db.transact(finalChunk as never);
       }
+      const wasCreate = mode === "create";
       mode = null;
       editingId = null;
+      toast.success(wasCreate ? "Registro criado." : "Registro atualizado.");
     } catch (err) {
       formError = extractErrorMessage(err);
+      toast.error(formError);
     }
   }
 
@@ -362,8 +371,10 @@
     try {
       const tx = db.tx as unknown as Record<string, Record<string, { delete: () => unknown }>>;
       await db.transact(tx[config.etype][row.id].delete() as never);
+      toast.success("Registro excluído.");
     } catch (err) {
       formError = extractErrorMessage(err);
+      toast.error(formError);
     }
   }
 </script>

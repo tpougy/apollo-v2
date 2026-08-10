@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { expect, test } from "@playwright/test";
+import { deleteInstance, seedInstance } from "./fixtures/instancia-admin-fixture.ts";
 import { openAndReadSelectOptions, pickDate, selectByText } from "./helpers/form-controls.ts";
 
 // Proves ENTFRM-01/02 for the fundos (full-CRUD) capability class against the
@@ -11,6 +12,7 @@ import { openAndReadSelectOptions, pickDate, selectByText } from "./helpers/form
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const RESYNC_TIMEOUT = 15_000;
 const PREFIX = "phase10-e2e-";
+const OWNER_EMAIL = "tp@rbrasset.com.br";
 
 function apolloCli(args: string[]): string {
   return execFileSync("uv", ["run", "--project", "cli", "apollo", ...args], {
@@ -70,6 +72,9 @@ test("ENTFRM-01: fundos (full-CRUD) — Dialog role, text/checkbox fields render
   await page.getByTestId("entity-submit").click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
 
+  // FDBK-01: creating a fundo produces a visible success toast.
+  await expect(page.locator('[data-sonner-toast][data-type="success"]')).toBeVisible();
+
   const row = page.getByTestId("row").filter({ hasText: nome });
   await expect(row).toBeVisible({ timeout: RESYNC_TIMEOUT });
   const eid = await row.getAttribute("data-eid");
@@ -103,6 +108,9 @@ test("ENTFRM-01: fundos (full-CRUD) — Dialog role, text/checkbox fields render
   await expect(page.getByTestId("row").filter({ hasText: nomeEditado })).toHaveCount(0, {
     timeout: RESYNC_TIMEOUT,
   });
+
+  // FDBK-01: deleting a fundo produces a second, distinct success toast.
+  await expect(page.locator('[data-sonner-toast][data-type="success"]')).toBeVisible();
 });
 
 // ENTFRM-04 / ROADMAP Phase 10 SC4: submitting with a missing required field
@@ -137,11 +145,83 @@ test("ENTFRM-04: missing required field blocks submission, shows Alert, fires ze
   await expect(alertRoot).toHaveCount(1);
   await expect(alertRoot).toHaveClass(/destructive/);
 
+  // FDBK-01: the same validation error also surfaces as an error toast,
+  // alongside (not instead of) the Alert.
+  await expect(page.locator('[data-sonner-toast][data-type="error"]')).toBeVisible();
+
   // The Dialog stays open — submission was blocked, not just erroring after
   // a successful transact.
   await expect(page.getByTestId("entity-submit")).toBeVisible();
 
   await page.getByTestId("entity-cancel").click();
+});
+
+// FDBK-01 / ROADMAP Phase 10 SC5: instanciasRotina's status-only edit is the
+// "restricted capability" class alongside fundos' full-CRUD class above — no
+// create affordance exists, the edit Dialog contains exactly one field
+// control (a plain Input, since `status` is kind:"text"), and a successful
+// status change still produces a success toast.
+test("FDBK-01: instanciasRotina status-only edit — single field Dialog, no create affordance, success toast", async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+
+  const dedupeKey = uniqueName("dedupe");
+  const competencia = uniqueName("competencia");
+  const novoStatus = uniqueName("status-novo");
+  let eid = "";
+
+  try {
+    eid = await seedInstance(
+      {
+        dedupeKey,
+        dataPrevista: "2026-04-01T00:00:00.000Z",
+        competencia,
+        tipoPrazo: "hard",
+        status: "pendente",
+      },
+      OWNER_EMAIL,
+    );
+
+    await page.goto("/");
+    await page.getByTestId("nav-instanciasRotina").click();
+
+    // No create affordance exists anywhere on this screen.
+    await expect(page.getByTestId("entity-create-start")).toHaveCount(0);
+
+    const row = page.getByTestId("row").filter({ hasText: competencia });
+    await expect(row).toBeVisible({ timeout: RESYNC_TIMEOUT });
+
+    await row.getByTestId("row-edit").click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+
+    // Exactly one field control renders (status, a plain Input — this
+    // entity's date/text fields are all excluded by updatableFields).
+    const dialogFieldInputs = page.getByRole("dialog").locator('[data-testid^="field-"]');
+    await expect(dialogFieldInputs).toHaveCount(1);
+    const statusInput = page.getByTestId("field-status");
+    await expect(statusInput).toHaveCount(1);
+    await expect(statusInput).toHaveValue("pendente");
+
+    await statusInput.fill(novoStatus);
+    await page.getByTestId("entity-submit").click();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+
+    // FDBK-01: a successful status-only edit produces a visible success
+    // toast.
+    await expect(page.locator('[data-sonner-toast][data-type="success"]')).toBeVisible();
+
+    // The new status persists to live InstantDB, not just an optimistic
+    // local view.
+    await page.reload();
+    await page.getByTestId("nav-instanciasRotina").click();
+    await expect(page.getByTestId("row").filter({ hasText: competencia })).toContainText(
+      novoStatus,
+      { timeout: RESYNC_TIMEOUT },
+    );
+  } finally {
+    if (eid) await deleteInstance(eid);
+  }
 });
 
 // ENTFRM-01/03: templatesRotina smoke test — proves the static-option Select
