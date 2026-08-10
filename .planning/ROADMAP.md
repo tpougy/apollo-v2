@@ -126,7 +126,11 @@ Plans:
   3. Submitting a create/edit form shows a busy/spinner state on the submit button while the write is in flight, matching `LoginScreen`'s existing pattern.
   4. Required fields show a visual indicator driven by the existing `config.fields[].required` data, with no change to validation behavior.
 
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+
+- [ ] 15-01-PLAN.md — Field/link/xorLink spacing scale, Dialog.Description/Footer wiring, busy/spinner submit state, and required-field indicator on EntityScreen.svelte's Dialog, proven via tarefas' full round trip plus dedicated coverage across all 9 entities and all 3 capability classes
+
 **UI hint**: yes
 
 ### Phase 16: Entity Screen — Row Actions & Delete Confirmation
@@ -177,6 +181,6 @@ Plans:
 | 12. Login Screen Polish | v1.2 | 1/1 | Complete    | 2026-08-10 |
 | 13. Shell Chrome — Header, Nav & Content Frame | v1.2 | 1/1 | Complete    | 2026-08-10 |
 | 14. Entity Screen — Header, Loading & Empty States | v1.2 | 2/2 | Complete    | 2026-08-10 |
-| 15. Entity Screen — Form & Dialog Composition | v1.2 | 0/TBD | Not started | - |
+| 15. Entity Screen — Form & Dialog Composition | v1.2 | 0/1 | Planned | - |
 | 16. Entity Screen — Row Actions & Delete Confirmation | v1.2 | 0/TBD | Not started | - |
 | 17. Cross-Phase Verification & Quality Gates | v1.2 | 0/TBD | Not started | - |
