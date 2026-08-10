@@ -561,6 +561,7 @@
                 data-testid={`field-${f.name}`}
                 type="text"
                 required={f.required}
+                aria-required={f.required}
                 value={formValues[f.name] as string}
                 oninput={(e) => {
                   formValues[f.name] = e.currentTarget.value;
@@ -571,6 +572,7 @@
                 id={`field-${f.name}`}
                 data-testid={`field-${f.name}`}
                 required={f.required}
+                aria-required={f.required}
                 value={formValues[f.name] as string}
                 oninput={(e) => {
                   formValues[f.name] = e.currentTarget.value;
@@ -582,6 +584,7 @@
                 data-testid={`field-${f.name}`}
                 type="number"
                 required={f.required}
+                aria-required={f.required}
                 value={formValues[f.name] as number | string}
                 oninput={(e) => {
                   const v = e.currentTarget.value;
@@ -592,6 +595,7 @@
               <Checkbox
                 id={`field-${f.name}`}
                 data-testid={`field-${f.name}`}
+                aria-required={f.required}
                 checked={Boolean(formValues[f.name])}
                 onCheckedChange={(v) => {
                   formValues[f.name] = v === true;
@@ -611,6 +615,7 @@
                       variant="outline"
                       id={`field-${f.name}`}
                       data-testid={`field-${f.name}`}
+                      aria-required={f.required}
                       class={cn(
                         "w-full justify-start text-start font-normal",
                         !formValues[f.name] && "text-muted-foreground",
@@ -649,7 +654,12 @@
                   formValues[f.name] = v;
                 }}
               >
-                <Select.Trigger id={`field-${f.name}`} data-testid={`field-${f.name}`} class="w-full">
+                <Select.Trigger
+                  id={`field-${f.name}`}
+                  data-testid={`field-${f.name}`}
+                  aria-required={f.required}
+                  class="w-full"
+                >
                   {(formValues[f.name] as string) || "selecione..."}
                 </Select.Trigger>
                 <Select.Content>
