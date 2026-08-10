@@ -249,6 +249,55 @@ test("VERIFY-07/POLISH-04: cross-phase walkthrough -- Login -> Shell -> fundos t
 });
 
 // ---------------------------------------------------------------------------
+// Permanent regression coverage for fb52d85's header-to-content spacing fix
+// ---------------------------------------------------------------------------
+
+test("POLISH-04: entity-header to content vertical gap is non-zero and on the space-y-6 scale", async ({
+  page,
+}) => {
+  // Every other spacing assertion in this file measures row-wise gaps
+  // (row-actions gap-2) or nav-header gaps (columnGap) -- none of them ever
+  // measured the vertical gap between EntityScreen's own page-header and
+  // whatever renders below it. This is the exact coverage gap the
+  // milestone's integration audit flagged: EntityScreen's root <section>
+  // shipped with no spacing class, leaving entity-header flush against the
+  // table with a literal 0px gap -- a real POLISH-04 violation. fb52d85
+  // fixed it by adding `space-y-6` to that root <section>, matching Shell's
+  // own top-level space-y-6 scale (Shell.svelte:82) one level down. This
+  // test is a PERMANENT regression guard for that fix (the original proof
+  // was a throwaway scratch spec, since deleted).
+  //
+  // Tailwind's space-y utility applies its gap as `margin-block-end` on
+  // every child except the last one -- entity-header is the section's
+  // first, non-last child (the table/loading/empty block always follows
+  // it), so the fix surfaces directly as `marginBlockEnd` on entity-header
+  // itself, the same measurement technique already used above for Login's
+  // and the Dialog's space-y-4/space-y-2 scales.
+  await page.goto("/");
+  await page.getByTestId("nav-fundos").click();
+  const entityHeader = page.getByTestId("entity-header");
+  await expect(entityHeader).toBeVisible();
+  await expect(page.getByTestId("entity-table-frame")).toBeVisible({ timeout: RESYNC_TIMEOUT });
+
+  const headerToContentGap = await entityHeader.evaluate(
+    (el) => getComputedStyle(el).marginBlockEnd,
+  );
+  expect(headerToContentGap).not.toBe("0px");
+  expect(headerToContentGap).toBe("24px"); // space-y-6, the milestone's page-level rhythm scale
+
+  // Corroborate with the actual rendered box gap, not just the CSS property
+  // in isolation -- proves the space genuinely renders, not merely that the
+  // class is present.
+  const headerBox = await entityHeader.boundingBox();
+  const contentBox = await page.getByTestId("entity-table-frame").boundingBox();
+  if (!headerBox || !contentBox) {
+    throw new Error("expected both entity-header and entity-table-frame to report a bounding box");
+  }
+  const renderedGap = contentBox.y - (headerBox.y + headerBox.height);
+  expect(renderedGap).toBeGreaterThan(0);
+});
+
+// ---------------------------------------------------------------------------
 // Task 2: remaining dual-color-scheme coverage
 // ---------------------------------------------------------------------------
 
