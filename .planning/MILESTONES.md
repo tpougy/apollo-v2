@@ -1,5 +1,22 @@
 # Milestones
 
+## v1.1 UI bonita com Tailwind + shadcn-svelte (Shipped: 2026-08-10)
+
+**Phases completed:** 5 phases (7-11), 8 plans, 24 tasks
+
+**Key accomplishments:**
+
+- `web/` fully restyled on Tailwind CSS v4 + shadcn-svelte's own CLI default (`--preset b0` = style `nova`, base color `neutral`, icons `lucide`) — zero custom design tokens, exactly the "default, uncustomized" look requested. Class-based dark mode hand-converted to a bare `prefers-color-scheme` media query, verified live via Playwright's `emulateMedia` — no toggle anywhere in the DOM.
+- LoginScreen and Shell/nav rebuilt on shadcn `Input`/`Label`/`Button`/`Card`/`Alert`, with the existing two-step magic-code auth flow and nav/logout behavior proven functionally unchanged via real, live email round trips (including a real wrong-code rejection).
+- `EntityScreen.svelte` — the single generic table+form engine reused by all 9 domain entities — rebuilt end to end: list view on shadcn `Table`/`Badge` via a value-blind column-name-allowlist (zero new npm dependency), create/edit forms inside a real shadcn `Dialog` with `Input`/`Textarea`/`Checkbox`/`Select`/a `Popover`+`Calendar` date-picker per field type, validation errors on `Alert[variant=destructive]` (zero native `window.alert`, with a live-proven fix that JS-level validation — not the browser's native constraint validation — is what blocks a bad submit), all with zero testid/capability regression across full-CRUD, restricted-create/status-only, and read-only entities.
+- `svelte-sonner` hand-installed with zero `mode-watcher` dependency (avoiding a silent reintroduction of a manual dark-mode toggle), mounted once in `App.svelte`, wired into every entity CRUD write path and both auth actions — proven live for every capability class plus the auth half.
+- The three pre-existing e2e spec files broken by the Dialog/Select/date-picker restyle converted to shared `pickDate`/`selectByText`/`openAndReadSelectOptions` helpers; Playwright suite grew from 15 to 39 passing tests, fully green in one clean sequential run.
+- Live-reconfirmed the entire restyle in one final pass — explicit screen×capability-class coverage audit (not trusting per-phase reports alone), Biome + `svelte-check` clean with zero new suppressions vs the v1.0 baseline, and the single documented command (`bun run test:e2e`) that reproduces the whole proof unattended.
+- Zero human UAT anywhere in the milestone — every phase, including all real magic-code email round trips, verified by live automated Playwright runs against the real InstantDB app.
+- Closing audit found 2 non-blocking, pre-existing/explicitly-out-of-scope tech-debt items (native delete-confirm dialog; occasional live-email-timing test flake) — logged for a future milestone, did not block completion.
+
+---
+
 ## v1.0 Apollo v2 MVP (Shipped: 2026-08-09)
 
 **Phases completed:** 6 phases, 27 plans, 70 tasks

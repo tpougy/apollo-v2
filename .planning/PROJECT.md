@@ -2,7 +2,7 @@
 
 ## What This Is
 
-Apollo v2 is a from-scratch rewrite of Apollo, a local, single-user system for a fund-controladoria professional. It replaces the original Python/Litestar/SvelteKit/SQLite stack with InstantDB as the sole backend, a pure Svelte 5 SPA (no SvelteKit), and a documented Python CLI that replaces the old MCP server for Claude-operated workflows. v1.0 shipped the full data layer: live InstantDB schema/perms, the shared ANBIMA business-day calendar, full magic-code-authenticated CRUD on both the CLI and the SPA for every domain entity, and the idempotent routine-instance-generation job running identically from both channels. No UI panel/dashboard design is in scope yet.
+Apollo v2 is a from-scratch rewrite of Apollo, a local, single-user system for a fund-controladoria professional. It replaces the original Python/Litestar/SvelteKit/SQLite stack with InstantDB as the sole backend, a pure Svelte 5 SPA (no SvelteKit), and a documented Python CLI that replaces the old MCP server for Claude-operated workflows. v1.0 shipped the full data layer: live InstantDB schema/perms, the shared ANBIMA business-day calendar, full magic-code-authenticated CRUD on both the CLI and the SPA for every domain entity, and the idempotent routine-instance-generation job running identically from both channels. v1.1 restyled the entire SPA on Tailwind CSS v4 + shadcn-svelte's own default look (no custom design tokens), covering login, shell/nav, and every entity's table and form — a pure presentation layer change, zero new domain functionality. No UI panel/dashboard design is in scope yet.
 
 ## Core Value
 
@@ -21,21 +21,14 @@ The user can execute every piece of controladoria data-entry work — full CRUD 
 - ✓ Svelte SPA: magic-code auth + full functional CRUD screens for all domain entities — v1.0
 - ✓ Client-side idempotent routine-instance-generation job (+ CLI equivalent), all 3 generation types, proven safe under real process kill and real concurrency — v1.0
 - ✓ End-to-end parity verification + quality gates (ruff+ty on cli/, formatter+linter+svelte-check on web/) green — v1.0
+- ✓ `web/` fully restyled on Tailwind v4 + shadcn-svelte's own CLI default (`--preset b0` = nova/neutral/lucide), no custom design tokens — LoginScreen, Shell/nav, and EntityScreen's table + form (Dialog, Select, Calendar date-picker, Badge, Sonner toasts) all rebuilt, zero business-logic change, dark mode via `prefers-color-scheme` with no manual toggle — v1.1
+- ✓ Playwright e2e suite grew from 15 to 39 passing tests covering every restyled screen across all 3 entity capability classes (full-CRUD, restricted-create/status-only, read-only), zero human UAT anywhere in the milestone — v1.1
 
 ### Active
 
 <!-- Current scope. Building toward these. -->
 
-## Current Milestone: v1.1 UI bonita com Tailwind + shadcn-svelte
-
-**Goal:** Refazer visualmente as 4 telas existentes da SPA (LoginScreen, Shell, EntityScreen genérica das 9 entidades) usando Tailwind CSS + componentes shadcn-svelte no estilo/cores padrão, sem tocar em lógica de negócio, sem criar o painel de 5 áreas (fora de escopo, ver abaixo), verificado 100% via Playwright (sem UAT humano).
-
-**Target features:**
-- Tailwind v4 + shadcn-svelte inicializados em `web/` (estilo/baseColor padrão, ícones lucide, dark via `prefers-color-scheme`)
-- LoginScreen refeita com componentes shadcn (Input/Button/Label/Card/Alert)
-- Shell/nav refeita com componentes shadcn (Button + layout primitivo — sem dashboard)
-- EntityScreen (tabela + formulário genérico das 9 entidades) refeita com shadcn Table/Data Table, Dialog/Sheet para criar/editar, Input/Label/Select/Checkbox/Calendar/date-picker por tipo de campo, Badge para status, Sonner para feedback
-- Suite Playwright existente (`web/e2e/`) atualizada/estendida para cobrir cada tela refeita, sem gate de UAT humano em nenhuma fase
+(None — run `/gsd-new-milestone` to define the next milestone, e.g. the panel/dashboard UI still deferred below, or the known tech debt: delete-confirmation dialog still native `window.confirm`, see `.planning/milestones/v1.1-MILESTONE-AUDIT.md`)
 
 ### Out of Scope
 
@@ -53,7 +46,8 @@ The user can execute every piece of controladoria data-entry work — full CRUD 
 - Vendored ANBIMA holiday table source: extracted from the MIT-licensed `bizdays` PyPI package's bundled `ANBIMA.cal` (1003 dates, 2000-2078), not the originally-cited `feriados-anbima` scraper.
 - This project executes autonomously via `/gsd:autonomous` for extended unattended stretches — no phase in the roadmap depends on human UAT/interaction to proceed.
 - **v1.0 shipped 2026-08-09**: 6 phases, 27 plans, 70 tasks, ~10.4k LOC across `cli/`, `shared/`, `web/src`. Every phase's requirements were proven against the live InstantDB app (never mocked), including real magic-code email round trips and a real cross-user permission-denial proof.
-- Known technical debt / follow-ups for a future milestone: the panel/dashboard UI (5 fixed panels, ordering, `.eml` drag-and-drop) is still unbuilt; automatic soft-deadline reallocation and chained delay propagation remain deferred v2 rules.
+- **v1.1 shipped 2026-08-10**: 5 phases (7-11), 8 plans, 114 files changed (+3,830/-272 LOC in `web/`). Every phase proven against the live InstantDB app via real Playwright runs, including real magic-code email round trips — zero human UAT anywhere in the milestone. Full detail: `.planning/milestones/v1.1-ROADMAP.md`; closing audit: `.planning/milestones/v1.1-MILESTONE-AUDIT.md`.
+- Known technical debt / follow-ups for a future milestone: the panel/dashboard UI (5 fixed panels, ordering, `.eml` drag-and-drop) is still unbuilt; automatic soft-deadline reallocation and chained delay propagation remain deferred v2 rules; delete-confirmation still uses native `window.confirm` (candidate for a shadcn `AlertDialog` conversion, non-blocking, logged in v1.1's audit).
 
 ## Constraints
 
@@ -86,6 +80,9 @@ All constraints below originate from the approved SPEC and are **LOCKED** — do
 | No data migration from original `apollo` SQLite | No real production data exists yet | ✓ Good |
 | `templatesRotina.offsetDias` added mid-milestone as an optional dual-purpose field (Phase 5) | Original SPEC schema table lacked a field for the Nth-day/offset rule that `du_fixo`/`corrido_fixo`/`encadeado` generation needed; had to be optional since InstantDB can't backfill required attrs onto existing live rows | ✓ Good |
 | Orchestrator (not subagents) performs all magic-code email round trips | Subagents don't inherit the orchestrator's MCP/tool scoping (Outlook COM bridge, M365 mailbox access) — discovered live in Phase 3 and recurred through Phase 6 | ✓ Good — durable pattern, worked every time |
+| shadcn-svelte's stale "default style + slate base color" wording resolved to `--preset b0` (style `nova` + base color `neutral`) | shadcn-svelte's CLI dropped both terms in its 1.x preset redesign (discovered live during Phase 7 research) — `--preset b0` is the literal current-CLI equivalent of "the unmodified default look" | ✓ Good — matched user intent, no re-litigation needed |
+| Sonner hand-installed (`bun add svelte-sonner`) instead of via `bunx shadcn-svelte add sonner` | The stock registry entry pulls in `mode-watcher`, which would silently reintroduce the manual dark-mode toggle Phase 7 explicitly removed — a direct C-11/SETUP-03 violation if installed via the default CLI path | ✓ Good — caught by Phase 10 research before it landed |
+| **v1.1 correction**: magic-code auth round trips do NOT require orchestrator-only execution | v1.0's Key Decision above was scoped to the M365 email-search *MCP tool*, which genuinely is orchestrator-only. `web/e2e/helpers/magic-code.ts` (built in v1.0 Phase 3, used throughout v1.1) shells out directly to `powershell.exe`/Outlook COM as a plain OS subprocess — reachable from any Bash-capable process, including plan-executor subagents. v1.1 delegated live magic-code Playwright runs to subagents throughout with no issue. | ✓ Good — de-risked autonomous execution significantly; watch for InstantDB's per-email rate limit (`429`) under parallel/bursty sends |
 
 ## Evolution
 
@@ -105,4 +102,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-08-09 — milestone v1.1 (UI bonita com Tailwind + shadcn-svelte) started*
+*Last updated: 2026-08-10 — milestone v1.1 (UI bonita com Tailwind + shadcn-svelte) shipped and archived*
