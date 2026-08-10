@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { expect, type Page, test } from "@playwright/test";
+import { openAndReadSelectOptions, pickDate, selectByText } from "./helpers/form-controls.ts";
 
 // This spec runs in the `authed` project (restores the storageState persisted
 // by auth.setup.ts — see 04-01). Every generated record uses the
@@ -171,20 +172,15 @@ test("WEB-08: tickets full browser CRUD round trip, including a long multi-line 
 
   // Assert the tipoPrazo select offers EXACTLY "hard" and "soft" — matching
   // the CLI's click.Choice(_TIPO_PRAZO_CHOICES), no free text.
-  const tipoPrazoSelect = page.getByTestId("field-tipoPrazo");
-  const optionValues = await tipoPrazoSelect
-    .locator("option")
-    .evaluateAll((opts) =>
-      (opts as HTMLOptionElement[]).map((o) => o.value).filter((v) => v !== ""),
-    );
+  const optionValues = await openAndReadSelectOptions(page, "field-tipoPrazo");
   expect(optionValues.sort()).toEqual(["hard", "soft"]);
 
   // (1) Create: dataRecebimento set, dataPrevista left blank, no fundo link.
   await page.getByTestId("field-titulo").fill(titulo);
   await page.getByTestId("field-corpo").fill(corpo);
   await page.getByTestId("field-remetente").fill(remetente);
-  await page.getByTestId("field-dataRecebimento").fill("2026-02-01");
-  await tipoPrazoSelect.selectOption("hard");
+  await pickDate(page, "field-dataRecebimento");
+  await selectByText(page, "field-tipoPrazo", "hard");
   await page.getByTestId("field-status").fill("novo");
   await submitForm(page);
 
@@ -232,8 +228,8 @@ test("WEB-08: subtarefa created with a tarefa parent shows the tarefa column and
 
   await page.getByTestId("field-titulo").fill(titulo);
   await page.getByTestId("field-ordem").fill("1");
-  await page.getByTestId("xor-parent-type").selectOption("tarefa");
-  await page.getByTestId("link-tarefa").selectOption({ label: chainTarefaTitulo });
+  await selectByText(page, "xor-parent-type", "tarefa");
+  await selectByText(page, "link-tarefa", chainTarefaTitulo);
   await submitForm(page);
 
   const row = page.getByTestId("row").filter({ hasText: titulo });
@@ -270,8 +266,8 @@ test("WEB-08: subtarefa created with a ticket parent shows the ticket column and
 
   await page.getByTestId("field-titulo").fill(titulo);
   await page.getByTestId("field-ordem").fill("2");
-  await page.getByTestId("xor-parent-type").selectOption("ticket");
-  await page.getByTestId("link-ticket").selectOption({ label: chainTicketTitulo });
+  await selectByText(page, "xor-parent-type", "ticket");
+  await selectByText(page, "link-ticket", chainTicketTitulo);
   await submitForm(page);
 
   const row = page.getByTestId("row").filter({ hasText: titulo });
@@ -332,12 +328,12 @@ test("WEB-08 T-04-11: switching parent type before submit links only the final c
   await page.getByTestId("field-titulo").fill(titulo);
   await page.getByTestId("field-ordem").fill("1");
 
-  await page.getByTestId("xor-parent-type").selectOption("tarefa");
-  await page.getByTestId("link-tarefa").selectOption({ label: chainTarefaTitulo });
+  await selectByText(page, "xor-parent-type", "tarefa");
+  await selectByText(page, "link-tarefa", chainTarefaTitulo);
 
   // Switch the parent type before submitting.
-  await page.getByTestId("xor-parent-type").selectOption("ticket");
-  await page.getByTestId("link-ticket").selectOption({ label: chainTicketTitulo });
+  await selectByText(page, "xor-parent-type", "ticket");
+  await selectByText(page, "link-ticket", chainTicketTitulo);
 
   await submitForm(page);
 
@@ -370,8 +366,8 @@ test("WEB-08 T-04-11: editing a subtarefa's parent type unlinks the old parent, 
 
   await page.getByTestId("field-titulo").fill(titulo);
   await page.getByTestId("field-ordem").fill("1");
-  await page.getByTestId("xor-parent-type").selectOption("tarefa");
-  await page.getByTestId("link-tarefa").selectOption({ label: chainTarefaTitulo });
+  await selectByText(page, "xor-parent-type", "tarefa");
+  await selectByText(page, "link-tarefa", chainTarefaTitulo);
   await submitForm(page);
 
   const row = page.getByTestId("row").filter({ hasText: titulo });
@@ -385,9 +381,9 @@ test("WEB-08 T-04-11: editing a subtarefa's parent type unlinks the old parent, 
 
   await waitForSettle(page);
   await row.getByTestId("row-edit").click();
-  await expect(page.getByTestId("xor-parent-type")).toHaveValue("tarefa");
-  await page.getByTestId("xor-parent-type").selectOption("ticket");
-  await page.getByTestId("link-ticket").selectOption({ label: chainTicketTitulo });
+  await expect(page.getByTestId("xor-parent-type")).toHaveText("tarefa");
+  await selectByText(page, "xor-parent-type", "ticket");
+  await selectByText(page, "link-ticket", chainTicketTitulo);
   await submitForm(page);
   await expect(page.getByTestId("entity-submit")).toHaveCount(0);
   await waitForSettle(page);
@@ -425,8 +421,8 @@ test("WEB-08: subtarefa concluida boolean round-trips both true and false across
 
   await page.getByTestId("field-titulo").fill(titulo);
   await page.getByTestId("field-ordem").fill("1");
-  await page.getByTestId("xor-parent-type").selectOption("tarefa");
-  await page.getByTestId("link-tarefa").selectOption({ label: chainTarefaTitulo });
+  await selectByText(page, "xor-parent-type", "tarefa");
+  await selectByText(page, "link-tarefa", chainTarefaTitulo);
   const concluidaCheckbox = page.getByTestId("field-concluida");
   if (await concluidaCheckbox.isChecked()) await concluidaCheckbox.uncheck();
   await submitForm(page);
