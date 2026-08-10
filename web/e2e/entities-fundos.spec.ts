@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { expect, test } from "@playwright/test";
+import { pickDate } from "./helpers/form-controls.ts";
 
 // This spec runs in the `authed` project (restores the storageState persisted
 // by auth.setup.ts — see 04-01). Every generated record uses the
@@ -119,7 +120,7 @@ test("WEB-02: full browser CRUD round trip", async ({ page }) => {
   await page.getByTestId("entity-create-start").click();
   await page.getByTestId("field-nome").fill(nome);
   await page.getByTestId("field-codigo").fill(codigo);
-  await page.getByTestId("field-createdAt").fill("2026-01-15");
+  await pickDate(page, "field-createdAt");
   const ativoCheckbox = page.getByTestId("field-ativo");
   if (!(await ativoCheckbox.isChecked())) {
     await ativoCheckbox.check();
