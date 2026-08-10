@@ -124,7 +124,8 @@
 
   function isBadgeColumn(columnName: string): boolean {
     const field = config.fields.find((f) => f.name === columnName);
-    if (field?.kind === "boolean") return true;
+    if (!field) return false; // links/xorLink choices are never Badge-worthy
+    if (field.kind === "boolean") return true;
     return BADGE_COLUMN_NAMES.has(columnName);
   }
 
