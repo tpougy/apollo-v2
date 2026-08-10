@@ -54,9 +54,14 @@
   type="button"
   variant="outline"
   data-testid="logout"
-  onclick={() => {
-    void db.auth.signOut();
-    toast.success("Você saiu.");
+  onclick={async () => {
+    try {
+      await db.auth.signOut();
+      toast.success("Você saiu.");
+    } catch (err) {
+      console.error("[logout] signOut failed", err);
+      toast.error("Falha ao sair.");
+    }
   }}
 >
   Sair
