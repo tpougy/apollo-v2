@@ -9,6 +9,7 @@
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import * as Popover from "$lib/components/ui/popover";
+  import * as Select from "$lib/components/ui/select";
   import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "$lib/components/ui/table";
   import { Textarea } from "$lib/components/ui/textarea";
   import { cn } from "$lib/utils";
@@ -540,43 +541,54 @@
                   </Popover.Content>
                 </Popover.Root>
               {:else if f.kind === "select"}
-                <select
-                  id={`field-${f.name}`}
-                  data-testid={`field-${f.name}`}
-                  required={f.required}
+                <Select.Root
+                  type="single"
                   value={formValues[f.name] as string}
-                  onchange={(e) => {
-                    formValues[f.name] = e.currentTarget.value;
+                  onValueChange={(v) => {
+                    formValues[f.name] = v;
                   }}
                 >
-                  <option value="" disabled>selecione...</option>
-                  {#each f.options as opt}
-                    <option value={opt}>{opt}</option>
-                  {/each}
-                </select>
+                  <Select.Trigger id={`field-${f.name}`} data-testid={`field-${f.name}`} class="w-full">
+                    {(formValues[f.name] as string) || "selecione..."}
+                  </Select.Trigger>
+                  <Select.Content>
+                    {#each f.options as opt (opt)}
+                      <Select.Item value={opt} label={opt}>{opt}</Select.Item>
+                    {/each}
+                  </Select.Content>
+                </Select.Root>
               {/if}
             </div>
           {/each}
 
           {#each config.links ?? [] as link (link.label)}
             <div>
-              <label for={`link-${link.label}`}>{link.label}</label>
-              <select
-                id={`link-${link.label}`}
-                data-testid={`link-${link.label}`}
-                required={link.required}
+              <Label for={`link-${link.label}`}>{link.label}</Label>
+              <Select.Root
+                type="single"
                 value={selectedLinks[link.label] ?? ""}
-                onchange={(e) => {
-                  selectedLinks[link.label] = e.currentTarget.value;
+                onValueChange={(v) => {
+                  selectedLinks[link.label] = v;
                 }}
               >
-                {#if !link.required}
-                  <option value="">—</option>
-                {/if}
-                {#each linkOptionsFor(link) as opt (opt.id)}
-                  <option value={opt.id}>{String(opt[link.targetLabelField] ?? "")}</option>
-                {/each}
-              </select>
+                <Select.Trigger id={`link-${link.label}`} data-testid={`link-${link.label}`} class="w-full">
+                  {String(
+                    linkOptionsFor(link).find((o) => o.id === selectedLinks[link.label])?.[
+                      link.targetLabelField
+                    ] ?? "—",
+                  )}
+                </Select.Trigger>
+                <Select.Content>
+                  {#if !link.required}
+                    <Select.Item value="" label="—">—</Select.Item>
+                  {/if}
+                  {#each linkOptionsFor(link) as opt (opt.id)}
+                    <Select.Item value={opt.id} label={String(opt[link.targetLabelField] ?? "")}>
+                      {String(opt[link.targetLabelField] ?? "")}
+                    </Select.Item>
+                  {/each}
+                </Select.Content>
+              </Select.Root>
             </div>
           {/each}
 

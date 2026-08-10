@@ -29,3 +29,28 @@ export async function pickDate(page: Page, testid: string): Promise<string> {
   const month = String(now.getMonth() + 1).padStart(2, "0");
   return `${year}-${month}-15`;
 }
+
+/**
+ * Selects an option from a shadcn `Select` (bits-ui) by its visible text —
+ * replaces every native `.selectOption(...)` call site broken by the
+ * Select conversion (10-02-PLAN.md). Works identically for static-option
+ * enum fields and relationship-link fields, since bits-ui's Select renders
+ * `role="option"` items either way.
+ */
+export async function selectByText(page: Page, testid: string, optionText: string): Promise<void> {
+  await page.getByTestId(testid).click();
+  await page.getByRole("option", { name: optionText, exact: true }).click();
+}
+
+/**
+ * Opens a shadcn `Select`'s trigger, reads every visible option's trimmed
+ * text, closes it again (Escape), and returns the list — replaces every
+ * native `.locator("option").evaluateAll(...)`/`.allTextContents()`
+ * enumeration call site broken by the Select conversion.
+ */
+export async function openAndReadSelectOptions(page: Page, testid: string): Promise<string[]> {
+  await page.getByTestId(testid).click();
+  const texts = await page.getByRole("listbox").getByRole("option").allTextContents();
+  await page.keyboard.press("Escape");
+  return texts.map((t) => t.trim());
+}
