@@ -535,9 +535,7 @@
       <form onsubmit={handleSubmit} novalidate class="space-y-4">
         {#each editableFields() as f (f.name)}
           <div class="space-y-2">
-            <Label for={`field-${f.name}`}>
-              {f.label}{#if f.required}<span class="text-destructive" aria-hidden="true"> *</span>{/if}
-            </Label>
+            <Label for={`field-${f.name}`}>{f.label}{#if f.required}<span class="text-destructive" aria-hidden="true"> *</span>{/if}</Label>
             {#if f.kind === "text"}
               <Input
                 id={`field-${f.name}`}
