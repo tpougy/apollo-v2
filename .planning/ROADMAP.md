@@ -38,7 +38,7 @@ estilo/cores padrão, sem tocar em lógica de negócio, sem criar o painel de 5 
 
 - [x] **Phase 7: Design System Setup** - Tailwind v4 + shadcn-svelte wired into `web/`, default tokens, automatic dark mode (completed 2026-08-09)
 - [x] **Phase 8: Auth & Shell Restyle** - LoginScreen and Shell rebuilt with shadcn-svelte primitives, flow unchanged (completed 2026-08-09)
-- [ ] **Phase 9: Entity Table Restyle** - EntityScreen list view rebuilt with shadcn Table/Badge across all 9 entities, no capability regression
+- [x] **Phase 9: Entity Table Restyle** - EntityScreen list view rebuilt with shadcn Table/Badge across all 9 entities, no capability regression (completed 2026-08-09)
 - [ ] **Phase 10: Entity Form Restyle & Feedback** - EntityScreen create/edit forms rebuilt with shadcn Dialog/Sheet + per-field-type inputs; Sonner toasts on every write
 - [ ] **Phase 11: Full Verification & Quality Gates** - Playwright suite updated/extended and green live against InstantDB, Biome + svelte-check clean
 
@@ -95,7 +95,7 @@ Plans:
   3. Row-level edit/delete actions render as shadcn `Button`s and, on a full-CRUD entity, still open the edit path and perform a live delete against InstantDB exactly as before the restyle.
   4. `instanciasRotina`'s table shows no create action and only a status-changing row action (no full edit/delete), and `logInferenciaClaude`'s table shows zero row actions of any kind — both proven live post-restyle, matching each entity's pre-restyle capability exactly.
 
-**Plans:** 1/1 plans executed
+**Plans:** 1/1 plans complete
 Plans:
 
 - [x] 09-01-PLAN.md — Install shadcn table/badge; restyle EntityScreen.svelte's list-view (Table/Badge/Button) for all 9 entities in place; add entities-table-restyle.spec.ts proving all 4 success criteria live across capability classes
@@ -148,6 +148,6 @@ Phases execute in numeric order: 7 → 8 → 9 → 10 → 11
 | 6. End-to-End Verification | v1.0 | 3/3 | Complete | 2026-08-09 |
 | 7. Design System Setup | v1.1 | 1/1 | Complete    | 2026-08-09 |
 | 8. Auth & Shell Restyle | v1.1 | 1/1 | Complete    | 2026-08-09 |
-| 9. Entity Table Restyle | v1.1 | 1/1 | In Progress|  |
+| 9. Entity Table Restyle | v1.1 | 1/1 | Complete    | 2026-08-09 |
 | 10. Entity Form Restyle & Feedback | v1.1 | 0/TBD | Not started | - |
 | 11. Full Verification & Quality Gates | v1.1 | 0/TBD | Not started | - |
