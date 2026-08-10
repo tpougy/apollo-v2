@@ -25,9 +25,9 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Shell / Navigation
 
-- [ ] **SHELL-01**: `Shell.svelte` has a proper header/toolbar row (app identity + user/logout action), replacing the current stray root `<h1>` and floating logout button
-- [ ] **SHELL-02**: The entity nav has a clear, consistent active-state and a single deliberate strategy for handling all 9 nav items on desktop (no ad hoc wrapping/overflow)
-- [ ] **SHELL-03**: `Shell.svelte` owns exactly one outer content-frame wrapper (max-width + horizontal padding + vertical rhythm) around the nav and the active entity screen, so every entity screen inherits the same frame instead of each managing its own
+- [x] **SHELL-01**: `Shell.svelte` has a proper header/toolbar row (app identity + user/logout action), replacing the current stray root `<h1>` and floating logout button
+- [x] **SHELL-02**: The entity nav has a clear, consistent active-state and a single deliberate strategy for handling all 9 nav items on desktop (no ad hoc wrapping/overflow)
+- [x] **SHELL-03**: `Shell.svelte` owns exactly one outer content-frame wrapper (max-width + horizontal padding + vertical rhythm) around the nav and the active entity screen, so every entity screen inherits the same frame instead of each managing its own
 
 ### Entity Screen — Table & States
 
@@ -100,9 +100,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | LOGIN-01 | Phase 12 | Complete |
 | LOGIN-02 | Phase 12 | Complete |
-| SHELL-01 | Phase 13 | Pending |
-| SHELL-02 | Phase 13 | Pending |
-| SHELL-03 | Phase 13 | Pending |
+| SHELL-01 | Phase 13 | Complete |
+| SHELL-02 | Phase 13 | Complete |
+| SHELL-03 | Phase 13 | Complete |
 | ENTTBL-04 | Phase 14 | Pending |
 | ENTTBL-05 | Phase 14 | Pending |
 | ENTTBL-06 | Phase 14 | Pending |

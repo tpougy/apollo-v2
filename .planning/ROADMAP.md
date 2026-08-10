@@ -87,10 +87,10 @@ Plans:
   3. `Shell` owns exactly one outer content-frame wrapper (max-width + horizontal padding + vertical rhythm) around the nav and the active entity screen — verified identical across all 9 entities, not re-declared per screen.
   4. Navigating through all 9 entities via the nav continues to mount the correct entity screen each time, with no regression to existing nav/logout Playwright coverage.
 
-**Plans**: 1/1 plans planned
+**Plans**: 1/1 plans executed planned
 Plans:
 
-- [ ] 13-01-PLAN.md — Header/toolbar + Separator + single content-frame wrapper on Shell.svelte, plus dedicated Playwright coverage (shell-chrome.spec.ts) and a full-suite regression run
+- [x] 13-01-PLAN.md — Header/toolbar + Separator + single content-frame wrapper on Shell.svelte, plus dedicated Playwright coverage (shell-chrome.spec.ts) and a full-suite regression run
 
 **UI hint**: yes
 
@@ -170,7 +170,7 @@ Plans:
 | 10. Entity Form Restyle & Feedback | v1.1 | 4/4 | Complete    | 2026-08-10 |
 | 11. Full Verification & Quality Gates | v1.1 | 1/1 | Complete    | 2026-08-10 |
 | 12. Login Screen Polish | v1.2 | 1/1 | Complete    | 2026-08-10 |
-| 13. Shell Chrome — Header, Nav & Content Frame | v1.2 | 0/1 | Not started | - |
+| 13. Shell Chrome — Header, Nav & Content Frame | v1.2 | 1/1 | In Progress|  |
 | 14. Entity Screen — Header, Loading & Empty States | v1.2 | 0/TBD | Not started | - |
 | 15. Entity Screen — Form & Dialog Composition | v1.2 | 0/TBD | Not started | - |
 | 16. Entity Screen — Row Actions & Delete Confirmation | v1.2 | 0/TBD | Not started | - |

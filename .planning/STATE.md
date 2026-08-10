@@ -5,16 +5,16 @@ milestone_name: Lapidação de UI (SaaS-grade polish)
 current_phase: 13
 current_phase_name: Shell Chrome — Header, Nav & Content Frame
 status: planning
-stopped_at: Completed 12-01-PLAN.md
-last_updated: "2026-08-10T13:06:10.654Z"
+stopped_at: Completed 13-01-PLAN.md
+last_updated: "2026-08-10T13:48:51.101Z"
 last_activity: 2026-08-10
 last_activity_desc: "ROADMAP.md created for v1.2: 6 phases (12-17), 24/24 requirements mapped, 100% coverage."
 progress:
   total_phases: 6
-  completed_phases: 1
-  total_plans: 1
-  completed_plans: 1
-  percent: 17
+  completed_phases: 2
+  total_plans: 2
+  completed_plans: 2
+  percent: 33
 ---
 
 # Project State
@@ -24,16 +24,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-10)
 
 **Core value:** The user can execute every piece of controladoria data-entry work from either the Svelte SPA or the Python CLI, both authenticated as the same real user under the same InstantDB permission rules. Validated in v1.0. v1.1 made the SPA visually coherent on shadcn-svelte defaults; v1.2 refines composition/spacing/hierarchy on the same four screens so they read as a finished SaaS product — no new functional capability.
-**Current focus:** Phase 12 — Login Screen Polish (Card composition, consistent step spacing)
+**Current focus:** Phase 13 — Shell Chrome (Header, Nav & Content Frame)
 
 ## Current Position
 
-Phase: 13 of 17 (Shell Chrome — Header, Nav & Content Frame)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-08-10 — Phase 12 complete, transitioned to Phase 13
+Phase: 13 of 17 (Shell Chrome — Header, Nav & Content Frame) — complete
+Plan: 1 of 1 (13-01) — complete
+Status: Phase complete, ready to plan Phase 14
+Last activity: 2026-08-10 — Executed 13-01-PLAN.md: Shell.svelte restructured with a shell-header toolbar, Separator, and single shell-content-frame wrapper (SHELL-01/02/03); App.svelte's duplicate app-identity bug fixed (root <h1> scoped inside <SignedOut>); full 44-test Playwright suite green.
 
-Progress: [██░░░░░░░░] 17%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -48,7 +48,7 @@ Progress: [██░░░░░░░░] 17%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 12 | 1 | - | - |
-| 13 | TBD | - | - |
+| 13 | 1 | 10min | 10min |
 | 14 | TBD | - | - |
 | 15 | TBD | - | - |
 | 16 | TBD | - | - |
@@ -65,6 +65,7 @@ Progress: [██░░░░░░░░] 17%
 | Plan | Duration | Tasks | Files |
 |------|----------|-------|-------|
 | Phase 12 P01 | 20min | 3 tasks | 3 files |
+| Phase 13 P01 | 10min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -80,6 +81,7 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase 11]: Full-suite live re-run (39/39) + explicit screen x capability-class coverage audit found zero gaps at v1.1 close.
 - [Phase 12]: LoginScreen restyled inside Card/CardHeader/CardTitle/CardDescription, full-viewport centered, App.svelte's root <h1> left untouched (additive-only composition, per 12-PATTERNS.md Critical Constraint).
 - [Phase 12]: Established the space-y-4/space-y-2 Tailwind spacing scale (first application in the codebase) identically on both auth steps — the baseline Phase 13-17 will reuse for POLISH-04.
+- [Phase 13]: Shell.svelte restructured with shell-header toolbar + Separator + single shell-content-frame wrapper (mx-auto max-w-6xl + padding + space-y-6) inherited by all 9 entities; App.svelte's root <h1> relocated inside <SignedOut> to eliminate the duplicate app-identity text once signed in (SHELL-01/02/03).
 
 ### Pending Todos
 
@@ -101,10 +103,10 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-10T12:27:55.893Z
-Stopped at: Completed 12-01-PLAN.md
+Last session: 2026-08-10T13:47:59.931Z
+Stopped at: Completed 13-01-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
 
-- Run `/gsd-plan-phase 13` to plan Phase 13 (Shell Chrome — Header, Nav & Content Frame).
+- Run `/gsd-plan-phase 14` to plan Phase 14 (Entity Screen — Table & States).
