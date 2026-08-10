@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Lapidação de UI (SaaS-grade polish)
-current_phase: 13
-current_phase_name: Shell Chrome — Header, Nav & Content Frame
+current_phase: 14
+current_phase_name: Entity Screen — Header, Loading & Empty States
 status: planning
 stopped_at: Completed 13-01-PLAN.md
-last_updated: "2026-08-10T13:48:51.101Z"
+last_updated: "2026-08-10T14:09:44.786Z"
 last_activity: 2026-08-10
 last_activity_desc: "ROADMAP.md created for v1.2: 6 phases (12-17), 24/24 requirements mapped, 100% coverage."
 progress:
@@ -28,10 +28,10 @@ See: .planning/PROJECT.md (updated 2026-08-10)
 
 ## Current Position
 
-Phase: 13 of 17 (Shell Chrome — Header, Nav & Content Frame) — complete
-Plan: 1 of 1 (13-01) — complete
-Status: Phase complete, ready to plan Phase 14
-Last activity: 2026-08-10 — Executed 13-01-PLAN.md: Shell.svelte restructured with a shell-header toolbar, Separator, and single shell-content-frame wrapper (SHELL-01/02/03); App.svelte's duplicate app-identity bug fixed (root <h1> scoped inside <SignedOut>); full 44-test Playwright suite green.
+Phase: 14 of 17 (Entity Screen — Header, Loading & Empty States)
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-08-10 — Phase 13 complete, transitioned to Phase 14
 
 Progress: [██████████] 100%
 
@@ -39,7 +39,7 @@ Progress: [██████████] 100%
 
 **Velocity:**
 
-- Total plans completed: 1 (v1.2 not yet started; 35 lifetime across v1.0+v1.1)
+- Total plans completed: 2 (v1.2 not yet started; 35 lifetime across v1.0+v1.1)
 - Average duration: N/A (no v1.2 plans yet)
 - Total execution time: 0 hours (v1.2)
 
@@ -48,7 +48,7 @@ Progress: [██████████] 100%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 12 | 1 | - | - |
-| 13 | 1 | 10min | 10min |
+| 13 | 1 | - | - |
 | 14 | TBD | - | - |
 | 15 | TBD | - | - |
 | 16 | TBD | - | - |
@@ -78,7 +78,6 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - v1.2 roadmap: cross-cutting requirements (POLISH-01..04, VERIFY-04..07, QUAL-02) all map to the final Phase 17, since VERIFY-07 explicitly requires re-checking every earlier phase's surface together — none of them can be truly proven until all five polish phases have landed.
 - v1.1 kickoff: UI stack locked to Tailwind v4 + shadcn-svelte default style/tokens, `@lucide/svelte` icons, dark mode via `prefers-color-scheme` only (C-11).
 - v1.1/v1.2 kickoff: No human UAT gate anywhere — every phase's success criteria must be Playwright-provable against the live InstantDB app (C-12).
-- [Phase 11]: Full-suite live re-run (39/39) + explicit screen x capability-class coverage audit found zero gaps at v1.1 close.
 - [Phase 12]: LoginScreen restyled inside Card/CardHeader/CardTitle/CardDescription, full-viewport centered, App.svelte's root <h1> left untouched (additive-only composition, per 12-PATTERNS.md Critical Constraint).
 - [Phase 12]: Established the space-y-4/space-y-2 Tailwind spacing scale (first application in the codebase) identically on both auth steps — the baseline Phase 13-17 will reuse for POLISH-04.
 - [Phase 13]: Shell.svelte restructured with shell-header toolbar + Separator + single shell-content-frame wrapper (mx-auto max-w-6xl + padding + space-y-6) inherited by all 9 entities; App.svelte's root <h1> relocated inside <SignedOut> to eliminate the duplicate app-identity text once signed in (SHELL-01/02/03).
