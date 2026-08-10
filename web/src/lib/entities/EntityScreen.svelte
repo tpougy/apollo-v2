@@ -1,7 +1,12 @@
 <script lang="ts">
   import { Badge } from "$lib/components/ui/badge";
   import { Button } from "$lib/components/ui/button";
+  import { Checkbox } from "$lib/components/ui/checkbox";
+  import * as Dialog from "$lib/components/ui/dialog";
+  import { Input } from "$lib/components/ui/input";
+  import { Label } from "$lib/components/ui/label";
   import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "$lib/components/ui/table";
+  import { Textarea } from "$lib/components/ui/textarea";
   import { db, id } from "../db";
   import type { EntityConfig, LinkDef } from "./types";
 
@@ -424,144 +429,155 @@
       </Button>
     {/if}
 
-    {#if mode !== null}
-      <form onsubmit={handleSubmit}>
-        {#each editableFields() as f (f.name)}
-          <div>
-            <label for={`field-${f.name}`}>{f.label}</label>
-            {#if f.kind === "text"}
-              <input
-                id={`field-${f.name}`}
-                data-testid={`field-${f.name}`}
-                type="text"
-                required={f.required}
-                value={formValues[f.name] as string}
-                oninput={(e) => {
-                  formValues[f.name] = e.currentTarget.value;
-                }}
-              />
-            {:else if f.kind === "textarea"}
-              <textarea
-                id={`field-${f.name}`}
-                data-testid={`field-${f.name}`}
-                required={f.required}
-                value={formValues[f.name] as string}
-                oninput={(e) => {
-                  formValues[f.name] = e.currentTarget.value;
-                }}
-              ></textarea>
-            {:else if f.kind === "number"}
-              <input
-                id={`field-${f.name}`}
-                data-testid={`field-${f.name}`}
-                type="number"
-                required={f.required}
-                value={formValues[f.name] as number | string}
-                oninput={(e) => {
-                  const v = e.currentTarget.value;
-                  formValues[f.name] = v === "" ? "" : e.currentTarget.valueAsNumber;
-                }}
-              />
-            {:else if f.kind === "boolean"}
-              <input
-                id={`field-${f.name}`}
-                data-testid={`field-${f.name}`}
-                type="checkbox"
-                checked={Boolean(formValues[f.name])}
-                onchange={(e) => {
-                  formValues[f.name] = e.currentTarget.checked;
-                }}
-              />
-            {:else if f.kind === "date"}
-              <input
-                id={`field-${f.name}`}
-                data-testid={`field-${f.name}`}
-                type="date"
-                required={f.required}
-                value={formValues[f.name] as string}
-                oninput={(e) => {
-                  formValues[f.name] = e.currentTarget.value;
-                }}
-              />
-            {:else if f.kind === "select"}
-              <select
-                id={`field-${f.name}`}
-                data-testid={`field-${f.name}`}
-                required={f.required}
-                value={formValues[f.name] as string}
-                onchange={(e) => {
-                  formValues[f.name] = e.currentTarget.value;
-                }}
-              >
-                <option value="" disabled>selecione...</option>
-                {#each f.options as opt}
-                  <option value={opt}>{opt}</option>
-                {/each}
-              </select>
-            {/if}
-          </div>
-        {/each}
-
-        {#each config.links ?? [] as link (link.label)}
-          <div>
-            <label for={`link-${link.label}`}>{link.label}</label>
-            <select
-              id={`link-${link.label}`}
-              data-testid={`link-${link.label}`}
-              required={link.required}
-              value={selectedLinks[link.label] ?? ""}
-              onchange={(e) => {
-                selectedLinks[link.label] = e.currentTarget.value;
-              }}
-            >
-              {#if !link.required}
-                <option value="">—</option>
+    <Dialog.Root
+      open={mode !== null}
+      onOpenChange={(open) => {
+        if (!open) cancelForm();
+      }}
+    >
+      <Dialog.Content class="sm:max-w-lg max-h-[85vh] overflow-y-auto">
+        <Dialog.Header>
+          <Dialog.Title>{mode === "create" ? "Novo" : "Editar"} — {config.titulo}</Dialog.Title>
+        </Dialog.Header>
+        <form onsubmit={handleSubmit}>
+          {#each editableFields() as f (f.name)}
+            <div>
+              <Label for={`field-${f.name}`}>{f.label}</Label>
+              {#if f.kind === "text"}
+                <Input
+                  id={`field-${f.name}`}
+                  data-testid={`field-${f.name}`}
+                  type="text"
+                  required={f.required}
+                  value={formValues[f.name] as string}
+                  oninput={(e) => {
+                    formValues[f.name] = e.currentTarget.value;
+                  }}
+                />
+              {:else if f.kind === "textarea"}
+                <Textarea
+                  id={`field-${f.name}`}
+                  data-testid={`field-${f.name}`}
+                  required={f.required}
+                  value={formValues[f.name] as string}
+                  oninput={(e) => {
+                    formValues[f.name] = e.currentTarget.value;
+                  }}
+                ></Textarea>
+              {:else if f.kind === "number"}
+                <Input
+                  id={`field-${f.name}`}
+                  data-testid={`field-${f.name}`}
+                  type="number"
+                  required={f.required}
+                  value={formValues[f.name] as number | string}
+                  oninput={(e) => {
+                    const v = e.currentTarget.value;
+                    formValues[f.name] = v === "" ? "" : e.currentTarget.valueAsNumber;
+                  }}
+                />
+              {:else if f.kind === "boolean"}
+                <Checkbox
+                  id={`field-${f.name}`}
+                  data-testid={`field-${f.name}`}
+                  checked={Boolean(formValues[f.name])}
+                  onCheckedChange={(v) => {
+                    formValues[f.name] = v === true;
+                  }}
+                />
+              {:else if f.kind === "date"}
+                <input
+                  id={`field-${f.name}`}
+                  data-testid={`field-${f.name}`}
+                  type="date"
+                  required={f.required}
+                  value={formValues[f.name] as string}
+                  oninput={(e) => {
+                    formValues[f.name] = e.currentTarget.value;
+                  }}
+                />
+              {:else if f.kind === "select"}
+                <select
+                  id={`field-${f.name}`}
+                  data-testid={`field-${f.name}`}
+                  required={f.required}
+                  value={formValues[f.name] as string}
+                  onchange={(e) => {
+                    formValues[f.name] = e.currentTarget.value;
+                  }}
+                >
+                  <option value="" disabled>selecione...</option>
+                  {#each f.options as opt}
+                    <option value={opt}>{opt}</option>
+                  {/each}
+                </select>
               {/if}
-              {#each linkOptionsFor(link) as opt (opt.id)}
-                <option value={opt.id}>{String(opt[link.targetLabelField] ?? "")}</option>
-              {/each}
-            </select>
-          </div>
-        {/each}
+            </div>
+          {/each}
 
-        {#if config.xorLink}
-          <div>
-            <label for="xor-parent-type">{config.xorLink.label}</label>
-            <select
-              id="xor-parent-type"
-              data-testid="xor-parent-type"
-              value={xorParentType ?? ""}
-              onchange={(e) => {
-                xorParentType = e.currentTarget.value;
-                xorParentId = "";
-              }}
-            >
-              {#each config.xorLink.choices as choice (choice.label)}
-                <option value={choice.label}>{choice.label}</option>
-              {/each}
-            </select>
-            {#if xorParentType}
+          {#each config.links ?? [] as link (link.label)}
+            <div>
+              <label for={`link-${link.label}`}>{link.label}</label>
               <select
-                data-testid={`link-${xorParentType}`}
-                value={xorParentId}
+                id={`link-${link.label}`}
+                data-testid={`link-${link.label}`}
+                required={link.required}
+                value={selectedLinks[link.label] ?? ""}
                 onchange={(e) => {
-                  xorParentId = e.currentTarget.value;
+                  selectedLinks[link.label] = e.currentTarget.value;
                 }}
               >
-                <option value="">—</option>
-                {#each activeXorChoice() ? xorOptionsFor(activeXorChoice() as LinkDef) : [] as opt (opt.id)}
-                  <option value={opt.id}>
-                    {String(opt[(activeXorChoice() as LinkDef).targetLabelField] ?? "")}
-                  </option>
+                {#if !link.required}
+                  <option value="">—</option>
+                {/if}
+                {#each linkOptionsFor(link) as opt (opt.id)}
+                  <option value={opt.id}>{String(opt[link.targetLabelField] ?? "")}</option>
                 {/each}
               </select>
-            {/if}
-          </div>
-        {/if}
+            </div>
+          {/each}
 
-        <button type="submit" data-testid="entity-submit">salvar</button>
-        <button type="button" data-testid="entity-cancel" onclick={cancelForm}>cancelar</button>
-      </form>
-    {/if}
+          {#if config.xorLink}
+            <div>
+              <label for="xor-parent-type">{config.xorLink.label}</label>
+              <select
+                id="xor-parent-type"
+                data-testid="xor-parent-type"
+                value={xorParentType ?? ""}
+                onchange={(e) => {
+                  xorParentType = e.currentTarget.value;
+                  xorParentId = "";
+                }}
+              >
+                {#each config.xorLink.choices as choice (choice.label)}
+                  <option value={choice.label}>{choice.label}</option>
+                {/each}
+              </select>
+              {#if xorParentType}
+                <select
+                  data-testid={`link-${xorParentType}`}
+                  value={xorParentId}
+                  onchange={(e) => {
+                    xorParentId = e.currentTarget.value;
+                  }}
+                >
+                  <option value="">—</option>
+                  {#each activeXorChoice() ? xorOptionsFor(activeXorChoice() as LinkDef) : [] as opt (opt.id)}
+                    <option value={opt.id}>
+                      {String(opt[(activeXorChoice() as LinkDef).targetLabelField] ?? "")}
+                    </option>
+                  {/each}
+                </select>
+              {/if}
+            </div>
+          {/if}
+
+          <Button type="submit" data-testid="entity-submit">salvar</Button>
+          <Button type="button" variant="ghost" data-testid="entity-cancel" onclick={cancelForm}>
+            cancelar
+          </Button>
+        </form>
+      </Dialog.Content>
+    </Dialog.Root>
   {/if}
 </section>
