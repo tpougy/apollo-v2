@@ -562,6 +562,7 @@
                 type="text"
                 required={f.required}
                 aria-required={f.required}
+                disabled={busy}
                 value={formValues[f.name] as string}
                 oninput={(e) => {
                   formValues[f.name] = e.currentTarget.value;
@@ -573,6 +574,7 @@
                 data-testid={`field-${f.name}`}
                 required={f.required}
                 aria-required={f.required}
+                disabled={busy}
                 value={formValues[f.name] as string}
                 oninput={(e) => {
                   formValues[f.name] = e.currentTarget.value;
@@ -585,6 +587,7 @@
                 type="number"
                 required={f.required}
                 aria-required={f.required}
+                disabled={busy}
                 value={formValues[f.name] as number | string}
                 oninput={(e) => {
                   const v = e.currentTarget.value;
@@ -596,6 +599,7 @@
                 id={`field-${f.name}`}
                 data-testid={`field-${f.name}`}
                 aria-required={f.required}
+                disabled={busy}
                 checked={Boolean(formValues[f.name])}
                 onCheckedChange={(v) => {
                   formValues[f.name] = v === true;
@@ -616,6 +620,7 @@
                       id={`field-${f.name}`}
                       data-testid={`field-${f.name}`}
                       aria-required={f.required}
+                      disabled={busy}
                       class={cn(
                         "w-full justify-start text-start font-normal",
                         !formValues[f.name] && "text-muted-foreground",
@@ -649,6 +654,7 @@
             {:else if f.kind === "select"}
               <Select.Root
                 type="single"
+                disabled={busy}
                 value={formValues[f.name] as string}
                 onValueChange={(v) => {
                   formValues[f.name] = v;
@@ -677,6 +683,7 @@
             <Label for={`link-${link.label}`}>{link.label}</Label>
             <Select.Root
               type="single"
+              disabled={busy}
               value={selectedLinks[link.label] ?? ""}
               onValueChange={(v) => {
                 selectedLinks[link.label] = v;
@@ -708,6 +715,7 @@
             <Label for="xor-parent-type">{config.xorLink.label}</Label>
             <Select.Root
               type="single"
+              disabled={busy}
               value={xorParentType ?? ""}
               onValueChange={(v) => {
                 xorParentType = v;
@@ -726,6 +734,7 @@
             {#if xorParentType}
               <Select.Root
                 type="single"
+                disabled={busy}
                 value={xorParentId}
                 onValueChange={(v) => {
                   xorParentId = v;
