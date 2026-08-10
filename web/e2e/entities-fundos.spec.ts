@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { expect, test } from "@playwright/test";
+import { cancelRowDelete, confirmRowDelete } from "./helpers/delete-confirmation.ts";
 import { pickDate } from "./helpers/form-controls.ts";
 
 // This spec runs in the `authed` project (restores the storageState persisted
@@ -102,12 +103,12 @@ test("WEB-02: full browser CRUD round trip", async ({ page }) => {
   const nomeEditado = `${nome}-editado`;
   const codigo = uniqueName("crud-cod");
 
-  // Registered once, up front, for the whole test — auto-accept every
-  // confirm() dialog EntityScreen shows (only "excluir" triggers one here).
-  // Attaching this here (rather than right before the delete click) avoids
-  // any race between "click" and "listener registration".
+  // EntityScreen's delete confirmation is a shadcn AlertDialog, not a native
+  // window.confirm() (DELCONF-01) — this test now actively proves zero
+  // native dialogs appear anywhere in this full round trip, instead of
+  // silently depending on one existing.
   page.on("dialog", (dialog) => {
-    void dialog.accept();
+    throw new Error(`Unexpected native dialog: ${dialog.message()}`);
   });
 
   await page.goto("/");
@@ -162,12 +163,19 @@ test("WEB-02: full browser CRUD round trip", async ({ page }) => {
   const reloadedRow = page.getByTestId("row").filter({ hasText: nomeEditado });
   await expect(reloadedRow).toContainText("não", { timeout: RESYNC_TIMEOUT });
 
-  // (4) Delete — the page-level dialog listener registered above accepts
-  // the confirm() automatically; just click and assert the row is gone.
-  await reloadedRow.getByTestId("row-delete").click();
+  // (4) Delete — exercise the cancel path first (record retained, focus
+  // returns to the still-mounted row-delete trigger), then the confirm path
+  // (record deleted, focus falls back to entity-create-start since the
+  // row's own trigger has unmounted). Both focus outcomes are checked
+  // empirically via toBeFocused() (real document.activeElement).
+  await cancelRowDelete(page, reloadedRow);
+  await expect(reloadedRow.getByTestId("row-delete")).toBeFocused();
+
+  await confirmRowDelete(page, reloadedRow);
   await expect(page.getByTestId("row").filter({ hasText: nomeEditado })).toHaveCount(0, {
     timeout: RESYNC_TIMEOUT,
   });
+  await expect(page.getByTestId("entity-create-start")).toBeFocused();
 
   // Confirm the delete truly persisted server-side (not just an optimistic
   // local removal) by reloading and re-querying live data before relying on

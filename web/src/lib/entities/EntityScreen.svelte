@@ -7,6 +7,7 @@
   import { onDestroy, tick } from "svelte";
   import { toast } from "svelte-sonner";
   import { Alert, AlertDescription } from "$lib/components/ui/alert";
+  import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import { Badge } from "$lib/components/ui/badge";
   import { Button } from "$lib/components/ui/button";
   import { Calendar } from "$lib/components/ui/calendar";
@@ -175,6 +176,9 @@
   let originalXorParentId = $state<string>("");
   let formError = $state<string | null>(null);
   let busy = $state(false);
+  let pendingDelete = $state<Row | null>(null);
+  let deleteBusy = $state(false);
+  let deleteCancelRef = $state<HTMLButtonElement | null>(null);
   // This component is destroyed/remounted per-entity via Shell's
   // `{#key ativo}`. handleSubmit's async closure can keep running after
   // that teardown (e.g. the user navigates to a different entity mid-submit),
@@ -406,17 +410,34 @@
     }
   }
 
-  async function handleDelete(row: Row) {
-    const confirmed = window.confirm(`Excluir este registro de ${config.titulo}?`);
-    if (!confirmed) return;
-    formError = null;
+  function requestDelete(row: Row) {
+    pendingDelete = row;
+  }
+
+  async function confirmDelete() {
+    if (!pendingDelete || deleteBusy) return;
+    const row = pendingDelete;
+    deleteBusy = true;
     try {
+      formError = null;
       const tx = db.tx as unknown as Record<string, Record<string, { delete: () => unknown }>>;
       await db.transact(tx[config.etype][row.id].delete() as never);
       toast.success("Registro excluído.");
+      pendingDelete = null;
+      // The just-deleted row's own `row-delete` trigger (bits-ui's FocusScope
+      // preFocusedElement) unmounts before the AlertDialog's own close-auto-
+      // focus logic runs, so it cannot restore focus on its own — mirrors
+      // handleSubmit's post-create focus fix above (see WR-01, 14-REVIEW.md).
+      await tick();
+      if (alive) {
+        document.querySelector<HTMLButtonElement>('[data-testid="entity-create-start"]')?.focus();
+      }
     } catch (err) {
       formError = extractErrorMessage(err);
       toast.error(formError);
+      pendingDelete = null;
+    } finally {
+      deleteBusy = false;
     }
   }
 </script>
@@ -487,7 +508,7 @@
                 {#each config.listColumns as column}
                   <TableHead>{column}</TableHead>
                 {/each}
-                <TableHead>ações</TableHead>
+                <TableHead class="text-right">ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -504,27 +525,29 @@
                       {/if}
                     </TableCell>
                   {/each}
-                  <TableCell>
-                    {#if config.capabilities.update}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        data-testid="row-edit"
-                        onclick={() => startEdit(row)}
-                      >
-                        editar
-                      </Button>
-                    {/if}
-                    {#if config.capabilities.delete}
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        data-testid="row-delete"
-                        onclick={() => handleDelete(row)}
-                      >
-                        excluir
-                      </Button>
-                    {/if}
+                  <TableCell class="text-right">
+                    <div class="flex items-center justify-end gap-2">
+                      {#if config.capabilities.update}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          data-testid="row-edit"
+                          onclick={() => startEdit(row)}
+                        >
+                          editar
+                        </Button>
+                      {/if}
+                      {#if config.capabilities.delete}
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          data-testid="row-delete"
+                          onclick={() => requestDelete(row)}
+                        >
+                          excluir
+                        </Button>
+                      {/if}
+                    </div>
                   </TableCell>
                 </TableRow>
               {/each}
@@ -784,4 +807,41 @@
       </form>
     </Dialog.Content>
   </Dialog.Root>
+
+  <AlertDialog.Root
+    open={pendingDelete !== null}
+    onOpenChange={(open) => {
+      if (!open && !deleteBusy) pendingDelete = null;
+    }}
+  >
+    <AlertDialog.Content
+      escapeKeydownBehavior={deleteBusy ? "ignore" : "close"}
+      interactOutsideBehavior={deleteBusy ? "ignore" : "close"}
+      onOpenAutoFocus={(e) => {
+        e.preventDefault();
+        deleteCancelRef?.focus();
+      }}
+    >
+      <AlertDialog.Header>
+        <AlertDialog.Title>Excluir registro?</AlertDialog.Title>
+        <AlertDialog.Description>
+          Excluir este registro de {config.titulo}? Esta ação não pode ser desfeita.
+        </AlertDialog.Description>
+      </AlertDialog.Header>
+      <AlertDialog.Footer>
+        <AlertDialog.Cancel bind:ref={deleteCancelRef} data-testid="delete-cancel" disabled={deleteBusy}>
+          cancelar
+        </AlertDialog.Cancel>
+        <AlertDialog.Action
+          variant="destructive"
+          data-testid="delete-confirm"
+          disabled={deleteBusy}
+          onclick={confirmDelete}
+        >
+          {#if deleteBusy}<LoaderCircle class="size-4 animate-spin" />{/if}
+          excluir
+        </AlertDialog.Action>
+      </AlertDialog.Footer>
+    </AlertDialog.Content>
+  </AlertDialog.Root>
 </section>
