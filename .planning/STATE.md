@@ -5,16 +5,16 @@ milestone_name: Lapidação de UI (SaaS-grade polish)
 current_phase: 14
 current_phase_name: Entity Screen — Header, Loading & Empty States
 status: planning
-stopped_at: Completed 14-01-PLAN.md
-last_updated: "2026-08-10T14:53:53.186Z"
+stopped_at: Completed 14-02-PLAN.md
+last_updated: "2026-08-10T15:21:07.122Z"
 last_activity: 2026-08-10
 last_activity_desc: "ROADMAP.md created for v1.2: 6 phases (12-17), 24/24 requirements mapped, 100% coverage."
 progress:
   total_phases: 6
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 4
-  completed_plans: 3
-  percent: 33
+  completed_plans: 4
+  percent: 50
 ---
 
 # Project State
@@ -29,11 +29,11 @@ See: .planning/PROJECT.md (updated 2026-08-10)
 ## Current Position
 
 Phase: 14 of 17 (Entity Screen — Header, Loading & Empty States)
-Plan: 1 of 2
+Plan: 2 of 2
 Status: In progress — plan 14-01 complete, 14-02 (wave 2) pending
 Last activity: 2026-08-10 — Completed 14-01-PLAN.md (page-header, Skeleton loading, Empty/Card composition)
 
-Progress: [████████░░] 75%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -67,6 +67,7 @@ Progress: [████████░░] 75%
 | Phase 12 P01 | 20min | 3 tasks | 3 files |
 | Phase 13 P01 | 10min | 3 tasks | 3 files |
 | Phase 14 P01 | 20min | 2 tasks | 20 files |
+| Phase 14 P02 | 30min | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -84,6 +85,8 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase 13]: Shell.svelte restructured with shell-header toolbar + Separator + single shell-content-frame wrapper (mx-auto max-w-6xl + padding + space-y-6) inherited by all 9 entities; App.svelte's root <h1> relocated inside <SignedOut> to eliminate the duplicate app-identity text once signed in (SHELL-01/02/03).
 - [Phase 14 P01]: EntityConfig.descricao made required (not optional) so bun run check enforces all 9 entity defs supply it — the ENTTBL-04 all-entities proof mechanism.
 - [Phase 14 P01]: empty-state-create kept as a distinct testid from entity-create-start (both call startCreate()), preserving the load-bearing uniqueness constraint on entity-create-start.
+- [Phase 14 P02]: Dedicated fresh-context-with-cleared-query-cache Playwright pattern established for reliably observing InstantDB's transient loading state under CDP network throttle, since the authed project's persisted storageState otherwise resolves query.isLoading instantly from a restored IndexedDB cache.
+- [Phase 14 P02]: Fixed 2 pre-existing Biome violations (import-order, line-width) left by Plan 14-01's vendored Skeleton/Empty components, required for Task 2's bun run lint acceptance gate to exit 0.
 
 ### Pending Todos
 
@@ -105,8 +108,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-10T14:53:53.178Z
-Stopped at: Completed 14-01-PLAN.md
+Last session: 2026-08-10T15:21:07.114Z
+Stopped at: Completed 14-02-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
