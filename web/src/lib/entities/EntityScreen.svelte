@@ -4,7 +4,7 @@
   import CircleAlert from "@lucide/svelte/icons/circle-alert";
   import Inbox from "@lucide/svelte/icons/inbox";
   import LoaderCircle from "@lucide/svelte/icons/loader-circle";
-  import { tick } from "svelte";
+  import { onDestroy, tick } from "svelte";
   import { toast } from "svelte-sonner";
   import { Alert, AlertDescription } from "$lib/components/ui/alert";
   import { Badge } from "$lib/components/ui/badge";
@@ -175,6 +175,15 @@
   let originalXorParentId = $state<string>("");
   let formError = $state<string | null>(null);
   let busy = $state(false);
+  // This component is destroyed/remounted per-entity via Shell's
+  // `{#key ativo}`. handleSubmit's async closure can keep running after
+  // that teardown (e.g. the user navigates to a different entity mid-submit),
+  // so guard any post-await DOM mutation (focus restoration) with this flag
+  // to avoid stealing focus into an unrelated, later-mounted EntityScreen.
+  let alive = true;
+  onDestroy(() => {
+    alive = false;
+  });
   // Per-field open state for the date-picker Popover, so picking a day in
   // one field's Calendar doesn't affect another field's popover.
   let datePopoverOpen = $state<Record<string, boolean>>({});
@@ -381,12 +390,17 @@
           // (freshly remounted) create button after the DOM has settled from
           // this close, so keyboard focus lands somewhere sane rather than body.
           await tick();
-          document.querySelector<HTMLButtonElement>('[data-testid="entity-create-start"]')?.focus();
+          if (alive) {
+            document.querySelector<HTMLButtonElement>('[data-testid="entity-create-start"]')?.focus();
+          }
         }
       } catch (err) {
         formError = extractErrorMessage(err);
         toast.error(formError);
       }
+    } catch (err) {
+      formError = extractErrorMessage(err);
+      toast.error(formError);
     } finally {
       busy = false;
     }
