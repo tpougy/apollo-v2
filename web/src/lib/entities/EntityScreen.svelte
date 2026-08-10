@@ -442,7 +442,7 @@
   }
 </script>
 
-<section>
+<section class="space-y-6">
   <div data-testid="entity-header" class="flex items-center justify-between gap-4">
     <div class="space-y-1">
       <h2 class="text-xl font-semibold tracking-tight">{config.titulo}</h2>
