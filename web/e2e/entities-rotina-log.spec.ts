@@ -6,6 +6,7 @@ import {
   readInstance,
   seedInstance,
 } from "./fixtures/instancia-admin-fixture.ts";
+import { confirmRowDelete } from "./helpers/delete-confirmation.ts";
 import { openAndReadSelectOptions, selectByText } from "./helpers/form-controls.ts";
 
 // This spec runs in the `authed` project (restores the storageState persisted
@@ -175,15 +176,13 @@ test("WEB-06: templatesRotina full CRUD, including the self-referential antecess
   });
 
   // Delete both (B before A — A is B's antecessor).
-  page.once("dialog", (dialog) => void dialog.accept());
-  await reloadedRowB.getByTestId("row-delete").click();
+  await confirmRowDelete(page, reloadedRowB);
   await expect(page.getByTestId("row").filter({ hasText: nomeB })).toHaveCount(0, {
     timeout: RESYNC_TIMEOUT,
   });
 
   const reloadedRowA = page.getByTestId("row").filter({ hasText: nomeA });
-  page.once("dialog", (dialog) => void dialog.accept());
-  await reloadedRowA.getByTestId("row-delete").click();
+  await confirmRowDelete(page, reloadedRowA);
   await expect(page.getByTestId("row").filter({ hasText: nomeA })).toHaveCount(0, {
     timeout: RESYNC_TIMEOUT,
   });

@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { expect, type Page, test } from "@playwright/test";
+import { confirmRowDelete } from "./helpers/delete-confirmation.ts";
 import { openAndReadSelectOptions, pickDate, selectByText } from "./helpers/form-controls.ts";
 
 // This spec runs in the `authed` project (restores the storageState persisted
@@ -206,14 +207,12 @@ test("WEB-03: projetos full browser CRUD round trip, with and without an optiona
   await expect(rowB).toContainText(chainFundoNome);
 
   // (4) Delete both.
-  page.once("dialog", (dialog) => void dialog.accept());
-  await reloadedRowA.getByTestId("row-delete").click();
+  await confirmRowDelete(page, reloadedRowA);
   await expect(page.getByTestId("row").filter({ hasText: nomeA })).toHaveCount(0, {
     timeout: RESYNC_TIMEOUT,
   });
 
-  page.once("dialog", (dialog) => void dialog.accept());
-  await rowB.getByTestId("row-delete").click();
+  await confirmRowDelete(page, rowB);
   await expect(page.getByTestId("row").filter({ hasText: nomeB })).toHaveCount(0, {
     timeout: RESYNC_TIMEOUT,
   });
@@ -267,8 +266,7 @@ test("WEB-04: etapas full browser CRUD round trip, with a numeric ordem and a pr
   await expect(reloadedRow.locator("td").nth(0)).toHaveText("20", { timeout: RESYNC_TIMEOUT });
 
   // (3) Delete.
-  page.once("dialog", (dialog) => void dialog.accept());
-  await reloadedRow.getByTestId("row-delete").click();
+  await confirmRowDelete(page, reloadedRow);
   await expect(page.getByTestId("row").filter({ hasText: nome })).toHaveCount(0, {
     timeout: RESYNC_TIMEOUT,
   });
@@ -326,8 +324,7 @@ test("WEB-05: tarefas tipoPrazo is a strict hard/soft select, and optional dates
   await expect(editedRow).toContainText("concluido");
 
   // (3) Delete.
-  page.once("dialog", (dialog) => void dialog.accept());
-  await editedRow.getByTestId("row-delete").click();
+  await confirmRowDelete(page, editedRow);
   await expect(page.getByTestId("row").filter({ hasText: tituloEditado })).toHaveCount(0, {
     timeout: RESYNC_TIMEOUT,
   });

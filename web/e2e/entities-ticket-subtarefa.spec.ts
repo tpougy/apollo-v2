@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { expect, type Page, test } from "@playwright/test";
+import { confirmRowDelete } from "./helpers/delete-confirmation.ts";
 import { openAndReadSelectOptions, pickDate, selectByText } from "./helpers/form-controls.ts";
 
 // This spec runs in the `authed` project (restores the storageState persisted
@@ -208,8 +209,7 @@ test("WEB-08: tickets full browser CRUD round trip, including a long multi-line 
   await expect(editedRow).toContainText("em-andamento");
 
   // (4) Delete.
-  page.once("dialog", (dialog) => void dialog.accept());
-  await editedRow.getByTestId("row-delete").click();
+  await confirmRowDelete(page, editedRow);
   await expect(page.getByTestId("row").filter({ hasText: titulo })).toHaveCount(0, {
     timeout: RESYNC_TIMEOUT,
   });
@@ -246,8 +246,7 @@ test("WEB-08: subtarefa created with a tarefa parent shows the tarefa column and
   expect(listSubtarefasByTarefa(chainTarefaId).some((r) => r.id === eid)).toBe(true);
   expect(listSubtarefasByTicket(chainTicketId).some((r) => r.id === eid)).toBe(false);
 
-  page.once("dialog", (dialog) => void dialog.accept());
-  await row.getByTestId("row-delete").click();
+  await confirmRowDelete(page, row);
   await expect(page.getByTestId("row").filter({ hasText: titulo })).toHaveCount(0, {
     timeout: RESYNC_TIMEOUT,
   });
@@ -282,8 +281,7 @@ test("WEB-08: subtarefa created with a ticket parent shows the ticket column and
   expect(listSubtarefasByTicket(chainTicketId).some((r) => r.id === eid)).toBe(true);
   expect(listSubtarefasByTarefa(chainTarefaId).some((r) => r.id === eid)).toBe(false);
 
-  page.once("dialog", (dialog) => void dialog.accept());
-  await row.getByTestId("row-delete").click();
+  await confirmRowDelete(page, row);
   await expect(page.getByTestId("row").filter({ hasText: titulo })).toHaveCount(0, {
     timeout: RESYNC_TIMEOUT,
   });
@@ -346,8 +344,7 @@ test("WEB-08 T-04-11: switching parent type before submit links only the final c
   expect(listSubtarefasByTicket(chainTicketId).some((r) => r.id === eid)).toBe(true);
   expect(listSubtarefasByTarefa(chainTarefaId).some((r) => r.id === eid)).toBe(false);
 
-  page.once("dialog", (dialog) => void dialog.accept());
-  await row.getByTestId("row-delete").click();
+  await confirmRowDelete(page, row);
   await expect(page.getByTestId("row").filter({ hasText: titulo })).toHaveCount(0, {
     timeout: RESYNC_TIMEOUT,
   });
@@ -401,8 +398,7 @@ test("WEB-08 T-04-11: editing a subtarefa's parent type unlinks the old parent, 
     timeout: RESYNC_TIMEOUT,
   });
 
-  page.once("dialog", (dialog) => void dialog.accept());
-  await reloadedRow.getByTestId("row-delete").click();
+  await confirmRowDelete(page, reloadedRow);
   await expect(page.getByTestId("row").filter({ hasText: titulo })).toHaveCount(0, {
     timeout: RESYNC_TIMEOUT,
   });
@@ -455,8 +451,7 @@ test("WEB-08: subtarefa concluida boolean round-trips both true and false across
   reloadedRow = page.getByTestId("row").filter({ hasText: titulo });
   await expect(reloadedRow.locator("td").nth(2)).toHaveText("não", { timeout: RESYNC_TIMEOUT });
 
-  page.once("dialog", (dialog) => void dialog.accept());
-  await reloadedRow.getByTestId("row-delete").click();
+  await confirmRowDelete(page, reloadedRow);
   await expect(page.getByTestId("row").filter({ hasText: titulo })).toHaveCount(0, {
     timeout: RESYNC_TIMEOUT,
   });

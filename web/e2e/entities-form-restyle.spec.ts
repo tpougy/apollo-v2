@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { expect, test } from "@playwright/test";
 import { deleteInstance, seedInstance } from "./fixtures/instancia-admin-fixture.ts";
+import { confirmRowDelete } from "./helpers/delete-confirmation.ts";
 import { openAndReadSelectOptions, pickDate, selectByText } from "./helpers/form-controls.ts";
 
 // Proves ENTFRM-01/02 for the fundos (full-CRUD) capability class against the
@@ -100,17 +101,21 @@ test("ENTFRM-01: fundos (full-CRUD) — Dialog role, text/checkbox fields render
   await expect(editedRow).toBeVisible();
   await expect(editedRow).toHaveAttribute("data-eid", eid ?? "");
 
-  // (3) Delete — accept the native confirm(), assert the row is gone.
-  page.on("dialog", (dialog) => {
-    void dialog.accept();
-  });
-  await editedRow.getByTestId("row-delete").click();
+  // (3) Delete — confirm via the AlertDialog, assert the row is gone.
+  await confirmRowDelete(page, editedRow);
   await expect(page.getByTestId("row").filter({ hasText: nomeEditado })).toHaveCount(0, {
     timeout: RESYNC_TIMEOUT,
   });
 
   // FDBK-01: deleting a fundo produces a second, distinct success toast.
-  await expect(page.locator('[data-sonner-toast][data-type="success"]')).toBeVisible();
+  // Filtered by exact text (not just the generic success-toast locator used
+  // for creation above): the AlertDialog confirm path is fast enough that
+  // the earlier "Registro atualizado." toast (Sonner's default ~4s auto-
+  // dismiss) can still be on screen when this assertion runs, which would
+  // otherwise make the generic locator resolve to 2 elements.
+  await expect(
+    page.locator('[data-sonner-toast][data-type="success"]').filter({ hasText: "Registro excluído." }),
+  ).toBeVisible();
 });
 
 // ENTFRM-04 / ROADMAP Phase 10 SC4: submitting with a missing required field
@@ -302,8 +307,7 @@ test.describe("templatesRotina — Select field conversion", () => {
     await expect(row).toBeVisible({ timeout: RESYNC_TIMEOUT });
     await expect(row).toContainText(fundoNome);
 
-    page.once("dialog", (dialog) => void dialog.accept());
-    await row.getByTestId("row-delete").click();
+    await confirmRowDelete(page, row);
     await expect(page.getByTestId("row").filter({ hasText: nome })).toHaveCount(0, {
       timeout: RESYNC_TIMEOUT,
     });
@@ -457,8 +461,7 @@ test.describe("subtarefas — xorLink two-step Select chooser", () => {
     expect(listSubtarefasByTarefa(chainTarefaId).some((r) => r.id === eid)).toBe(false);
     expect(listSubtarefasByTicket(chainTicketId).some((r) => r.id === eid)).toBe(true);
 
-    page.once("dialog", (dialog) => void dialog.accept());
-    await page.getByTestId("row").filter({ hasText: titulo }).getByTestId("row-delete").click();
+    await confirmRowDelete(page, page.getByTestId("row").filter({ hasText: titulo }));
     await expect(page.getByTestId("row").filter({ hasText: titulo })).toHaveCount(0, {
       timeout: RESYNC_TIMEOUT,
     });
