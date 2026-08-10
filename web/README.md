@@ -139,6 +139,17 @@ Outlook COM bridge, never by a human relaying an email. This is the concrete doc
 proof of VERIFY-03 for the v1.1 milestone; Phase 11's own Task 1 most recently confirmed
 it live, ending in an all-green summary (39 passed, 0 failed, 0 skipped).
 
+Phase 17 of the v1.2 milestone ("Lapidação de UI") re-ran this same `bun run test:e2e`
+command as the final cross-phase proof for the whole polish pass.
+`web/e2e/cross-phase-verification.spec.ts` is the dedicated spec added for that proof: it
+walks Login → Shell → an entity's table/create-Dialog/delete-confirmation surface in one
+continuous pass, measuring the actual computed spacing scale
+(space-y-4/space-y-2/gap-4/gap-2) established in Phase 12 against Phases 13–16's later
+surfaces, and asserting the values are numerically equal — the concrete, measured proof
+behind VERIFY-07 and POLISH-04's "one consistent scale" claim, not an assumption from
+reading class names. This phase's own live run of the command above reported **68 passed,
+0 failed, 0 skipped** (the pre-existing 60 plus this phase's 8 new tests).
+
 The C-10 magic-code mechanism the `setup` project depends on reads the real
 inbox (`tp@rbrasset.com.br`) via the Outlook Classic COM channel documented
 in `../.planning/PROJECT.md` C-10 (`web/e2e/helpers/magic-code.ts`). Codes

@@ -32,13 +32,13 @@ test("header/toolbar composition", async ({ page }) => {
   const separatorBox = await separator.boundingBox();
   const contentFrameBox = await page.getByTestId("shell-content-frame").boundingBox();
 
-  expect(headerBox).not.toBeNull();
-  expect(separatorBox).not.toBeNull();
-  expect(contentFrameBox).not.toBeNull();
+  if (!headerBox || !separatorBox || !contentFrameBox) {
+    throw new Error("header/separator/content-frame bounding box unavailable");
+  }
 
   // header → separator → content-frame visual order.
-  expect(separatorBox!.y).toBeGreaterThanOrEqual(headerBox!.y + headerBox!.height - 1);
-  expect(contentFrameBox!.y).toBeGreaterThanOrEqual(separatorBox!.y);
+  expect(separatorBox.y).toBeGreaterThanOrEqual(headerBox.y + headerBox.height - 1);
+  expect(contentFrameBox.y).toBeGreaterThanOrEqual(separatorBox.y);
 });
 
 test("single content-frame consistency across entities", async ({ page }) => {
@@ -55,6 +55,7 @@ test("single content-frame consistency across entities", async ({ page }) => {
   }
 
   const initial = await readFrame();
+  if (!initial.box) throw new Error("shell-content-frame bounding box unavailable");
   expect(initial.maxWidth).not.toBe("none");
 
   const navButtons = page.locator('[data-testid^="nav-"]');
@@ -66,13 +67,14 @@ test("single content-frame consistency across entities", async ({ page }) => {
   for (const index of indexesToCheck) {
     await navButtons.nth(index).click();
     const reading = await readFrame();
+    if (!reading.box) throw new Error("shell-content-frame bounding box unavailable");
     expect(reading.maxWidth).toBe(initial.maxWidth);
     // Position and width must be byte-identical across entities — height
     // legitimately varies with each entity's own row/empty-state content,
     // so only x/y/width are compared here, per this task's <behavior> spec.
-    expect(reading.box!.x).toBe(initial.box!.x);
-    expect(reading.box!.y).toBe(initial.box!.y);
-    expect(reading.box!.width).toBe(initial.box!.width);
+    expect(reading.box.x).toBe(initial.box.x);
+    expect(reading.box.y).toBe(initial.box.y);
+    expect(reading.box.width).toBe(initial.box.width);
   }
 });
 

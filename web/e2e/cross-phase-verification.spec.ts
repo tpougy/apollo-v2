@@ -292,9 +292,7 @@ test("VERIFY-05/POLISH-03: Shell header and all 9 nav buttons legible in both co
     // rendered surface it sits on -- document.body's bg-background
     // (app.css's `body { @apply bg-background text-foreground; }`) -- the
     // real, legible-or-not color this chrome is displayed against.
-    backgrounds.push(
-      await page.evaluate(() => getComputedStyle(document.body).backgroundColor),
-    );
+    backgrounds.push(await page.evaluate(() => getComputedStyle(document.body).backgroundColor));
   }
   expect(backgrounds[0]).not.toBe(backgrounds[1]);
 });
