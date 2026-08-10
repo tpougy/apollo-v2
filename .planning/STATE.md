@@ -5,15 +5,15 @@ milestone_name: UI bonita com Tailwind + shadcn-svelte
 current_phase: 10
 current_phase_name: Entity Form Restyle & Feedback
 status: planning
-stopped_at: Completed 10-02-PLAN.md — Select conversion + validation Alert
-last_updated: "2026-08-10T01:27:18.100Z"
+stopped_at: Completed 10-04-PLAN.md
+last_updated: "2026-08-10T02:48:52.416Z"
 last_activity: 2026-08-09
 last_activity_desc: "`/gsd-execute-phase 9` executed `09-01-PLAN.md`; `.planning/phases/09-entity-table-restyle/09-01-SUMMARY.md` written"
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 7
-  completed_plans: 5
+  completed_plans: 6
   percent: 60
 ---
 
@@ -29,11 +29,11 @@ See: .planning/PROJECT.md (updated 2026-08-09)
 ## Current Position
 
 Phase: 10 of 11 (Entity Form Restyle & Feedback)
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Ready to execute
 Last activity: 2026-08-09 — Phase 9 complete, transitioned to Phase 10
 
-Progress: [███████░░░] 71% (v1.1)
+Progress: [█████████░] 86% (v1.1)
 
 ## Performance Metrics
 
@@ -65,6 +65,7 @@ Progress: [███████░░░] 71% (v1.1)
 | Phase 09 P01 | 16min | 3 tasks | 13 files |
 | Phase 10 P01 | 14min | 3 tasks | 47 files |
 | Phase 10 P02 | 19min | 3 tasks | 21 files |
+| Phase 10 P04 | 76min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -84,6 +85,7 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase 10]: entities-rotina-log/entities-projeto-etapa-tarefa/entities-ticket-subtarefa.spec.ts's Select/date breakage deferred to 10-02/10-04, tracked in .planning/WINDOWS.md — fixing date-fill alone wouldn't get them green until the Select conversion lands
 - [Phase ?]: [Phase 10] Fundo fixture for the templatesRotina Select test created in a local beforeEach (not beforeAll) to avoid the outer file's PREFIX-scoped beforeEach/afterEach sweeping it away before the test body runs
 - [Phase ?]: [Phase 10] Added novalidate to EntityScreen.svelte's create/edit form (Rule 1 fix) — native HTML5 required-field constraint validation was silently blocking JS-level validation/Alert rendering, defeating ENTFRM-04
+- [Phase ?]: 10-04: Fixed remaining e2e specs' Select/date call sites via shared helpers; found and fixed a toHaveValue->toHaveText assertion bug on the xor-parent-type Select.Trigger; full test:e2e suite green (39/39) at phase boundary.
 
 ### Pending Todos
 
@@ -104,8 +106,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-10T01:27:18.091Z
-Stopped at: Completed 10-02-PLAN.md — Select conversion + validation Alert
+Last session: 2026-08-10T02:48:52.406Z
+Stopped at: Completed 10-04-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
