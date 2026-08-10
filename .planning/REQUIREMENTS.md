@@ -33,8 +33,8 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 - [x] **ENTFRM-01**: Create/edit forms for all 9 entities render via shadcn-svelte `Input`/`Label`/`Select`/`Checkbox` mapped from the existing per-field-type config, inside a shadcn `Dialog` or `Sheet`
 - [x] **ENTFRM-02**: Date fields (`dataPrevista`, `dataInicioPrevista`, `dataFimPrevista`, etc.) use the shadcn-svelte `Calendar`/date-picker pattern instead of a bare `<input type="date">`
-- [ ] **ENTFRM-03**: Link/relationship fields (e.g. `fundo`, `template`, `antecessor`, `tarefa`/`ticket` XOR on `subtarefas`) keep their existing selection behavior, restyled with shadcn `Select`/`Combobox` primitives
-- [ ] **ENTFRM-04**: Form validation errors render via shadcn-svelte conventions (inline field error text / `Alert`), not `window.alert` or unstyled text
+- [x] **ENTFRM-03**: Link/relationship fields (e.g. `fundo`, `template`, `antecessor`, `tarefa`/`ticket` XOR on `subtarefas`) keep their existing selection behavior, restyled with shadcn `Select`/`Combobox` primitives
+- [x] **ENTFRM-04**: Form validation errors render via shadcn-svelte conventions (inline field error text / `Alert`), not `window.alert` or unstyled text
 
 ### Feedback
 
@@ -82,8 +82,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ENTTBL-03 | Phase 9 | Complete |
 | ENTFRM-01 | Phase 10 | Complete |
 | ENTFRM-02 | Phase 10 | Complete |
-| ENTFRM-03 | Phase 10 | Pending |
-| ENTFRM-04 | Phase 10 | Pending |
+| ENTFRM-03 | Phase 10 | Complete |
+| ENTFRM-04 | Phase 10 | Complete |
 | FDBK-01 | Phase 10 | Pending |
 | VERIFY-01 | Phase 11 | Pending |
 | VERIFY-02 | Phase 11 | Pending |

@@ -115,11 +115,11 @@ Plans:
   4. Submitting a form with a missing/invalid required field shows inline shadcn-styled error text (or an `Alert`) and blocks submission, with no native `window.alert`/`confirm` dialog triggered anywhere in the flow (asserted via a Playwright dialog-event listener returning none).
   5. Creating, editing, and deleting a record, and logging in/out, each produce a visible shadcn `Sonner` toast whose content matches the outcome (success vs. error) — proven live for at least one entity per capability class plus both auth actions.
 
-**Plans:** 1/4 plans executed
+**Plans:** 2/4 plans executed
 Plans:
 
 - [x] 10-01-PLAN.md — Install dialog/checkbox/textarea; wrap the create/edit form in a shadcn Dialog; convert text/textarea/number/boolean/date field kinds (Popover+Calendar date-picker); fix entities-fundos.spec.ts
-- [ ] 10-02-PLAN.md — Install select; convert static-option/link/xorLink fields to shadcn Select; convert formError to an Alert (ENTFRM-04); extend entities-form-restyle.spec.ts
+- [x] 10-02-PLAN.md — Install select; convert static-option/link/xorLink fields to shadcn Select; convert formError to an Alert (ENTFRM-04); extend entities-form-restyle.spec.ts
 - [ ] 10-03-PLAN.md — Hand-install svelte-sonner (no mode-watcher); mount Toaster; wire toast calls into entity CRUD and both auth actions (login + logout)
 - [ ] 10-04-PLAN.md — Fix entities-rotina-log/entities-projeto-etapa-tarefa/entities-ticket-subtarefa.spec.ts's Select/date-picker call sites; full-suite green
 
@@ -156,5 +156,5 @@ Phases execute in numeric order: 7 → 8 → 9 → 10 → 11
 | 7. Design System Setup | v1.1 | 1/1 | Complete    | 2026-08-09 |
 | 8. Auth & Shell Restyle | v1.1 | 1/1 | Complete    | 2026-08-09 |
 | 9. Entity Table Restyle | v1.1 | 1/1 | Complete    | 2026-08-09 |
-| 10. Entity Form Restyle & Feedback | v1.1 | 1/4 | In Progress|  |
+| 10. Entity Form Restyle & Feedback | v1.1 | 2/4 | In Progress|  |
 | 11. Full Verification & Quality Gates | v1.1 | 0/TBD | Not started | - |
