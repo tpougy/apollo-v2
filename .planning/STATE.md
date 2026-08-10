@@ -5,15 +5,15 @@ milestone_name: Lapidação de UI (SaaS-grade polish)
 current_phase: 14
 current_phase_name: Entity Screen — Header, Loading & Empty States
 status: planning
-stopped_at: Completed 13-01-PLAN.md
-last_updated: "2026-08-10T14:09:44.786Z"
+stopped_at: Completed 14-01-PLAN.md
+last_updated: "2026-08-10T14:53:53.186Z"
 last_activity: 2026-08-10
 last_activity_desc: "ROADMAP.md created for v1.2: 6 phases (12-17), 24/24 requirements mapped, 100% coverage."
 progress:
   total_phases: 6
   completed_phases: 2
-  total_plans: 2
-  completed_plans: 2
+  total_plans: 4
+  completed_plans: 3
   percent: 33
 ---
 
@@ -24,16 +24,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-10)
 
 **Core value:** The user can execute every piece of controladoria data-entry work from either the Svelte SPA or the Python CLI, both authenticated as the same real user under the same InstantDB permission rules. Validated in v1.0. v1.1 made the SPA visually coherent on shadcn-svelte defaults; v1.2 refines composition/spacing/hierarchy on the same four screens so they read as a finished SaaS product — no new functional capability.
-**Current focus:** Phase 13 — Shell Chrome (Header, Nav & Content Frame)
+**Current focus:** Phase 14 — Entity Screen (Header, Loading & Empty States), plan 1 of 2 complete
 
 ## Current Position
 
 Phase: 14 of 17 (Entity Screen — Header, Loading & Empty States)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-08-10 — Phase 13 complete, transitioned to Phase 14
+Plan: 1 of 2
+Status: In progress — plan 14-01 complete, 14-02 (wave 2) pending
+Last activity: 2026-08-10 — Completed 14-01-PLAN.md (page-header, Skeleton loading, Empty/Card composition)
 
-Progress: [██████████] 100%
+Progress: [████████░░] 75%
 
 ## Performance Metrics
 
@@ -66,6 +66,7 @@ Progress: [██████████] 100%
 |------|----------|-------|-------|
 | Phase 12 P01 | 20min | 3 tasks | 3 files |
 | Phase 13 P01 | 10min | 3 tasks | 3 files |
+| Phase 14 P01 | 20min | 2 tasks | 20 files |
 
 ## Accumulated Context
 
@@ -81,6 +82,8 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase 12]: LoginScreen restyled inside Card/CardHeader/CardTitle/CardDescription, full-viewport centered, App.svelte's root <h1> left untouched (additive-only composition, per 12-PATTERNS.md Critical Constraint).
 - [Phase 12]: Established the space-y-4/space-y-2 Tailwind spacing scale (first application in the codebase) identically on both auth steps — the baseline Phase 13-17 will reuse for POLISH-04.
 - [Phase 13]: Shell.svelte restructured with shell-header toolbar + Separator + single shell-content-frame wrapper (mx-auto max-w-6xl + padding + space-y-6) inherited by all 9 entities; App.svelte's root <h1> relocated inside <SignedOut> to eliminate the duplicate app-identity text once signed in (SHELL-01/02/03).
+- [Phase 14 P01]: EntityConfig.descricao made required (not optional) so bun run check enforces all 9 entity defs supply it — the ENTTBL-04 all-entities proof mechanism.
+- [Phase 14 P01]: empty-state-create kept as a distinct testid from entity-create-start (both call startCreate()), preserving the load-bearing uniqueness constraint on entity-create-start.
 
 ### Pending Todos
 
@@ -102,8 +105,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-10T13:47:59.931Z
-Stopped at: Completed 13-01-PLAN.md
+Last session: 2026-08-10T14:53:53.178Z
+Stopped at: Completed 14-01-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

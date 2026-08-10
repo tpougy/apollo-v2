@@ -31,10 +31,10 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Entity Screen — Table & States
 
-- [ ] **ENTTBL-04**: Each entity screen has a page-header row (title + short description + right-aligned primary "novo" action), replacing the current below-table create action
-- [ ] **ENTTBL-05**: The table's loading state uses a `Skeleton` shaped like the real table rows, replacing the current plain "carregando..." text
-- [ ] **ENTTBL-06**: The table's empty state uses a proper icon/title/description/CTA composition (shadcn `Empty` or equivalent), reusing the existing create action, replacing the current single-text-cell message
-- [ ] **ENTTBL-07**: The table is visually bounded (card/border container) instead of floating directly on the page background
+- [x] **ENTTBL-04**: Each entity screen has a page-header row (title + short description + right-aligned primary "novo" action), replacing the current below-table create action
+- [x] **ENTTBL-05**: The table's loading state uses a `Skeleton` shaped like the real table rows, replacing the current plain "carregando..." text
+- [x] **ENTTBL-06**: The table's empty state uses a proper icon/title/description/CTA composition (shadcn `Empty` or equivalent), reusing the existing create action, replacing the current single-text-cell message
+- [x] **ENTTBL-07**: The table is visually bounded (card/border container) instead of floating directly on the page background
 - [ ] **ENTTBL-08**: Row action buttons (edit/delete) have consistent alignment and spacing, with no portal-based menu (dropdown/popover) introduced for row actions, preserving all existing row-scoped Playwright locators
 
 ### Entity Screen — Form & Dialog
@@ -103,10 +103,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SHELL-01 | Phase 13 | Complete |
 | SHELL-02 | Phase 13 | Complete |
 | SHELL-03 | Phase 13 | Complete |
-| ENTTBL-04 | Phase 14 | Pending |
-| ENTTBL-05 | Phase 14 | Pending |
-| ENTTBL-06 | Phase 14 | Pending |
-| ENTTBL-07 | Phase 14 | Pending |
+| ENTTBL-04 | Phase 14 | Complete |
+| ENTTBL-05 | Phase 14 | Complete |
+| ENTTBL-06 | Phase 14 | Complete |
+| ENTTBL-07 | Phase 14 | Complete |
 | ENTTBL-08 | Phase 16 | Pending |
 | ENTFRM-05 | Phase 15 | Pending |
 | ENTFRM-06 | Phase 15 | Pending |
