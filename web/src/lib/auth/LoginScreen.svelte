@@ -102,7 +102,6 @@
           </Button>
         </form>
       {:else}
-        <p class="text-sm text-muted-foreground">Código enviado para {email}</p>
         <form onsubmit={onSubmitCode} class="space-y-4">
           <div class="space-y-2" data-testid="login-code-field">
             <Label for="login-code">Código</Label>
