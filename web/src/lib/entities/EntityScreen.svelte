@@ -475,7 +475,7 @@
   {:else if query.error}
     <Alert variant="destructive">
       <CircleAlert class="size-4" />
-      <AlertDescription data-testid="entity-error">{query.error.message}</AlertDescription>
+      <AlertDescription data-testid="entity-query-error">{query.error.message}</AlertDescription>
     </Alert>
   {:else}
     <Card data-testid="entity-table-frame">
