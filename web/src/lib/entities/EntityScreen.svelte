@@ -836,9 +836,10 @@
           variant="destructive"
           data-testid="delete-confirm"
           disabled={deleteBusy}
+          aria-busy={deleteBusy}
           onclick={confirmDelete}
         >
-          {#if deleteBusy}<LoaderCircle class="size-4 animate-spin" />{/if}
+          {#if deleteBusy}<LoaderCircle class="size-4 animate-spin" aria-hidden="true" />{/if}
           excluir
         </AlertDialog.Action>
       </AlertDialog.Footer>
