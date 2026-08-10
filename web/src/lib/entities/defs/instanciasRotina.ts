@@ -37,7 +37,8 @@ import type { EntityConfig } from "../types";
 const instanciasRotinaConfig: EntityConfig = {
   etype: "instanciasRotina",
   titulo: "Instâncias de rotina",
-  descricao: "Instâncias de rotina geradas pelos templates. Apenas o status pode ser atualizado aqui.",
+  descricao:
+    "Instâncias de rotina geradas pelos templates. Apenas o status pode ser atualizado aqui.",
   ordem: 6,
   capabilities: { create: false, update: true, delete: false },
   updatableFields: ["status"],
