@@ -19,7 +19,8 @@
     "instant:verify": "INSTANT_SCHEMA_FILE_PATH=.instant-verify/instant.schema.ts INSTANT_PERMS_FILE_PATH=.instant-verify/instant.perms.ts instant-cli pull all --env ../.env.instantdb --package svelte --yes"
   },
   "dependencies": {
-    "@instantdb/svelte": "^1.0.63"
+    "@instantdb/svelte": "^1.0.63",
+    "svelte-sonner": "^1.1.1"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.7",
