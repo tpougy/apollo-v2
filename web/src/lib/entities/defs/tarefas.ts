@@ -12,6 +12,7 @@ import type { EntityConfig } from "../types";
 const tarefasConfig: EntityConfig = {
   etype: "tarefas",
   titulo: "Tarefas",
+  descricao: "Tarefas vinculadas às etapas dos projetos.",
   ordem: 4,
   capabilities: { create: true, update: true, delete: true },
   fields: [

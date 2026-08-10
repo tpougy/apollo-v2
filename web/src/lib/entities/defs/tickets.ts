@@ -12,6 +12,7 @@ import type { EntityConfig } from "../types";
 const ticketsConfig: EntityConfig = {
   etype: "tickets",
   titulo: "Tickets",
+  descricao: "Tickets recebidos por e-mail e seus prazos de atendimento.",
   ordem: 7,
   capabilities: { create: true, update: true, delete: true },
   fields: [

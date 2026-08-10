@@ -28,6 +28,7 @@ export interface XorLinkDef {
 export interface EntityConfig {
   etype: string; // InstantDB entity name, must match shared/instant.schema.ts
   titulo: string; // nav + heading text
+  descricao: string; // one-line sub-heading shown under `titulo` in the entity screen's page-header row (ENTTBL-04)
   ordem: number; // nav sort order
   capabilities: { create: boolean; update: boolean; delete: boolean };
   updatableFields?: readonly string[]; // when set, edit form exposes ONLY these (instanciasRotina => ["status"])

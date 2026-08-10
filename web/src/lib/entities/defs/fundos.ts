@@ -6,6 +6,7 @@ import type { EntityConfig } from "../types";
 const fundosConfig: EntityConfig = {
   etype: "fundos",
   titulo: "Fundos",
+  descricao: "Fundos de investimento geridos pela controladoria.",
   ordem: 1,
   capabilities: { create: true, update: true, delete: true },
   fields: [

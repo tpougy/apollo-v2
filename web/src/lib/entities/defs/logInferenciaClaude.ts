@@ -21,6 +21,7 @@ import type { EntityConfig } from "../types";
 const logInferenciaClaudeConfig: EntityConfig = {
   etype: "logInferenciaClaude",
   titulo: "Log de inferências",
+  descricao: "Registro somente leitura das inferências feitas pela IA durante o preenchimento de dados.",
   ordem: 9,
   capabilities: { create: false, update: false, delete: false },
   fields: [

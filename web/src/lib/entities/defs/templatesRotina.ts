@@ -27,6 +27,7 @@ import type { EntityConfig } from "../types";
 const templatesRotinaConfig: EntityConfig = {
   etype: "templatesRotina",
   titulo: "Templates de rotina",
+  descricao: "Modelos que geram instâncias de rotina automaticamente.",
   ordem: 5,
   capabilities: { create: true, update: true, delete: true },
   fields: [

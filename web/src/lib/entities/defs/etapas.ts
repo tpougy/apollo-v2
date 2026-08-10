@@ -14,6 +14,7 @@ import type { EntityConfig } from "../types";
 const etapasConfig: EntityConfig = {
   etype: "etapas",
   titulo: "Etapas",
+  descricao: "Etapas que compõem os projetos, em ordem de execução.",
   ordem: 3,
   capabilities: { create: true, update: true, delete: true },
   fields: [

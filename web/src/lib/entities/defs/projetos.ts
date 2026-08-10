@@ -8,6 +8,7 @@ import type { EntityConfig } from "../types";
 const projetosConfig: EntityConfig = {
   etype: "projetos",
   titulo: "Projetos",
+  descricao: "Projetos e suas etapas de execução.",
   ordem: 2,
   capabilities: { create: true, update: true, delete: true },
   fields: [

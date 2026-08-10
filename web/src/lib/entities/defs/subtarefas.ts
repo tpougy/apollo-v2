@@ -15,6 +15,7 @@ import type { EntityConfig } from "../types";
 const subtarefasConfig: EntityConfig = {
   etype: "subtarefas",
   titulo: "Subtarefas",
+  descricao: "Subtarefas vinculadas a uma tarefa ou a um ticket.",
   ordem: 8,
   capabilities: { create: true, update: true, delete: true },
   fields: [

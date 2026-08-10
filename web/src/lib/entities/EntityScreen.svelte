@@ -2,17 +2,21 @@
   import { DateFormatter, type DateValue, getLocalTimeZone, parseDate } from "@internationalized/date";
   import CalendarIcon from "@lucide/svelte/icons/calendar";
   import CircleAlert from "@lucide/svelte/icons/circle-alert";
+  import Inbox from "@lucide/svelte/icons/inbox";
   import { toast } from "svelte-sonner";
   import { Alert, AlertDescription } from "$lib/components/ui/alert";
   import { Badge } from "$lib/components/ui/badge";
   import { Button } from "$lib/components/ui/button";
   import { Calendar } from "$lib/components/ui/calendar";
+  import { Card, CardContent } from "$lib/components/ui/card";
   import { Checkbox } from "$lib/components/ui/checkbox";
   import * as Dialog from "$lib/components/ui/dialog";
+  import * as Empty from "$lib/components/ui/empty";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import * as Popover from "$lib/components/ui/popover";
   import * as Select from "$lib/components/ui/select";
+  import { Skeleton } from "$lib/components/ui/skeleton";
   import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "$lib/components/ui/table";
   import { Textarea } from "$lib/components/ui/textarea";
   import { cn } from "$lib/utils";
@@ -380,7 +384,17 @@
 </script>
 
 <section>
-  <h2>{config.titulo}</h2>
+  <div data-testid="entity-header" class="flex items-center justify-between gap-4">
+    <div class="space-y-1">
+      <h2 class="text-xl font-semibold tracking-tight">{config.titulo}</h2>
+      <p data-testid="entity-description" class="text-sm text-muted-foreground">{config.descricao}</p>
+    </div>
+    {#if mode === null && config.capabilities.create}
+      <Button type="button" data-testid="entity-create-start" onclick={startCreate}>
+        novo
+      </Button>
+    {/if}
+  </div>
 
   {#if formError}
     <Alert variant="destructive">
@@ -390,82 +404,106 @@
   {/if}
 
   {#if query.isLoading}
-    <p>carregando...</p>
+    <div data-testid="entity-loading" class="space-y-2">
+      {#each Array(5) as _, rowIndex (rowIndex)}
+        <div class="flex gap-2">
+          {#each Array(config.listColumns.length + 1) as _, colIndex (colIndex)}
+            <Skeleton class="h-8 flex-1" />
+          {/each}
+        </div>
+      {/each}
+    </div>
   {:else if query.error}
     <Alert variant="destructive">
       <CircleAlert class="size-4" />
       <AlertDescription data-testid="entity-error">{query.error.message}</AlertDescription>
     </Alert>
   {:else}
-    <Table>
-      <TableHeader>
-        <TableRow>
-          {#each config.listColumns as column}
-            <TableHead>{column}</TableHead>
-          {/each}
-          <TableHead>ações</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
+    <Card data-testid="entity-table-frame">
+      <CardContent>
         {#if rowsOf().length === 0}
-          <TableRow data-testid="empty-state">
-            <TableCell colspan={config.listColumns.length + 1}>Nenhum registro.</TableCell>
-          </TableRow>
+          <Empty.Root data-testid="empty-state">
+            <Empty.Header>
+              <Empty.Media variant="icon"><Inbox /></Empty.Media>
+              <Empty.Title>Nenhum resultado encontrado</Empty.Title>
+              <Empty.Description>
+                {#if config.capabilities.create}
+                  Comece criando o primeiro registro de {config.titulo}.
+                {:else}
+                  Nenhum registro cadastrado até o momento.
+                {/if}
+              </Empty.Description>
+            </Empty.Header>
+            {#if config.capabilities.create}
+              <Empty.Content>
+                <Button type="button" data-testid="empty-state-create" onclick={startCreate}>
+                  novo
+                </Button>
+              </Empty.Content>
+            {/if}
+          </Empty.Root>
         {:else}
-          {#each rowsOf() as row (row.id)}
-            <TableRow data-testid="row" data-eid={row.id}>
-              {#each config.listColumns as column}
-                <TableCell>
-                  {#if isBadgeColumn(column)}
-                    <Badge variant={badgeVariantFor(column, row)}>
-                      {columnValue(row, column)}
-                    </Badge>
-                  {:else}
-                    {columnValue(row, column)}
-                  {/if}
-                </TableCell>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                {#each config.listColumns as column}
+                  <TableHead>{column}</TableHead>
+                {/each}
+                <TableHead>ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {#each rowsOf() as row (row.id)}
+                <TableRow data-testid="row" data-eid={row.id}>
+                  {#each config.listColumns as column}
+                    <TableCell>
+                      {#if isBadgeColumn(column)}
+                        <Badge variant={badgeVariantFor(column, row)}>
+                          {columnValue(row, column)}
+                        </Badge>
+                      {:else}
+                        {columnValue(row, column)}
+                      {/if}
+                    </TableCell>
+                  {/each}
+                  <TableCell>
+                    {#if config.capabilities.update}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        data-testid="row-edit"
+                        onclick={() => startEdit(row)}
+                      >
+                        editar
+                      </Button>
+                    {/if}
+                    {#if config.capabilities.delete}
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        data-testid="row-delete"
+                        onclick={() => handleDelete(row)}
+                      >
+                        excluir
+                      </Button>
+                    {/if}
+                  </TableCell>
+                </TableRow>
               {/each}
-              <TableCell>
-                {#if config.capabilities.update}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    data-testid="row-edit"
-                    onclick={() => startEdit(row)}
-                  >
-                    editar
-                  </Button>
-                {/if}
-                {#if config.capabilities.delete}
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    data-testid="row-delete"
-                    onclick={() => handleDelete(row)}
-                  >
-                    excluir
-                  </Button>
-                {/if}
-              </TableCell>
-            </TableRow>
-          {/each}
+            </TableBody>
+          </Table>
         {/if}
-      </TableBody>
-    </Table>
+      </CardContent>
+    </Card>
+  {/if}
 
-    {#if mode === null && config.capabilities.create}
-      <Button type="button" data-testid="entity-create-start" onclick={startCreate}>
-        novo
-      </Button>
-    {/if}
-
-    <Dialog.Root
-      open={mode !== null}
-      onOpenChange={(open) => {
-        if (!open) cancelForm();
-      }}
-    >
-      <Dialog.Content class="sm:max-w-lg max-h-[85vh] overflow-y-auto">
+  <Dialog.Root
+    open={mode !== null}
+    onOpenChange={(open) => {
+      if (!open) cancelForm();
+    }}
+  >
+    <Dialog.Content class="sm:max-w-lg max-h-[85vh] overflow-y-auto">
         <Dialog.Header>
           <Dialog.Title>{mode === "create" ? "Novo" : "Editar"} — {config.titulo}</Dialog.Title>
         </Dialog.Header>
@@ -672,5 +710,4 @@
         </form>
       </Dialog.Content>
     </Dialog.Root>
-  {/if}
 </section>
