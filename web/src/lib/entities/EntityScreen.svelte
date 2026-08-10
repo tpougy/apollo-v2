@@ -3,6 +3,7 @@
   import CalendarIcon from "@lucide/svelte/icons/calendar";
   import CircleAlert from "@lucide/svelte/icons/circle-alert";
   import Inbox from "@lucide/svelte/icons/inbox";
+  import { tick } from "svelte";
   import { toast } from "svelte-sonner";
   import { Alert, AlertDescription } from "$lib/components/ui/alert";
   import { Badge } from "$lib/components/ui/badge";
@@ -362,6 +363,21 @@
       mode = null;
       editingId = null;
       toast.success(wasCreate ? "Registro criado." : "Registro atualizado.");
+      if (wasCreate) {
+        // On create, both the header's entity-create-start button and (if the
+        // create was triggered from the empty state) empty-state-create itself
+        // unmount/remount as mode and rowsOf() change, so bits-ui's FocusScope
+        // has no live pre-focused element to restore focus to when the Dialog
+        // closes — it finds document.contains(preFocusedElement) false and
+        // leaves focus dropped on <body> (see 14-REVIEW.md WR-01). `.click()`
+        // delegation doesn't fix this either: it invokes the target's click
+        // handler but never moves document.activeElement the way a real
+        // pointer click does. Instead, explicitly re-focus the header's
+        // (freshly remounted) create button after the DOM has settled from
+        // this close, so keyboard focus lands somewhere sane rather than body.
+        await tick();
+        document.querySelector<HTMLButtonElement>('[data-testid="entity-create-start"]')?.focus();
+      }
     } catch (err) {
       formError = extractErrorMessage(err);
       toast.error(formError);
@@ -436,24 +452,7 @@
             </Empty.Header>
             {#if config.capabilities.create}
               <Empty.Content>
-                <Button
-                  type="button"
-                  data-testid="empty-state-create"
-                  onclick={() => {
-                    // Delegate to the header's entity-create-start button rather
-                    // than calling startCreate() directly. The header button is
-                    // always present (it never unmounts on submit success, unlike
-                    // this empty-state CTA which disappears the instant rowsOf()
-                    // goes from 0 to 1). Delegating makes it the element that's
-                    // document.activeElement when the Dialog's FocusScope
-                    // registers, so close-auto-focus has a stable target to
-                    // restore focus to after a successful create — otherwise
-                    // focus is dropped to <body> once this button unmounts.
-                    document
-                      .querySelector<HTMLButtonElement>('[data-testid="entity-create-start"]')
-                      ?.click();
-                  }}
-                >
+                <Button type="button" data-testid="empty-state-create" onclick={startCreate}>
                   novo
                 </Button>
               </Empty.Content>
