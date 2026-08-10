@@ -20,8 +20,8 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Login Screen
 
-- [ ] **LOGIN-01**: `LoginScreen.svelte` renders as a properly composed card (`CardHeader`/`CardTitle`/`CardDescription`) centered in the full viewport, not a bare form floating on the page
-- [ ] **LOGIN-02**: Both auth steps (email entry, code entry) use consistent internal spacing between field groups, matching the spacing scale used elsewhere in the app
+- [x] **LOGIN-01**: `LoginScreen.svelte` renders as a properly composed card (`CardHeader`/`CardTitle`/`CardDescription`) centered in the full viewport, not a bare form floating on the page
+- [x] **LOGIN-02**: Both auth steps (email entry, code entry) use consistent internal spacing between field groups, matching the spacing scale used elsewhere in the app
 
 ### Shell / Navigation
 
@@ -98,8 +98,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| LOGIN-01 | Phase 12 | Pending |
-| LOGIN-02 | Phase 12 | Pending |
+| LOGIN-01 | Phase 12 | Complete |
+| LOGIN-02 | Phase 12 | Complete |
 | SHELL-01 | Phase 13 | Pending |
 | SHELL-02 | Phase 13 | Pending |
 | SHELL-03 | Phase 13 | Pending |

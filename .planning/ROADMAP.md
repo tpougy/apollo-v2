@@ -58,6 +58,7 @@ Full detail archived at `.planning/milestones/v1.1-ROADMAP.md`.
 ## Phase Details
 
 ### Phase 12: Login Screen Polish
+
 **Goal**: `LoginScreen.svelte` reads as a properly composed, centered auth card — not a bare form floating on the page — while the existing magic-code auth flow keeps working unchanged.
 **Depends on**: Phase 11 (previous milestone baseline; no in-milestone dependency — sequenced first as the lowest-risk, self-contained warm-up)
 **Requirements**: LOGIN-01, LOGIN-02
@@ -67,12 +68,15 @@ Full detail archived at `.planning/milestones/v1.1-ROADMAP.md`.
   2. Both auth steps use the same internal spacing scale between field groups — no ad hoc per-step spacing values.
   3. A live magic-code login round trip (email step → code step → authenticated session) completes successfully through the restyled markup.
 
-**Plans**: 1 plan
+**Plans**: 1/1 plans executed
 Plans:
-- [ ] 12-01-PLAN.md — Card composition + full-viewport centering + consistent spacing scale on both auth steps, proven via live magic-code round trip
+
+- [x] 12-01-PLAN.md — Card composition + full-viewport centering + consistent spacing scale on both auth steps, proven via live magic-code round trip
+
 **UI hint**: yes
 
 ### Phase 13: Shell Chrome — Header, Nav & Content Frame
+
 **Goal**: `Shell.svelte` presents one coherent header/toolbar and nav, and owns the single content-frame wrapper every entity screen inherits.
 **Depends on**: Phase 12
 **Requirements**: SHELL-01, SHELL-02, SHELL-03
@@ -87,6 +91,7 @@ Plans:
 **UI hint**: yes
 
 ### Phase 14: Entity Screen — Header, Loading & Empty States
+
 **Goal**: Every entity screen presents a proper page header, a content-shaped loading state, and a composed empty state, with the table visually bounded — for all 9 entities across all 3 capability classes.
 **Depends on**: Phase 13
 **Requirements**: ENTTBL-04, ENTTBL-05, ENTTBL-06, ENTTBL-07
@@ -101,6 +106,7 @@ Plans:
 **UI hint**: yes
 
 ### Phase 15: Entity Screen — Form & Dialog Composition
+
 **Goal**: The create/edit `Dialog` form reads as a properly composed form across all 9 entities, not an unspaced `<div>` stack.
 **Depends on**: Phase 14
 **Requirements**: ENTFRM-05, ENTFRM-06, ENTFRM-07, ENTFRM-08
@@ -115,6 +121,7 @@ Plans:
 **UI hint**: yes
 
 ### Phase 16: Entity Screen — Row Actions & Delete Confirmation
+
 **Goal**: Row-level edit/delete actions read as deliberate, aligned controls, and delete requires a proper `AlertDialog` confirmation instead of the native browser confirm.
 **Depends on**: Phase 15
 **Requirements**: ENTTBL-08, DELCONF-01
@@ -129,6 +136,7 @@ Plans:
 **UI hint**: yes
 
 ### Phase 17: Cross-Phase Verification & Quality Gates
+
 **Goal**: The whole v1.2 polish pass is proven together — every earlier phase's surface re-checked alongside the others, not just in isolation — and the codebase remains defect-free.
 **Depends on**: Phase 12, Phase 13, Phase 14, Phase 15, Phase 16
 **Requirements**: POLISH-01, POLISH-02, POLISH-03, POLISH-04, VERIFY-04, VERIFY-05, VERIFY-06, VERIFY-07, QUAL-02
@@ -157,7 +165,7 @@ Plans:
 | 9. Entity Table Restyle | v1.1 | 1/1 | Complete    | 2026-08-09 |
 | 10. Entity Form Restyle & Feedback | v1.1 | 4/4 | Complete    | 2026-08-10 |
 | 11. Full Verification & Quality Gates | v1.1 | 1/1 | Complete    | 2026-08-10 |
-| 12. Login Screen Polish | v1.2 | 0/1 | Planned | - |
+| 12. Login Screen Polish | v1.2 | 1/1 | In Progress|  |
 | 13. Shell Chrome — Header, Nav & Content Frame | v1.2 | 0/TBD | Not started | - |
 | 14. Entity Screen — Header, Loading & Empty States | v1.2 | 0/TBD | Not started | - |
 | 15. Entity Screen — Form & Dialog Composition | v1.2 | 0/TBD | Not started | - |

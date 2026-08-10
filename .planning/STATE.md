@@ -2,15 +2,19 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Lapidação de UI (SaaS-grade polish)
+current_phase: 12
+current_phase_name: Login Screen Polish
 status: planning
-last_updated: "2026-08-10T12:00:00.000Z"
+stopped_at: Completed 12-01-PLAN.md
+last_updated: "2026-08-10T12:27:55.901Z"
 last_activity: 2026-08-10
+last_activity_desc: "ROADMAP.md created for v1.2: 6 phases (12-17), 24/24 requirements mapped, 100% coverage."
 progress:
   total_phases: 6
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  completed_phases: 1
+  total_plans: 1
+  completed_plans: 1
+  percent: 17
 ---
 
 # Project State
@@ -24,12 +28,12 @@ See: .planning/PROJECT.md (updated 2026-08-10)
 
 ## Current Position
 
-Phase: 12 of 17 (Login Screen Polish)
-Plan: — (not yet planned)
-Status: Ready to plan
-Last activity: 2026-08-10 — ROADMAP.md created for v1.2: 6 phases (12-17), 24/24 requirements mapped, 100% coverage.
+Phase: 12 of 17 (Login Screen Polish) — complete
+Plan: 1 of 1 (12-01) — complete
+Status: Phase complete, ready to plan Phase 13
+Last activity: 2026-08-10 — Executed 12-01-PLAN.md: LoginScreen restyled inside a centered Card with consistent step spacing (LOGIN-01/LOGIN-02), full live magic-code round trip verified.
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██░░░░░░░░] 17%
 
 ## Performance Metrics
 
@@ -56,6 +60,11 @@ Progress: [░░░░░░░░░░] 0%
 - Trend: N/A
 
 *Updated after each plan completion*
+**Per-Plan Metrics:**
+
+| Plan | Duration | Tasks | Files |
+|------|----------|-------|-------|
+| Phase 12 P01 | 20min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -71,6 +80,8 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase 10]: Added `novalidate` to `EntityScreen.svelte`'s create/edit form — native HTML5 required-field constraint validation was silently blocking JS-level validation/Alert rendering.
 - [Phase 10]: `svelte-sonner` hand-installed via `bun add` (no `shadcn-svelte add sonner`) to keep `mode-watcher` out of the tree.
 - [Phase 11]: Full-suite live re-run (39/39) + explicit screen x capability-class coverage audit found zero gaps at v1.1 close.
+- [Phase 12]: LoginScreen restyled inside Card/CardHeader/CardTitle/CardDescription, full-viewport centered, App.svelte's root <h1> left untouched (additive-only composition, per 12-PATTERNS.md Critical Constraint).
+- [Phase 12]: Established the space-y-4/space-y-2 Tailwind spacing scale (first application in the codebase) identically on both auth steps — the baseline Phase 13-17 will reuse for POLISH-04.
 
 ### Pending Todos
 
@@ -92,10 +103,10 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-10T12:00:00.000Z
-Stopped at: ROADMAP.md + STATE.md written for v1.2 (Phases 12-17); REQUIREMENTS.md traceability update pending.
+Last session: 2026-08-10T12:27:55.893Z
+Stopped at: Completed 12-01-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
 
-- Run `/gsd-plan-phase 12` to create the first v1.2 plan (Login Screen Polish).
+- Run `/gsd-plan-phase 13` to plan Phase 13 (Shell Chrome — Header, Nav & Content Frame).
