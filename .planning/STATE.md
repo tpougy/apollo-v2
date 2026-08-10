@@ -5,16 +5,16 @@ milestone_name: UI bonita com Tailwind + shadcn-svelte
 current_phase: 10
 current_phase_name: Entity Form Restyle & Feedback
 status: planning
-stopped_at: Completed 09-01-PLAN.md — Phase 9 (Entity Table Restyle) fully executed
-last_updated: "2026-08-10T00:14:03.228Z"
+stopped_at: Completed 10-01-PLAN.md — Phase 10 (Entity Form Restyle) Dialog + field conversion tracer slice executed
+last_updated: "2026-08-10T01:02:56.930Z"
 last_activity: 2026-08-09
 last_activity_desc: "`/gsd-execute-phase 9` executed `09-01-PLAN.md`; `.planning/phases/09-entity-table-restyle/09-01-SUMMARY.md` written"
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 3
-  completed_plans: 3
-  percent: 60
+  total_plans: 7
+  completed_plans: 4
+  percent: 57
 ---
 
 # Project State
@@ -29,11 +29,11 @@ See: .planning/PROJECT.md (updated 2026-08-09)
 ## Current Position
 
 Phase: 10 of 11 (Entity Form Restyle & Feedback)
-Plan: Not started
-Status: Ready to plan
+Plan: 2 of 4
+Status: Ready to execute
 Last activity: 2026-08-09 — Phase 9 complete, transitioned to Phase 10
 
-Progress: [██████████] 100% (v1.1)
+Progress: [██████░░░░] 57% (v1.1)
 
 ## Performance Metrics
 
@@ -63,6 +63,7 @@ Progress: [██████████] 100% (v1.1)
 | Phase 07 P01 | 8min | 3 tasks | 14 files |
 | Phase 8 P1 | 20min | 3 tasks | 26 files |
 | Phase 09 P01 | 16min | 3 tasks | 13 files |
+| Phase 10 P01 | 14min | 3 tasks | 47 files |
 
 ## Accumulated Context
 
@@ -78,6 +79,8 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase 8]: login-flow.spec.ts induces the live auth error via a deliberately-wrong-but-real-derived code instead of waiting for natural ~60-90s expiry
 - [Phase 9]: tipoPrazo is Badge-worthy by column name across all entities, including instanciasRotina where it's kind:"text" not "select" — matches ROADMAP SC#2's example list
 - [Phase 9]: status columns always render variant="secondary" regardless of free-text value — no keyword-matching color logic invented, per C-11's "não precisa inventar moda" intent
+- [Phase 10]: Popover.Root uses explicit open/onOpenChange (not bind:open) for the date-picker — bind: to a dynamic Record key throws Svelte's props_invalid_value on first render
+- [Phase 10]: entities-rotina-log/entities-projeto-etapa-tarefa/entities-ticket-subtarefa.spec.ts's Select/date breakage deferred to 10-02/10-04, tracked in .planning/WINDOWS.md — fixing date-fill alone wouldn't get them green until the Select conversion lands
 
 ### Pending Todos
 
@@ -98,8 +101,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-09T23:49:50.461Z
-Stopped at: Completed 09-01-PLAN.md — Phase 9 (Entity Table Restyle) fully executed
+Last session: 2026-08-10T01:02:56.921Z
+Stopped at: Completed 10-01-PLAN.md — Phase 10 (Entity Form Restyle) Dialog + field conversion tracer slice executed
 Resume file: None
 
 ## Operator Next Steps
