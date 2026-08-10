@@ -95,7 +95,7 @@ test("nav overflow strategy — single flat wrapping row, no Tabs, no scroll con
   await expect(page.locator('[role="tablist"]')).toHaveCount(0);
 });
 
-test("single app-identity element when authenticated — no duplicate root h1", async ({
+test("single app-identity element when authenticated — exactly one root h1, not duplicated", async ({
   page,
 }) => {
   await page.goto("/");
@@ -104,5 +104,10 @@ test("single app-identity element when authenticated — no duplicate root h1", 
   await expect(page.getByText("Apollo v2", { exact: true })).toHaveCount(1);
   await expect(page.getByText("Apollo v2", { exact: true })).toBeVisible();
 
-  await expect(page.locator("h1", { hasText: "Apollo v2" })).toHaveCount(0);
+  // The authenticated shell now owns a single top-level heading
+  // (`shell-app-name`, promoted to `<h1>` to fix the skipped-heading-level
+  // regression from WR-01) — this must never duplicate to 2+ instances,
+  // and it is a structurally different element from `App.svelte`'s
+  // signed-out `<h1>` (asserted separately in design-system.spec.ts).
+  await expect(page.locator("h1", { hasText: "Apollo v2" })).toHaveCount(1);
 });
