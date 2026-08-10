@@ -525,6 +525,7 @@
                   <Popover.Trigger>
                     {#snippet child({ props })}
                       <Button
+                        {...props}
                         variant="outline"
                         id={`field-${f.name}`}
                         data-testid={`field-${f.name}`}
@@ -532,7 +533,6 @@
                           "w-full justify-start text-start font-normal",
                           !formValues[f.name] && "text-muted-foreground",
                         )}
-                        {...props}
                       >
                         <CalendarIcon class="me-2 size-4" />
                         {formValues[f.name]
