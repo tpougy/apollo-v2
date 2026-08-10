@@ -3,6 +3,7 @@
   import CalendarIcon from "@lucide/svelte/icons/calendar";
   import CircleAlert from "@lucide/svelte/icons/circle-alert";
   import Inbox from "@lucide/svelte/icons/inbox";
+  import LoaderCircle from "@lucide/svelte/icons/loader-circle";
   import { tick } from "svelte";
   import { toast } from "svelte-sonner";
   import { Alert, AlertDescription } from "$lib/components/ui/alert";
@@ -173,6 +174,7 @@
   let originalXorParentType = $state<string | null>(null);
   let originalXorParentId = $state<string>("");
   let formError = $state<string | null>(null);
+  let busy = $state(false);
   // Per-field open state for the date-picker Popover, so picking a day in
   // one field's Calendar doesn't affect another field's popover.
   let datePopoverOpen = $state<Record<string, boolean>>({});
@@ -246,141 +248,147 @@
 
   async function handleSubmit(event: SubmitEvent) {
     event.preventDefault();
-    formError = null;
-
-    if (config.xorLink && (!xorParentType || !xorParentId)) {
-      formError = `Selecione exatamente um vínculo para "${config.xorLink.label}".`;
-      toast.error(formError);
-      return;
-    }
-
-    for (const link of config.links ?? []) {
-      if (link.required && !selectedLinks[link.label]) {
-        formError = `Campo obrigatório: ${link.label}`;
-        toast.error(formError);
-        return;
-      }
-    }
-
-    const visible = editableFields();
-    const payload: Record<string, string | number | boolean> = {};
-    for (const f of visible) {
-      const raw = formValues[f.name];
-      if (raw === undefined || raw === "") {
-        if (f.required) {
-          formError = `Campo obrigatório: ${f.label}`;
-          toast.error(formError);
-          return;
-        }
-        continue;
-      }
-      if (f.kind === "date") {
-        payload[f.name] = dateInputValueToIso(raw as string);
-      } else if (f.kind === "number") {
-        payload[f.name] = Number(raw);
-      } else {
-        payload[f.name] = raw;
-      }
-    }
-
-    const linkPayload: Record<string, string> = {};
-    const linkTargets: Record<string, string> = {};
-    for (const link of config.links ?? []) {
-      const targetId = selectedLinks[link.label];
-      if (targetId) {
-        linkPayload[link.label] = targetId;
-        linkTargets[link.label] = link.targetEtype;
-      }
-    }
-    if (config.xorLink && xorParentType && xorParentId) {
-      linkPayload[xorParentType] = xorParentId;
-      const choice = activeXorChoice();
-      if (choice) linkTargets[xorParentType] = choice.targetEtype;
-    }
-
-    // On edit, if the xorLink parent type was switched away from the
-    // originally-loaded choice, unlink the stale parent so the record never
-    // ends up linked to both choices at once (the XOR invariant).
-    const unlinkPayload: Record<string, string> = {};
-    if (
-      mode === "edit" &&
-      config.xorLink &&
-      originalXorParentType &&
-      originalXorParentType !== xorParentType
-    ) {
-      unlinkPayload[originalXorParentType] = originalXorParentId;
-    }
-
-    for (const [label, targetId] of Object.entries(linkPayload)) {
-      const targetEtype = linkTargets[label];
-      const result = await db.queryOnce({
-        [targetEtype]: { $: { where: { id: targetId } } },
-      } as never);
-      const rows = (result.data as Record<string, unknown[]>)[targetEtype] ?? [];
-      if (rows.length === 0) {
-        formError = `parent_not_found: ${label}`;
-        toast.error(formError);
-        return;
-      }
-    }
-
+    if (busy) return;
+    busy = true;
     try {
-      type TxLinkChunk = {
-        link: (links: Record<string, string>) => TxLinkChunk;
-        unlink: (links: Record<string, string>) => TxLinkChunk;
-      };
-      const tx = db.tx as unknown as Record<
-        string,
-        Record<
-          string,
-          {
-            update: (fields: Record<string, unknown>) => TxLinkChunk;
-          }
-        >
-      >;
+      formError = null;
 
-      if (mode === "create") {
-        const donoId = auth.user?.id;
-        if (!donoId) {
-          formError = "Sessão não autenticada.";
+      if (config.xorLink && (!xorParentType || !xorParentId)) {
+        formError = `Selecione exatamente um vínculo para "${config.xorLink.label}".`;
+        toast.error(formError);
+        return;
+      }
+
+      for (const link of config.links ?? []) {
+        if (link.required && !selectedLinks[link.label]) {
+          formError = `Campo obrigatório: ${link.label}`;
           toast.error(formError);
           return;
         }
-        const newId = id();
-        const chunk = tx[config.etype][newId].update({ ...payload, donoId });
-        const finalChunk =
-          Object.keys(linkPayload).length > 0 ? chunk.link(linkPayload) : chunk;
-        await db.transact(finalChunk as never);
-      } else if (mode === "edit" && editingId) {
-        const chunk = tx[config.etype][editingId].update(payload);
-        const linked =
-          Object.keys(linkPayload).length > 0 ? chunk.link(linkPayload) : chunk;
-        const finalChunk =
-          Object.keys(unlinkPayload).length > 0 ? linked.unlink(unlinkPayload) : linked;
-        await db.transact(finalChunk as never);
       }
-      const wasCreate = mode === "create";
-      mode = null;
-      editingId = null;
-      toast.success(wasCreate ? "Registro criado." : "Registro atualizado.");
-      if (wasCreate) {
-        // On create, both the header's entity-create-start button and (if the
-        // create was triggered from the empty state) empty-state-create itself
-        // unmount/remount as mode and rowsOf() change, so bits-ui's FocusScope
-        // has no live pre-focused element to restore focus to when the Dialog
-        // closes — it finds document.contains(preFocusedElement) false and
-        // leaves focus dropped on <body> (see 14-REVIEW.md WR-01). `.click()`
-        // delegation doesn't fix this either: it invokes the target's click
-        // handler but never moves document.activeElement the way a real
-        // pointer click does. Instead, explicitly re-focus the header's
-        // (freshly remounted) create button after the DOM has settled from
-        // this close, so keyboard focus lands somewhere sane rather than body.
-        await tick();
-        document.querySelector<HTMLButtonElement>('[data-testid="entity-create-start"]')?.focus();
+
+      const visible = editableFields();
+      const payload: Record<string, string | number | boolean> = {};
+      for (const f of visible) {
+        const raw = formValues[f.name];
+        if (raw === undefined || raw === "") {
+          if (f.required) {
+            formError = `Campo obrigatório: ${f.label}`;
+            toast.error(formError);
+            return;
+          }
+          continue;
+        }
+        if (f.kind === "date") {
+          payload[f.name] = dateInputValueToIso(raw as string);
+        } else if (f.kind === "number") {
+          payload[f.name] = Number(raw);
+        } else {
+          payload[f.name] = raw;
+        }
       }
-    } catch (err) {
-      formError = extractErrorMessage(err);
-      toast.error(formError);
+
+      const linkPayload: Record<string, string> = {};
+      const linkTargets: Record<string, string> = {};
+      for (const link of config.links ?? []) {
+        const targetId = selectedLinks[link.label];
+        if (targetId) {
+          linkPayload[link.label] = targetId;
+          linkTargets[link.label] = link.targetEtype;
+        }
+      }
+      if (config.xorLink && xorParentType && xorParentId) {
+        linkPayload[xorParentType] = xorParentId;
+        const choice = activeXorChoice();
+        if (choice) linkTargets[xorParentType] = choice.targetEtype;
+      }
+
+      // On edit, if the xorLink parent type was switched away from the
+      // originally-loaded choice, unlink the stale parent so the record never
+      // ends up linked to both choices at once (the XOR invariant).
+      const unlinkPayload: Record<string, string> = {};
+      if (
+        mode === "edit" &&
+        config.xorLink &&
+        originalXorParentType &&
+        originalXorParentType !== xorParentType
+      ) {
+        unlinkPayload[originalXorParentType] = originalXorParentId;
+      }
+
+      for (const [label, targetId] of Object.entries(linkPayload)) {
+        const targetEtype = linkTargets[label];
+        const result = await db.queryOnce({
+          [targetEtype]: { $: { where: { id: targetId } } },
+        } as never);
+        const rows = (result.data as Record<string, unknown[]>)[targetEtype] ?? [];
+        if (rows.length === 0) {
+          formError = `parent_not_found: ${label}`;
+          toast.error(formError);
+          return;
+        }
+      }
+
+      try {
+        type TxLinkChunk = {
+          link: (links: Record<string, string>) => TxLinkChunk;
+          unlink: (links: Record<string, string>) => TxLinkChunk;
+        };
+        const tx = db.tx as unknown as Record<
+          string,
+          Record<
+            string,
+            {
+              update: (fields: Record<string, unknown>) => TxLinkChunk;
+            }
+          >
+        >;
+
+        if (mode === "create") {
+          const donoId = auth.user?.id;
+          if (!donoId) {
+            formError = "Sessão não autenticada.";
+            toast.error(formError);
+            return;
+          }
+          const newId = id();
+          const chunk = tx[config.etype][newId].update({ ...payload, donoId });
+          const finalChunk =
+            Object.keys(linkPayload).length > 0 ? chunk.link(linkPayload) : chunk;
+          await db.transact(finalChunk as never);
+        } else if (mode === "edit" && editingId) {
+          const chunk = tx[config.etype][editingId].update(payload);
+          const linked =
+            Object.keys(linkPayload).length > 0 ? chunk.link(linkPayload) : chunk;
+          const finalChunk =
+            Object.keys(unlinkPayload).length > 0 ? linked.unlink(unlinkPayload) : linked;
+          await db.transact(finalChunk as never);
+        }
+        const wasCreate = mode === "create";
+        mode = null;
+        editingId = null;
+        toast.success(wasCreate ? "Registro criado." : "Registro atualizado.");
+        if (wasCreate) {
+          // On create, both the header's entity-create-start button and (if the
+          // create was triggered from the empty state) empty-state-create itself
+          // unmount/remount as mode and rowsOf() change, so bits-ui's FocusScope
+          // has no live pre-focused element to restore focus to when the Dialog
+          // closes — it finds document.contains(preFocusedElement) false and
+          // leaves focus dropped on <body> (see 14-REVIEW.md WR-01). `.click()`
+          // delegation doesn't fix this either: it invokes the target's click
+          // handler but never moves document.activeElement the way a real
+          // pointer click does. Instead, explicitly re-focus the header's
+          // (freshly remounted) create button after the DOM has settled from
+          // this close, so keyboard focus lands somewhere sane rather than body.
+          await tick();
+          document.querySelector<HTMLButtonElement>('[data-testid="entity-create-start"]')?.focus();
+        }
+      } catch (err) {
+        formError = extractErrorMessage(err);
+        toast.error(formError);
+      }
+    } finally {
+      busy = false;
     }
   }
 
@@ -522,11 +530,14 @@
     <Dialog.Content class="sm:max-w-lg max-h-[85vh] overflow-y-auto">
       <Dialog.Header>
         <Dialog.Title>{mode === "create" ? "Novo" : "Editar"} — {config.titulo}</Dialog.Title>
+        <Dialog.Description>{config.descricao}</Dialog.Description>
       </Dialog.Header>
-      <form onsubmit={handleSubmit} novalidate>
+      <form onsubmit={handleSubmit} novalidate class="space-y-4">
         {#each editableFields() as f (f.name)}
-          <div>
-            <Label for={`field-${f.name}`}>{f.label}</Label>
+          <div class="space-y-2">
+            <Label for={`field-${f.name}`}>
+              {f.label}{#if f.required}<span class="text-destructive" aria-hidden="true"> *</span>{/if}
+            </Label>
             {#if f.kind === "text"}
               <Input
                 id={`field-${f.name}`}
@@ -635,7 +646,7 @@
         {/each}
 
         {#each config.links ?? [] as link (link.label)}
-          <div>
+          <div class="space-y-2">
             <Label for={`link-${link.label}`}>{link.label}</Label>
             <Select.Root
               type="single"
@@ -666,7 +677,7 @@
         {/each}
 
         {#if config.xorLink}
-          <div>
+          <div class="space-y-2">
             <Label for="xor-parent-type">{config.xorLink.label}</Label>
             <Select.Root
               type="single"
@@ -719,10 +730,15 @@
           </div>
         {/if}
 
-        <Button type="submit" data-testid="entity-submit">salvar</Button>
-        <Button type="button" variant="ghost" data-testid="entity-cancel" onclick={cancelForm}>
-          cancelar
-        </Button>
+        <Dialog.Footer>
+          <Button type="submit" data-testid="entity-submit" disabled={busy}>
+            {#if busy}<LoaderCircle class="size-4 animate-spin" />{/if}
+            salvar
+          </Button>
+          <Button type="button" variant="ghost" data-testid="entity-cancel" onclick={cancelForm}>
+            cancelar
+          </Button>
+        </Dialog.Footer>
       </form>
     </Dialog.Content>
   </Dialog.Root>
