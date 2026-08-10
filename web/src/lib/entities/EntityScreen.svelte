@@ -1,6 +1,8 @@
 <script lang="ts">
   import { DateFormatter, type DateValue, getLocalTimeZone, parseDate } from "@internationalized/date";
   import CalendarIcon from "@lucide/svelte/icons/calendar";
+  import CircleAlert from "@lucide/svelte/icons/circle-alert";
+  import { Alert, AlertDescription } from "$lib/components/ui/alert";
   import { Badge } from "$lib/components/ui/badge";
   import { Button } from "$lib/components/ui/button";
   import { Calendar } from "$lib/components/ui/calendar";
@@ -370,13 +372,19 @@
   <h2>{config.titulo}</h2>
 
   {#if formError}
-    <p data-testid="entity-error">{formError}</p>
+    <Alert variant="destructive">
+      <CircleAlert class="size-4" />
+      <AlertDescription data-testid="entity-error">{formError}</AlertDescription>
+    </Alert>
   {/if}
 
   {#if query.isLoading}
     <p>carregando...</p>
   {:else if query.error}
-    <p data-testid="entity-error">{query.error.message}</p>
+    <Alert variant="destructive">
+      <CircleAlert class="size-4" />
+      <AlertDescription data-testid="entity-error">{query.error.message}</AlertDescription>
+    </Alert>
   {:else}
     <Table>
       <TableHeader>
@@ -450,7 +458,7 @@
         <Dialog.Header>
           <Dialog.Title>{mode === "create" ? "Novo" : "Editar"} — {config.titulo}</Dialog.Title>
         </Dialog.Header>
-        <form onsubmit={handleSubmit}>
+        <form onsubmit={handleSubmit} novalidate>
           {#each editableFields() as f (f.name)}
             <div>
               <Label for={`field-${f.name}`}>{f.label}</Label>

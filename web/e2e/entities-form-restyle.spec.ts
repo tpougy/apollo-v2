@@ -105,6 +105,45 @@ test("ENTFRM-01: fundos (full-CRUD) — Dialog role, text/checkbox fields render
   });
 });
 
+// ENTFRM-04 / ROADMAP Phase 10 SC4: submitting with a missing required field
+// blocks the transact, renders the error via a shadcn Alert (not
+// window.alert), and fires zero native browser dialogs. Alert-assertion
+// style mirrors login-flow.spec.ts's own destructive-Alert check.
+test("ENTFRM-04: missing required field blocks submission, shows Alert, fires zero native dialogs", async ({
+  page,
+}) => {
+  test.setTimeout(30_000);
+
+  // Any native dialog (window.alert/confirm/prompt) firing during this
+  // interaction is itself a test failure — its very absence, proven by this
+  // listener never throwing, is the ENTFRM-04 evidence.
+  page.on("dialog", (dialog) => {
+    throw new Error(`Unexpected native dialog: ${dialog.message()}`);
+  });
+
+  await page.goto("/");
+  await page.getByTestId("nav-fundos").click();
+  await page.getByTestId("entity-create-start").click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+
+  // field-nome is required and left blank — submit directly.
+  await page.getByTestId("entity-submit").click();
+
+  const errorText = page.getByTestId("entity-error");
+  await expect(errorText).toBeVisible();
+  await expect(errorText).not.toBeEmpty();
+
+  const alertRoot = page.locator('[data-slot="alert"]').filter({ has: errorText });
+  await expect(alertRoot).toHaveCount(1);
+  await expect(alertRoot).toHaveClass(/destructive/);
+
+  // The Dialog stays open — submission was blocked, not just erroring after
+  // a successful transact.
+  await expect(page.getByTestId("entity-submit")).toBeVisible();
+
+  await page.getByTestId("entity-cancel").click();
+});
+
 // ENTFRM-01/03: templatesRotina smoke test — proves the static-option Select
 // (tipoGeracao) AND the relationship-link Select (fundo) both render via
 // shadcn Select and persist correctly. Does not duplicate
