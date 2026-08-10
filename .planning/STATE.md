@@ -5,16 +5,16 @@ milestone_name: Lapidação de UI (SaaS-grade polish)
 current_phase: 15
 current_phase_name: Entity Screen — Form & Dialog Composition
 status: planning
-stopped_at: Completed 14-02-PLAN.md
-last_updated: "2026-08-10T16:00:35.282Z"
+stopped_at: Completed 15-01-PLAN.md
+last_updated: "2026-08-10T17:26:17.331Z"
 last_activity: 2026-08-10
 last_activity_desc: "ROADMAP.md created for v1.2: 6 phases (12-17), 24/24 requirements mapped, 100% coverage."
 progress:
   total_phases: 6
-  completed_phases: 3
-  total_plans: 4
-  completed_plans: 4
-  percent: 50
+  completed_phases: 4
+  total_plans: 5
+  completed_plans: 5
+  percent: 67
 ---
 
 # Project State
@@ -29,9 +29,9 @@ See: .planning/PROJECT.md (updated 2026-08-10)
 ## Current Position
 
 Phase: 15 of 17 (Entity Screen — Form & Dialog Composition)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-08-10 — Phase 14 complete, transitioned to Phase 15
+Plan: 1 of 1
+Status: In progress — plan 15-01 complete
+Last activity: 2026-08-10 — Completed 15-01-PLAN.md (Dialog/form spacing, Dialog.Description/Footer, busy spinner, required indicator)
 
 Progress: [██████████] 100%
 
@@ -67,6 +67,7 @@ Progress: [██████████] 100%
 | Phase 13 P01 | 10min | 3 tasks | 3 files |
 | Phase 14 P01 | 20min | 2 tasks | 20 files |
 | Phase 14 P02 | 30min | 2 tasks | 12 files |
+| Phase 15 P01 | 55min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -84,6 +85,8 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase 14 P01]: empty-state-create kept as a distinct testid from entity-create-start (both call startCreate()), preserving the load-bearing uniqueness constraint on entity-create-start.
 - [Phase 14 P02]: Dedicated fresh-context-with-cleared-query-cache Playwright pattern established for reliably observing InstantDB's transient loading state under CDP network throttle, since the authed project's persisted storageState otherwise resolves query.isLoading instantly from a restored IndexedDB cache.
 - [Phase 14 P02]: Fixed 2 pre-existing Biome violations (import-order, line-width) left by Plan 14-01's vendored Skeleton/Empty components, required for Task 2's bun run lint acceptance gate to exit 0.
+- [Phase 15]: Fixed a busy-guard double-submit race in EntityScreen.svelte's handleSubmit (plan-checker-flagged deviation) — busy=true now set immediately after the re-entrancy guard, wrapping the entire validation+queryOnce+transact flow in try/finally, not just the transact try/catch.
+- [Phase 15]: ENTFRM-05's Playwright proof uses getComputedStyle(marginBlockEnd) as deterministic primary evidence instead of pure boundingBox() pixel deltas across heterogeneous control kinds, avoiding a webfont-load subpixel race unrelated to the actual applied CSS spacing.
 
 ### Pending Todos
 
@@ -105,8 +108,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-10T15:21:07.114Z
-Stopped at: Completed 14-02-PLAN.md
+Last session: 2026-08-10T17:26:17.320Z
+Stopped at: Completed 15-01-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

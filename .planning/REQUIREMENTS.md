@@ -39,10 +39,10 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Entity Screen — Form & Dialog
 
-- [ ] **ENTFRM-05**: Create/edit form fields inside the `Dialog` have consistent label/control/helper-text spacing (via shadcn `Field`/`FieldGroup` or an equivalent utility-class pattern), replacing the current unspaced `<div>` stack
-- [ ] **ENTFRM-06**: The create/edit `Dialog` uses `Dialog.Description` and `Dialog.Footer` (already installed, currently unused) instead of ad hoc footer markup
-- [ ] **ENTFRM-07**: The submit action shows a busy/spinner state while the write is in flight, matching the pattern already used on `LoginScreen`'s submit button
-- [ ] **ENTFRM-08**: Required fields have a visual indicator driven by existing `config.fields[].required` data (no new validation logic)
+- [x] **ENTFRM-05**: Create/edit form fields inside the `Dialog` have consistent label/control/helper-text spacing (via shadcn `Field`/`FieldGroup` or an equivalent utility-class pattern), replacing the current unspaced `<div>` stack
+- [x] **ENTFRM-06**: The create/edit `Dialog` uses `Dialog.Description` and `Dialog.Footer` (already installed, currently unused) instead of ad hoc footer markup
+- [x] **ENTFRM-07**: The submit action shows a busy/spinner state while the write is in flight, matching the pattern already used on `LoginScreen`'s submit button
+- [x] **ENTFRM-08**: Required fields have a visual indicator driven by existing `config.fields[].required` data (no new validation logic)
 
 ### Delete Confirmation
 
@@ -108,10 +108,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ENTTBL-06 | Phase 14 | Complete |
 | ENTTBL-07 | Phase 14 | Complete |
 | ENTTBL-08 | Phase 16 | Pending |
-| ENTFRM-05 | Phase 15 | Pending |
-| ENTFRM-06 | Phase 15 | Pending |
-| ENTFRM-07 | Phase 15 | Pending |
-| ENTFRM-08 | Phase 15 | Pending |
+| ENTFRM-05 | Phase 15 | Complete |
+| ENTFRM-06 | Phase 15 | Complete |
+| ENTFRM-07 | Phase 15 | Complete |
+| ENTFRM-08 | Phase 15 | Complete |
 | DELCONF-01 | Phase 16 | Pending |
 | POLISH-01 | Phase 17 | Pending |
 | POLISH-02 | Phase 17 | Pending |
