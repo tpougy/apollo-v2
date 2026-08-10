@@ -4,9 +4,9 @@ milestone: v1.2
 milestone_name: Lapidação de UI (SaaS-grade polish)
 current_phase: 17
 current_phase_name: Cross-Phase Verification & Quality Gates
-status: complete
+status: completed
 stopped_at: Completed 17-02-PLAN.md
-last_updated: "2026-08-10T21:05:00.000Z"
+last_updated: "2026-08-10T21:37:56.788Z"
 last_activity: 2026-08-10
 last_activity_desc: "Phase 17 (final phase of v1.2) complete: cross-phase spacing-parity walkthrough, remaining dual-color-scheme + keyboard/focus-visible coverage, final quality gates green, 24/24 v1.2 requirements complete."
 progress:
@@ -29,9 +29,9 @@ See: .planning/PROJECT.md (updated 2026-08-10)
 ## Current Position
 
 Phase: 17 of 17 (Cross-Phase Verification & Quality Gates)
-Plan: 2 of 2
-Status: Complete
-Last activity: 2026-08-10 — 17-02 complete (cross-phase spacing-parity walkthrough, dual-color-scheme + keyboard/focus-visible coverage, final quality gates, README closing documentation). v1.2 milestone's 6 phases are all done.
+Plan: Not started
+Status: All phases complete
+Last activity: 2026-08-10 — Phase 17 complete
 
 Progress: [██████████] 100%
 
@@ -49,7 +49,7 @@ Progress: [██████████] 100%
 |-------|-------|-------|----------|
 | 15 | 1 | - | - |
 | 16 | 2 | - | - |
-| 17 | TBD | - | - |
+| 17 | 2 | - | - |
 
 **Recent Trend:**
 
@@ -104,8 +104,10 @@ None — the one open judgment call research flagged (`window.confirm()` → `Al
 
 **v1.2 milestone non-blocking tech debt** (logged in `.planning/phases/16-entity-screen-row-actions-delete-confirmation/16-REVIEW.md`, WR-01/WR-03 — WR-02 fixed; re-confirmed still accurate, unfixed, by Phase 17 Plan 02's read-only check, and carried forward into `17-02-SUMMARY.md` for the eventual `/gsd-complete-milestone v1.2` audit):
 
-- WR-01: no type-level invariant enforces that any entity with `capabilities.delete: true` also has `capabilities.create: true` — the post-delete focus fallback to `entity-create-start` would silently no-op if a future entity ever broke that pairing. All 9 current entities satisfy it; not a live bug.
-- WR-03: a hung `db.transact` during delete leaves the AlertDialog permanently undismissable (no timeout/abort path) — same class of edge case as any other in-flight-write UI in this app, not new to this phase.
+- WR-01 (Phase 16): no type-level invariant enforces that any entity with `capabilities.delete: true` also has `capabilities.create: true` — the post-delete focus fallback to `entity-create-start` would silently no-op if a future entity ever broke that pairing. All 9 current entities satisfy it; not a live bug.
+- WR-03 (Phase 16): a hung `db.transact` during delete leaves the AlertDialog permanently undismissable (no timeout/abort path) — same class of edge case as any other in-flight-write UI in this app, not new to this phase.
+- WR-01 (Phase 17, test-quality only, `.planning/phases/17-cross-phase-verification-quality-gates/17-REVIEW.md`): the fundos keyboard/focus-visible test in `cross-phase-verification.spec.ts` assumes the newly created row is the first Tab stop, with no assertion the table has exactly one row — a fragile unasserted invariant on a live shared table, not a production bug.
+- WR-02 (Phase 17, test-quality only): four cleanup helpers in `cross-phase-verification.spec.ts` swallow all errors indiscriminately in their "already deleted, fine" catch blocks, which could mask a genuine delete-path regression rather than just the expected already-gone case.
 
 ## Deferred Items
 
@@ -127,5 +129,6 @@ Resume file: None
 
 - v1.2's roadmap (Phases 12-17) is fully executed and verified: 24/24 requirements complete,
   68/68 Playwright tests passing live, `bun run check`/`bun run lint` clean.
+
 - Run `/gsd-complete-milestone v1.2` (or `/gsd-audit-milestone` first, if a pre-archive audit is
   wanted) to close out the milestone and prepare for the next version.
