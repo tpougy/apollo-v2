@@ -23,16 +23,14 @@ The user can execute every piece of controladoria data-entry work — full CRUD 
 - ✓ End-to-end parity verification + quality gates (ruff+ty on cli/, formatter+linter+svelte-check on web/) green — v1.0
 - ✓ `web/` fully restyled on Tailwind v4 + shadcn-svelte's own CLI default (`--preset b0` = nova/neutral/lucide), no custom design tokens — LoginScreen, Shell/nav, and EntityScreen's table + form (Dialog, Select, Calendar date-picker, Badge, Sonner toasts) all rebuilt, zero business-logic change, dark mode via `prefers-color-scheme` with no manual toggle — v1.1
 - ✓ Playwright e2e suite grew from 15 to 39 passing tests covering every restyled screen across all 3 entity capability classes (full-CRUD, restricted-create/status-only, read-only), zero human UAT anywhere in the milestone — v1.1
+- ✓ `web/` composition/spacing pass on the same four screens (login, shell/nav, entity table, entity form): consistent spacing scale across every touched surface, page-header/Skeleton/Empty/bounded-table composition, Dialog.Description/Footer + busy-spinner + required-indicator on forms, aligned row actions, `window.confirm()` → shadcn `AlertDialog` for delete — still zero custom palette, still shadcn-svelte defaults only — v1.2
+- ✓ Playwright e2e suite grew from 39 to 69 passing tests, including dual-color-scheme and keyboard/focus-visible coverage per capability class and a genuine cross-phase spacing-parity measurement, zero human UAT anywhere in the milestone — v1.2
 
 ### Active
 
 <!-- Current scope. Building toward these. -->
 
-**Current Milestone: v1.2 — Lapidação de UI (SaaS-grade polish)**
-
-v1.1 made the SPA functionally coherent on shadcn-svelte's default primitives, but did not focus on composition, spacing, and information density — it swapped components, not layout craft. v1.2 refines the same screens (login, shell/nav, entity table, entity form) so they read as a finished, real SaaS product rather than a components-checklist restyle: adequate spacing/rhythm, sensible content width, clearer page-level hierarchy, better empty/loading states, and consistent hover/focus/disabled microinteractions — all still using only shadcn-svelte's default style and tokens (no custom palette, no new component library). No new domain functionality, no dashboard/panel. Zero human UAT — Playwright-only verification, same pattern as v1.1.
-
-- User research pointer: the user has limited UI opinion and asked Claude to assume reasonable defaults; consulted a curated list of UI-focused agent skills (Reddit r/AgentContext_dev) as a research starting point for composition/spacing conventions, but the shadcn-svelte-only constraint takes precedence over any external convention that would require a new dependency.
+(None — run `/gsd-new-milestone` to define the next milestone, e.g. the panel/dashboard UI still deferred below, or the known non-blocking tech debt logged in `.planning/milestones/v1.2-MILESTONE-AUDIT.md`)
 
 ### Out of Scope
 
@@ -51,7 +49,8 @@ v1.1 made the SPA functionally coherent on shadcn-svelte's default primitives, b
 - This project executes autonomously via `/gsd:autonomous` for extended unattended stretches — no phase in the roadmap depends on human UAT/interaction to proceed.
 - **v1.0 shipped 2026-08-09**: 6 phases, 27 plans, 70 tasks, ~10.4k LOC across `cli/`, `shared/`, `web/src`. Every phase's requirements were proven against the live InstantDB app (never mocked), including real magic-code email round trips and a real cross-user permission-denial proof.
 - **v1.1 shipped 2026-08-10**: 5 phases (7-11), 8 plans, 114 files changed (+3,830/-272 LOC in `web/`). Every phase proven against the live InstantDB app via real Playwright runs, including real magic-code email round trips — zero human UAT anywhere in the milestone. Full detail: `.planning/milestones/v1.1-ROADMAP.md`; closing audit: `.planning/milestones/v1.1-MILESTONE-AUDIT.md`.
-- Known technical debt / follow-ups for a future milestone: the panel/dashboard UI (5 fixed panels, ordering, `.eml` drag-and-drop) is still unbuilt; automatic soft-deadline reallocation and chained delay propagation remain deferred v2 rules; delete-confirmation still uses native `window.confirm` (candidate for a shadcn `AlertDialog` conversion, non-blocking, logged in v1.1's audit).
+- **v1.2 shipped 2026-08-10**: 6 phases (12-17), 9 plans, 22 tasks. Every phase proven against the live InstantDB app via real Playwright runs; a closing cross-phase integration audit caught and fixed one genuine visual regression (EntityScreen header-to-content 0px spacing gap) before completion. Full detail: `.planning/milestones/v1.2-ROADMAP.md`; closing audit: `.planning/milestones/v1.2-MILESTONE-AUDIT.md`.
+- Known technical debt / follow-ups for a future milestone: the panel/dashboard UI (5 fixed panels, ordering, `.eml` drag-and-drop) is still unbuilt; automatic soft-deadline reallocation and chained delay propagation remain deferred v2 rules; a hung `db.transact` during delete leaves the AlertDialog permanently undismissable (no timeout/abort path, non-blocking); no type-level invariant pairs `capabilities.delete` with `capabilities.create` on entity configs (non-blocking, all 9 current entities satisfy it); Shell's nav uses `flex-wrap` with no explicit single-row assertion at desktop width (functionally fine today, minor coverage gap).
 
 ## Constraints
 

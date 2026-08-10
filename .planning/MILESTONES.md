@@ -1,5 +1,24 @@
 # Milestones
 
+## v1.2 Lapidação de UI (SaaS-grade polish) (Shipped: 2026-08-10)
+
+**Phases completed:** 6 phases, 9 plans, 22 tasks
+
+**Key accomplishments:**
+
+- LoginScreen restyled into a centered, full-viewport Card with CardHeader/CardTitle/step-aware CardDescription and an identical space-y-4/space-y-2 spacing scale on both auth steps, proven live end-to-end against the real InstantDB app.
+- `Shell.svelte` restructured with a `shell-header` toolbar + `Separator` + single `shell-content-frame` wrapper inherited by all 9 entities, and `App.svelte`'s root `<h1>` scoped inside `<SignedOut>` to eliminate the duplicate "Apollo v2" once signed in.
+- Restructured `EntityScreen.svelte`'s list-view template for all 9 entities — a page-header row (title + description + relocated create action), a content-shaped `Skeleton` loading grid, and an `Empty`-composition empty state as a sibling of `<Table>` inside a bounding `Card` — proven end-to-end against fundos (full-CRUD), all 9 entities' nav contract, and both the restricted (`instanciasRotina`) and read-only (`logInferenciaClaude`) capability classes.
+- Added `entities-header-states.spec.ts` (6 live tests) proving ENTTBL-04/05/06/07 explicitly against Plan 14-01's restructured `EntityScreen.svelte` — including a genuinely CDP-throttled Skeleton-loading observation that required clearing InstantDB's persisted query cache to defeat storageState's instant-resolve-from-cache behavior — then closed the phase out with a clean 50-test full-suite regression, clean `svelte-check`/Biome, and a fix for two Biome violations Plan 14-01 had left behind.
+- Restructured `EntityScreen.svelte`'s create/edit Dialog with a space-y-4/space-y-2 spacing scale, Dialog.Description/Footer composition, a busy/spinner submit state (with a plan-checker-flagged double-submit race closed), and a required-field indicator — proven live across all 9 entities and all 3 capability classes, including a dedicated new Playwright spec.
+- Converted EntityScreen.svelte's row-delete confirmation from `window.confirm()` to a vendored shadcn `AlertDialog` with deliberate busy-gated dismissal and open/close focus management, migrated all 5 affected e2e specs off native-dialog handling, and right-aligned the row-action button pair.
+- Added 6 tarefas-based Playwright tests proving ENTTBL-08's CSS-measured alignment and DELCONF-01's keyboard/focus/busy-gating/safety requirements independently of Plan 16-01's fundos tracer, uncovering and fixing a real bits-ui bug where AlertDialog.Cancel was never visually disabled while busy — then closed the phase with a clean 60/60 full-suite regression.
+- All 60 Playwright tests re-confirmed green in one sequential run, a 15-cell VERIFY-07 coverage matrix recorded (8 covered / 7 source-confirmed N/A), zero human-checkpoint tasks across Phases 12-16, and one genuine duplicate-testid bug (`entity-error` on two non-mutually-exclusive branches) found and fixed during the cross-milestone grep sweeps.
+- A single new live Playwright test measures the actual computed pixel values of Login's and EntityScreen Dialog's space-y-4/space-y-2 and Shell's and EntityScreen's gap-4 across phases and finds them numerically identical, 7 more live tests close every remaining dual-color-scheme and keyboard/focus-visible gap the milestone's success criteria required, `bun run check`/`bun run lint` are clean with zero new findings across the whole v1.2 diff after fixing one real pre-existing lint violation, and the full 68-test suite passes in one final clean run — closing out all 6 phases and 24/24 requirements of the v1.2 "Lapidação de UI" milestone.
+- Closing cross-phase integration audit caught one genuine visual regression the phase-level tests had missed — `EntityScreen.svelte`'s page-header sat flush (0px gap) against the table/loading/empty content below it — fixed with `space-y-6` (matching Shell's own scale) and locked in with a new permanent Playwright assertion, bringing the final suite to 69/69 passing before the milestone was marked done. Two non-blocking warnings (a redundant but visually-obscured signed-out `<h1>`, and an unasserted single-row nav-wrap invariant) plus four items of test/edge-case tech debt from Phases 16-17 were logged for a future milestone, none blocking.
+
+---
+
 ## v1.1 UI bonita com Tailwind + shadcn-svelte (Shipped: 2026-08-10)
 
 **Phases completed:** 5 phases (7-11), 8 plans, 24 tasks
