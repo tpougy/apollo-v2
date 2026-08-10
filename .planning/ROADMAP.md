@@ -166,7 +166,13 @@ Plans:
   4. A grep sweep across every file touched this milestone finds zero raw color literals (hex/rgb/oklch outside the shared token stylesheet) and zero duplicate `data-testid` values, and every icon-only button introduced carries an `aria-label` with only real `<button>`/`<a>` elements used for interaction.
   5. Biome (formatter + linter) and `svelte-check` run clean on `web/` after the full polish pass, with zero new suppressions versus the v1.1 baseline, and no phase's done-criteria required human UAT.
 
-**Plans**: TBD
+**Plans**: 0/2 plans planned
+Plans:
+
+- [ ] 17-01-PLAN.md — Full-suite live regression, explicit screen x capability-class coverage matrix, and cross-milestone grep sweeps (color literals, accessible interactive elements, testid duplicates, spacing-scale bounds)
+- [ ] 17-02-PLAN.md — New cross-phase walkthrough spec (Login -> Shell -> entity table/form/delete with measured spacing-parity), remaining dual-color-scheme + keyboard/focus-visible coverage, and final quality gates + README documentation
+
+**UI hint**: yes
 
 ## Progress
 
@@ -188,4 +194,4 @@ Plans:
 | 14. Entity Screen — Header, Loading & Empty States | v1.2 | 2/2 | Complete    | 2026-08-10 |
 | 15. Entity Screen — Form & Dialog Composition | v1.2 | 1/1 | Complete    | 2026-08-10 |
 | 16. Entity Screen — Row Actions & Delete Confirmation | v1.2 | 2/2 | Complete    | 2026-08-10 |
-| 17. Cross-Phase Verification & Quality Gates | v1.2 | 0/TBD | Not started | - |
+| 17. Cross-Phase Verification & Quality Gates | v1.2 | 0/2 | Planned | - |
