@@ -130,6 +130,15 @@ bunx playwright test --project=anon               # no session needed
 bunx playwright test                              # all three projects (re-triggers setup)
 ```
 
+The plain `bunx playwright test` invocation above — aliased as `bun run test:e2e` in
+`package.json` — is the single command that reproduces the ENTIRE suite (all three
+projects: `setup`, `authed`, `anon`) from a clean checkout with zero manual/human step
+anywhere in the sequence, including the real magic-code round trip: `auth.setup.ts` plus
+`web/e2e/helpers/magic-code.ts` perform that send-and-read automatically via the C-10
+Outlook COM bridge, never by a human relaying an email. This is the concrete documented
+proof of VERIFY-03 for the v1.1 milestone; Phase 11's own Task 1 most recently confirmed
+it live, ending in an all-green summary (39 passed, 0 failed, 0 skipped).
+
 The C-10 magic-code mechanism the `setup` project depends on reads the real
 inbox (`tp@rbrasset.com.br`) via the Outlook Classic COM channel documented
 in `../.planning/PROJECT.md` C-10 (`web/e2e/helpers/magic-code.ts`). Codes
