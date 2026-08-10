@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import { toast } from "svelte-sonner";
   import { Button } from "$lib/components/ui/button";
+  import { Separator } from "$lib/components/ui/separator";
   import { db } from "./db";
   import EntityScreen from "./entities/EntityScreen.svelte";
   import { configByEtype, entityConfigs } from "./entities/registry";
@@ -47,43 +48,58 @@
 
 <div data-testid="routine-job-state" data-job-state={jobState} hidden></div>
 
-{#if !auth.isLoading && auth.user}
-  <p>autenticado como {auth.user.email}</p>
-{/if}
-<Button
-  type="button"
-  variant="outline"
-  data-testid="logout"
-  onclick={async () => {
-    try {
-      await db.auth.signOut();
-      toast.success("Você saiu.");
-    } catch (err) {
-      console.error("[logout] signOut failed", err);
-      toast.error("Falha ao sair.");
-    }
-  }}
+<header
+  data-testid="shell-header"
+  class="flex items-center justify-between gap-4 px-4 py-3 sm:px-6"
 >
-  Sair
-</Button>
-
-<nav class="flex gap-2">
-  {#each entityConfigs as cfg (cfg.etype)}
+  <span data-testid="shell-app-name" class="text-lg font-semibold">Apollo v2</span>
+  <div class="flex items-center gap-4">
+    {#if !auth.isLoading && auth.user}
+      <p class="text-sm text-muted-foreground">autenticado como {auth.user.email}</p>
+    {/if}
     <Button
       type="button"
-      variant={ativo === cfg.etype ? "secondary" : "ghost"}
-      data-testid={`nav-${cfg.etype}`}
-      aria-current={ativo === cfg.etype}
-      onclick={() => (ativo = cfg.etype)}
+      variant="outline"
+      data-testid="logout"
+      onclick={async () => {
+        try {
+          await db.auth.signOut();
+          toast.success("Você saiu.");
+        } catch (err) {
+          console.error("[logout] signOut failed", err);
+          toast.error("Falha ao sair.");
+        }
+      }}
     >
-      {cfg.titulo}
+      Sair
     </Button>
-  {/each}
-</nav>
+  </div>
+</header>
+<Separator />
 
-{#key ativo}
-  {@const active = configByEtype(ativo)}
-  {#if active}
-    <EntityScreen config={active} />
-  {/if}
-{/key}
+<div
+  data-testid="shell-content-frame"
+  class="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8 space-y-6"
+>
+  <!-- outer content frame — do not duplicate padding inside EntityScreen -->
+  <nav class="flex flex-wrap gap-2">
+    {#each entityConfigs as cfg (cfg.etype)}
+      <Button
+        type="button"
+        variant={ativo === cfg.etype ? "secondary" : "ghost"}
+        data-testid={`nav-${cfg.etype}`}
+        aria-current={ativo === cfg.etype}
+        onclick={() => (ativo = cfg.etype)}
+      >
+        {cfg.titulo}
+      </Button>
+    {/each}
+  </nav>
+
+  {#key ativo}
+    {@const active = configByEtype(ativo)}
+    {#if active}
+      <EntityScreen config={active} />
+    {/if}
+  {/key}
+</div>

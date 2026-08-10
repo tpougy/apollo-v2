@@ -6,10 +6,10 @@
   import Shell from "./lib/Shell.svelte";
 </script>
 
-<h1>Apollo v2</h1>
 <Toaster />
 
 <SignedOut {db}>
+  <h1>Apollo v2</h1>
   <LoginScreen />
 </SignedOut>
 
