@@ -41,7 +41,7 @@
 	{...restProps}
 >
 	{#snippet child({ props })}
-		<button {...props} disabled={disabled}>
+		<button type="button" {...props} disabled={disabled}>
 			{@render children?.()}
 		</button>
 	{/snippet}

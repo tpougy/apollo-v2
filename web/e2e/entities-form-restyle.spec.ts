@@ -114,7 +114,9 @@ test("ENTFRM-01: fundos (full-CRUD) — Dialog role, text/checkbox fields render
   // dismiss) can still be on screen when this assertion runs, which would
   // otherwise make the generic locator resolve to 2 elements.
   await expect(
-    page.locator('[data-sonner-toast][data-type="success"]').filter({ hasText: "Registro excluído." }),
+    page
+      .locator('[data-sonner-toast][data-type="success"]')
+      .filter({ hasText: "Registro excluído." }),
   ).toBeVisible();
 });
 
