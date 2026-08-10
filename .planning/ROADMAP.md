@@ -2,7 +2,7 @@
 
 ## Milestones
 
-- 🚧 **v1.2 Lapidação de UI (SaaS-grade polish)** — Phases 12-17 (in progress)
+- 🚧 **v1.2 Lapidação de UI (SaaS-grade polish)** — Phases 12-17 (all 6 phases complete, 2026-08-10 — pending milestone ship/audit)
 - ✅ **v1.1 UI bonita com Tailwind + shadcn-svelte** — Phases 7-11 (shipped 2026-08-10)
 - ✅ **v1.0 Apollo v2 MVP** — Phases 1-6 (shipped 2026-08-09)
 
@@ -44,7 +44,7 @@ Full detail archived at `.planning/milestones/v1.1-ROADMAP.md`.
 
 </details>
 
-### 🚧 v1.2 Lapidação de UI (SaaS-grade polish) (Phases 12-17) — IN PROGRESS
+### 🚧 v1.2 Lapidação de UI (SaaS-grade polish) (Phases 12-17) — ALL PHASES COMPLETE
 
 **Milestone goal:** Refine the same four screens v1.1 restyled (login, shell/nav, entity table, entity form) so they read as a finished, real SaaS product — composition, spacing rhythm, hierarchy, and microinteractions — still strictly on shadcn-svelte's default look. No new domain functionality, no dashboard/panel, zero human UAT.
 
@@ -53,7 +53,7 @@ Full detail archived at `.planning/milestones/v1.1-ROADMAP.md`.
 - [x] **Phase 14: Entity Screen — Header, Loading & Empty States** - Page-header row, Skeleton loading state, composed Empty state, bounded table container (completed 2026-08-10)
 - [x] **Phase 15: Entity Screen — Form & Dialog Composition** - Spaced form fields, Dialog.Description/Footer, busy submit state, required-field indicator (completed 2026-08-10)
 - [x] **Phase 16: Entity Screen — Row Actions & Delete Confirmation** - Aligned row actions plus a shadcn AlertDialog replacing `window.confirm()` (completed 2026-08-10)
-- [ ] **Phase 17: Cross-Phase Verification & Quality Gates** - Earlier phases re-checked together, full Playwright suite + Biome/svelte-check green
+- [x] **Phase 17: Cross-Phase Verification & Quality Gates** - Earlier phases re-checked together, full Playwright suite + Biome/svelte-check green (completed 2026-08-10)
 
 ## Phase Details
 
@@ -166,11 +166,11 @@ Plans:
   4. A grep sweep across every file touched this milestone finds zero raw color literals (hex/rgb/oklch outside the shared token stylesheet) and zero duplicate `data-testid` values, and every icon-only button introduced carries an `aria-label` with only real `<button>`/`<a>` elements used for interaction.
   5. Biome (formatter + linter) and `svelte-check` run clean on `web/` after the full polish pass, with zero new suppressions versus the v1.1 baseline, and no phase's done-criteria required human UAT.
 
-**Plans**: 1/2 plans executed planned
+**Plans**: 2/2 plans executed
 Plans:
 
 - [x] 17-01-PLAN.md — Full-suite live regression, explicit screen x capability-class coverage matrix, and cross-milestone grep sweeps (color literals, accessible interactive elements, testid duplicates, spacing-scale bounds)
-- [ ] 17-02-PLAN.md — New cross-phase walkthrough spec (Login -> Shell -> entity table/form/delete with measured spacing-parity), remaining dual-color-scheme + keyboard/focus-visible coverage, and final quality gates + README documentation
+- [x] 17-02-PLAN.md — New cross-phase walkthrough spec (Login -> Shell -> entity table/form/delete with measured spacing-parity), remaining dual-color-scheme + keyboard/focus-visible coverage, and final quality gates + README documentation
 
 **UI hint**: yes
 
@@ -194,4 +194,4 @@ Plans:
 | 14. Entity Screen — Header, Loading & Empty States | v1.2 | 2/2 | Complete    | 2026-08-10 |
 | 15. Entity Screen — Form & Dialog Composition | v1.2 | 1/1 | Complete    | 2026-08-10 |
 | 16. Entity Screen — Row Actions & Delete Confirmation | v1.2 | 2/2 | Complete    | 2026-08-10 |
-| 17. Cross-Phase Verification & Quality Gates | v1.2 | 1/2 | In Progress|  |
+| 17. Cross-Phase Verification & Quality Gates | v1.2 | 2/2 | Complete    | 2026-08-10 |

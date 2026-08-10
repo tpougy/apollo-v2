@@ -4,17 +4,17 @@ milestone: v1.2
 milestone_name: Lapidação de UI (SaaS-grade polish)
 current_phase: 17
 current_phase_name: Cross-Phase Verification & Quality Gates
-status: executing
-stopped_at: Completed 17-01-PLAN.md
-last_updated: "2026-08-10T20:46:03.728Z"
+status: complete
+stopped_at: Completed 17-02-PLAN.md
+last_updated: "2026-08-10T21:05:00.000Z"
 last_activity: 2026-08-10
-last_activity_desc: "ROADMAP.md created for v1.2: 6 phases (12-17), 24/24 requirements mapped, 100% coverage."
+last_activity_desc: "Phase 17 (final phase of v1.2) complete: cross-phase spacing-parity walkthrough, remaining dual-color-scheme + keyboard/focus-visible coverage, final quality gates green, 24/24 v1.2 requirements complete."
 progress:
   total_phases: 6
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 9
-  completed_plans: 8
-  percent: 83
+  completed_plans: 9
+  percent: 100
 ---
 
 # Project State
@@ -24,16 +24,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-10)
 
 **Core value:** The user can execute every piece of controladoria data-entry work from either the Svelte SPA or the Python CLI, both authenticated as the same real user under the same InstantDB permission rules. Validated in v1.0. v1.1 made the SPA visually coherent on shadcn-svelte defaults; v1.2 refines composition/spacing/hierarchy on the same four screens so they read as a finished SaaS product — no new functional capability.
-**Current focus:** Phase 14 — Entity Screen (Header, Loading & Empty States), plan 1 of 2 complete
+**Current focus:** v1.2 milestone (Phases 12-17) — all 6 phases complete; pending `/gsd-complete-milestone`
 
 ## Current Position
 
 Phase: 17 of 17 (Cross-Phase Verification & Quality Gates)
 Plan: 2 of 2
-Status: Ready to execute
-Last activity: 2026-08-10 — 17-01 complete (full-suite regression, coverage matrix, grep sweeps); 17-02 next
+Status: Complete
+Last activity: 2026-08-10 — 17-02 complete (cross-phase spacing-parity walkthrough, dual-color-scheme + keyboard/focus-visible coverage, final quality gates, README closing documentation). v1.2 milestone's 6 phases are all done.
 
-Progress: [█████████░] 89%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -69,6 +69,7 @@ Progress: [█████████░] 89%
 | Phase 16 P01 | 90min | 2 tasks | 20 files |
 | Phase 16 P02 | 90min | 2 tasks | 3 files |
 | Phase 17 P01 | 19min | 2 tasks | 1 files |
+| Phase 17 P02 | 35min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -89,6 +90,9 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase 16 P02]: Used a CDP network-latency throttle (800ms) to reliably observe delete-confirm's busy/disabled window, since db.transact()'s server-ack round trip resolves faster on the live app than sequential Playwright assertions could reliably catch.
 - [Phase 17 P01]: Renamed EntityScreen.svelte's query.error Alert testid from entity-error to entity-query-error — the formError/query.error pair were two independent {#if} blocks (not chained), so they were not actually mutually exclusive as the plan assumed; no existing spec targeted the query-error path, so the rename was zero-risk.
 - [Phase 17 P01]: Left single-occurrence p-0 (Popover.Content wrapping the date-picker Calendar) and several single-file spacing values unmodified — all are bounded default-scale Tailwind tokens (no arbitrary values), and each composition file's structurally distinct role (esp. Shell.svelte's SHELL-03 single-frame ownership) makes forced cross-file duplication counterproductive, not a genuine POLISH-04 violation.
+- [Phase 17 P02]: Fixed 11 pre-existing `noNonNullAssertion` Biome warnings in Phase 13's `shell-chrome.spec.ts` (a file outside this plan's own `files_modified` list) — QUAL-02 requires `bun run check`/`bun run lint` to report zero findings beyond the two named v1.1-baseline items across the WHOLE v1.2 diff, not just the plan's own new file, and the plan's own Task 3 action text explicitly mandates fixing any such finding with a real code change, never a suppression. Fixed via explicit null-check-then-throw narrowing, mirroring `login-composition.spec.ts`'s existing convention.
+- [Phase 17 P02]: `instanciasRotina`'s keyboard/focus-visible smoke test asserts on whichever `row-edit` Tab reaches rather than a specific seeded row — this live app's `instanciasRotina` table is never guaranteed empty (Shell.svelte's routine-instance generation job runs on every authenticated mount and creates real rows independent of any single test's own seeded record), discovered when the original row-filtered assertion failed against pre-existing live data.
+- [Phase 17 P02]: `logInferenciaClaude`'s keyboard smoke test starts its Tab sequence from the nav bar's second-to-last button rather than logInferenciaClaude's own nav button — `ordem: 9` makes it the LAST of the 9 nav buttons in DOM order, so a forward Tab FROM it cannot "reach the next nav button" (there is none); the test instead proves Tab-reachability and a focus-visible affordance ON `nav-logInferenciaClaude` itself, arriving there from its predecessor, which is the closest faithful reading of the requirement given this structural fact.
 
 ### Pending Todos
 
@@ -98,7 +102,7 @@ None yet.
 
 None — the one open judgment call research flagged (`window.confirm()` → `AlertDialog` in/out of scope) is resolved: DELCONF-01 is in scope, owned by Phase 16.
 
-**Phase 16 non-blocking tech debt** (logged in `.planning/phases/16-entity-screen-row-actions-delete-confirmation/16-REVIEW.md`, WR-01/WR-03 — WR-02 fixed):
+**v1.2 milestone non-blocking tech debt** (logged in `.planning/phases/16-entity-screen-row-actions-delete-confirmation/16-REVIEW.md`, WR-01/WR-03 — WR-02 fixed; re-confirmed still accurate, unfixed, by Phase 17 Plan 02's read-only check, and carried forward into `17-02-SUMMARY.md` for the eventual `/gsd-complete-milestone v1.2` audit):
 
 - WR-01: no type-level invariant enforces that any entity with `capabilities.delete: true` also has `capabilities.create: true` — the post-delete focus fallback to `entity-create-start` would silently no-op if a future entity ever broke that pairing. All 9 current entities satisfy it; not a live bug.
 - WR-03: a hung `db.transact` during delete leaves the AlertDialog permanently undismissable (no timeout/abort path) — same class of edge case as any other in-flight-write UI in this app, not new to this phase.
@@ -115,10 +119,13 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-10T20:46:03.719Z
-Stopped at: Completed 17-01-PLAN.md
+Last session: 2026-08-10T21:05:00.000Z
+Stopped at: Completed 17-02-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
 
-- Run `/gsd-plan-phase 14` to plan Phase 14 (Entity Screen — Table & States).
+- v1.2's roadmap (Phases 12-17) is fully executed and verified: 24/24 requirements complete,
+  68/68 Playwright tests passing live, `bun run check`/`bun run lint` clean.
+- Run `/gsd-complete-milestone v1.2` (or `/gsd-audit-milestone` first, if a pre-archive audit is
+  wanted) to close out the milestone and prepare for the next version.
