@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { expect, type Page, test } from "@playwright/test";
+import { openAndReadSelectOptions, pickDate, selectByText } from "./helpers/form-controls.ts";
 
 // This spec runs in the `authed` project (restores the storageState persisted
 // by auth.setup.ts — see 04-01). Every generated record uses the
@@ -183,21 +184,21 @@ test("WEB-03: projetos full browser CRUD round trip, with and without an optiona
   // YYYY-MM-DD value round-trips through the ISO date helpers.
   await waitForCreateSettle(page);
   await rowA.getByTestId("row-edit").click();
-  await page.getByTestId("field-dataInicioPrevista").fill("2026-03-10");
+  const dataInicioPrevistaValue = await pickDate(page, "field-dataInicioPrevista");
   await submitForm(page);
   await expect(page.getByTestId("entity-submit")).toHaveCount(0);
   await page.waitForTimeout(1500);
   await page.reload();
   await page.getByTestId("nav-projetos").click();
   const reloadedRowA = page.getByTestId("row").filter({ hasText: nomeA });
-  await expect(reloadedRowA).toContainText("2026-03-10", { timeout: RESYNC_TIMEOUT });
+  await expect(reloadedRowA).toContainText(dataInicioPrevistaValue, { timeout: RESYNC_TIMEOUT });
 
   // (3) Create projeto B WITH a fundo link selected; assert the fundo's
   // nome renders in the column.
   await page.getByTestId("entity-create-start").click();
   await page.getByTestId("field-nome").fill(nomeB);
   await page.getByTestId("field-status").fill("ativo");
-  await page.getByTestId("link-fundo").selectOption({ label: chainFundoNome });
+  await selectByText(page, "link-fundo", chainFundoNome);
   await submitForm(page);
 
   const rowB = page.getByTestId("row").filter({ hasText: nomeB });
@@ -234,7 +235,7 @@ test("WEB-04: etapas full browser CRUD round trip, with a numeric ordem and a pr
   await page.getByTestId("field-nome").fill(nome);
   await page.getByTestId("field-ordem").fill("10");
   await page.getByTestId("field-status").fill("ativo");
-  await page.getByTestId("link-projeto").selectOption({ label: chainProjetoNome });
+  await selectByText(page, "link-projeto", chainProjetoNome);
   await submitForm(page);
 
   const row = page.getByTestId("row").filter({ hasText: nome });
@@ -287,21 +288,16 @@ test("WEB-05: tarefas tipoPrazo is a strict hard/soft select, and optional dates
 
   // (0) Assert the tipoPrazo select offers EXACTLY "hard" and "soft" —
   // matching the CLI's click.Choice(_TIPO_PRAZO_CHOICES), no free text.
-  const tipoPrazoSelect = page.getByTestId("field-tipoPrazo");
-  const optionValues = await tipoPrazoSelect
-    .locator("option")
-    .evaluateAll((opts) =>
-      (opts as HTMLOptionElement[]).map((o) => o.value).filter((v) => v !== ""),
-    );
+  const optionValues = await openAndReadSelectOptions(page, "field-tipoPrazo");
   expect(optionValues.sort()).toEqual(["hard", "soft"]);
 
   // (1) Create a tarefa: tipoPrazo=hard, dataPrevistaEstimada set,
   // dataPrevista left blank, linked to the chain etapa.
   await page.getByTestId("field-titulo").fill(titulo);
-  await tipoPrazoSelect.selectOption("hard");
+  await selectByText(page, "field-tipoPrazo", "hard");
   await page.getByTestId("field-status").fill("ativo");
-  await page.getByTestId("field-dataPrevistaEstimada").fill("2026-04-01");
-  await page.getByTestId("link-etapa").selectOption({ label: chainEtapaNome });
+  await pickDate(page, "field-dataPrevistaEstimada");
+  await selectByText(page, "link-etapa", chainEtapaNome);
   await submitForm(page);
 
   const row = page.getByTestId("row").filter({ hasText: titulo });
@@ -359,7 +355,7 @@ test("WEB-04 threat T-04-04: a dangling projeto link is blocked with a visible e
   // Select the soon-to-be-deleted projeto BEFORE deleting it — the select
   // list is populated from a live query, but `selectedLinks` retains the id
   // string regardless of subsequent list updates.
-  await page.getByTestId("link-projeto").selectOption({ label: nomeProjetoVitima });
+  await selectByText(page, "link-projeto", nomeProjetoVitima);
 
   // Delete the target out from under the in-flight form, between selection
   // and submit — this is exactly the race the `queryOnce` existence check
