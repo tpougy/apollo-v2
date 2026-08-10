@@ -4,17 +4,18 @@ milestone: v1.1
 milestone_name: UI bonita com Tailwind + shadcn-svelte
 current_phase: 11
 current_phase_name: Full Verification & Quality Gates
-status: planning
-stopped_at: Completed 10-03-PLAN.md — Sonner toast feedback (FDBK-01)
-last_updated: "2026-08-10T03:13:01.525Z"
+current_plan: 1
+status: verifying
+stopped_at: Completed 11-01-PLAN.md — Full Verification & Quality Gates (v1.1 milestone close)
+last_updated: "2026-08-10T03:32:42.791Z"
 last_activity: 2026-08-10
 last_activity_desc: Phase 10 complete, transitioned to Phase 11
 progress:
   total_phases: 5
-  completed_phases: 4
-  total_plans: 7
-  completed_plans: 7
-  percent: 80
+  completed_phases: 5
+  total_plans: 8
+  completed_plans: 8
+  percent: 100
 ---
 
 # Project State
@@ -29,8 +30,9 @@ See: .planning/PROJECT.md (updated 2026-08-09)
 ## Current Position
 
 Phase: 11 of 11 (Full Verification & Quality Gates)
-Plan: Not started
-Status: Ready to plan
+Current Plan: 1
+Total Plans in Phase: 1
+Status: Phase complete — ready for verification
 Last activity: 2026-08-10 — Phase 10 complete, transitioned to Phase 11
 
 Progress: [██████████] 100% (v1.1)
@@ -67,6 +69,7 @@ Progress: [██████████] 100% (v1.1)
 | Phase 10 P02 | 19min | 3 tasks | 21 files |
 | Phase 10 P04 | 76min | 3 tasks | 3 files |
 | Phase 10 P03 | 71min | 3 tasks | 11 files |
+| Phase 11 P01 | 12min | 3 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -86,6 +89,8 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase ?]: 10-04: Fixed remaining e2e specs' Select/date call sites via shared helpers; found and fixed a toHaveValue->toHaveText assertion bug on the xor-parent-type Select.Trigger; full test:e2e suite green (39/39) at phase boundary.
 - [Phase ?]: [Phase 10] svelte-sonner hand-installed via bun add (no shadcn-svelte add sonner) to keep mode-watcher out of the tree; toast.success/error wired into every EntityScreen CRUD write path and both LoginScreen/Shell auth actions (FDBK-01)
 - [Phase ?]: [Phase 10] Live InstantDB per-email magic-code rate limit (429) hit during 10-03 verification after a burst of sends — resolved by waiting ~25min with zero further sends rather than retrying; documented as a session-level constraint for future live-auth-heavy work
+- [Phase ?]: [Phase 11]: Full-suite live re-run (39/39) + explicit screen x capability-class coverage audit found zero gaps; no new spec needed
+- [Phase ?]: [Phase 11]: bun run check/lint re-confirmed clean at exactly the two named pre-existing findings (QUAL-01 holds, zero new suppressions)
 
 ### Pending Todos
 
@@ -106,8 +111,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-10T02:51:20.641Z
-Stopped at: Completed 10-03-PLAN.md — Sonner toast feedback (FDBK-01)
+Last session: 2026-08-10T03:32:42.781Z
+Stopped at: Completed 11-01-PLAN.md — Full Verification & Quality Gates (v1.1 milestone close)
 Resume file: None
 
 ## Operator Next Steps

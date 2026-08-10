@@ -42,13 +42,13 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Verification
 
-- [ ] **VERIFY-01**: The existing Playwright suite (`web/e2e/`) is updated so every existing spec passes against the restyled markup (selectors updated as needed, behavior unchanged)
-- [ ] **VERIFY-02**: New Playwright coverage proves each restyled screen (login, shell/nav, and at least one full CRUD cycle per entity capability class: full-CRUD, create-only/status-only, read-only) renders and functions correctly against the live InstantDB app
-- [ ] **VERIFY-03**: No phase in this milestone's roadmap depends on human UAT — every phase's done-criteria is provable by an automated Playwright run
+- [x] **VERIFY-01**: The existing Playwright suite (`web/e2e/`) is updated so every existing spec passes against the restyled markup (selectors updated as needed, behavior unchanged)
+- [x] **VERIFY-02**: New Playwright coverage proves each restyled screen (login, shell/nav, and at least one full CRUD cycle per entity capability class: full-CRUD, create-only/status-only, read-only) renders and functions correctly against the live InstantDB app
+- [x] **VERIFY-03**: No phase in this milestone's roadmap depends on human UAT — every phase's done-criteria is provable by an automated Playwright run
 
 ### Quality
 
-- [ ] **QUAL-01**: Biome (formatter + linter) and `svelte-check` remain clean on `web/` after the full restyle, with zero new suppressions
+- [x] **QUAL-01**: Biome (formatter + linter) and `svelte-check` remain clean on `web/` after the full restyle, with zero new suppressions
 
 ## Out of Scope
 
@@ -85,10 +85,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ENTFRM-03 | Phase 10 | Complete |
 | ENTFRM-04 | Phase 10 | Complete |
 | FDBK-01 | Phase 10 | Complete |
-| VERIFY-01 | Phase 11 | Pending |
-| VERIFY-02 | Phase 11 | Pending |
-| VERIFY-03 | Phase 11 | Pending |
-| QUAL-01 | Phase 11 | Pending |
+| VERIFY-01 | Phase 11 | Complete |
+| VERIFY-02 | Phase 11 | Complete |
+| VERIFY-03 | Phase 11 | Complete |
+| QUAL-01 | Phase 11 | Complete |
 
 **Coverage:**
 
