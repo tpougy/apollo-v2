@@ -35,7 +35,7 @@ Requirements for this milestone. Each maps to roadmap phases.
 - [x] **ENTTBL-05**: The table's loading state uses a `Skeleton` shaped like the real table rows, replacing the current plain "carregando..." text
 - [x] **ENTTBL-06**: The table's empty state uses a proper icon/title/description/CTA composition (shadcn `Empty` or equivalent), reusing the existing create action, replacing the current single-text-cell message
 - [x] **ENTTBL-07**: The table is visually bounded (card/border container) instead of floating directly on the page background
-- [ ] **ENTTBL-08**: Row action buttons (edit/delete) have consistent alignment and spacing, with no portal-based menu (dropdown/popover) introduced for row actions, preserving all existing row-scoped Playwright locators
+- [x] **ENTTBL-08**: Row action buttons (edit/delete) have consistent alignment and spacing, with no portal-based menu (dropdown/popover) introduced for row actions, preserving all existing row-scoped Playwright locators
 
 ### Entity Screen — Form & Dialog
 
@@ -46,7 +46,7 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Delete Confirmation
 
-- [ ] **DELCONF-01**: The delete action uses a shadcn `AlertDialog` instead of the native `window.confirm()`, with its own dedicated Playwright coverage (keyboard confirm/cancel, focus handling) — explicitly scoped in for this milestone since it is the single highest-leverage "looks unfinished" fix and was already logged as tech debt in v1.1
+- [x] **DELCONF-01**: The delete action uses a shadcn `AlertDialog` instead of the native `window.confirm()`, with its own dedicated Playwright coverage (keyboard confirm/cancel, focus handling) — explicitly scoped in for this milestone since it is the single highest-leverage "looks unfinished" fix and was already logged as tech debt in v1.1
 
 ### Cross-Cutting Polish & Accessibility
 
@@ -107,12 +107,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ENTTBL-05 | Phase 14 | Complete |
 | ENTTBL-06 | Phase 14 | Complete |
 | ENTTBL-07 | Phase 14 | Complete |
-| ENTTBL-08 | Phase 16 | Pending |
+| ENTTBL-08 | Phase 16 | Complete |
 | ENTFRM-05 | Phase 15 | Complete |
 | ENTFRM-06 | Phase 15 | Complete |
 | ENTFRM-07 | Phase 15 | Complete |
 | ENTFRM-08 | Phase 15 | Complete |
-| DELCONF-01 | Phase 16 | Pending |
+| DELCONF-01 | Phase 16 | Complete |
 | POLISH-01 | Phase 17 | Pending |
 | POLISH-02 | Phase 17 | Pending |
 | POLISH-03 | Phase 17 | Pending |

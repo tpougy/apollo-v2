@@ -4,16 +4,16 @@ milestone: v1.2
 milestone_name: Lapidação de UI (SaaS-grade polish)
 current_phase: 16
 current_phase_name: Entity Screen — Row Actions & Delete Confirmation
-status: planning
-stopped_at: Completed 15-01-PLAN.md
-last_updated: "2026-08-10T17:57:24.290Z"
+status: executing
+stopped_at: Completed 16-01-PLAN.md
+last_updated: "2026-08-10T18:52:52.690Z"
 last_activity: 2026-08-10
 last_activity_desc: "ROADMAP.md created for v1.2: 6 phases (12-17), 24/24 requirements mapped, 100% coverage."
 progress:
   total_phases: 6
   completed_phases: 4
-  total_plans: 5
-  completed_plans: 5
+  total_plans: 7
+  completed_plans: 6
   percent: 67
 ---
 
@@ -29,11 +29,11 @@ See: .planning/PROJECT.md (updated 2026-08-10)
 ## Current Position
 
 Phase: 16 of 17 (Entity Screen — Row Actions & Delete Confirmation)
-Plan: Not started
-Status: Ready to plan
+Plan: 2 of 2
+Status: Ready to execute
 Last activity: 2026-08-10 — Phase 15 complete, transitioned to Phase 16
 
-Progress: [██████████] 100%
+Progress: [█████████░] 86%
 
 ## Performance Metrics
 
@@ -67,6 +67,7 @@ Progress: [██████████] 100%
 | Phase 14 P01 | 20min | 2 tasks | 20 files |
 | Phase 14 P02 | 30min | 2 tasks | 12 files |
 | Phase 15 P01 | 55min | 3 tasks | 2 files |
+| Phase 16 P01 | 90min | 2 tasks | 20 files |
 
 ## Accumulated Context
 
@@ -85,6 +86,8 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase 14 P02]: Fixed 2 pre-existing Biome violations (import-order, line-width) left by Plan 14-01's vendored Skeleton/Empty components, required for Task 2's bun run lint acceptance gate to exit 0.
 - [Phase 15]: Fixed a busy-guard double-submit race in EntityScreen.svelte's handleSubmit (plan-checker-flagged deviation) — busy=true now set immediately after the re-entrancy guard, wrapping the entire validation+queryOnce+transact flow in try/finally, not just the transact try/catch.
 - [Phase 15]: ENTFRM-05's Playwright proof uses getComputedStyle(marginBlockEnd) as deterministic primary evidence instead of pure boundingBox() pixel deltas across heterogeneous control kinds, avoiding a webfont-load subpixel race unrelated to the actual applied CSS spacing.
+- [Phase 16 P01]: Vendored AlertDialog via direct shadcn-svelte registry JSON fetch instead of the interactive bunx CLI (which hit an un-drivable overwrite-confirmation prompt over button in this sandboxed pty) — byte-identical output, confirmed zero package.json/bun.lock diff.
+- [Phase 16 P01]: Fixed ENTFRM-01's success-toast locator (Rule 1 bug) to filter by exact delete-toast text — the AlertDialog's faster confirm path (no native-dialog CDP round trip) exposed a pre-existing ambiguity with the still-visible prior edit-success toast.
 
 ### Pending Todos
 
@@ -106,8 +109,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-10T17:26:17.320Z
-Stopped at: Completed 15-01-PLAN.md
+Last session: 2026-08-10T18:52:52.680Z
+Stopped at: Completed 16-01-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

@@ -145,10 +145,10 @@ Plans:
   3. Clicking delete opens a shadcn `AlertDialog` (not `window.confirm()`) that can be confirmed or canceled via keyboard, with correct focus handling.
   4. Dedicated Playwright coverage proves both the confirm path (record deleted) and the cancel path (record retained) through the `AlertDialog`.
 
-**Plans**: 2/2 plans planned
+**Plans**: 1/2 plans executed planned
 Plans:
 
-- [ ] 16-01-PLAN.md — AlertDialog conversion + row-action alignment, proven end-to-end against fundos (cancel + confirm paths, empirical focus checks) plus migration of all 5 pre-existing affected e2e spec files
+- [x] 16-01-PLAN.md — AlertDialog conversion + row-action alignment, proven end-to-end against fundos (cancel + confirm paths, empirical focus checks) plus migration of all 5 pre-existing affected e2e spec files
 - [ ] 16-02-PLAN.md — Dedicated Playwright coverage for keyboard confirm/cancel, focus handling, busy-gated dismissal, and row-action alignment, plus full-suite regression and quality gates
 
 **UI hint**: yes
@@ -187,5 +187,5 @@ Plans:
 | 13. Shell Chrome — Header, Nav & Content Frame | v1.2 | 1/1 | Complete    | 2026-08-10 |
 | 14. Entity Screen — Header, Loading & Empty States | v1.2 | 2/2 | Complete    | 2026-08-10 |
 | 15. Entity Screen — Form & Dialog Composition | v1.2 | 1/1 | Complete    | 2026-08-10 |
-| 16. Entity Screen — Row Actions & Delete Confirmation | v1.2 | 0/TBD | Not started | - |
+| 16. Entity Screen — Row Actions & Delete Confirmation | v1.2 | 1/2 | In Progress|  |
 | 17. Cross-Phase Verification & Quality Gates | v1.2 | 0/TBD | Not started | - |
