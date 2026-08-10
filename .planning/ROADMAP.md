@@ -67,7 +67,9 @@ Full detail archived at `.planning/milestones/v1.1-ROADMAP.md`.
   2. Both auth steps use the same internal spacing scale between field groups — no ad hoc per-step spacing values.
   3. A live magic-code login round trip (email step → code step → authenticated session) completes successfully through the restyled markup.
 
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 12-01-PLAN.md — Card composition + full-viewport centering + consistent spacing scale on both auth steps, proven via live magic-code round trip
 **UI hint**: yes
 
 ### Phase 13: Shell Chrome — Header, Nav & Content Frame
@@ -155,7 +157,7 @@ Full detail archived at `.planning/milestones/v1.1-ROADMAP.md`.
 | 9. Entity Table Restyle | v1.1 | 1/1 | Complete    | 2026-08-09 |
 | 10. Entity Form Restyle & Feedback | v1.1 | 4/4 | Complete    | 2026-08-10 |
 | 11. Full Verification & Quality Gates | v1.1 | 1/1 | Complete    | 2026-08-10 |
-| 12. Login Screen Polish | v1.2 | 0/TBD | Not started | - |
+| 12. Login Screen Polish | v1.2 | 0/1 | Planned | - |
 | 13. Shell Chrome — Header, Nav & Content Frame | v1.2 | 0/TBD | Not started | - |
 | 14. Entity Screen — Header, Loading & Empty States | v1.2 | 0/TBD | Not started | - |
 | 15. Entity Screen — Form & Dialog Composition | v1.2 | 0/TBD | Not started | - |
