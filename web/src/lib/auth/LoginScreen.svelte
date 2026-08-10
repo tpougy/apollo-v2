@@ -68,7 +68,10 @@
   }
 </script>
 
-<div data-testid="login-screen" class="fixed inset-0 flex items-center justify-center p-4">
+<div
+  data-testid="login-screen"
+  class="fixed inset-0 flex items-center justify-center overflow-y-auto bg-background p-4"
+>
   <Card class="w-full max-w-sm">
     <CardHeader>
       <CardTitle>Entrar</CardTitle>
