@@ -106,7 +106,12 @@ Plans:
   3. When an entity has zero records, the screen shows an icon/title/description/CTA `Empty` composition that reuses the existing create action, not a single text cell.
   4. The table renders inside a bounded card/border container instead of floating on the page background, across all 9 entities.
 
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+
+- [ ] 14-01-PLAN.md — Page-header row + Skeleton loading + Card-bounded Empty/Table, restructured in `EntityScreen.svelte` and proven against fundos plus all 9 entities' nav regression
+- [ ] 14-02-PLAN.md — Dedicated Playwright coverage across all 3 capability classes (dual color-scheme, loading, empty, table-bounding) plus full-suite regression and quality gates
+
 **UI hint**: yes
 
 ### Phase 15: Entity Screen — Form & Dialog Composition
@@ -171,7 +176,7 @@ Plans:
 | 11. Full Verification & Quality Gates | v1.1 | 1/1 | Complete    | 2026-08-10 |
 | 12. Login Screen Polish | v1.2 | 1/1 | Complete    | 2026-08-10 |
 | 13. Shell Chrome — Header, Nav & Content Frame | v1.2 | 1/1 | Complete    | 2026-08-10 |
-| 14. Entity Screen — Header, Loading & Empty States | v1.2 | 0/TBD | Not started | - |
+| 14. Entity Screen — Header, Loading & Empty States | v1.2 | 0/2 | Not started | - |
 | 15. Entity Screen — Form & Dialog Composition | v1.2 | 0/TBD | Not started | - |
 | 16. Entity Screen — Row Actions & Delete Confirmation | v1.2 | 0/TBD | Not started | - |
 | 17. Cross-Phase Verification & Quality Gates | v1.2 | 0/TBD | Not started | - |
