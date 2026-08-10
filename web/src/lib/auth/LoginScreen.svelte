@@ -102,33 +102,37 @@
           </Button>
         </form>
       {:else}
-        <p>Código enviado para {email}</p>
-        <form onsubmit={onSubmitCode}>
-          <Label for="login-code">Código</Label>
-          <Input
-            id="login-code"
-            data-testid="login-code"
-            type="text"
-            inputmode="numeric"
-            bind:value={code}
-            required
-            disabled={ocupado}
-          />
-          <Button type="submit" data-testid="login-submit" disabled={ocupado}>
-            {#if ocupado}
-              <LoaderCircle class="size-4 animate-spin" />
-            {/if}
-            Entrar
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            data-testid="login-resend"
-            onclick={reenviar}
-            disabled={ocupado}
-          >
-            Reenviar código
-          </Button>
+        <p class="text-sm text-muted-foreground">Código enviado para {email}</p>
+        <form onsubmit={onSubmitCode} class="space-y-4">
+          <div class="space-y-2" data-testid="login-code-field">
+            <Label for="login-code">Código</Label>
+            <Input
+              id="login-code"
+              data-testid="login-code"
+              type="text"
+              inputmode="numeric"
+              bind:value={code}
+              required
+              disabled={ocupado}
+            />
+          </div>
+          <div class="flex items-center gap-2">
+            <Button type="submit" data-testid="login-submit" disabled={ocupado}>
+              {#if ocupado}
+                <LoaderCircle class="size-4 animate-spin" />
+              {/if}
+              Entrar
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              data-testid="login-resend"
+              onclick={reenviar}
+              disabled={ocupado}
+            >
+              Reenviar código
+            </Button>
+          </div>
         </form>
       {/if}
 
