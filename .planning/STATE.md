@@ -4,16 +4,16 @@ milestone: v1.2
 milestone_name: Lapidação de UI (SaaS-grade polish)
 current_phase: 17
 current_phase_name: Cross-Phase Verification & Quality Gates
-status: planning
-stopped_at: Completed 16-02-PLAN.md
-last_updated: "2026-08-10T20:02:31.913Z"
+status: executing
+stopped_at: Completed 17-01-PLAN.md
+last_updated: "2026-08-10T20:46:03.728Z"
 last_activity: 2026-08-10
 last_activity_desc: "ROADMAP.md created for v1.2: 6 phases (12-17), 24/24 requirements mapped, 100% coverage."
 progress:
   total_phases: 6
   completed_phases: 5
-  total_plans: 7
-  completed_plans: 7
+  total_plans: 9
+  completed_plans: 8
   percent: 83
 ---
 
@@ -29,11 +29,11 @@ See: .planning/PROJECT.md (updated 2026-08-10)
 ## Current Position
 
 Phase: 17 of 17 (Cross-Phase Verification & Quality Gates)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-08-10 — Phase 16 complete, transitioned to Phase 17
+Plan: 2 of 2
+Status: Ready to execute
+Last activity: 2026-08-10 — 17-01 complete (full-suite regression, coverage matrix, grep sweeps); 17-02 next
 
-Progress: [██████████] 100%
+Progress: [█████████░] 89%
 
 ## Performance Metrics
 
@@ -68,6 +68,7 @@ Progress: [██████████] 100%
 | Phase 15 P01 | 55min | 3 tasks | 2 files |
 | Phase 16 P01 | 90min | 2 tasks | 20 files |
 | Phase 16 P02 | 90min | 2 tasks | 3 files |
+| Phase 17 P01 | 19min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -86,6 +87,8 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase 16 P01]: Fixed ENTFRM-01's success-toast locator (Rule 1 bug) to filter by exact delete-toast text — the AlertDialog's faster confirm path (no native-dialog CDP round trip) exposed a pre-existing ambiguity with the still-visible prior edit-success toast.
 - [Phase 16 P02]: Fixed bits-ui's AlertDialogCancelState never emitting a disabled HTML attribute (only gating its own onclick/onkeydown internally) via a child-snippet override in the vendored alert-dialog-cancel.svelte, discovered by the new busy-gating test.
 - [Phase 16 P02]: Used a CDP network-latency throttle (800ms) to reliably observe delete-confirm's busy/disabled window, since db.transact()'s server-ack round trip resolves faster on the live app than sequential Playwright assertions could reliably catch.
+- [Phase 17 P01]: Renamed EntityScreen.svelte's query.error Alert testid from entity-error to entity-query-error — the formError/query.error pair were two independent {#if} blocks (not chained), so they were not actually mutually exclusive as the plan assumed; no existing spec targeted the query-error path, so the rename was zero-risk.
+- [Phase 17 P01]: Left single-occurrence p-0 (Popover.Content wrapping the date-picker Calendar) and several single-file spacing values unmodified — all are bounded default-scale Tailwind tokens (no arbitrary values), and each composition file's structurally distinct role (esp. Shell.svelte's SHELL-03 single-frame ownership) makes forced cross-file duplication counterproductive, not a genuine POLISH-04 violation.
 
 ### Pending Todos
 
@@ -96,6 +99,7 @@ None yet.
 None — the one open judgment call research flagged (`window.confirm()` → `AlertDialog` in/out of scope) is resolved: DELCONF-01 is in scope, owned by Phase 16.
 
 **Phase 16 non-blocking tech debt** (logged in `.planning/phases/16-entity-screen-row-actions-delete-confirmation/16-REVIEW.md`, WR-01/WR-03 — WR-02 fixed):
+
 - WR-01: no type-level invariant enforces that any entity with `capabilities.delete: true` also has `capabilities.create: true` — the post-delete focus fallback to `entity-create-start` would silently no-op if a future entity ever broke that pairing. All 9 current entities satisfy it; not a live bug.
 - WR-03: a hung `db.transact` during delete leaves the AlertDialog permanently undismissable (no timeout/abort path) — same class of edge case as any other in-flight-write UI in this app, not new to this phase.
 
@@ -111,8 +115,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-10T19:41:45.512Z
-Stopped at: Completed 16-02-PLAN.md
+Last session: 2026-08-10T20:46:03.719Z
+Stopped at: Completed 17-01-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

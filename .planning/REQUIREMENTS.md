@@ -50,17 +50,17 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Cross-Cutting Polish & Accessibility
 
-- [ ] **POLISH-01**: No raw color literal (hex/rgb/oklch outside `app.css`) is introduced anywhere touched by this milestone — every surface uses existing semantic Tailwind/shadcn tokens only
-- [ ] **POLISH-02**: Every new or restyled icon-only button has an `aria-label`; all interactive elements remain real `<button>`/`<a>` elements (no `<div onclick>`)
+- [x] **POLISH-01**: No raw color literal (hex/rgb/oklch outside `app.css`) is introduced anywhere touched by this milestone — every surface uses existing semantic Tailwind/shadcn tokens only
+- [x] **POLISH-02**: Every new or restyled icon-only button has an `aria-label`; all interactive elements remain real `<button>`/`<a>` elements (no `<div onclick>`)
 - [ ] **POLISH-03**: Every surface touched by this milestone remains legible (no contrast/focus-ring regression) in both light and dark `prefers-color-scheme` states
-- [ ] **POLISH-04**: All spacing (gaps, padding, vertical rhythm between page header/content/actions) across every touched screen is drawn from one consistent scale — no one-off spacing values that don't recur elsewhere in the same milestone's diffs
+- [x] **POLISH-04**: All spacing (gaps, padding, vertical rhythm between page header/content/actions) across every touched screen is drawn from one consistent scale — no one-off spacing values that don't recur elsewhere in the same milestone's diffs
 
 ### Verification
 
-- [ ] **VERIFY-04**: The full existing Playwright suite (39 tests) passes unmodified in behavior against the restyled markup, with all `data-testid` selectors preserved verbatim (selectors updated only where markup structure genuinely requires it, never removed)
+- [x] **VERIFY-04**: The full existing Playwright suite (39 tests) passes unmodified in behavior against the restyled markup, with all `data-testid` selectors preserved verbatim (selectors updated only where markup structure genuinely requires it, never removed)
 - [ ] **VERIFY-05**: New Playwright coverage proves each polished surface (login, shell/nav, table loading/empty states, form/dialog, delete confirmation) renders and functions correctly against the live InstantDB app, including at least one dual-color-scheme check per touched surface and one keyboard/focus-visible smoke test
-- [ ] **VERIFY-06**: No phase in this milestone's roadmap depends on human UAT — every phase's done-criteria is provable by an automated Playwright run
-- [ ] **VERIFY-07**: The final cross-cutting verification phase explicitly re-checks earlier phases' surfaces together (not just the current phase's own screen in isolation) to confirm the spacing/rhythm established in Phase 1-2 still reads consistently once every later phase's changes have landed
+- [x] **VERIFY-06**: No phase in this milestone's roadmap depends on human UAT — every phase's done-criteria is provable by an automated Playwright run
+- [x] **VERIFY-07**: The final cross-cutting verification phase explicitly re-checks earlier phases' surfaces together (not just the current phase's own screen in isolation) to confirm the spacing/rhythm established in Phase 1-2 still reads consistently once every later phase's changes have landed
 
 ### Quality
 
@@ -113,14 +113,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ENTFRM-07 | Phase 15 | Complete |
 | ENTFRM-08 | Phase 15 | Complete |
 | DELCONF-01 | Phase 16 | Complete |
-| POLISH-01 | Phase 17 | Pending |
-| POLISH-02 | Phase 17 | Pending |
+| POLISH-01 | Phase 17 | Complete |
+| POLISH-02 | Phase 17 | Complete |
 | POLISH-03 | Phase 17 | Pending |
-| POLISH-04 | Phase 17 | Pending |
-| VERIFY-04 | Phase 17 | Pending |
+| POLISH-04 | Phase 17 | Complete |
+| VERIFY-04 | Phase 17 | Complete |
 | VERIFY-05 | Phase 17 | Pending |
-| VERIFY-06 | Phase 17 | Pending |
-| VERIFY-07 | Phase 17 | Pending |
+| VERIFY-06 | Phase 17 | Complete |
+| VERIFY-07 | Phase 17 | Complete |
 | QUAL-02 | Phase 17 | Pending |
 
 **Coverage:**
