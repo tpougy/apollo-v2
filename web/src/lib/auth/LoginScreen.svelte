@@ -4,7 +4,13 @@
   import { toast } from "svelte-sonner";
   import { Alert, AlertDescription } from "$lib/components/ui/alert";
   import { Button } from "$lib/components/ui/button";
-  import { Card, CardContent } from "$lib/components/ui/card";
+  import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+  } from "$lib/components/ui/card";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import { db } from "../db";
@@ -62,20 +68,32 @@
   }
 </script>
 
-<div data-testid="login-screen">
-  <Card>
-    <CardContent>
+<div data-testid="login-screen" class="flex min-h-screen items-center justify-center p-4">
+  <Card class="w-full max-w-sm">
+    <CardHeader>
+      <CardTitle>Entrar</CardTitle>
+      <CardDescription>
+        {#if step === "email"}
+          Informe seu e-mail para receber um código de acesso.
+        {:else}
+          Digite o código enviado para {email}.
+        {/if}
+      </CardDescription>
+    </CardHeader>
+    <CardContent class="space-y-4">
       {#if step === "email"}
-        <form onsubmit={onSubmitEmail}>
-          <Label for="login-email">E-mail</Label>
-          <Input
-            id="login-email"
-            data-testid="login-email"
-            type="email"
-            bind:value={email}
-            required
-            disabled={ocupado}
-          />
+        <form onsubmit={onSubmitEmail} class="space-y-4">
+          <div class="space-y-2" data-testid="login-email-field">
+            <Label for="login-email">E-mail</Label>
+            <Input
+              id="login-email"
+              data-testid="login-email"
+              type="email"
+              bind:value={email}
+              required
+              disabled={ocupado}
+            />
+          </div>
           <Button type="submit" data-testid="login-submit" disabled={ocupado}>
             {#if ocupado}
               <LoaderCircle class="size-4 animate-spin" />
