@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Lapidação de UI (SaaS-grade polish)
-current_phase: 15
-current_phase_name: Entity Screen — Form & Dialog Composition
+current_phase: 16
+current_phase_name: Entity Screen — Row Actions & Delete Confirmation
 status: planning
 stopped_at: Completed 15-01-PLAN.md
-last_updated: "2026-08-10T17:26:17.331Z"
+last_updated: "2026-08-10T17:57:24.290Z"
 last_activity: 2026-08-10
 last_activity_desc: "ROADMAP.md created for v1.2: 6 phases (12-17), 24/24 requirements mapped, 100% coverage."
 progress:
@@ -28,10 +28,10 @@ See: .planning/PROJECT.md (updated 2026-08-10)
 
 ## Current Position
 
-Phase: 15 of 17 (Entity Screen — Form & Dialog Composition)
-Plan: 1 of 1
-Status: In progress — plan 15-01 complete
-Last activity: 2026-08-10 — Completed 15-01-PLAN.md (Dialog/form spacing, Dialog.Description/Footer, busy spinner, required indicator)
+Phase: 16 of 17 (Entity Screen — Row Actions & Delete Confirmation)
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-08-10 — Phase 15 complete, transitioned to Phase 16
 
 Progress: [██████████] 100%
 
@@ -47,9 +47,8 @@ Progress: [██████████] 100%
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 13 | 1 | - | - |
 | 14 | 2 | - | - |
-| 15 | TBD | - | - |
+| 15 | 1 | - | - |
 | 16 | TBD | - | - |
 | 17 | TBD | - | - |
 
@@ -80,7 +79,6 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - v1.2 roadmap: cross-cutting requirements (POLISH-01..04, VERIFY-04..07, QUAL-02) all map to the final Phase 17, since VERIFY-07 explicitly requires re-checking every earlier phase's surface together — none of them can be truly proven until all five polish phases have landed.
 - v1.1 kickoff: UI stack locked to Tailwind v4 + shadcn-svelte default style/tokens, `@lucide/svelte` icons, dark mode via `prefers-color-scheme` only (C-11).
 - v1.1/v1.2 kickoff: No human UAT gate anywhere — every phase's success criteria must be Playwright-provable against the live InstantDB app (C-12).
-- [Phase 13]: Shell.svelte restructured with shell-header toolbar + Separator + single shell-content-frame wrapper (mx-auto max-w-6xl + padding + space-y-6) inherited by all 9 entities; App.svelte's root <h1> relocated inside <SignedOut> to eliminate the duplicate app-identity text once signed in (SHELL-01/02/03).
 - [Phase 14 P01]: EntityConfig.descricao made required (not optional) so bun run check enforces all 9 entity defs supply it — the ENTTBL-04 all-entities proof mechanism.
 - [Phase 14 P01]: empty-state-create kept as a distinct testid from entity-create-start (both call startCreate()), preserving the load-bearing uniqueness constraint on entity-create-start.
 - [Phase 14 P02]: Dedicated fresh-context-with-cleared-query-cache Playwright pattern established for reliably observing InstantDB's transient loading state under CDP network throttle, since the authed project's persisted storageState otherwise resolves query.isLoading instantly from a restored IndexedDB cache.
