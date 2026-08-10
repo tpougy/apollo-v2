@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: UI bonita com Tailwind + shadcn-svelte
-current_phase: 10
-current_phase_name: Entity Form Restyle & Feedback
-status: verifying
+current_phase: 11
+current_phase_name: Full Verification & Quality Gates
+status: planning
 stopped_at: Completed 10-03-PLAN.md — Sonner toast feedback (FDBK-01)
-last_updated: "2026-08-10T02:51:20.651Z"
-last_activity: 2026-08-09
-last_activity_desc: "`/gsd-execute-phase 9` executed `09-01-PLAN.md`; `.planning/phases/09-entity-table-restyle/09-01-SUMMARY.md` written"
+last_updated: "2026-08-10T03:13:01.525Z"
+last_activity: 2026-08-10
+last_activity_desc: Phase 10 complete, transitioned to Phase 11
 progress:
   total_phases: 5
   completed_phases: 4
@@ -28,10 +28,10 @@ See: .planning/PROJECT.md (updated 2026-08-09)
 
 ## Current Position
 
-Phase: 10 of 11 (Entity Form Restyle & Feedback)
-Plan: 4 of 4
-Status: Phase complete — ready for verification
-Last activity: 2026-08-09 — Phase 9 complete, transitioned to Phase 10
+Phase: 11 of 11 (Full Verification & Quality Gates)
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-08-10 — Phase 10 complete, transitioned to Phase 11
 
 Progress: [██████████] 100% (v1.1)
 
@@ -39,7 +39,7 @@ Progress: [██████████] 100% (v1.1)
 
 **Velocity:**
 
-- Total plans completed: 3 (v1.0)
+- Total plans completed: 6 (v1.0)
 - Average duration: N/A
 - Total execution time: 0 hours (v1.1)
 
@@ -47,8 +47,8 @@ Progress: [██████████] 100% (v1.1)
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 8 | 1 | - | - |
 | 9 | 1 | - | - |
+| 10 | 4 | - | - |
 
 **Recent Trend:**
 
@@ -77,9 +77,6 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - v1.1 kickoff: UI stack locked to Tailwind v4 + shadcn-svelte default style/tokens, `@lucide/svelte` icons, dark mode via `prefers-color-scheme` only (C-11).
 - v1.1 kickoff: No human UAT gate anywhere this milestone — every phase's success criteria must be Playwright-provable against the live InstantDB app (C-12).
 - Roadmap derivation: 19 v1.1 requirements grouped into 5 phases (7-11) — setup, auth/shell, entity table, entity form+feedback, full verification — following the natural build order (foundation before consumers, table before form since dialogs are triggered from table row/create actions, verification last).
-- [Phase 8]: Card wraps the whole two-step login form (not only the error branch), matching ROADMAP Phase 8 success criterion 1's literal Card-at-each-step requirement
-- [Phase 8]: secondary/ghost Button variant pair chosen for nav active-state — gives a resting-state background-color difference assertable via getComputedStyle
-- [Phase 8]: login-flow.spec.ts induces the live auth error via a deliberately-wrong-but-real-derived code instead of waiting for natural ~60-90s expiry
 - [Phase 9]: tipoPrazo is Badge-worthy by column name across all entities, including instanciasRotina where it's kind:"text" not "select" — matches ROADMAP SC#2's example list
 - [Phase 9]: status columns always render variant="secondary" regardless of free-text value — no keyword-matching color logic invented, per C-11's "não precisa inventar moda" intent
 - [Phase 10]: Popover.Root uses explicit open/onOpenChange (not bind:open) for the date-picker — bind: to a dynamic Record key throws Svelte's props_invalid_value on first render
