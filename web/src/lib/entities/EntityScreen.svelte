@@ -521,210 +521,210 @@
     }}
   >
     <Dialog.Content class="sm:max-w-lg max-h-[85vh] overflow-y-auto">
-        <Dialog.Header>
-          <Dialog.Title>{mode === "create" ? "Novo" : "Editar"} — {config.titulo}</Dialog.Title>
-        </Dialog.Header>
-        <form onsubmit={handleSubmit} novalidate>
-          {#each editableFields() as f (f.name)}
-            <div>
-              <Label for={`field-${f.name}`}>{f.label}</Label>
-              {#if f.kind === "text"}
-                <Input
-                  id={`field-${f.name}`}
-                  data-testid={`field-${f.name}`}
-                  type="text"
-                  required={f.required}
-                  value={formValues[f.name] as string}
-                  oninput={(e) => {
-                    formValues[f.name] = e.currentTarget.value;
-                  }}
-                />
-              {:else if f.kind === "textarea"}
-                <Textarea
-                  id={`field-${f.name}`}
-                  data-testid={`field-${f.name}`}
-                  required={f.required}
-                  value={formValues[f.name] as string}
-                  oninput={(e) => {
-                    formValues[f.name] = e.currentTarget.value;
-                  }}
-                ></Textarea>
-              {:else if f.kind === "number"}
-                <Input
-                  id={`field-${f.name}`}
-                  data-testid={`field-${f.name}`}
-                  type="number"
-                  required={f.required}
-                  value={formValues[f.name] as number | string}
-                  oninput={(e) => {
-                    const v = e.currentTarget.value;
-                    formValues[f.name] = v === "" ? "" : e.currentTarget.valueAsNumber;
-                  }}
-                />
-              {:else if f.kind === "boolean"}
-                <Checkbox
-                  id={`field-${f.name}`}
-                  data-testid={`field-${f.name}`}
-                  checked={Boolean(formValues[f.name])}
-                  onCheckedChange={(v) => {
-                    formValues[f.name] = v === true;
-                  }}
-                />
-              {:else if f.kind === "date"}
-                <Popover.Root
-                  open={datePopoverOpen[f.name] ?? false}
-                  onOpenChange={(open) => {
-                    datePopoverOpen[f.name] = open;
-                  }}
-                >
-                  <Popover.Trigger>
-                    {#snippet child({ props })}
-                      <Button
-                        {...props}
-                        variant="outline"
-                        id={`field-${f.name}`}
-                        data-testid={`field-${f.name}`}
-                        class={cn(
-                          "w-full justify-start text-start font-normal",
-                          !formValues[f.name] && "text-muted-foreground",
-                        )}
-                      >
-                        <CalendarIcon class="me-2 size-4" />
-                        {formValues[f.name]
-                          ? dateFormatter.format(
-                              parseDate(formValues[f.name] as string).toDate(getLocalTimeZone()),
-                            )
-                          : "Selecione..."}
-                      </Button>
-                    {/snippet}
-                  </Popover.Trigger>
-                  <Popover.Content class="w-auto p-0">
-                    <Calendar
-                      type="single"
-                      locale="pt-BR"
-                      value={
-                        formValues[f.name]
-                          ? (parseDate(formValues[f.name] as string) as DateValue)
-                          : undefined
-                      }
-                      onValueChange={(v) => {
-                        formValues[f.name] = v ? v.toString() : "";
-                        datePopoverOpen[f.name] = false;
-                      }}
-                    />
-                  </Popover.Content>
-                </Popover.Root>
-              {:else if f.kind === "select"}
-                <Select.Root
-                  type="single"
-                  value={formValues[f.name] as string}
-                  onValueChange={(v) => {
-                    formValues[f.name] = v;
-                  }}
-                >
-                  <Select.Trigger id={`field-${f.name}`} data-testid={`field-${f.name}`} class="w-full">
-                    {(formValues[f.name] as string) || "selecione..."}
-                  </Select.Trigger>
-                  <Select.Content>
-                    {#each f.options as opt (opt)}
-                      <Select.Item value={opt} label={opt}>{opt}</Select.Item>
-                    {/each}
-                  </Select.Content>
-                </Select.Root>
-              {/if}
-            </div>
-          {/each}
-
-          {#each config.links ?? [] as link (link.label)}
-            <div>
-              <Label for={`link-${link.label}`}>{link.label}</Label>
-              <Select.Root
-                type="single"
-                value={selectedLinks[link.label] ?? ""}
-                onValueChange={(v) => {
-                  selectedLinks[link.label] = v;
+      <Dialog.Header>
+        <Dialog.Title>{mode === "create" ? "Novo" : "Editar"} — {config.titulo}</Dialog.Title>
+      </Dialog.Header>
+      <form onsubmit={handleSubmit} novalidate>
+        {#each editableFields() as f (f.name)}
+          <div>
+            <Label for={`field-${f.name}`}>{f.label}</Label>
+            {#if f.kind === "text"}
+              <Input
+                id={`field-${f.name}`}
+                data-testid={`field-${f.name}`}
+                type="text"
+                required={f.required}
+                value={formValues[f.name] as string}
+                oninput={(e) => {
+                  formValues[f.name] = e.currentTarget.value;
+                }}
+              />
+            {:else if f.kind === "textarea"}
+              <Textarea
+                id={`field-${f.name}`}
+                data-testid={`field-${f.name}`}
+                required={f.required}
+                value={formValues[f.name] as string}
+                oninput={(e) => {
+                  formValues[f.name] = e.currentTarget.value;
+                }}
+              ></Textarea>
+            {:else if f.kind === "number"}
+              <Input
+                id={`field-${f.name}`}
+                data-testid={`field-${f.name}`}
+                type="number"
+                required={f.required}
+                value={formValues[f.name] as number | string}
+                oninput={(e) => {
+                  const v = e.currentTarget.value;
+                  formValues[f.name] = v === "" ? "" : e.currentTarget.valueAsNumber;
+                }}
+              />
+            {:else if f.kind === "boolean"}
+              <Checkbox
+                id={`field-${f.name}`}
+                data-testid={`field-${f.name}`}
+                checked={Boolean(formValues[f.name])}
+                onCheckedChange={(v) => {
+                  formValues[f.name] = v === true;
+                }}
+              />
+            {:else if f.kind === "date"}
+              <Popover.Root
+                open={datePopoverOpen[f.name] ?? false}
+                onOpenChange={(open) => {
+                  datePopoverOpen[f.name] = open;
                 }}
               >
-                <Select.Trigger id={`link-${link.label}`} data-testid={`link-${link.label}`} class="w-full">
+                <Popover.Trigger>
+                  {#snippet child({ props })}
+                    <Button
+                      {...props}
+                      variant="outline"
+                      id={`field-${f.name}`}
+                      data-testid={`field-${f.name}`}
+                      class={cn(
+                        "w-full justify-start text-start font-normal",
+                        !formValues[f.name] && "text-muted-foreground",
+                      )}
+                    >
+                      <CalendarIcon class="me-2 size-4" />
+                      {formValues[f.name]
+                        ? dateFormatter.format(
+                            parseDate(formValues[f.name] as string).toDate(getLocalTimeZone()),
+                          )
+                        : "Selecione..."}
+                    </Button>
+                  {/snippet}
+                </Popover.Trigger>
+                <Popover.Content class="w-auto p-0">
+                  <Calendar
+                    type="single"
+                    locale="pt-BR"
+                    value={
+                      formValues[f.name]
+                        ? (parseDate(formValues[f.name] as string) as DateValue)
+                        : undefined
+                    }
+                    onValueChange={(v) => {
+                      formValues[f.name] = v ? v.toString() : "";
+                      datePopoverOpen[f.name] = false;
+                    }}
+                  />
+                </Popover.Content>
+              </Popover.Root>
+            {:else if f.kind === "select"}
+              <Select.Root
+                type="single"
+                value={formValues[f.name] as string}
+                onValueChange={(v) => {
+                  formValues[f.name] = v;
+                }}
+              >
+                <Select.Trigger id={`field-${f.name}`} data-testid={`field-${f.name}`} class="w-full">
+                  {(formValues[f.name] as string) || "selecione..."}
+                </Select.Trigger>
+                <Select.Content>
+                  {#each f.options as opt (opt)}
+                    <Select.Item value={opt} label={opt}>{opt}</Select.Item>
+                  {/each}
+                </Select.Content>
+              </Select.Root>
+            {/if}
+          </div>
+        {/each}
+
+        {#each config.links ?? [] as link (link.label)}
+          <div>
+            <Label for={`link-${link.label}`}>{link.label}</Label>
+            <Select.Root
+              type="single"
+              value={selectedLinks[link.label] ?? ""}
+              onValueChange={(v) => {
+                selectedLinks[link.label] = v;
+              }}
+            >
+              <Select.Trigger id={`link-${link.label}`} data-testid={`link-${link.label}`} class="w-full">
+                {String(
+                  linkOptionsFor(link).find((o) => o.id === selectedLinks[link.label])?.[
+                    link.targetLabelField
+                  ] ?? "—",
+                )}
+              </Select.Trigger>
+              <Select.Content>
+                {#if !link.required}
+                  <Select.Item value="" label="—">—</Select.Item>
+                {/if}
+                {#each linkOptionsFor(link) as opt (opt.id)}
+                  <Select.Item value={opt.id} label={String(opt[link.targetLabelField] ?? "")}>
+                    {String(opt[link.targetLabelField] ?? "")}
+                  </Select.Item>
+                {/each}
+              </Select.Content>
+            </Select.Root>
+          </div>
+        {/each}
+
+        {#if config.xorLink}
+          <div>
+            <Label for="xor-parent-type">{config.xorLink.label}</Label>
+            <Select.Root
+              type="single"
+              value={xorParentType ?? ""}
+              onValueChange={(v) => {
+                xorParentType = v;
+                xorParentId = "";
+              }}
+            >
+              <Select.Trigger id="xor-parent-type" data-testid="xor-parent-type" class="w-full">
+                {xorParentType ?? "selecione..."}
+              </Select.Trigger>
+              <Select.Content>
+                {#each config.xorLink.choices as choice (choice.label)}
+                  <Select.Item value={choice.label} label={choice.label}>{choice.label}</Select.Item>
+                {/each}
+              </Select.Content>
+            </Select.Root>
+            {#if xorParentType}
+              <Select.Root
+                type="single"
+                value={xorParentId}
+                onValueChange={(v) => {
+                  xorParentId = v;
+                }}
+              >
+                <Select.Trigger data-testid={`link-${xorParentType}`} class="w-full">
                   {String(
-                    linkOptionsFor(link).find((o) => o.id === selectedLinks[link.label])?.[
-                      link.targetLabelField
+                    (activeXorChoice()
+                      ? xorOptionsFor(activeXorChoice() as LinkDef)
+                      : []
+                    ).find((o) => o.id === xorParentId)?.[
+                      (activeXorChoice() as LinkDef).targetLabelField
                     ] ?? "—",
                   )}
                 </Select.Trigger>
                 <Select.Content>
-                  {#if !link.required}
-                    <Select.Item value="" label="—">—</Select.Item>
-                  {/if}
-                  {#each linkOptionsFor(link) as opt (opt.id)}
-                    <Select.Item value={opt.id} label={String(opt[link.targetLabelField] ?? "")}>
-                      {String(opt[link.targetLabelField] ?? "")}
+                  <Select.Item value="" label="—">—</Select.Item>
+                  {#each activeXorChoice() ? xorOptionsFor(activeXorChoice() as LinkDef) : [] as opt (opt.id)}
+                    <Select.Item
+                      value={opt.id}
+                      label={String(opt[(activeXorChoice() as LinkDef).targetLabelField] ?? "")}
+                    >
+                      {String(opt[(activeXorChoice() as LinkDef).targetLabelField] ?? "")}
                     </Select.Item>
                   {/each}
                 </Select.Content>
               </Select.Root>
-            </div>
-          {/each}
+            {/if}
+          </div>
+        {/if}
 
-          {#if config.xorLink}
-            <div>
-              <Label for="xor-parent-type">{config.xorLink.label}</Label>
-              <Select.Root
-                type="single"
-                value={xorParentType ?? ""}
-                onValueChange={(v) => {
-                  xorParentType = v;
-                  xorParentId = "";
-                }}
-              >
-                <Select.Trigger id="xor-parent-type" data-testid="xor-parent-type" class="w-full">
-                  {xorParentType ?? "selecione..."}
-                </Select.Trigger>
-                <Select.Content>
-                  {#each config.xorLink.choices as choice (choice.label)}
-                    <Select.Item value={choice.label} label={choice.label}>{choice.label}</Select.Item>
-                  {/each}
-                </Select.Content>
-              </Select.Root>
-              {#if xorParentType}
-                <Select.Root
-                  type="single"
-                  value={xorParentId}
-                  onValueChange={(v) => {
-                    xorParentId = v;
-                  }}
-                >
-                  <Select.Trigger data-testid={`link-${xorParentType}`} class="w-full">
-                    {String(
-                      (activeXorChoice()
-                        ? xorOptionsFor(activeXorChoice() as LinkDef)
-                        : []
-                      ).find((o) => o.id === xorParentId)?.[
-                        (activeXorChoice() as LinkDef).targetLabelField
-                      ] ?? "—",
-                    )}
-                  </Select.Trigger>
-                  <Select.Content>
-                    <Select.Item value="" label="—">—</Select.Item>
-                    {#each activeXorChoice() ? xorOptionsFor(activeXorChoice() as LinkDef) : [] as opt (opt.id)}
-                      <Select.Item
-                        value={opt.id}
-                        label={String(opt[(activeXorChoice() as LinkDef).targetLabelField] ?? "")}
-                      >
-                        {String(opt[(activeXorChoice() as LinkDef).targetLabelField] ?? "")}
-                      </Select.Item>
-                    {/each}
-                  </Select.Content>
-                </Select.Root>
-              {/if}
-            </div>
-          {/if}
-
-          <Button type="submit" data-testid="entity-submit">salvar</Button>
-          <Button type="button" variant="ghost" data-testid="entity-cancel" onclick={cancelForm}>
-            cancelar
-          </Button>
-        </form>
-      </Dialog.Content>
-    </Dialog.Root>
+        <Button type="submit" data-testid="entity-submit">salvar</Button>
+        <Button type="button" variant="ghost" data-testid="entity-cancel" onclick={cancelForm}>
+          cancelar
+        </Button>
+      </form>
+    </Dialog.Content>
+  </Dialog.Root>
 </section>
