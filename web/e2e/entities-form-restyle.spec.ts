@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { expect, test } from "@playwright/test";
+import { pickDate } from "./helpers/form-controls.ts";
 
 // Proves ENTFRM-01/02 for the fundos (full-CRUD) capability class against the
 // restyled shadcn Dialog/Input/Textarea/Checkbox/Popover+Calendar form, live
@@ -64,9 +65,7 @@ test("ENTFRM-01: fundos (full-CRUD) — Dialog role, text/checkbox fields render
   if (!(await ativoCheckbox.isChecked())) {
     await ativoCheckbox.check();
   }
-  // Date-picker interaction is added in Task 2 — plain fill for now since the
-  // native date input still exists at this point in the task sequence.
-  await page.getByTestId("field-createdAt").fill("2026-01-15");
+  const createdAtValue = await pickDate(page, "field-createdAt");
 
   await page.getByTestId("entity-submit").click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
@@ -75,6 +74,14 @@ test("ENTFRM-01: fundos (full-CRUD) — Dialog role, text/checkbox fields render
   await expect(row).toBeVisible({ timeout: RESYNC_TIMEOUT });
   const eid = await row.getAttribute("data-eid");
   expect(eid).toBeTruthy();
+
+  // Reload and assert the picked date persisted correctly to live InstantDB
+  // (ENTFRM-02) — not just an optimistic local view.
+  await page.reload();
+  await page.getByTestId("nav-fundos").click();
+  await expect(page.getByTestId("row").filter({ hasText: nome })).toContainText(createdAtValue, {
+    timeout: RESYNC_TIMEOUT,
+  });
 
   // (2) Edit — Dialog reopens, nome field prefilled, resubmit persists change.
   await row.getByTestId("row-edit").click();

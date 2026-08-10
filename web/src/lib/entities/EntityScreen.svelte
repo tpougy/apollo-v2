@@ -1,14 +1,21 @@
 <script lang="ts">
+  import { DateFormatter, type DateValue, getLocalTimeZone, parseDate } from "@internationalized/date";
+  import CalendarIcon from "@lucide/svelte/icons/calendar";
   import { Badge } from "$lib/components/ui/badge";
   import { Button } from "$lib/components/ui/button";
+  import { Calendar } from "$lib/components/ui/calendar";
   import { Checkbox } from "$lib/components/ui/checkbox";
   import * as Dialog from "$lib/components/ui/dialog";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
+  import * as Popover from "$lib/components/ui/popover";
   import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "$lib/components/ui/table";
   import { Textarea } from "$lib/components/ui/textarea";
+  import { cn } from "$lib/utils";
   import { db, id } from "../db";
   import type { EntityConfig, LinkDef } from "./types";
+
+  const dateFormatter = new DateFormatter("pt-BR", { dateStyle: "long" });
 
   let { config: configProp }: { config: EntityConfig } = $props();
 
@@ -157,6 +164,9 @@
   let originalXorParentType = $state<string | null>(null);
   let originalXorParentId = $state<string>("");
   let formError = $state<string | null>(null);
+  // Per-field open state for the date-picker Popover, so picking a day in
+  // one field's Calendar doesn't affect another field's popover.
+  let datePopoverOpen = $state<Record<string, boolean>>({});
 
   function startCreate() {
     formError = null;
@@ -486,16 +496,49 @@
                   }}
                 />
               {:else if f.kind === "date"}
-                <input
-                  id={`field-${f.name}`}
-                  data-testid={`field-${f.name}`}
-                  type="date"
-                  required={f.required}
-                  value={formValues[f.name] as string}
-                  oninput={(e) => {
-                    formValues[f.name] = e.currentTarget.value;
+                <Popover.Root
+                  open={datePopoverOpen[f.name] ?? false}
+                  onOpenChange={(open) => {
+                    datePopoverOpen[f.name] = open;
                   }}
-                />
+                >
+                  <Popover.Trigger>
+                    {#snippet child({ props })}
+                      <Button
+                        variant="outline"
+                        id={`field-${f.name}`}
+                        data-testid={`field-${f.name}`}
+                        class={cn(
+                          "w-full justify-start text-start font-normal",
+                          !formValues[f.name] && "text-muted-foreground",
+                        )}
+                        {...props}
+                      >
+                        <CalendarIcon class="me-2 size-4" />
+                        {formValues[f.name]
+                          ? dateFormatter.format(
+                              parseDate(formValues[f.name] as string).toDate(getLocalTimeZone()),
+                            )
+                          : "Selecione..."}
+                      </Button>
+                    {/snippet}
+                  </Popover.Trigger>
+                  <Popover.Content class="w-auto p-0">
+                    <Calendar
+                      type="single"
+                      locale="pt-BR"
+                      value={
+                        formValues[f.name]
+                          ? (parseDate(formValues[f.name] as string) as DateValue)
+                          : undefined
+                      }
+                      onValueChange={(v) => {
+                        formValues[f.name] = v ? v.toString() : "";
+                        datePopoverOpen[f.name] = false;
+                      }}
+                    />
+                  </Popover.Content>
+                </Popover.Root>
               {:else if f.kind === "select"}
                 <select
                   id={`field-${f.name}`}
