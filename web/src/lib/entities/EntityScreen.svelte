@@ -594,35 +594,54 @@
 
           {#if config.xorLink}
             <div>
-              <label for="xor-parent-type">{config.xorLink.label}</label>
-              <select
-                id="xor-parent-type"
-                data-testid="xor-parent-type"
+              <Label for="xor-parent-type">{config.xorLink.label}</Label>
+              <Select.Root
+                type="single"
                 value={xorParentType ?? ""}
-                onchange={(e) => {
-                  xorParentType = e.currentTarget.value;
+                onValueChange={(v) => {
+                  xorParentType = v;
                   xorParentId = "";
                 }}
               >
-                {#each config.xorLink.choices as choice (choice.label)}
-                  <option value={choice.label}>{choice.label}</option>
-                {/each}
-              </select>
+                <Select.Trigger id="xor-parent-type" data-testid="xor-parent-type" class="w-full">
+                  {xorParentType ?? "selecione..."}
+                </Select.Trigger>
+                <Select.Content>
+                  {#each config.xorLink.choices as choice (choice.label)}
+                    <Select.Item value={choice.label} label={choice.label}>{choice.label}</Select.Item>
+                  {/each}
+                </Select.Content>
+              </Select.Root>
               {#if xorParentType}
-                <select
-                  data-testid={`link-${xorParentType}`}
+                <Select.Root
+                  type="single"
                   value={xorParentId}
-                  onchange={(e) => {
-                    xorParentId = e.currentTarget.value;
+                  onValueChange={(v) => {
+                    xorParentId = v;
                   }}
                 >
-                  <option value="">—</option>
-                  {#each activeXorChoice() ? xorOptionsFor(activeXorChoice() as LinkDef) : [] as opt (opt.id)}
-                    <option value={opt.id}>
-                      {String(opt[(activeXorChoice() as LinkDef).targetLabelField] ?? "")}
-                    </option>
-                  {/each}
-                </select>
+                  <Select.Trigger data-testid={`link-${xorParentType}`} class="w-full">
+                    {String(
+                      (activeXorChoice()
+                        ? xorOptionsFor(activeXorChoice() as LinkDef)
+                        : []
+                      ).find((o) => o.id === xorParentId)?.[
+                        (activeXorChoice() as LinkDef).targetLabelField
+                      ] ?? "—",
+                    )}
+                  </Select.Trigger>
+                  <Select.Content>
+                    <Select.Item value="" label="—">—</Select.Item>
+                    {#each activeXorChoice() ? xorOptionsFor(activeXorChoice() as LinkDef) : [] as opt (opt.id)}
+                      <Select.Item
+                        value={opt.id}
+                        label={String(opt[(activeXorChoice() as LinkDef).targetLabelField] ?? "")}
+                      >
+                        {String(opt[(activeXorChoice() as LinkDef).targetLabelField] ?? "")}
+                      </Select.Item>
+                    {/each}
+                  </Select.Content>
+                </Select.Root>
               {/if}
             </div>
           {/if}

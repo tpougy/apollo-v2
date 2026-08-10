@@ -141,7 +141,14 @@ test.describe("templatesRotina — Select field conversion", () => {
   test.beforeEach(() => {
     sweepTemplateLeftovers();
     fundoNome = uniqueName("template-fundo");
-    apolloCli(["fundo", "criar", "--nome", fundoNome, "--codigo", uniqueName("template-fundo-cod")]);
+    apolloCli([
+      "fundo",
+      "criar",
+      "--nome",
+      fundoNome,
+      "--codigo",
+      uniqueName("template-fundo-cod"),
+    ]);
   });
 
   test.afterEach(() => {
@@ -179,6 +186,161 @@ test.describe("templatesRotina — Select field conversion", () => {
     page.once("dialog", (dialog) => void dialog.accept());
     await row.getByTestId("row-delete").click();
     await expect(page.getByTestId("row").filter({ hasText: nome })).toHaveCount(0, {
+      timeout: RESYNC_TIMEOUT,
+    });
+  });
+});
+
+// ROADMAP Phase 10 SC3: subtarefas' xorLink two-step chooser (parent-type +
+// dynamic target picker) still enforces "exactly one of tarefa/ticket" after
+// the Select swap, including unlink-on-parent-switch. Server-side truth via
+// the CLI, mirroring entities-ticket-subtarefa.spec.ts's own verification
+// style (that spec's own .selectOption() call sites are 10-04's job — this
+// test proves the EntityScreen.svelte behavior directly, not by fixing that
+// file).
+test.describe("subtarefas — xorLink two-step Select chooser", () => {
+  let chainTarefaId = "";
+  let chainTarefaTitulo = "";
+  let chainTicketId = "";
+  let chainTicketTitulo = "";
+
+  function listSubtarefasByTarefa(tarefaId: string): { id: string }[] {
+    return JSON.parse(apolloCli(["subtarefa", "listar", "--tarefa-id", tarefaId])) as {
+      id: string;
+    }[];
+  }
+
+  function listSubtarefasByTicket(ticketId: string): { id: string }[] {
+    return JSON.parse(apolloCli(["subtarefa", "listar", "--ticket-id", ticketId])) as {
+      id: string;
+    }[];
+  }
+
+  function sweepSubtarefaFixtures(): void {
+    const subtarefas = JSON.parse(apolloCli(["subtarefa", "listar"])) as {
+      id: string;
+      titulo: string;
+    }[];
+    for (const record of subtarefas) {
+      if (!record.titulo.startsWith(PREFIX)) continue;
+      try {
+        apolloCli(["subtarefa", "deletar", "--id", record.id]);
+      } catch {
+        // Already gone — fine.
+      }
+    }
+  }
+
+  test.beforeAll(() => {
+    sweepSubtarefaFixtures();
+
+    chainTarefaTitulo = uniqueName("xor-tarefa");
+    const tarefaCreated = JSON.parse(
+      apolloCli([
+        "tarefa",
+        "criar",
+        "--titulo",
+        chainTarefaTitulo,
+        "--tipo-prazo",
+        "hard",
+        "--status",
+        "ativo",
+      ]),
+    ) as { id: string };
+    chainTarefaId = tarefaCreated.id;
+
+    chainTicketTitulo = uniqueName("xor-ticket");
+    const ticketCreated = JSON.parse(
+      apolloCli([
+        "ticket",
+        "criar",
+        "--titulo",
+        chainTicketTitulo,
+        "--corpo",
+        "fixture ticket for subtarefa xorLink Select test",
+        "--remetente",
+        "fixture@example.com",
+        "--data-recebimento",
+        "2026-01-01",
+        "--tipo-prazo",
+        "hard",
+        "--status",
+        "ativo",
+      ]),
+    ) as { id: string };
+    chainTicketId = ticketCreated.id;
+  });
+
+  test.afterAll(() => {
+    sweepSubtarefaFixtures();
+    if (chainTarefaId) {
+      try {
+        apolloCli(["tarefa", "deletar", "--id", chainTarefaId]);
+      } catch {
+        // Already gone — fine.
+      }
+    }
+    if (chainTicketId) {
+      try {
+        apolloCli(["ticket", "deletar", "--id", chainTicketId]);
+      } catch {
+        // Already gone — fine.
+      }
+    }
+  });
+
+  test("ROADMAP Phase 10 SC3: xor-parent-type and the dynamic link-target picker render as Select; switching parent on edit unlinks the stale parent", async ({
+    page,
+  }) => {
+    test.setTimeout(90_000);
+
+    const titulo = uniqueName("subtarefa-xor");
+
+    await page.goto("/");
+    await page.getByTestId("nav-subtarefas").click();
+    await page.getByTestId("entity-create-start").click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+
+    await page.getByTestId("field-titulo").fill(titulo);
+    await page.getByTestId("field-ordem").fill("1");
+    await selectByText(page, "xor-parent-type", "tarefa");
+    await selectByText(page, "link-tarefa", chainTarefaTitulo);
+
+    await page.getByTestId("entity-submit").click();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+
+    const row = page.getByTestId("row").filter({ hasText: titulo });
+    await expect(row).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    const eid = await row.getAttribute("data-eid");
+    expect(eid).toBeTruthy();
+
+    // listColumns: ["ordem", "titulo", "concluida", "tarefa", "ticket"].
+    const cells = row.locator("td");
+    await expect(cells.nth(3)).toHaveText(chainTarefaTitulo);
+    await expect(cells.nth(4)).toHaveText("");
+
+    // Server-side truth via the CLI, not just the DOM.
+    expect(listSubtarefasByTarefa(chainTarefaId).some((r) => r.id === eid)).toBe(true);
+    expect(listSubtarefasByTicket(chainTicketId).some((r) => r.id === eid)).toBe(false);
+
+    // Edit: switch xor-parent-type from tarefa to ticket via Select — the
+    // unchanged onValueChange handler resets xorParentId to "" on switch.
+    await row.getByTestId("row-edit").click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+    await expect(page.getByTestId("xor-parent-type")).toHaveText("tarefa");
+    await selectByText(page, "xor-parent-type", "ticket");
+    await selectByText(page, "link-ticket", chainTicketTitulo);
+    await page.getByTestId("entity-submit").click();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+
+    // Server-side truth: the stale tarefa link is GONE, only the ticket link
+    // remains — the XOR "exactly one" invariant holds after the Select swap.
+    expect(listSubtarefasByTarefa(chainTarefaId).some((r) => r.id === eid)).toBe(false);
+    expect(listSubtarefasByTicket(chainTicketId).some((r) => r.id === eid)).toBe(true);
+
+    page.once("dialog", (dialog) => void dialog.accept());
+    await page.getByTestId("row").filter({ hasText: titulo }).getByTestId("row-delete").click();
+    await expect(page.getByTestId("row").filter({ hasText: titulo })).toHaveCount(0, {
       timeout: RESYNC_TIMEOUT,
     });
   });
