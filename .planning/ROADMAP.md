@@ -145,7 +145,12 @@ Plans:
   3. Clicking delete opens a shadcn `AlertDialog` (not `window.confirm()`) that can be confirmed or canceled via keyboard, with correct focus handling.
   4. Dedicated Playwright coverage proves both the confirm path (record deleted) and the cancel path (record retained) through the `AlertDialog`.
 
-**Plans**: TBD
+**Plans**: 2/2 plans planned
+Plans:
+
+- [ ] 16-01-PLAN.md — AlertDialog conversion + row-action alignment, proven end-to-end against fundos (cancel + confirm paths, empirical focus checks) plus migration of all 5 pre-existing affected e2e spec files
+- [ ] 16-02-PLAN.md — Dedicated Playwright coverage for keyboard confirm/cancel, focus handling, busy-gated dismissal, and row-action alignment, plus full-suite regression and quality gates
+
 **UI hint**: yes
 
 ### Phase 17: Cross-Phase Verification & Quality Gates
