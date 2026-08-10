@@ -524,10 +524,15 @@
   <Dialog.Root
     open={mode !== null}
     onOpenChange={(open) => {
-      if (!open) cancelForm();
+      if (!open && !busy) cancelForm();
     }}
   >
-    <Dialog.Content class="sm:max-w-lg max-h-[85vh] overflow-y-auto">
+    <Dialog.Content
+      showCloseButton={!busy}
+      escapeKeydownBehavior={busy ? "ignore" : "close"}
+      interactOutsideBehavior={busy ? "ignore" : "close"}
+      class="sm:max-w-lg max-h-[85vh] overflow-y-auto"
+    >
       <Dialog.Header>
         <Dialog.Title>{mode === "create" ? "Novo" : "Editar"} — {config.titulo}</Dialog.Title>
         <Dialog.Description>{config.descricao}</Dialog.Description>
@@ -733,7 +738,13 @@
             {#if busy}<LoaderCircle class="size-4 animate-spin" />{/if}
             salvar
           </Button>
-          <Button type="button" variant="ghost" data-testid="entity-cancel" onclick={cancelForm}>
+          <Button
+            type="button"
+            variant="ghost"
+            data-testid="entity-cancel"
+            disabled={busy}
+            onclick={cancelForm}
+          >
             cancelar
           </Button>
         </Dialog.Footer>
