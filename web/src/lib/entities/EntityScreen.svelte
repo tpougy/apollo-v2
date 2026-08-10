@@ -436,7 +436,24 @@
             </Empty.Header>
             {#if config.capabilities.create}
               <Empty.Content>
-                <Button type="button" data-testid="empty-state-create" onclick={startCreate}>
+                <Button
+                  type="button"
+                  data-testid="empty-state-create"
+                  onclick={() => {
+                    // Delegate to the header's entity-create-start button rather
+                    // than calling startCreate() directly. The header button is
+                    // always present (it never unmounts on submit success, unlike
+                    // this empty-state CTA which disappears the instant rowsOf()
+                    // goes from 0 to 1). Delegating makes it the element that's
+                    // document.activeElement when the Dialog's FocusScope
+                    // registers, so close-auto-focus has a stable target to
+                    // restore focus to after a successful create — otherwise
+                    // focus is dropped to <body> once this button unmounts.
+                    document
+                      .querySelector<HTMLButtonElement>('[data-testid="entity-create-start"]')
+                      ?.click();
+                  }}
+                >
                   novo
                 </Button>
               </Empty.Content>
