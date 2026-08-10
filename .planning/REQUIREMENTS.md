@@ -38,7 +38,7 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Feedback
 
-- [ ] **FDBK-01**: Success and error feedback for every write (create/edit/delete, both entity CRUD and auth) is surfaced via shadcn-svelte `Sonner` toasts, replacing any existing ad hoc feedback
+- [x] **FDBK-01**: Success and error feedback for every write (create/edit/delete, both entity CRUD and auth) is surfaced via shadcn-svelte `Sonner` toasts, replacing any existing ad hoc feedback
 
 ### Verification
 
@@ -84,7 +84,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ENTFRM-02 | Phase 10 | Complete |
 | ENTFRM-03 | Phase 10 | Complete |
 | ENTFRM-04 | Phase 10 | Complete |
-| FDBK-01 | Phase 10 | Pending |
+| FDBK-01 | Phase 10 | Complete |
 | VERIFY-01 | Phase 11 | Pending |
 | VERIFY-02 | Phase 11 | Pending |
 | VERIFY-03 | Phase 11 | Pending |

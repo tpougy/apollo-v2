@@ -4,17 +4,17 @@ milestone: v1.1
 milestone_name: UI bonita com Tailwind + shadcn-svelte
 current_phase: 10
 current_phase_name: Entity Form Restyle & Feedback
-status: planning
-stopped_at: Completed 10-04-PLAN.md
-last_updated: "2026-08-10T02:48:52.416Z"
+status: verifying
+stopped_at: Completed 10-03-PLAN.md — Sonner toast feedback (FDBK-01)
+last_updated: "2026-08-10T02:51:20.651Z"
 last_activity: 2026-08-09
 last_activity_desc: "`/gsd-execute-phase 9` executed `09-01-PLAN.md`; `.planning/phases/09-entity-table-restyle/09-01-SUMMARY.md` written"
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 7
-  completed_plans: 6
-  percent: 60
+  completed_plans: 7
+  percent: 80
 ---
 
 # Project State
@@ -30,10 +30,10 @@ See: .planning/PROJECT.md (updated 2026-08-09)
 
 Phase: 10 of 11 (Entity Form Restyle & Feedback)
 Plan: 4 of 4
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-08-09 — Phase 9 complete, transitioned to Phase 10
 
-Progress: [█████████░] 86% (v1.1)
+Progress: [██████████] 100% (v1.1)
 
 ## Performance Metrics
 
@@ -66,6 +66,7 @@ Progress: [█████████░] 86% (v1.1)
 | Phase 10 P01 | 14min | 3 tasks | 47 files |
 | Phase 10 P02 | 19min | 3 tasks | 21 files |
 | Phase 10 P04 | 76min | 3 tasks | 3 files |
+| Phase 10 P03 | 71min | 3 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -86,6 +87,8 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase ?]: [Phase 10] Fundo fixture for the templatesRotina Select test created in a local beforeEach (not beforeAll) to avoid the outer file's PREFIX-scoped beforeEach/afterEach sweeping it away before the test body runs
 - [Phase ?]: [Phase 10] Added novalidate to EntityScreen.svelte's create/edit form (Rule 1 fix) — native HTML5 required-field constraint validation was silently blocking JS-level validation/Alert rendering, defeating ENTFRM-04
 - [Phase ?]: 10-04: Fixed remaining e2e specs' Select/date call sites via shared helpers; found and fixed a toHaveValue->toHaveText assertion bug on the xor-parent-type Select.Trigger; full test:e2e suite green (39/39) at phase boundary.
+- [Phase ?]: [Phase 10] svelte-sonner hand-installed via bun add (no shadcn-svelte add sonner) to keep mode-watcher out of the tree; toast.success/error wired into every EntityScreen CRUD write path and both LoginScreen/Shell auth actions (FDBK-01)
+- [Phase ?]: [Phase 10] Live InstantDB per-email magic-code rate limit (429) hit during 10-03 verification after a burst of sends — resolved by waiting ~25min with zero further sends rather than retrying; documented as a session-level constraint for future live-auth-heavy work
 
 ### Pending Todos
 
@@ -106,8 +109,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-10T02:48:52.406Z
-Stopped at: Completed 10-04-PLAN.md
+Last session: 2026-08-10T02:51:20.641Z
+Stopped at: Completed 10-03-PLAN.md — Sonner toast feedback (FDBK-01)
 Resume file: None
 
 ## Operator Next Steps
