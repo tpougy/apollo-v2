@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Navegação reorganizada + Dashboard de acompanhamento
-current_phase: 19
-current_phase_name: Projetos Section (Master-Detail)
-status: verifying
+current_phase: 20
+current_phase_name: Rotinas & Tickets Sections
+status: planning
 stopped_at: Completed 19-04-PLAN.md (Phase 19 fully complete)
-last_updated: "2026-08-11T20:49:00.580Z"
+last_updated: "2026-08-11T21:03:47.780Z"
 last_activity: 2026-08-11
 last_activity_desc: 19-03-PLAN.md executed - etapas kanban toggle + Todas as tarefas tab with Sem etapa filter via scopeWhere isNull operator, live-verified against hosted InstantDB (NEST-03 complete, Phase 19 requirements done)
 progress:
@@ -28,10 +28,10 @@ See: .planning/PROJECT.md (updated 2026-08-10)
 
 ## Current Position
 
-Phase: 19 of 23 (Projetos Section (Master-Detail))
-Plan: 4 of 4
-Status: Phase complete — ready for verification
-Last activity: 2026-08-11 — 19-03-PLAN.md complete (etapas kanban toggle + Todas as tarefas/Sem etapa, NEST-03) — Phase 19 requirements done, Plan 19-04 (regression fixes) remains
+Phase: 20 of 23 (Rotinas & Tickets Sections)
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-08-11 — Phase 19 complete, transitioned to Phase 20
 
 Progress: [██████████] 100%
 
@@ -39,7 +39,7 @@ Progress: [██████████] 100%
 
 **Velocity:**
 
-- Total plans completed: 6 (v1.3, in progress; 41 lifetime across v1.0+v1.1+v1.2+v1.3)
+- Total plans completed: 7 (v1.3, in progress; 41 lifetime across v1.0+v1.1+v1.2+v1.3)
 - Average duration: ~49min (v1.3 plans so far: 40, 95, 75, 25, 22, 35 min)
 - Total execution time: ~4.9 hours (v1.3)
 
@@ -48,7 +48,7 @@ Progress: [██████████] 100%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 18 | 3 | 210min | 70min |
-| 19 | 3 | 82min | 27min |
+| 19 | 4 | - | - |
 
 **Recent Trend:**
 
@@ -79,7 +79,6 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - v1.3 roadmap: NEST-05 (shared inline subtarefas panel) is owned entirely by Phase 20, even though the panel is also used from the task view built in Phase 19's Projetos section — Phase 19 builds the etapa/task list without the panel wired in yet; Phase 20 builds `SubtarefasPanel.svelte` once and retroactively wires it to both Tickets and the Phase 19 task surface, matching `spec-ui.md` §9's own step ordering (step 3 ProjetosSection before step 4 Rotinas/Tickets + SubtarefasPanel).
 - v1.3 roadmap: DASH-05 (mini-kanbans) and DASH-04 (rotinas-by-fundo + heatmap) were merged into one phase (22) rather than split per `spec-ui.md` §9's steps 7/8 — each would otherwise be a single-requirement phase, and both are adjacent, purely additive Dashboard-content slices with no independent user-facing milestone value on their own.
 - v1.2/v1.3 kickoff: No human UAT gate anywhere — every phase's success criteria must be Playwright-provable against the live InstantDB app (C-12).
-- [Phase 17]: Fixed EntityScreen.svelte's page-header sitting flush (0px gap) against table/loading/empty content via `space-y-6`, locked in with a permanent Playwright assertion — the closing v1.2 cross-phase audit's one genuine finding.
 - [Phase 18 P01]: gotoNested's interim (Phase 18) affordance groups the 4 nested entities by the first primary entity each links to (via links, never xorLink), falling back to 'Outros' -- data-driven, zero per-etype branching; only the helper body changes when Phase 19/20 ship real nested UI.
 - [Phase ?]: Verified NEST-01's byte-identical acceptance criterion via a controlled A/B full-suite comparison (diff/no-diff, same post-18-01 baseline) rather than a single unedited-suite run, because 18-01 landed its topbar restructuring in the shared working tree (no worktree isolation) before this plan's verification ran, and 18-03's e2e migration (NAV-05) had not yet landed.
 - [Phase ?]: Fixed 3 pre-existing e2e regressions exposed by Plan 18-01 landing first (no worktree isolation): stale fundos-default-mount assumption, instanciasRotina Tab-count formula, an uncatalogued nav-tarefas call site -- all within this plan's declared scope

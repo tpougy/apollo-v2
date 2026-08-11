@@ -71,7 +71,7 @@ per-project mini-kanbans, and a 7-dialog focus system. UI and organization only:
 (per PROJECT.md Context — this project runs fully autonomously).
 
 - [x] **Phase 18: Navigation Foundation & EntityScreen Extension** - 6-section topbar with nested entities hidden from first level, `EntityScreen` gains additive `scopeWhere`/`presetLinks` with proven zero-regression behavior (completed 2026-08-11)
-- [ ] **Phase 19: Projetos Section (Master-Detail)** - Projects grouped by fundo with etapas/tasks inline in the detail column, plus a "Todas as tarefas" escape hatch for orphaned tasks
+- [x] **Phase 19: Projetos Section (Master-Detail)** - Projects grouped by fundo with etapas/tasks inline in the detail column, plus a "Todas as tarefas" escape hatch for orphaned tasks (completed 2026-08-11)
 - [ ] **Phase 20: Rotinas & Tickets Sections** - Instâncias/Templates tabs for Rotinas; Tickets and Tarefas share one inline subtarefas panel with the parent pre-resolved
 - [ ] **Phase 21: Dashboard Data Layer, Shell, Week Calendar & Ticket Queue** - Pure unit-tested `derive.ts`, single-query `dashboardQuery.ts`, the Dashboard's 3-column grid shell, weekly business-day calendar, and pending-ticket queue
 - [ ] **Phase 22: Dashboard Kanbans, Rotinas & Heatmap** - Per-project mini-kanban strips with non-compressing columns, fundo-grouped weekly routines, and the 5-band monthly workload heatmap
@@ -220,7 +220,7 @@ form without duplicating any markup, and never get lost more than one level deep
 | 16. Entity Screen — Row Actions & Delete Confirmation | v1.2 | 2/2 | Complete    | 2026-08-10 |
 | 17. Cross-Phase Verification & Quality Gates | v1.2 | 2/2 | Complete    | 2026-08-10 |
 | 18. Navigation Foundation & EntityScreen Extension | v1.3 | 3/3 | Complete    | 2026-08-11 |
-| 19. Projetos Section (Master-Detail) | v1.3 | 4/4 | In Progress|  |
+| 19. Projetos Section (Master-Detail) | v1.3 | 4/4 | Complete    | 2026-08-11 |
 | 20. Rotinas & Tickets Sections | v1.3 | 0/? | Not started | - |
 | 21. Dashboard Data Layer, Shell, Week Calendar & Ticket Queue | v1.3 | 0/? | Not started | - |
 | 22. Dashboard Kanbans, Rotinas & Heatmap | v1.3 | 0/? | Not started | - |
