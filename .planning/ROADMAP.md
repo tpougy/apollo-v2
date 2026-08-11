@@ -95,7 +95,13 @@ build on.
   4. `registry.ts`'s `navConfigs` selector is derived from `entityConfigs` filtering on the new `EntityConfig.nav`/`navTitulo` fields, with no hand-maintained entity list anywhere in the file (NAV-04; spec §10 Navegação #3).
   5. The pre-existing Playwright suite passes for Fundos and Log completely unmodified (NEST-06), every spec that used the 4 removed nav testids now passes via a new `gotoNested` helper with zero remaining reference to `nav-etapas`/`nav-templatesRotina`/`nav-subtarefas`/`nav-tarefas` (NAV-05), and `EntityScreen.svelte` with `scopeWhere`/`presetLinks` both `null` behaves byte-identically to before — proven by the full pre-existing e2e suite passing without edits and zero `if (config.etype === ...)` branches introduced (NEST-01; spec §10 Aninhamento #6, Disciplina visual #4).
 
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 18-01-PLAN.md — Navigation data model (types/registry/defs), Shell topbar Route + Dashboard mount, interim nested-entity affordance + gotoNested helper (NAV-01, NAV-02, NAV-03, NAV-04, NEST-06)
+- [ ] 18-02-PLAN.md — EntityScreen additive scopeWhere/presetLinks extension, zero-regression proof (NEST-01)
+- [ ] 18-03-PLAN.md — e2e regression migration: wildcard nav-count fixes + 27-call-site gotoNested migration (NAV-05, NEST-06)
+
 **UI hint**: yes
 
 ### Phase 19: Projetos Section (Master-Detail)
