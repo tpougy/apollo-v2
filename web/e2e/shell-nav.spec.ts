@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { expect, test } from "@playwright/test";
 import { gotoNested } from "./helpers/gotoNested.ts";
+import { openSubtarefasPanelForTicket } from "./helpers/subtarefasPanel.ts";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 
@@ -80,6 +81,13 @@ test("NAV-02: no first-level nav path for etapas/tarefas/templatesRotina/subtare
     ),
   ).toHaveCount(0);
 
+  // The interim Phase 18 "Acesso direto (temporário)" dropdown (nested-goto*
+  // testids) was deleted from Shell.svelte in Plan 20-05 -- assert its own
+  // testid prefix is fully gone from the page, not merely that its 4 nav-*
+  // shortcuts above are absent. This proves the retired access path itself
+  // no longer exists, not just that it was never a first-level nav entry.
+  await expect(page.locator('[data-testid^="nested-goto"]')).toHaveCount(0);
+
   // gotoNested(page, "etapas") lands inside a selected projeto's own detail
   // column (Phase 19) — the shared live app is not guaranteed to have a
   // projeto otherwise, so create a throwaway one via the CLI for this test.
@@ -103,15 +111,57 @@ test("NAV-02: no first-level nav path for etapas/tarefas/templatesRotina/subtare
     ),
   ) as { id: string };
 
+  // subtarefas no longer lands on a raw, unscoped table (Plan 20-04 retired
+  // every gotoNested(page, "subtarefas") call site) -- it is proven reachable
+  // separately below, via the real SubtarefasPanel, using a throwaway ticket.
+  const ticketTitulo = `phase20-e2e-nav02-${Date.now()}`;
+  const ticketCreated = JSON.parse(
+    execFileSync(
+      "uv",
+      [
+        "run",
+        "--project",
+        "cli",
+        "apollo",
+        "ticket",
+        "criar",
+        "--titulo",
+        ticketTitulo,
+        "--corpo",
+        "corpo do ticket NAV-02",
+        "--remetente",
+        "nav02@example.com",
+        "--data-recebimento",
+        "2026-01-01",
+        "--tipo-prazo",
+        "soft",
+        "--status",
+        "aberto",
+      ],
+      { cwd: REPO_ROOT, encoding: "utf-8" },
+    ),
+  ) as { id: string };
+
   try {
-    for (const etype of ["tarefas", "templatesRotina", "subtarefas"]) {
+    for (const etype of ["tarefas", "templatesRotina"]) {
       await gotoNested(page, etype);
       await expect(page.getByTestId("entity-table-frame")).toBeVisible();
     }
 
     await gotoNested(page, "etapas");
     await expect(page.getByTestId("project-etapas-list")).toBeVisible();
+
+    // subtarefas: reachable with no first-level nav entry, nested inside its
+    // real ticket-hosted parent (TicketsSection's row-selection -> inline
+    // SubtarefasPanel, Plan 20-01), never through the retired dropdown.
+    await openSubtarefasPanelForTicket(page, ticketCreated.id);
+    await expect(page.getByTestId("subtarefas-panel")).toBeVisible();
   } finally {
+    execFileSync(
+      "uv",
+      ["run", "--project", "cli", "apollo", "ticket", "deletar", "--id", ticketCreated.id],
+      { cwd: REPO_ROOT, encoding: "utf-8" },
+    );
     execFileSync(
       "uv",
       ["run", "--project", "cli", "apollo", "projeto", "deletar", "--id", created.id],
