@@ -2,11 +2,12 @@ import type { Page } from "@playwright/test";
 
 // Opens the shared, parent-scoped `SubtarefasPanel.svelte` for a concrete
 // ticket or tarefa parent -- mirrors gotoNested.ts/form-controls.ts's plain
-// exported-async-function style, no class. Retires every remaining
-// `gotoNested(page, "subtarefas")` call site (20-RESEARCH.md Pitfall 3):
-// `SubtarefasPanel` is, by design, always scoped to ONE concrete parent, so
-// there is no unscoped "subtarefas" destination left to land on -- callers
-// must supply the exact parent id they want the panel scoped to.
+// exported-async-function style, no class. Retires every remaining call
+// site that reached the `gotoNested` helper's "subtarefas" branch
+// (20-RESEARCH.md Pitfall 3): `SubtarefasPanel` is, by design, always scoped
+// to ONE concrete parent, so there is no unscoped "subtarefas" destination
+// left to land on -- callers must supply the exact parent id they want the
+// panel scoped to.
 //
 // Neither function asserts `subtarefas-panel` visibility itself, matching
 // gotoNested.ts's own convention of not asserting inside the helper --

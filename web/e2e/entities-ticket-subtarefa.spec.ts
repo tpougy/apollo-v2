@@ -2,7 +2,10 @@ import { execFileSync } from "node:child_process";
 import { expect, type Page, test } from "@playwright/test";
 import { confirmRowDelete } from "./helpers/delete-confirmation.ts";
 import { openAndReadSelectOptions, pickDate, selectByText } from "./helpers/form-controls.ts";
-import { gotoNested } from "./helpers/gotoNested.ts";
+import {
+  openSubtarefasPanelForTarefa,
+  openSubtarefasPanelForTicket,
+} from "./helpers/subtarefasPanel.ts";
 
 // This spec runs in the `authed` project (restores the storageState persisted
 // by auth.setup.ts — see 04-01). Every generated record uses the
@@ -223,16 +226,31 @@ test("WEB-08: subtarefa created with a tarefa parent shows the tarefa column and
 
   const titulo = uniqueName("subtarefa-tarefa");
 
-  await gotoNested(page, "subtarefas");
-  await page.getByTestId("entity-create-start").click();
+  await openSubtarefasPanelForTarefa(page, chainTarefaId);
+  await page.getByTestId("subtarefa-add-start").click();
+
+  // The create dialog is driven entirely by SubtarefasPanel's own code
+  // (Plan 20-01) -- wait for it to fully resolve the xor parent before
+  // filling/submitting, mirroring tickets-section.spec.ts's own pattern.
+  await expect(page.getByTestId("field-titulo")).toBeVisible({ timeout: RESYNC_TIMEOUT });
+  await expect(page.getByTestId("xor-parent-type")).toHaveText("tarefa", {
+    timeout: RESYNC_TIMEOUT,
+  });
+  await expect(page.getByTestId("link-tarefa")).toHaveText(chainTarefaTitulo, {
+    timeout: RESYNC_TIMEOUT,
+  });
 
   await page.getByTestId("field-titulo").fill(titulo);
   await page.getByTestId("field-ordem").fill("1");
-  await selectByText(page, "xor-parent-type", "tarefa");
-  await selectByText(page, "link-tarefa", chainTarefaTitulo);
   await submitForm(page);
 
-  const row = page.getByTestId("row").filter({ hasText: titulo });
+  // Scoped to the visible panel: the hidden driven-create host
+  // (`subtarefa-host`) mounts its own UNSCOPED `EntityScreen(subtarefasConfig)`
+  // (SubtarefasPanel.svelte) and stays mounted for the rest of this page
+  // session once `subtarefa-add-start` is first clicked -- a bare, page-wide
+  // `row` lookup would ambiguously match that hidden copy of every row too.
+  const panel = page.getByTestId("subtarefas-panel");
+  const row = panel.getByTestId("row").filter({ hasText: titulo });
   await expect(row).toBeVisible();
   const eid = await row.getAttribute("data-eid");
   expect(eid).toBeTruthy();
@@ -259,16 +277,25 @@ test("WEB-08: subtarefa created with a ticket parent shows the ticket column and
 
   const titulo = uniqueName("subtarefa-ticket");
 
-  await gotoNested(page, "subtarefas");
-  await page.getByTestId("entity-create-start").click();
+  await openSubtarefasPanelForTicket(page, chainTicketId);
+  await page.getByTestId("subtarefa-add-start").click();
+
+  await expect(page.getByTestId("field-titulo")).toBeVisible({ timeout: RESYNC_TIMEOUT });
+  await expect(page.getByTestId("xor-parent-type")).toHaveText("ticket", {
+    timeout: RESYNC_TIMEOUT,
+  });
+  await expect(page.getByTestId("link-ticket")).toHaveText(chainTicketTitulo, {
+    timeout: RESYNC_TIMEOUT,
+  });
 
   await page.getByTestId("field-titulo").fill(titulo);
   await page.getByTestId("field-ordem").fill("2");
-  await selectByText(page, "xor-parent-type", "ticket");
-  await selectByText(page, "link-ticket", chainTicketTitulo);
   await submitForm(page);
 
-  const row = page.getByTestId("row").filter({ hasText: titulo });
+  // Scoped to the visible panel -- see the comment in the previous test for
+  // why a bare, page-wide `row` lookup is ambiguous here.
+  const panel = page.getByTestId("subtarefas-panel");
+  const row = panel.getByTestId("row").filter({ hasText: titulo });
   await expect(row).toBeVisible();
   const eid = await row.getAttribute("data-eid");
   expect(eid).toBeTruthy();
@@ -286,29 +313,27 @@ test("WEB-08: subtarefa created with a ticket parent shows the ticket column and
   });
 });
 
-test("WEB-08 T-04-04: subtarefa submitted with no parent selected is blocked, nothing written", async ({
-  page,
-}) => {
-  const titulo = uniqueName("subtarefa-no-parent");
-
-  await gotoNested(page, "subtarefas");
-  await page.getByTestId("entity-create-start").click();
-
-  await page.getByTestId("field-titulo").fill(titulo);
-  await page.getByTestId("field-ordem").fill("1");
-  // A parent TYPE is pre-selected by `startCreate` (defaults to the first
-  // xorLink choice), but no parent ID has been picked — the form must still
-  // block on the missing id.
-  await page.getByTestId("entity-submit").click();
-
-  await expect(page.getByTestId("entity-error")).toBeVisible();
-  await expect(page.getByTestId("row").filter({ hasText: titulo })).toHaveCount(0);
-
-  const all = JSON.parse(apolloCli(["subtarefa", "listar"])) as { titulo: string }[];
-  expect(all.some((r) => r.titulo === titulo)).toBe(false);
-
-  await page.getByTestId("entity-cancel").click();
-});
+// WEB-08 T-04-04: "subtarefa submitted with no parent selected is blocked,
+// nothing written" -- RETIRED (20-04-PLAN.md, threat T-20-06). This test's
+// premise required reaching the create form with a parent TYPE pre-selected
+// by the generic engine's own default (`startCreate()`'s unconditional
+// `config.xorLink.choices[0]`) but NO id chosen -- the ONLY UI path that ever
+// exposed that specific state was the interim, now fully-retired unscoped
+// destination reached via the `gotoNested` helper's "subtarefas" branch and
+// its raw `entity-create-start` button. `SubtarefasPanel`'s visible instance
+// disables its own native create affordance (`capabilities.create: false`, Plan
+// 20-01/SubtarefasPanel.svelte) specifically because that default-xor state
+// is unsafe, and its "+ subtarefa" trigger (`subtarefa-add-start`) always
+// drives BOTH the parent type and the parent id to a resolved value before
+// the create dialog is ever shown to a human or a test -- there is no
+// remaining UI entry point that reaches "type known, id blank"
+// deterministically. The underlying validation guard this test exercised
+// (EntityScreen.svelte's "exactly one of tarefa/ticket" check) is unmodified
+// this phase and remains in effect as a defense against a driven-click race
+// (see SubtarefasPanel.svelte's own bounded-poll driving code) -- only this
+// particular UI-reachability regression test is retired, since its
+// reachability assumption no longer holds post-Phase-20 (20-RESEARCH.md
+// Pitfall 3).
 
 test("WEB-08 T-04-11: switching parent type before submit links only the final choice", async ({
   page,
@@ -317,22 +342,41 @@ test("WEB-08 T-04-11: switching parent type before submit links only the final c
 
   const titulo = uniqueName("subtarefa-switch-before-submit");
 
-  await gotoNested(page, "subtarefas");
-  await page.getByTestId("entity-create-start").click();
+  await openSubtarefasPanelForTarefa(page, chainTarefaId);
+  await page.getByTestId("subtarefa-add-start").click();
+
+  // Pre-resolved to "tarefa"/chainTarefaId by SubtarefasPanel's own driven
+  // code -- wait for that to land before touching the selector manually.
+  await expect(page.getByTestId("field-titulo")).toBeVisible({ timeout: RESYNC_TIMEOUT });
+  await expect(page.getByTestId("xor-parent-type")).toHaveText("tarefa", {
+    timeout: RESYNC_TIMEOUT,
+  });
+  await expect(page.getByTestId("link-tarefa")).toHaveText(chainTarefaTitulo, {
+    timeout: RESYNC_TIMEOUT,
+  });
 
   await page.getByTestId("field-titulo").fill(titulo);
   await page.getByTestId("field-ordem").fill("1");
 
-  await selectByText(page, "xor-parent-type", "tarefa");
-  await selectByText(page, "link-tarefa", chainTarefaTitulo);
-
-  // Switch the parent type before submitting.
+  // Manual override: switch the parent type before submitting -- proves the
+  // still-editable xor selector's manual-override capability (spec §2.4's
+  // "apenas pré-resolvido" wording) remains exercised, even though the
+  // normal flow (subtarefa-add-start above) never requires touching it.
   await selectByText(page, "xor-parent-type", "ticket");
   await selectByText(page, "link-ticket", chainTicketTitulo);
 
   await submitForm(page);
+  await waitForSettle(page);
 
-  const row = page.getByTestId("row").filter({ hasText: titulo });
+  // The final choice was "ticket" -- the new record never appears in the
+  // tarefa-scoped panel used to open the create dialog (its
+  // `scopeWhere: {"tarefa.id": chainTarefaId}` never matches a
+  // ticket-linked row); re-open the ticket-scoped panel to find/verify/
+  // delete it, the same "re-open under its actual parent" shape the
+  // "editing...unlinks" test below already needs.
+  await openSubtarefasPanelForTicket(page, chainTicketId);
+  const panel = page.getByTestId("subtarefas-panel");
+  const row = panel.getByTestId("row").filter({ hasText: titulo });
   await expect(row).toBeVisible();
   const eid = await row.getAttribute("data-eid");
   expect(eid).toBeTruthy();
@@ -354,16 +398,26 @@ test("WEB-08 T-04-11: editing a subtarefa's parent type unlinks the old parent, 
 
   const titulo = uniqueName("subtarefa-switch-on-edit");
 
-  await gotoNested(page, "subtarefas");
-  await page.getByTestId("entity-create-start").click();
+  await openSubtarefasPanelForTarefa(page, chainTarefaId);
+  await page.getByTestId("subtarefa-add-start").click();
+
+  await expect(page.getByTestId("field-titulo")).toBeVisible({ timeout: RESYNC_TIMEOUT });
+  await expect(page.getByTestId("xor-parent-type")).toHaveText("tarefa", {
+    timeout: RESYNC_TIMEOUT,
+  });
+  await expect(page.getByTestId("link-tarefa")).toHaveText(chainTarefaTitulo, {
+    timeout: RESYNC_TIMEOUT,
+  });
 
   await page.getByTestId("field-titulo").fill(titulo);
   await page.getByTestId("field-ordem").fill("1");
-  await selectByText(page, "xor-parent-type", "tarefa");
-  await selectByText(page, "link-tarefa", chainTarefaTitulo);
   await submitForm(page);
 
-  const row = page.getByTestId("row").filter({ hasText: titulo });
+  // Scoped to the visible panel -- see the comment in the earlier "created
+  // with a tarefa parent" test for why a bare, page-wide `row` lookup is
+  // ambiguous here.
+  const panel = page.getByTestId("subtarefas-panel");
+  const row = panel.getByTestId("row").filter({ hasText: titulo });
   await expect(row).toBeVisible();
   const eid = await row.getAttribute("data-eid");
   expect(eid).toBeTruthy();
@@ -375,6 +429,8 @@ test("WEB-08 T-04-11: editing a subtarefa's parent type unlinks the old parent, 
   await waitForSettle(page);
   await row.getByTestId("row-edit").click();
   await expect(page.getByTestId("xor-parent-type")).toHaveText("tarefa");
+  // Same still-available manual-override path, exercised on edit instead of
+  // create -- proves the selector remains editable per spec §2.4.
   await selectByText(page, "xor-parent-type", "ticket");
   await selectByText(page, "link-ticket", chainTicketTitulo);
   await submitForm(page);
@@ -386,7 +442,9 @@ test("WEB-08 T-04-11: editing a subtarefa's parent type unlinks the old parent, 
   expect(listSubtarefasByTarefa(chainTarefaId).some((r) => r.id === eid)).toBe(false);
   expect(listSubtarefasByTicket(chainTicketId).some((r) => r.id === eid)).toBe(true);
 
-  await gotoNested(page, "subtarefas");
+  // The row is now parented to the ticket -- it belongs in the
+  // ticket-scoped panel, not a re-opened tarefa-scoped one.
+  await openSubtarefasPanelForTicket(page, chainTicketId);
   const reloadedRow = page.getByTestId("row").filter({ hasText: titulo });
   await expect(reloadedRow.locator("td").nth(3)).toHaveText("", { timeout: RESYNC_TIMEOUT });
   await expect(reloadedRow.locator("td").nth(4)).toHaveText(chainTicketTitulo, {
@@ -406,18 +464,28 @@ test("WEB-08: subtarefa concluida boolean round-trips both true and false across
 
   const titulo = uniqueName("subtarefa-boolean");
 
-  await gotoNested(page, "subtarefas");
-  await page.getByTestId("entity-create-start").click();
+  await openSubtarefasPanelForTarefa(page, chainTarefaId);
+  await page.getByTestId("subtarefa-add-start").click();
+
+  await expect(page.getByTestId("field-titulo")).toBeVisible({ timeout: RESYNC_TIMEOUT });
+  await expect(page.getByTestId("xor-parent-type")).toHaveText("tarefa", {
+    timeout: RESYNC_TIMEOUT,
+  });
+  await expect(page.getByTestId("link-tarefa")).toHaveText(chainTarefaTitulo, {
+    timeout: RESYNC_TIMEOUT,
+  });
 
   await page.getByTestId("field-titulo").fill(titulo);
   await page.getByTestId("field-ordem").fill("1");
-  await selectByText(page, "xor-parent-type", "tarefa");
-  await selectByText(page, "link-tarefa", chainTarefaTitulo);
   const concluidaCheckbox = page.getByTestId("field-concluida");
   if (await concluidaCheckbox.isChecked()) await concluidaCheckbox.uncheck();
   await submitForm(page);
 
-  const row = page.getByTestId("row").filter({ hasText: titulo });
+  // Scoped to the visible panel -- see the comment in the earlier "created
+  // with a tarefa parent" test for why a bare, page-wide `row` lookup is
+  // ambiguous here.
+  const panel = page.getByTestId("subtarefas-panel");
+  const row = panel.getByTestId("row").filter({ hasText: titulo });
   await expect(row).toBeVisible();
   const eid = await row.getAttribute("data-eid");
   expect(eid).toBeTruthy();
@@ -429,7 +497,8 @@ test("WEB-08: subtarefa concluida boolean round-trips both true and false across
   await submitForm(page);
   await expect(page.getByTestId("entity-submit")).toHaveCount(0);
   await waitForSettle(page);
-  await gotoNested(page, "subtarefas");
+  // Same parent, re-opened after reload.
+  await openSubtarefasPanelForTarefa(page, chainTarefaId);
   let reloadedRow = page.getByTestId("row").filter({ hasText: titulo });
   await expect(reloadedRow.locator("td").nth(2)).toHaveText("sim", { timeout: RESYNC_TIMEOUT });
 
@@ -439,7 +508,7 @@ test("WEB-08: subtarefa concluida boolean round-trips both true and false across
   await submitForm(page);
   await expect(page.getByTestId("entity-submit")).toHaveCount(0);
   await waitForSettle(page);
-  await gotoNested(page, "subtarefas");
+  await openSubtarefasPanelForTarefa(page, chainTarefaId);
   reloadedRow = page.getByTestId("row").filter({ hasText: titulo });
   await expect(reloadedRow.locator("td").nth(2)).toHaveText("não", { timeout: RESYNC_TIMEOUT });
 

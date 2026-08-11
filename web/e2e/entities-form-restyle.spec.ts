@@ -4,6 +4,10 @@ import { deleteInstance, seedInstance } from "./fixtures/instancia-admin-fixture
 import { confirmRowDelete } from "./helpers/delete-confirmation.ts";
 import { openAndReadSelectOptions, pickDate, selectByText } from "./helpers/form-controls.ts";
 import { gotoNested } from "./helpers/gotoNested.ts";
+import {
+  openSubtarefasPanelForTarefa,
+  openSubtarefasPanelForTicket,
+} from "./helpers/subtarefasPanel.ts";
 
 // Proves ENTFRM-01/02 for the fundos (full-CRUD) capability class against the
 // restyled shadcn Dialog/Input/Textarea/Checkbox/Popover+Calendar form, live
@@ -421,19 +425,33 @@ test.describe("subtarefas — xorLink two-step Select chooser", () => {
 
     const titulo = uniqueName("subtarefa-xor");
 
-    await gotoNested(page, "subtarefas");
-    await page.getByTestId("entity-create-start").click();
+    await openSubtarefasPanelForTarefa(page, chainTarefaId);
+    await page.getByTestId("subtarefa-add-start").click();
     await expect(page.getByRole("dialog")).toBeVisible();
+
+    // The create dialog is driven entirely by SubtarefasPanel's own code
+    // (Plan 20-01) -- wait for it to fully resolve the xor parent before
+    // filling/submitting.
+    await expect(page.getByTestId("xor-parent-type")).toHaveText("tarefa", {
+      timeout: RESYNC_TIMEOUT,
+    });
+    await expect(page.getByTestId("link-tarefa")).toHaveText(chainTarefaTitulo, {
+      timeout: RESYNC_TIMEOUT,
+    });
 
     await page.getByTestId("field-titulo").fill(titulo);
     await page.getByTestId("field-ordem").fill("1");
-    await selectByText(page, "xor-parent-type", "tarefa");
-    await selectByText(page, "link-tarefa", chainTarefaTitulo);
 
     await page.getByTestId("entity-submit").click();
     await expect(page.getByRole("dialog")).toHaveCount(0);
 
-    const row = page.getByTestId("row").filter({ hasText: titulo });
+    // Scoped to the visible panel: the hidden driven-create host
+    // (`subtarefa-host`, SubtarefasPanel.svelte) mounts its own UNSCOPED
+    // `EntityScreen(subtarefasConfig)` and stays mounted for the rest of this
+    // page session once `subtarefa-add-start` is first clicked -- a bare,
+    // page-wide `row` lookup would ambiguously match that hidden copy too.
+    const panel = page.getByTestId("subtarefas-panel");
+    const row = panel.getByTestId("row").filter({ hasText: titulo });
     await expect(row).toBeVisible({ timeout: RESYNC_TIMEOUT });
     const eid = await row.getAttribute("data-eid");
     expect(eid).toBeTruthy();
@@ -462,7 +480,13 @@ test.describe("subtarefas — xorLink two-step Select chooser", () => {
     expect(listSubtarefasByTarefa(chainTarefaId).some((r) => r.id === eid)).toBe(false);
     expect(listSubtarefasByTicket(chainTicketId).some((r) => r.id === eid)).toBe(true);
 
-    await confirmRowDelete(page, page.getByTestId("row").filter({ hasText: titulo }));
+    // The row is now parented to the ticket -- the tarefa-scoped panel used
+    // to open/edit it above no longer matches it (its
+    // `scopeWhere: {"tarefa.id": chainTarefaId}` never matches a
+    // ticket-linked row); re-open the ticket-scoped panel to delete it.
+    await openSubtarefasPanelForTicket(page, chainTicketId);
+    const ticketPanel = page.getByTestId("subtarefas-panel");
+    await confirmRowDelete(page, ticketPanel.getByTestId("row").filter({ hasText: titulo }));
     await expect(page.getByTestId("row").filter({ hasText: titulo })).toHaveCount(0, {
       timeout: RESYNC_TIMEOUT,
     });
