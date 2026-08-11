@@ -5,15 +5,15 @@ milestone_name: Navegação reorganizada + Dashboard de acompanhamento
 current_phase: 20
 current_phase_name: Rotinas & Tickets Sections
 status: executing
-stopped_at: Completed 20-03-PLAN.md
-last_updated: "2026-08-11T22:45:37.674Z"
+stopped_at: Completed 20-04-PLAN.md
+last_updated: "2026-08-11T23:12:51.839Z"
 last_activity: 2026-08-11
 last_activity_desc: 20-01-PLAN.md executed - SubtarefasPanel.svelte + TicketsSection.svelte with driven xor-parent create pre-resolution, live-verified against hosted InstantDB (NEST-05 complete)
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 12
-  completed_plans: 10
+  completed_plans: 11
   percent: 33
 ---
 
@@ -29,11 +29,11 @@ See: .planning/PROJECT.md (updated 2026-08-10)
 ## Current Position
 
 Phase: 20 of 23 (Rotinas & Tickets Sections)
-Plan: 3 of 05 complete (SubtarefasPanel + TicketsSection with driven xor-parent create)
+Plan: 4 of 05 complete (SubtarefasPanel + TicketsSection with driven xor-parent create)
 Status: Ready to execute
 Last activity: 2026-08-11 — 20-01-PLAN.md executed, NEST-05 complete
 
-Progress: [████████░░] 83%
+Progress: [█████████░] 92%
 
 ## Performance Metrics
 
@@ -70,6 +70,7 @@ Progress: [████████░░] 83%
 | Phase 20-rotinas-tickets-sections P01 | 35min | 2 tasks | 4 files |
 | Phase 20-rotinas-tickets-sections P02 | 8min | 2 tasks | 4 files |
 | Phase 20-rotinas-tickets-sections P03 | 33min | 3 tasks | 2 files |
+| Phase 20 P04 | 40min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -103,6 +104,8 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase ?]: Templates context paragraph reads 'Configuração que gera as instâncias.' -- e2e assertion is case-insensitive against the binding spec phrase
 - [Phase ?]: Task 1 and Task 2 committed as two separate atomic commits despite sharing one file (ProjetosSection.svelte), reconstructed via targeted Edit reverts/reapplies to keep each commit's diff scoped to one plan task.
 - [Phase ?]: Orphan-reachability e2e test reuses the existing tarefaOrfaId/tarefaOrfaTitulo fixture instead of minting a second redundant orphan tarefa.
+- [Phase ?]: [Phase 20 P04] Row lookups for a subtarefa just created/edited through SubtarefasPanel must scope to the visible subtarefas-panel testid -- the hidden driven-create host mounts an unscoped copy of every row once subtarefa-add-start is first clicked in a session.
+- [Phase ?]: [Phase 20 P04] When a test's final xor choice differs from the parent SubtarefasPanel was opened with, re-open a fresh panel scoped to the actual resulting parent before asserting/deleting -- the record leaves the originally-opened panel's scopeWhere-filtered list.
 
 ### Pending Todos
 
@@ -134,8 +137,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-11T22:45:37.662Z
-Stopped at: Completed 20-03-PLAN.md
+Last session: 2026-08-11T23:12:51.828Z
+Stopped at: Completed 20-04-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
