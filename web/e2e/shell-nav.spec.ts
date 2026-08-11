@@ -1,5 +1,8 @@
+import { execFileSync } from "node:child_process";
 import { expect, test } from "@playwright/test";
 import { gotoNested } from "./helpers/gotoNested.ts";
+
+const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 
 // This spec runs in the `authed` project (picked up automatically by its
 // existing testMatch: /.*\.spec\.ts/ — no playwright.config.ts edit needed),
@@ -77,9 +80,32 @@ test("NAV-02: no first-level nav path for etapas/tarefas/templatesRotina/subtare
     ),
   ).toHaveCount(0);
 
-  for (const etype of ["etapas", "tarefas", "templatesRotina", "subtarefas"]) {
-    await gotoNested(page, etype);
-    await expect(page.getByTestId("entity-table-frame")).toBeVisible();
+  // gotoNested(page, "etapas") lands inside a selected projeto's own detail
+  // column (Phase 19) — the shared live app is not guaranteed to have a
+  // projeto otherwise, so create a throwaway one via the CLI for this test.
+  const nome = `phase19-e2e-nav02-${Date.now()}`;
+  const created = JSON.parse(
+    execFileSync(
+      "uv",
+      ["run", "--project", "cli", "apollo", "projeto", "criar", "--nome", nome, "--status", "ativo"],
+      { cwd: REPO_ROOT, encoding: "utf-8" },
+    ),
+  ) as { id: string };
+
+  try {
+    for (const etype of ["tarefas", "templatesRotina", "subtarefas"]) {
+      await gotoNested(page, etype);
+      await expect(page.getByTestId("entity-table-frame")).toBeVisible();
+    }
+
+    await gotoNested(page, "etapas");
+    await expect(page.getByTestId("project-etapas-list")).toBeVisible();
+  } finally {
+    execFileSync(
+      "uv",
+      ["run", "--project", "cli", "apollo", "projeto", "deletar", "--id", created.id],
+      { cwd: REPO_ROOT, encoding: "utf-8" },
+    );
   }
 });
 

@@ -186,9 +186,11 @@ test("VERIFY-07/POLISH-04: cross-phase walkthrough -- Login -> Shell -> fundos t
   const shellGap = await shellHeader.evaluate((el) => getComputedStyle(el).columnGap);
   expect(shellGap).toBe("16px");
 
-  const navButtons = page.locator('[data-testid^="nav-"]:not([data-testid="nav-dashboard"])');
+  const navButtons = page.locator(
+    '[data-testid^="nav-"]:not([data-testid="nav-dashboard"]):not([data-testid="nav-projetos"])',
+  );
   const navCount = await navButtons.count();
-  expect(navCount).toBe(5);
+  expect(navCount).toBe(4);
 
   for (let i = 0; i < navCount; i++) {
     await navButtons.nth(i).click();
@@ -198,6 +200,12 @@ test("VERIFY-07/POLISH-04: cross-phase walkthrough -- Login -> Shell -> fundos t
     const entityGap = await entityHeader.evaluate((el) => getComputedStyle(el).columnGap);
     expect(entityGap).toBe(shellGap);
   }
+
+  // Projetos renders its own master-detail markup, not the generic
+  // entity-header/entity-table-frame -- excluded from the generic loop above.
+  await page.getByTestId("nav-projetos").click();
+  await expect(page.locator("h2")).toHaveText("Projetos");
+  await expect(page.getByTestId("entity-header")).toHaveCount(0);
 
   // ---- fundos leg: full-CRUD representative, same page ----
   await page.getByTestId("nav-fundos").click();

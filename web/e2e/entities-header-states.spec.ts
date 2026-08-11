@@ -183,14 +183,16 @@ test("ENTTBL-05: fundos loading state shows the Skeleton grid, never the old pla
   }
 });
 
-test("ENTTBL-07: every one of the 5 entities' content renders inside entity-table-frame", async ({
+test("ENTTBL-07: every one of the 4 entities' content renders inside entity-table-frame", async ({
   page,
 }) => {
   await page.goto("/");
 
-  const navButtons = page.locator('[data-testid^="nav-"]:not([data-testid="nav-dashboard"])');
+  const navButtons = page.locator(
+    '[data-testid^="nav-"]:not([data-testid="nav-dashboard"]):not([data-testid="nav-projetos"])',
+  );
   const count = await navButtons.count();
-  expect(count).toBe(5);
+  expect(count).toBe(4);
 
   for (let i = 0; i < count; i++) {
     const button = navButtons.nth(i);
@@ -203,4 +205,15 @@ test("ENTTBL-07: every one of the 5 entities' content renders inside entity-tabl
     const emptyCount = await frame.getByTestId("empty-state").count();
     expect(tableCount + emptyCount).toBeGreaterThanOrEqual(1);
   }
+});
+
+test("ENTTBL-07: Projetos renders its own master-detail markup, not the generic entity-table-frame", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.getByTestId("nav-projetos").click();
+
+  await expect(page.locator("h2")).toHaveText("Projetos");
+  await expect(page.getByTestId("project-search")).toBeVisible();
+  await expect(page.getByTestId("entity-table-frame")).toHaveCount(0);
 });
