@@ -4,6 +4,7 @@ import { expect, test } from "@playwright/test";
 import { deleteInstance, seedInstance } from "./fixtures/instancia-admin-fixture.ts";
 import { confirmRowDelete } from "./helpers/delete-confirmation.ts";
 import { pickDate } from "./helpers/form-controls.ts";
+import { gotoNested } from "./helpers/gotoNested.ts";
 
 // Phase 17 Plan 02's dedicated cross-phase proof spec. Runs in the `authed`
 // project (default persisted-session `page` fixture) alongside every other
@@ -176,7 +177,7 @@ test("VERIFY-07/POLISH-04: cross-phase walkthrough -- Login -> Shell -> fundos t
     await loginContext.close();
   }
 
-  // ---- Shell leg: default authed-project page, all 9 nav entities swept ----
+  // ---- Shell leg: default authed-project page, all 5 entity nav buttons swept ----
   await page.goto("/");
   await expect(page.getByTestId("app-shell")).toBeVisible();
 
@@ -185,9 +186,9 @@ test("VERIFY-07/POLISH-04: cross-phase walkthrough -- Login -> Shell -> fundos t
   const shellGap = await shellHeader.evaluate((el) => getComputedStyle(el).columnGap);
   expect(shellGap).toBe("16px");
 
-  const navButtons = page.locator('[data-testid^="nav-"]');
+  const navButtons = page.locator('[data-testid^="nav-"]:not([data-testid="nav-dashboard"])');
   const navCount = await navButtons.count();
-  expect(navCount).toBe(9);
+  expect(navCount).toBe(5);
 
   for (let i = 0; i < navCount; i++) {
     await navButtons.nth(i).click();
@@ -322,7 +323,7 @@ test("VERIFY-05/POLISH-03: LoginScreen Card/CardHeader legible in both color sch
   }
 });
 
-test("VERIFY-05/POLISH-03: Shell header and all 9 nav buttons legible in both color schemes", async ({
+test("VERIFY-05/POLISH-03: Shell header and all 6 nav buttons legible in both color schemes", async ({
   page,
 }) => {
   const backgrounds: string[] = [];
@@ -332,8 +333,8 @@ test("VERIFY-05/POLISH-03: Shell header and all 9 nav buttons legible in both co
     const header = page.getByTestId("shell-header");
     await expect(header).toBeVisible();
     const navButtons = page.locator('[data-testid^="nav-"]');
-    await expect(navButtons).toHaveCount(9);
-    for (let i = 0; i < 9; i++) {
+    await expect(navButtons).toHaveCount(6);
+    for (let i = 0; i < 6; i++) {
       await expect(navButtons.nth(i)).toBeVisible();
     }
     // shell-header itself has no explicit bg-* class (it's transparent,
@@ -352,8 +353,7 @@ test("VERIFY-05/POLISH-03: tarefas create Dialog legible in both color schemes, 
   const backgrounds: string[] = [];
   for (const colorScheme of ["light", "dark"] as const) {
     await page.emulateMedia({ colorScheme });
-    await page.goto("/");
-    await page.getByTestId("nav-tarefas").click();
+    await gotoNested(page, "tarefas");
     await page.getByTestId("entity-create-start").click();
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
@@ -376,8 +376,7 @@ test("VERIFY-05/POLISH-03: tarefas delete-confirmation AlertDialog legible in bo
     const backgrounds: string[] = [];
     for (const colorScheme of ["light", "dark"] as const) {
       await page.emulateMedia({ colorScheme });
-      await page.goto("/");
-      await page.getByTestId("nav-tarefas").click();
+      await gotoNested(page, "tarefas");
       const row = page.getByTestId("row").filter({ hasText: titulo });
       await expect(row).toBeVisible({ timeout: RESYNC_TIMEOUT });
 
@@ -466,9 +465,12 @@ test("VERIFY-05: keyboard/focus-visible smoke -- instanciasRotina (restricted, u
     // the nav bar (it is not, by ordem) -- Tab forward from it would land on
     // the NEXT nav button, not into the active screen's content, since every
     // nav button precedes <main> in DOM order regardless of which entity is
-    // active. Tab through every remaining nav button, plus one more to enter
-    // <main>, to reach the first focusable element in this capability
-    // class's content -- a row-edit button, the only row action available.
+    // active. Tab through every remaining nav button, then through Plan
+    // 18-01's interim `nested-goto` Select trigger (also inside <main>,
+    // between <nav> and the active screen's content), plus one more to
+    // enter <main>'s active screen, to reach the first focusable element in
+    // this capability class's content -- a row-edit button, the only row
+    // action available.
     const navButtons = page.locator('[data-testid^="nav-"]');
     const navTestIds = await navButtons.evaluateAll((els) =>
       els.map((el) => el.getAttribute("data-testid")),
@@ -478,7 +480,7 @@ test("VERIFY-05: keyboard/focus-visible smoke -- instanciasRotina (restricted, u
     await navButtons.nth(idx).focus();
     await expect(navButtons.nth(idx)).toBeFocused();
 
-    const tabsToRowEdit = navTestIds.length - idx;
+    const tabsToRowEdit = navTestIds.length - idx + 1;
     for (let i = 0; i < tabsToRowEdit; i++) {
       await page.keyboard.press("Tab");
     }

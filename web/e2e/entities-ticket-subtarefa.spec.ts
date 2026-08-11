@@ -2,6 +2,7 @@ import { execFileSync } from "node:child_process";
 import { expect, type Page, test } from "@playwright/test";
 import { confirmRowDelete } from "./helpers/delete-confirmation.ts";
 import { openAndReadSelectOptions, pickDate, selectByText } from "./helpers/form-controls.ts";
+import { gotoNested } from "./helpers/gotoNested.ts";
 
 // This spec runs in the `authed` project (restores the storageState persisted
 // by auth.setup.ts — see 04-01). Every generated record uses the
@@ -222,8 +223,7 @@ test("WEB-08: subtarefa created with a tarefa parent shows the tarefa column and
 
   const titulo = uniqueName("subtarefa-tarefa");
 
-  await page.goto("/");
-  await page.getByTestId("nav-subtarefas").click();
+  await gotoNested(page, "subtarefas");
   await page.getByTestId("entity-create-start").click();
 
   await page.getByTestId("field-titulo").fill(titulo);
@@ -259,8 +259,7 @@ test("WEB-08: subtarefa created with a ticket parent shows the ticket column and
 
   const titulo = uniqueName("subtarefa-ticket");
 
-  await page.goto("/");
-  await page.getByTestId("nav-subtarefas").click();
+  await gotoNested(page, "subtarefas");
   await page.getByTestId("entity-create-start").click();
 
   await page.getByTestId("field-titulo").fill(titulo);
@@ -292,8 +291,7 @@ test("WEB-08 T-04-04: subtarefa submitted with no parent selected is blocked, no
 }) => {
   const titulo = uniqueName("subtarefa-no-parent");
 
-  await page.goto("/");
-  await page.getByTestId("nav-subtarefas").click();
+  await gotoNested(page, "subtarefas");
   await page.getByTestId("entity-create-start").click();
 
   await page.getByTestId("field-titulo").fill(titulo);
@@ -319,8 +317,7 @@ test("WEB-08 T-04-11: switching parent type before submit links only the final c
 
   const titulo = uniqueName("subtarefa-switch-before-submit");
 
-  await page.goto("/");
-  await page.getByTestId("nav-subtarefas").click();
+  await gotoNested(page, "subtarefas");
   await page.getByTestId("entity-create-start").click();
 
   await page.getByTestId("field-titulo").fill(titulo);
@@ -357,8 +354,7 @@ test("WEB-08 T-04-11: editing a subtarefa's parent type unlinks the old parent, 
 
   const titulo = uniqueName("subtarefa-switch-on-edit");
 
-  await page.goto("/");
-  await page.getByTestId("nav-subtarefas").click();
+  await gotoNested(page, "subtarefas");
   await page.getByTestId("entity-create-start").click();
 
   await page.getByTestId("field-titulo").fill(titulo);
@@ -390,8 +386,7 @@ test("WEB-08 T-04-11: editing a subtarefa's parent type unlinks the old parent, 
   expect(listSubtarefasByTarefa(chainTarefaId).some((r) => r.id === eid)).toBe(false);
   expect(listSubtarefasByTicket(chainTicketId).some((r) => r.id === eid)).toBe(true);
 
-  await page.reload();
-  await page.getByTestId("nav-subtarefas").click();
+  await gotoNested(page, "subtarefas");
   const reloadedRow = page.getByTestId("row").filter({ hasText: titulo });
   await expect(reloadedRow.locator("td").nth(3)).toHaveText("", { timeout: RESYNC_TIMEOUT });
   await expect(reloadedRow.locator("td").nth(4)).toHaveText(chainTicketTitulo, {
@@ -411,8 +406,7 @@ test("WEB-08: subtarefa concluida boolean round-trips both true and false across
 
   const titulo = uniqueName("subtarefa-boolean");
 
-  await page.goto("/");
-  await page.getByTestId("nav-subtarefas").click();
+  await gotoNested(page, "subtarefas");
   await page.getByTestId("entity-create-start").click();
 
   await page.getByTestId("field-titulo").fill(titulo);
@@ -435,8 +429,7 @@ test("WEB-08: subtarefa concluida boolean round-trips both true and false across
   await submitForm(page);
   await expect(page.getByTestId("entity-submit")).toHaveCount(0);
   await waitForSettle(page);
-  await page.reload();
-  await page.getByTestId("nav-subtarefas").click();
+  await gotoNested(page, "subtarefas");
   let reloadedRow = page.getByTestId("row").filter({ hasText: titulo });
   await expect(reloadedRow.locator("td").nth(2)).toHaveText("sim", { timeout: RESYNC_TIMEOUT });
 
@@ -446,8 +439,7 @@ test("WEB-08: subtarefa concluida boolean round-trips both true and false across
   await submitForm(page);
   await expect(page.getByTestId("entity-submit")).toHaveCount(0);
   await waitForSettle(page);
-  await page.reload();
-  await page.getByTestId("nav-subtarefas").click();
+  await gotoNested(page, "subtarefas");
   reloadedRow = page.getByTestId("row").filter({ hasText: titulo });
   await expect(reloadedRow.locator("td").nth(2)).toHaveText("não", { timeout: RESYNC_TIMEOUT });
 

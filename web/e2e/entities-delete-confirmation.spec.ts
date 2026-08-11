@@ -6,6 +6,7 @@ import {
   seedInstance,
 } from "./fixtures/instancia-admin-fixture.ts";
 import { confirmRowDelete } from "./helpers/delete-confirmation.ts";
+import { gotoNested } from "./helpers/gotoNested.ts";
 
 // Dedicated, live Playwright coverage for ENTTBL-08 (row-action alignment/
 // spacing) and DELCONF-01 (AlertDialog keyboard confirm/cancel, focus
@@ -98,8 +99,7 @@ test("ENTTBL-08: row-edit/row-delete render with a real, positive, CSS-verified 
   const titulo = uniqueName("align");
   const eid = createTarefa(titulo);
 
-  await page.goto("/");
-  await page.getByTestId("nav-tarefas").click();
+  await gotoNested(page, "tarefas");
 
   const row = page.getByTestId("row").filter({ hasText: titulo });
   await expect(row).toBeVisible({ timeout: RESYNC_TIMEOUT });
@@ -150,8 +150,7 @@ test("DELCONF-01: row-delete opens a shadcn AlertDialog, not window.confirm — 
   const eid = createTarefa(titulo);
 
   try {
-    await page.goto("/");
-    await page.getByTestId("nav-tarefas").click();
+    await gotoNested(page, "tarefas");
 
     const row = page.getByTestId("row").filter({ hasText: titulo });
     await expect(row).toBeVisible({ timeout: RESYNC_TIMEOUT });
@@ -188,8 +187,7 @@ test("DELCONF-01: keyboard cancel — Escape closes the AlertDialog, row retaine
   const eid = createTarefa(titulo);
 
   try {
-    await page.goto("/");
-    await page.getByTestId("nav-tarefas").click();
+    await gotoNested(page, "tarefas");
 
     const row = page.getByTestId("row").filter({ hasText: titulo });
     await expect(row).toBeVisible({ timeout: RESYNC_TIMEOUT });
@@ -219,8 +217,7 @@ test("DELCONF-01: keyboard confirm — Tab then Enter on the destructive Action 
   const titulo = uniqueName("kb-confirm");
   createTarefa(titulo);
 
-  await page.goto("/");
-  await page.getByTestId("nav-tarefas").click();
+  await gotoNested(page, "tarefas");
 
   const row = page.getByTestId("row").filter({ hasText: titulo });
   await expect(row).toBeVisible({ timeout: RESYNC_TIMEOUT });
@@ -258,8 +255,7 @@ test("DELCONF-01: the AlertDialog cannot be dismissed while the delete is in fli
   const titulo = uniqueName("busy-gate");
   createTarefa(titulo);
 
-  await page.goto("/");
-  await page.getByTestId("nav-tarefas").click();
+  await gotoNested(page, "tarefas");
 
   const row = page.getByTestId("row").filter({ hasText: titulo });
   await expect(row).toBeVisible({ timeout: RESYNC_TIMEOUT });
