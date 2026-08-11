@@ -119,6 +119,14 @@
   // from Plan 20-01's SubtarefasPanel, zero new prop/branch added there.
   let activeSubtarefaTarefaId = $state<string | null>(null);
 
+  // NEST-05 (Plan 20-03): same panel, opened from the "Todas as tarefas" tab's
+  // row-click delegation instead of the etapa-detail chip — this is the ONLY
+  // reachable path to an orphaned tarefa's subtarefas (tarefas.etapa is
+  // required: false, per spec §2.2), so it must offer the identical
+  // affordance the etapa-detail chip does, not a lesser one.
+  let activeOrphanSubtarefaId = $state<string | null>(null);
+  let activeOrphanSubtarefaTitulo = $state("");
+
   // Mirrors Shell.svelte's own nestedGroups grouping pattern (Map +
   // Array.from(entries), zero per-entity branching), extended to 3 modes.
   // "Sem fundo vinculado" is forced last only in "fundo" mode — "status"
@@ -281,6 +289,30 @@
   // snapshot from an earlier selection.
   function startCreateTarefa(): void {
     void openTarefaDialog('[data-testid="entity-create-start"]');
+  }
+
+  // NEST-05 (Plan 20-03): click-delegation handler for the "Todas as
+  // tarefas" tab's EntityScreen(tarefasConfig) mount -- mirrors
+  // TicketsSection.svelte's handleTableClick (Plan 20-01) exactly, extended
+  // with toggle semantics identical to the etapa-detail chip's button above.
+  // Clicking a row's own `row-edit`/`row-delete` button also (harmlessly)
+  // opens/toggles that row's panel, since both live inside the same
+  // `[data-testid="row"]` ancestor this handler walks up to.
+  function handleTodasTarefasClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    const row = target.closest<HTMLElement>('[data-testid="row"]');
+    if (!row) return;
+    const eid = row.getAttribute("data-eid");
+    if (!eid) return;
+    if (activeOrphanSubtarefaId === eid) {
+      activeOrphanSubtarefaId = null;
+      return;
+    }
+    // `tarefas.ts`'s `listColumns: ["titulo", ...]` puts titulo first -- the
+    // row's first <td> is always the titulo cell.
+    const firstCell = row.querySelector("td");
+    activeOrphanSubtarefaId = eid;
+    activeOrphanSubtarefaTitulo = firstCell?.textContent?.trim() ?? "";
   }
 </script>
 
@@ -635,10 +667,41 @@
                   />
                   <Label for="tarefas-sem-etapa">Sem etapa</Label>
                 </div>
-                <EntityScreen
-                  config={tarefasConfig}
-                  scopeWhere={semEtapa ? { "etapa.id": { $isNull: true } } : null}
-                />
+                <!--
+                  NEST-05 (Plan 20-03): click-delegation wrapper, the same
+                  technique TicketsSection.svelte (Plan 20-01) already
+                  established for the identical reason -- EntityScreen's own
+                  <TableRow> has no click handler of its own, and
+                  EntityScreen.svelte is never touched to add one. Applies
+                  uniformly to every row in this tab (orphan or not, no
+                  special-casing); this is the ONLY reachable path to an
+                  orphaned tarefa's subtarefas once the interim `subtarefas`
+                  nav route retires later in this phase (tarefas.etapa is
+                  required: false, per spec §2.2). `role="none"` mirrors
+                  TicketsSection's own wrapper -- the real keyboard-usable
+                  semantics live on EntityScreen's unmodified row-edit/
+                  row-delete buttons inside, not on this delegation shell.
+                -->
+                <div
+                  data-testid="todas-tarefas-table"
+                  role="none"
+                  onclick={handleTodasTarefasClick}
+                >
+                  <EntityScreen
+                    config={tarefasConfig}
+                    scopeWhere={semEtapa ? { "etapa.id": { $isNull: true } } : null}
+                  />
+                </div>
+                {#if activeOrphanSubtarefaId}
+                  {#key activeOrphanSubtarefaId}
+                    <SubtarefasPanel
+                      parentType="tarefa"
+                      parentId={activeOrphanSubtarefaId}
+                      parentLabel={activeOrphanSubtarefaTitulo}
+                      onClose={() => (activeOrphanSubtarefaId = null)}
+                    />
+                  {/key}
+                {/if}
               </div>
             {/if}
           </Tabs.Content>
