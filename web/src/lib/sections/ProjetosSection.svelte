@@ -415,51 +415,54 @@
                           open etapa's tarefas/add-button actually render.
                         -->
                         {#if openEtapaId === etapa.id}
-                        <div data-testid="etapa-tarefas-list" class="space-y-2">
-                          {#each [...(etapa.tarefas ?? [])] as tarefa (tarefa.id)}
-                            {@const subs = tarefa.subtarefas ?? []}
-                            <div
-                              data-testid="etapa-tarefa-row"
-                              data-eid={tarefa.id}
-                              class="flex items-center gap-4"
-                            >
-                              <Checkbox
-                                data-testid="etapa-tarefa-concluida"
-                                checked={tarefaConcluida(tarefa)}
-                                disabled
-                              />
-                              <span class="flex-1">{tarefa.titulo}</span>
-                              <span
-                                data-testid="etapa-tarefa-prazo"
-                                class={vencido(
-                                  tarefa.dataPrevista,
-                                  tarefaConcluida(tarefa),
-                                  new Date(),
-                                )
-                                  ? "text-destructive"
-                                  : ""}
+                          <div data-testid="etapa-tarefas-list" class="space-y-2">
+                            {#each [...(etapa.tarefas ?? [])] as tarefa (tarefa.id)}
+                              {@const subs = tarefa.subtarefas ?? []}
+                              <div
+                                data-testid="etapa-tarefa-row"
+                                data-eid={tarefa.id}
+                                class="flex items-center gap-4"
                               >
-                                {tarefa.dataPrevista ? tarefa.dataPrevista.slice(0, 10) : "—"}
-                              </span>
-                              <!-- Intentionally inert: this chip is a passive count
-                                   display pending Phase 20's SubtarefasPanel
-                                   (NEST-05, deferred per 19-CONTEXT.md). It must
-                                   never be a <button> in this phase. -->
-                              <Badge data-testid="etapa-tarefa-subtarefas-chip" variant="outline">
-                                {subs.filter((s) => s.concluida).length}/{subs.length}
-                              </Badge>
-                            </div>
-                          {/each}
-                        </div>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          data-testid="etapa-add-tarefa-start"
-                          onclick={startCreateTarefa}
-                        >
-                          + tarefa nesta etapa
-                        </Button>
+                                <Checkbox
+                                  data-testid="etapa-tarefa-concluida"
+                                  checked={tarefaConcluida(tarefa)}
+                                  disabled
+                                />
+                                <span class="flex-1">{tarefa.titulo}</span>
+                                <span
+                                  data-testid="etapa-tarefa-prazo"
+                                  class={vencido(
+                                    tarefa.dataPrevista,
+                                    tarefaConcluida(tarefa),
+                                    new Date(),
+                                  )
+                                    ? "text-destructive"
+                                    : ""}
+                                >
+                                  {tarefa.dataPrevista ? tarefa.dataPrevista.slice(0, 10) : "—"}
+                                </span>
+                                <!-- Intentionally inert: this chip is a passive count
+                                     display pending Phase 20's SubtarefasPanel
+                                     (NEST-05, deferred per 19-CONTEXT.md). It must
+                                     never be a <button> in this phase. -->
+                                <Badge
+                                  data-testid="etapa-tarefa-subtarefas-chip"
+                                  variant="outline"
+                                >
+                                  {subs.filter((s) => s.concluida).length}/{subs.length}
+                                </Badge>
+                              </div>
+                            {/each}
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            data-testid="etapa-add-tarefa-start"
+                            onclick={startCreateTarefa}
+                          >
+                            + tarefa nesta etapa
+                          </Button>
                         {/if}
                       </Accordion.Content>
                     </Accordion.Item>
