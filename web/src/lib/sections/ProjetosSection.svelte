@@ -16,6 +16,7 @@
   import { configByEtype } from "../entities/registry";
   import type { EntityConfig } from "../entities/types";
   import { progressoEtapa, tarefaConcluida, vencido } from "./projetosDerive";
+  import SubtarefasPanel from "./SubtarefasPanel.svelte";
 
   // Never import a defs/*.ts module directly here — always resolve through
   // the registry so its own default-export validation (registry.ts:21-29)
@@ -111,6 +112,12 @@
   // scopeWhere prop (see 19-RESEARCH.md Pitfall 5 / Assumption A1) — smoke
   // tested live in projetos-section.spec.ts before being trusted here.
   let semEtapa = $state(false);
+
+  // NEST-05 (Plan 20-03): which tarefa's SubtarefasPanel is open inline below
+  // its own etapa-detail row. `null` means none open. Toggled by the chip's
+  // own button (see the etapa-tarefa-row markup below) — reused verbatim
+  // from Plan 20-01's SubtarefasPanel, zero new prop/branch added there.
+  let activeSubtarefaTarefaId = $state<string | null>(null);
 
   // Mirrors Shell.svelte's own nestedGroups grouping pattern (Map +
   // Array.from(entries), zero per-entity branching), extended to 3 modes.
@@ -495,17 +502,34 @@
                                 >
                                   {tarefa.dataPrevista ? tarefa.dataPrevista.slice(0, 10) : "—"}
                                 </span>
-                                <!-- Intentionally inert: this chip is a passive count
-                                     display pending Phase 20's SubtarefasPanel
-                                     (NEST-05, deferred per 19-CONTEXT.md). It must
-                                     never be a <button> in this phase. -->
-                                <Badge
+                                <!-- NEST-05 (Plan 20-03): a real, keyboard-activatable
+                                     button — data-testid stays on this outer <button>
+                                     (not the inner Badge) so projetos-section.spec.ts's
+                                     existing text-only assertions on this testid keep
+                                     passing unedited. Toggles SubtarefasPanel scoped to
+                                     this tarefa, rendered inline below the row. -->
+                                <button
+                                  type="button"
                                   data-testid="etapa-tarefa-subtarefas-chip"
-                                  variant="outline"
+                                  onclick={() =>
+                                    (activeSubtarefaTarefaId =
+                                      activeSubtarefaTarefaId === tarefa.id ? null : tarefa.id)}
                                 >
-                                  {subs.filter((s) => s.concluida).length}/{subs.length}
-                                </Badge>
+                                  <Badge variant="outline">
+                                    {subs.filter((s) => s.concluida).length}/{subs.length}
+                                  </Badge>
+                                </button>
                               </div>
+                              {#if activeSubtarefaTarefaId === tarefa.id}
+                                {#key tarefa.id}
+                                  <SubtarefasPanel
+                                    parentType="tarefa"
+                                    parentId={tarefa.id}
+                                    parentLabel={tarefa.titulo}
+                                    onClose={() => (activeSubtarefaTarefaId = null)}
+                                  />
+                                {/key}
+                              {/if}
                             {/each}
                           </div>
                           <Button
