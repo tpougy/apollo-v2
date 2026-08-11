@@ -711,4 +711,49 @@ test.describe("etapas accordion (NEST-02)", () => {
 
     tryDelete("tarefa", novaTarefaEid);
   });
+
+  test("NEST-03: 'etapas ▾' toggles list/kanban over the identical query data, kanban columns fixed-width and never compress", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await page.getByTestId("nav-projetos").click();
+    await page.getByTestId("project-item").filter({ hasText: projetoNome }).click();
+
+    await expect(page.getByTestId("project-etapas-list")).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    // Default view is the Plan 19-02 accordion.
+    await expect(page.getByTestId("etapa-row")).toHaveCount(2, { timeout: RESYNC_TIMEOUT });
+
+    await page.getByTestId("etapas-view-kanban").click();
+
+    const kanban = page.getByTestId("etapas-kanban");
+    await expect(kanban).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    // No second fetch happened -- the accordion's own rows are gone (list
+    // view unmounted), but the kanban renders the SAME two etapas, in the
+    // same ordem-ascending order as the list view.
+    const columns = kanban.getByTestId("etapa-kanban-column");
+    await expect(columns).toHaveCount(2);
+    await expect(columns.nth(0)).toHaveAttribute("data-eid", etapaBaixaId);
+    await expect(columns.nth(1)).toHaveAttribute("data-eid", etapaAltaId);
+
+    // Card count per column matches each etapa's own tarefas.length --
+    // etapaBaixa has 4 tarefas (tarefaDone/Mista/SemSub/Atrasada), etapaAlta
+    // has 1.
+    await expect(columns.nth(0).getByTestId("etapa-kanban-card")).toHaveCount(4);
+    await expect(columns.nth(1).getByTestId("etapa-kanban-card")).toHaveCount(1);
+
+    // Non-compression: both columns keep the identical fixed width despite
+    // holding a very different number of cards (4 vs 1).
+    const widthBaixa = (await columns.nth(0).boundingBox())?.width;
+    const widthAlta = (await columns.nth(1).boundingBox())?.width;
+    expect(widthBaixa).toBeTruthy();
+    expect(widthBaixa).toBe(widthAlta);
+
+    // Toggle back: the accordion reappears with the exact same data, no
+    // flash of stale/empty state (same underlying query, zero re-fetch).
+    await page.getByTestId("etapas-view-lista").click();
+    await expect(page.getByTestId("etapa-row")).toHaveCount(2, { timeout: RESYNC_TIMEOUT });
+    const rows = page.getByTestId("etapa-row");
+    await expect(rows.nth(0)).toHaveAttribute("data-eid", etapaBaixaId);
+    await expect(rows.nth(1)).toHaveAttribute("data-eid", etapaAltaId);
+  });
 });

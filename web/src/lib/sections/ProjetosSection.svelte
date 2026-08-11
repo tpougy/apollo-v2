@@ -94,6 +94,11 @@
   // either way. Single-open behavior itself only requires `type="single"`.
   let openEtapaId = $state("");
 
+  // "etapas ▾" list/kanban toggle (NEST-03) — pure render-mode switch over
+  // the exact same etapasOrdenadas computed below; never triggers a second
+  // db.useQuery call.
+  let etapasView = $state<"lista" | "kanban">("lista");
+
   // Mirrors Shell.svelte's own nestedGroups grouping pattern (Map +
   // Array.from(entries), zero per-entity branching), extended to 3 modes.
   // "Sem fundo vinculado" is forced last only in "fundo" mode — "status"
@@ -378,9 +383,32 @@
             </div>
 
             <div data-testid="project-etapas-list" class="space-y-2">
+              <div class="flex items-center justify-between">
+                <p class="text-xs uppercase text-muted-foreground">etapas ▾</p>
+                <div class="flex items-center gap-1">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={etapasView === "lista" ? "secondary" : "ghost"}
+                    data-testid="etapas-view-lista"
+                    onclick={() => (etapasView = "lista")}
+                  >
+                    lista
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={etapasView === "kanban" ? "secondary" : "ghost"}
+                    data-testid="etapas-view-kanban"
+                    onclick={() => (etapasView = "kanban")}
+                  >
+                    kanban
+                  </Button>
+                </div>
+              </div>
               {#if etapasOrdenadas.length === 0}
                 <p class="text-sm text-muted-foreground">Nenhuma etapa cadastrada.</p>
-              {:else}
+              {:else if etapasView === "lista"}
                 <Accordion.Root type="single" bind:value={openEtapaId}>
                   {#each etapasOrdenadas as etapa (etapa.id)}
                     {@const { feitas, total } = progressoEtapa(etapa)}
@@ -468,6 +496,58 @@
                     </Accordion.Item>
                   {/each}
                 </Accordion.Root>
+              {:else}
+                <!--
+                  Kanban view: same etapasOrdenadas data, zero extra fetch.
+                  Fixed-width, non-compressing columns per spec §3.5's
+                  overflow discipline (cross-referenced by §2.2) -- a plain
+                  overflow-x-auto div is used here instead of the installed
+                  ScrollArea component, since ScrollArea's bits-ui viewport
+                  wraps content in its own custom-scrollbar machinery with
+                  no prior usage/e2e precedent in this codebase, and this
+                  phase only needs the overflow/non-compression discipline
+                  (not the Dashboard-specific 3-card cap this component's
+                  kanban never implements) -- documented in 19-03-SUMMARY.md.
+                -->
+                <div data-testid="etapas-kanban" class="flex gap-2 overflow-x-auto pb-2">
+                  {#each etapasOrdenadas as etapa (etapa.id)}
+                    {@const { feitas, total } = progressoEtapa(etapa)}
+                    <div
+                      data-testid="etapa-kanban-column"
+                      data-eid={etapa.id}
+                      class="w-48 shrink-0 border-r px-2 space-y-2"
+                    >
+                      <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                          <span class="font-mono text-xs">{etapa.ordem}</span>
+                          <span class="flex-1 text-sm font-medium">{etapa.nome}</span>
+                        </div>
+                        <span class="text-xs text-muted-foreground">{feitas}/{total}</span>
+                      </div>
+                      {#each [...(etapa.tarefas ?? [])] as tarefa (tarefa.id)}
+                        <div
+                          data-testid="etapa-kanban-card"
+                          data-eid={tarefa.id}
+                          class="rounded border p-2 space-y-1"
+                        >
+                          <p class="text-sm">{tarefa.titulo}</p>
+                          <span
+                            data-testid="etapa-kanban-card-prazo"
+                            class={vencido(
+                              tarefa.dataPrevista,
+                              tarefaConcluida(tarefa),
+                              new Date(),
+                            )
+                              ? "text-xs text-destructive"
+                              : "text-xs text-muted-foreground"}
+                          >
+                            {tarefa.dataPrevista ? tarefa.dataPrevista.slice(0, 10) : "—"}
+                          </span>
+                        </div>
+                      {/each}
+                    </div>
+                  {/each}
+                </div>
               {/if}
             </div>
           </div>
