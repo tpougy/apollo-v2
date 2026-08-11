@@ -35,10 +35,10 @@ uma única função pura, reusada por calendário/kanban/rotinas/heatmap.
 
 ### NAV — Navegação (topbar de 6 seções)
 
-- [ ] **NAV-01**: Usuário vê exatamente 6 itens na topbar, nesta ordem: Dashboard, Rotinas, Tickets, Projetos, Fundos, Log.
-- [ ] **NAV-02**: Usuário não encontra caminho de primeiro nível para Etapas, Templates de rotina, Subtarefas ou Tarefas — só existem aninhados dentro de seus pais.
-- [ ] **NAV-03**: Ao abrir o app, a rota inicial é o Dashboard (não uma entidade).
-- [ ] **NAV-04**: `EntityConfig` ganha campos opcionais `nav?: "primary" | "nested"` e `navTitulo?: string`; `registry.ts` ganha o seletor derivado `navConfigs` (sem lista manual de entidades).
+- [x] **NAV-01**: Usuário vê exatamente 6 itens na topbar, nesta ordem: Dashboard, Rotinas, Tickets, Projetos, Fundos, Log.
+- [x] **NAV-02**: Usuário não encontra caminho de primeiro nível para Etapas, Templates de rotina, Subtarefas ou Tarefas — só existem aninhados dentro de seus pais.
+- [x] **NAV-03**: Ao abrir o app, a rota inicial é o Dashboard (não uma entidade).
+- [x] **NAV-04**: `EntityConfig` ganha campos opcionais `nav?: "primary" | "nested"` e `navTitulo?: string`; `registry.ts` ganha o seletor derivado `navConfigs` (sem lista manual de entidades).
 - [ ] **NAV-05**: `nav-<etype>` dos 5 testids de nav primária hoje existentes não muda; `nav-etapas`, `nav-templatesRotina`, `nav-subtarefas`, `nav-tarefas` deixam de existir e os e2e que os usavam navegam pelo caminho aninhado via helper `gotoNested`.
 
 ### NEST — Seções aninhadas
@@ -48,7 +48,7 @@ uma única função pura, reusada por calendário/kanban/rotinas/heatmap.
 - [ ] **NEST-03**: Dentro do detalhe de projeto existe alternância "etapas ▾" lista/kanban, e uma aba "Todas as tarefas" (sem `scopeWhere`) com filtro de conveniência "Sem etapa", para que tarefa órfã (sem etapa vinculada) permaneça alcançável.
 - [ ] **NEST-04**: Seção Rotinas tem duas abas — Instâncias (default, `capabilities.create`/`.delete` continuam `false`, sem affordance de criar/excluir) e Templates (com parágrafo de contexto).
 - [ ] **NEST-05**: Seção Tickets: selecionar uma linha abre painel lateral interno (não Sheet) com as subtarefas daquele ticket via `EntityScreen` de `subtarefas` com `scopeWhere`/`presetLinks` já resolvidos para o pai aberto; o mesmo painel é usado a partir de Tarefas. O seletor `xor-parent-type` continua existindo no form genérico mas nunca precisa ser tocado no fluxo normal.
-- [ ] **NEST-06**: Seções Fundos e Log permanecem inalteradas (`EntityScreen` direto).
+- [x] **NEST-06**: Seções Fundos e Log permanecem inalteradas (`EntityScreen` direto).
 
 ### DASH — Dashboard (tela inicial)
 
@@ -70,13 +70,13 @@ uma única função pura, reusada por calendário/kanban/rotinas/heatmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| NAV-01 | Phase 18: Navigation Foundation & EntityScreen Extension | Pending |
-| NAV-02 | Phase 18: Navigation Foundation & EntityScreen Extension | Pending |
-| NAV-03 | Phase 18: Navigation Foundation & EntityScreen Extension | Pending |
-| NAV-04 | Phase 18: Navigation Foundation & EntityScreen Extension | Pending |
+| NAV-01 | Phase 18: Navigation Foundation & EntityScreen Extension | Complete |
+| NAV-02 | Phase 18: Navigation Foundation & EntityScreen Extension | Complete |
+| NAV-03 | Phase 18: Navigation Foundation & EntityScreen Extension | Complete |
+| NAV-04 | Phase 18: Navigation Foundation & EntityScreen Extension | Complete |
 | NAV-05 | Phase 18: Navigation Foundation & EntityScreen Extension | Pending |
 | NEST-01 | Phase 18: Navigation Foundation & EntityScreen Extension | Pending |
-| NEST-06 | Phase 18: Navigation Foundation & EntityScreen Extension | Pending |
+| NEST-06 | Phase 18: Navigation Foundation & EntityScreen Extension | Complete |
 | NEST-02 | Phase 19: Projetos Section (Master-Detail) | Pending |
 | NEST-03 | Phase 19: Projetos Section (Master-Detail) | Pending |
 | NEST-04 | Phase 20: Rotinas & Tickets Sections | Pending |

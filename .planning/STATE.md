@@ -2,14 +2,18 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Navegação reorganizada + Dashboard de acompanhamento
+current_phase: 18
+current_phase_name: Navigation Foundation & EntityScreen Extension
 status: planning
-last_updated: "2026-08-11T14:36:41.821Z"
+stopped_at: Completed 18-01-PLAN.md
+last_updated: "2026-08-11T15:39:20.170Z"
 last_activity: 2026-08-11
+last_activity_desc: ROADMAP.md created for v1.3 (Phases 18-23), 21/21 requirements mapped
 progress:
   total_phases: 6
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 3
+  completed_plans: 1
   percent: 0
 ---
 
@@ -25,11 +29,11 @@ See: .planning/PROJECT.md (updated 2026-08-10)
 ## Current Position
 
 Phase: 18 of 23 (Navigation Foundation & EntityScreen Extension)
-Plan: — (not yet planned)
-Status: Ready to plan
+Plan: 2 of 3
+Status: Ready to execute
 Last activity: 2026-08-11 — ROADMAP.md created for v1.3 (Phases 18-23), 21/21 requirements mapped
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [███░░░░░░░] 33%
 
 ## Performance Metrics
 
@@ -51,6 +55,11 @@ Progress: [░░░░░░░░░░] 0%
 - Trend: N/A
 
 *Updated after each plan completion*
+**Per-Plan Metrics:**
+
+| Plan | Duration | Tasks | Files |
+|------|----------|-------|-------|
+| Phase 18 P01 | 40min | 2 tasks | 16 files |
 
 ## Accumulated Context
 
@@ -66,6 +75,7 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase 15]: Fixed a busy-guard double-submit race in EntityScreen.svelte's handleSubmit (plan-checker-flagged deviation) — busy=true now set immediately after the re-entrancy guard, wrapping the entire validation+queryOnce+transact flow in try/finally, not just the transact try/catch.
 - [Phase 16 P02]: Fixed bits-ui's AlertDialogCancelState never emitting a disabled HTML attribute (only gating its own onclick/onkeydown internally) via a child-snippet override in the vendored alert-dialog-cancel.svelte, discovered by the new busy-gating test.
 - [Phase 17]: Fixed EntityScreen.svelte's page-header sitting flush (0px gap) against table/loading/empty content via `space-y-6`, locked in with a permanent Playwright assertion — the closing v1.2 cross-phase audit's one genuine finding.
+- [Phase 18 P01]: gotoNested's interim (Phase 18) affordance groups the 4 nested entities by the first primary entity each links to (via links, never xorLink), falling back to 'Outros' -- data-driven, zero per-etype branching; only the helper body changes when Phase 19/20 ship real nested UI.
 
 ### Pending Todos
 
@@ -97,8 +107,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-11T14:36:41.821Z
-Stopped at: Created `.planning/ROADMAP.md` (Phases 18-23) and this `STATE.md` for v1.3; updated `.planning/REQUIREMENTS.md` traceability
+Last session: 2026-08-11T15:39:20.162Z
+Stopped at: Completed 18-01-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
