@@ -118,12 +118,12 @@ etapas and tasks without leaving the Projetos section, and still reach tasks tha
   3. An "etapas ▾" toggle switches the same etapa data between a list layout and a kanban layout (NEST-03).
   4. A "Todas as tarefas" tab (no `scopeWhere`) lists every task across all projects, with a "Sem etapa" convenience filter that makes orphaned tasks (no etapa link) reachable and editable (NEST-03; spec §10 Aninhamento #4).
 
-**Plans**: 1/4 plans executed
+**Plans**: 2/4 plans executed
 
 Plans:
 
 - [x] 19-01-PLAN.md — Master column (browse/group/search/create) + Shell mount point (NEST-02)
-- [ ] 19-02-PLAN.md — Etapas accordion + inline tarefas + projetosDerive.ts (NEST-02)
+- [x] 19-02-PLAN.md — Etapas accordion + inline tarefas + projetosDerive.ts (NEST-02)
 - [ ] 19-03-PLAN.md — "etapas ▾" list/kanban toggle + "Todas as tarefas"/"Sem etapa" (NEST-03)
 - [ ] 19-04-PLAN.md — e2e regression fixes (gotoNested, shell-nav, header-states, cross-phase-verification, projeto-etapa-tarefa) (NEST-02, NEST-03)
 
@@ -220,7 +220,7 @@ form without duplicating any markup, and never get lost more than one level deep
 | 16. Entity Screen — Row Actions & Delete Confirmation | v1.2 | 2/2 | Complete    | 2026-08-10 |
 | 17. Cross-Phase Verification & Quality Gates | v1.2 | 2/2 | Complete    | 2026-08-10 |
 | 18. Navigation Foundation & EntityScreen Extension | v1.3 | 3/3 | Complete    | 2026-08-11 |
-| 19. Projetos Section (Master-Detail) | v1.3 | 1/4 | In Progress|  |
+| 19. Projetos Section (Master-Detail) | v1.3 | 2/4 | In Progress|  |
 | 20. Rotinas & Tickets Sections | v1.3 | 0/? | Not started | - |
 | 21. Dashboard Data Layer, Shell, Week Calendar & Ticket Queue | v1.3 | 0/? | Not started | - |
 | 22. Dashboard Kanbans, Rotinas & Heatmap | v1.3 | 0/? | Not started | - |

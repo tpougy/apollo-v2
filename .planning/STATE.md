@@ -5,15 +5,15 @@ milestone_name: Navegação reorganizada + Dashboard de acompanhamento
 current_phase: 19
 current_phase_name: Projetos Section (Master-Detail)
 status: executing
-stopped_at: Completed 19-01-PLAN.md
-last_updated: "2026-08-11T18:36:11.888Z"
+stopped_at: Completed 19-02-PLAN.md
+last_updated: "2026-08-11T19:03:00.000Z"
 last_activity: 2026-08-11
-last_activity_desc: ROADMAP.md created for v1.3 (Phases 18-23), 21/21 requirements mapped
+last_activity_desc: 19-02-PLAN.md executed — projetosDerive.ts + etapas accordion + inline tarefas + "+ etapa"/"+ tarefa nesta etapa" (NEST-02 complete)
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 7
-  completed_plans: 4
+  completed_plans: 5
   percent: 17
 ---
 
@@ -29,9 +29,9 @@ See: .planning/PROJECT.md (updated 2026-08-10)
 ## Current Position
 
 Phase: 19 of 23 (Projetos Section (Master-Detail))
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
-Last activity: 2026-08-11 — Phase 18 complete, transitioned to Phase 19
+Last activity: 2026-08-11 — 19-02-PLAN.md complete (etapas accordion + inline tarefas, NEST-02)
 
 Progress: [██████░░░░] 57%
 
@@ -39,20 +39,21 @@ Progress: [██████░░░░] 57%
 
 **Velocity:**
 
-- Total plans completed: 3 (v1.3 not yet started; 35 lifetime across v1.0+v1.1+v1.2)
-- Average duration: N/A (no v1.3 plans yet)
-- Total execution time: 0 hours (v1.3)
+- Total plans completed: 5 (v1.3, in progress; 40 lifetime across v1.0+v1.1+v1.2+v1.3)
+- Average duration: ~40min (v1.3 plans so far: 40, 95, 75, 25, 22 min)
+- Total execution time: ~4.3 hours (v1.3)
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 18 | 3 | - | - |
+| 18 | 3 | 210min | 70min |
+| 19 | 2 | 47min | 24min |
 
 **Recent Trend:**
 
-- Last 5 plans: N/A (v1.2 closed; v1.3 not yet started)
-- Trend: N/A
+- Last 5 plans: 18-01 (40min), 18-02 (95min), 18-03 (75min), 19-01 (25min), 19-02 (22min)
+- Trend: Decreasing duration as Phase 19's hidden-instance/bespoke-query patterns get reused across plans.
 
 *Updated after each plan completion*
 **Per-Plan Metrics:**
@@ -63,6 +64,7 @@ Progress: [██████░░░░] 57%
 | Phase 18 P02 | 95min | 1 tasks | 1 files |
 | Phase 18 P03 | 75min | 3 tasks | 9 files |
 | Phase 19 P01 | 25min | 2 tasks | 16 files |
+| Phase 19 P02 | 22min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -82,6 +84,9 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase ?]: [Phase 19 P01] Bespoke db.useQuery pattern for ProjetosSection: any section screen needing more than one level of link nesting writes its own query, never extends EntityScreen.buildQuery.
 - [Phase ?]: [Phase 19 P01] Hidden-EntityScreen-instance + bounded-poll selector-click pattern reuses the generic create/edit dialog from outside its own mount, without a new EntityScreen prop; openProjetoDialog polls up to 5s since row-scoped targets (e.g. row-edit) only exist after the hidden instance's own db.useQuery resolves.
 - [Phase ?]: [Phase 19 P01] Pruned etapas/tarefas from Shell.svelte's interim nested-goto dropdown via a HANDLED_BY_SECTION allowlist now that ProjetosSection gives them a real home; templatesRotina/subtarefas stay until Phase 20 (19-CONTEXT.md Open Question 2).
+- [Phase ?]: [Phase 19 P02] projetosDerive.ts is a phase-local pure module (tarefaConcluida/progressoEtapa/vencido) mirroring bizdays.ts's style, matching REQUIREMENTS.md §5.3/§5.4 verbatim -- ahead of Phase 21's canonical dashboard/derive.ts, per 19-CONTEXT.md's explicit allowance for Phase 21 to consolidate/dedupe later.
+- [Phase ?]: [Phase 19 P02] bits-ui's installed Accordion.Content stays mounted for every item regardless of open/closed state (never display:none) -- every Accordion.Content usage in this codebase must gate its children behind `{#if <open-check>}` or every per-item testid exists once per item simultaneously, breaking strict-mode Playwright queries the moment there is more than one item.
+- [Phase ?]: [Phase 19 P02] openEtapaId uses "" (not null) as the "closed" sentinel -- the installed bits-ui Accordion.Root (type="single") types value as `string` (default ""), not `string | null`, and this bits-ui version has no `collapsible` prop.
 
 ### Pending Todos
 
@@ -113,8 +118,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-11T18:36:11.877Z
-Stopped at: Completed 19-01-PLAN.md
+Last session: 2026-08-11T19:03:00.000Z
+Stopped at: Completed 19-02-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
