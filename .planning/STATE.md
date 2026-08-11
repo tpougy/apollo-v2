@@ -5,16 +5,16 @@ milestone_name: Navegação reorganizada + Dashboard de acompanhamento
 current_phase: 20
 current_phase_name: Rotinas & Tickets Sections
 status: executing
-stopped_at: Completed 20-04-PLAN.md
-last_updated: "2026-08-11T23:12:51.839Z"
+stopped_at: Completed 20-05-PLAN.md (Phase 20 complete)
+last_updated: "2026-08-11T23:47:15.428Z"
 last_activity: 2026-08-11
 last_activity_desc: 20-01-PLAN.md executed - SubtarefasPanel.svelte + TicketsSection.svelte with driven xor-parent create pre-resolution, live-verified against hosted InstantDB (NEST-05 complete)
 progress:
   total_phases: 6
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 12
-  completed_plans: 11
-  percent: 33
+  completed_plans: 12
+  percent: 50
 ---
 
 # Project State
@@ -29,11 +29,11 @@ See: .planning/PROJECT.md (updated 2026-08-10)
 ## Current Position
 
 Phase: 20 of 23 (Rotinas & Tickets Sections)
-Plan: 4 of 05 complete (SubtarefasPanel + TicketsSection with driven xor-parent create)
+Plan: 5 of 05 complete (SubtarefasPanel + TicketsSection with driven xor-parent create)
 Status: Ready to execute
 Last activity: 2026-08-11 — 20-01-PLAN.md executed, NEST-05 complete
 
-Progress: [█████████░] 92%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -71,6 +71,7 @@ Progress: [█████████░] 92%
 | Phase 20-rotinas-tickets-sections P02 | 8min | 2 tasks | 4 files |
 | Phase 20-rotinas-tickets-sections P03 | 33min | 3 tasks | 2 files |
 | Phase 20 P04 | 40min | 2 tasks | 3 files |
+| Phase 20 P05 | 45min | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -106,6 +107,9 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase ?]: Orphan-reachability e2e test reuses the existing tarefaOrfaId/tarefaOrfaTitulo fixture instead of minting a second redundant orphan tarefa.
 - [Phase ?]: [Phase 20 P04] Row lookups for a subtarefa just created/edited through SubtarefasPanel must scope to the visible subtarefas-panel testid -- the hidden driven-create host mounts an unscoped copy of every row once subtarefa-add-start is first clicked in a session.
 - [Phase ?]: [Phase 20 P04] When a test's final xor choice differs from the parent SubtarefasPanel was opened with, re-open a fresh panel scoped to the actual resulting parent before asserting/deleting -- the record leaves the originally-opened panel's scopeWhere-filtered list.
+- [Phase ?]: [Phase 20 P05] gotoNested.ts's hardened fallback throws a descriptive Error naming the unhandled etype and the correct replacement helper, not a bare assertion.
+- [Phase ?]: [Phase 20 P05] DEF-01 root cause was TWO added Tab stops inside RotinasSection's Tabs.Root (active Tabs.Trigger's roving-tabindex stop + bits-ui's own Tabs.Content tabpanel div, a real separate tabindex=0 stop), not the one originally suspected -- fixed via explicit per-stop assertions instead of a corrected fixed count.
+- [Phase ?]: [Phase 20 P05] Phase 20 phase-gate: full bun run test:e2e run twice, both green except two documented pre-existing/out-of-scope flakes (login-flow.spec.ts magic-code timing predating Phase 20 since Phase 10; entities-form-restyle.spec.ts's SubtarefasPanel pollFor timeout, a Plan 20-01 resource-contention timing issue) -- both reproduced passing in isolation.
 
 ### Pending Todos
 
@@ -137,8 +141,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-11T23:12:51.828Z
-Stopped at: Completed 20-04-PLAN.md
+Last session: 2026-08-11T23:47:15.417Z
+Stopped at: Completed 20-05-PLAN.md (Phase 20 complete)
 Resume file: None
 
 ## Operator Next Steps
