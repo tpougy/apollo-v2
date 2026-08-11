@@ -11,6 +11,7 @@
   import type { EntityConfig } from "./entities/types";
   import { runRoutineInstanceJob } from "./routineJob";
   import ProjetosSection from "./sections/ProjetosSection.svelte";
+  import RotinasSection from "./sections/RotinasSection.svelte";
   import TicketsSection from "./sections/TicketsSection.svelte";
 
   const auth = db.useAuth();
@@ -188,6 +189,14 @@
          other primary etype unchanged. -->
     {#key rota.etype}
       <TicketsSection />
+    {/key}
+  {:else if rota.etype === "instanciasRotina"}
+    <!-- Mirrors the "projetos"/"tickets" branches immediately above
+         (spec-ui.md §0.6's one-permitted-router-branch precedent) -- inserted
+         ahead of the generic {:else} fallback below, which continues to
+         serve every other primary etype unchanged. -->
+    {#key rota.etype}
+      <RotinasSection />
     {/key}
   {:else}
     {@const active = configByEtype(rota.etype)}
