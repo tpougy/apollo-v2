@@ -60,7 +60,7 @@ test("single content-frame consistency across entities", async ({ page }) => {
 
   const navButtons = page.locator('[data-testid^="nav-"]');
   const count = await navButtons.count();
-  expect(count).toBe(9);
+  expect(count).toBe(6);
 
   const indexesToCheck = [0, Math.floor(count / 2), count - 1];
 

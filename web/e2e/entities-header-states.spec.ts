@@ -148,13 +148,16 @@ test("ENTTBL-05: fundos loading state shows the Skeleton grid, never the old pla
     });
 
     try {
-      // fundos is the default active entity on mount (ordem: 1, per
-      // shell-nav.spec.ts's own comment) — no nav click needed. Only wait
-      // for navigation "commit" (not the "load" event) — the throttled,
-      // unbundled Vite dev ESM import graph can otherwise chain past the
-      // "load" event's own timeout even though the app's own script has
-      // long since started executing and mounted the loading UI under test.
+      // Since Phase 18-01, the default mount route is Dashboard (NAV-03),
+      // not fundos (ordem no longer determines the initial route) — a nav
+      // click to fundos is now required to trigger this entity's first
+      // query round trip. Only wait for navigation "commit" (not the
+      // "load" event) — the throttled, unbundled Vite dev ESM import graph
+      // can otherwise chain past the "load" event's own timeout even
+      // though the app's own script has long since started executing and
+      // mounted the loading UI under test.
       await page.goto("/", { waitUntil: "commit", timeout: 60_000 });
+      await page.getByTestId("nav-fundos").click();
 
       const loading = page.getByTestId("entity-loading");
       await expect(loading).toBeVisible({ timeout: 45_000 });
@@ -180,14 +183,14 @@ test("ENTTBL-05: fundos loading state shows the Skeleton grid, never the old pla
   }
 });
 
-test("ENTTBL-07: every one of the 9 entities' content renders inside entity-table-frame", async ({
+test("ENTTBL-07: every one of the 5 entities' content renders inside entity-table-frame", async ({
   page,
 }) => {
   await page.goto("/");
 
-  const navButtons = page.locator('[data-testid^="nav-"]');
+  const navButtons = page.locator('[data-testid^="nav-"]:not([data-testid="nav-dashboard"])');
   const count = await navButtons.count();
-  expect(count).toBe(9);
+  expect(count).toBe(5);
 
   for (let i = 0; i < count; i++) {
     const button = navButtons.nth(i);
