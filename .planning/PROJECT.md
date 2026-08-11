@@ -30,7 +30,8 @@ The user can execute every piece of controladoria data-entry work — full CRUD 
 
 <!-- Current scope. Building toward these. -->
 
-(None — run `/gsd-new-milestone` to define the next milestone, e.g. the panel/dashboard UI still deferred below, or the known non-blocking tech debt logged in `.planning/milestones/v1.2-MILESTONE-AUDIT.md`)
+- Navegação reorganizada em topbar de 6 seções (Dashboard, Rotinas, Tickets, Projetos, Fundos, Log); `etapas`, `templatesRotina`, `subtarefas`, `tarefas` deixam de ser destinos de primeiro nível — v1.3 (em andamento)
+- Dashboard como tela inicial: calendário semanal de dias úteis, fila de tickets, rotinas agregadas por fundo, heatmap mensal de carga, mini-kanbans por projeto, sistema de 7 dialogs de foco — v1.3 (em andamento)
 
 ### Out of Scope
 

@@ -1,20 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.2
-milestone_name: Lapidação de UI (SaaS-grade polish)
-status: Awaiting next milestone
-stopped_at: Completed 17-02-PLAN.md
-last_updated: "2026-08-10T22:10:05.998Z"
-last_activity: 2026-08-10
-last_activity_desc: "Phase 17 (final phase of v1.2) complete: cross-phase spacing-parity walkthrough, remaining dual-color-scheme + keyboard/focus-visible coverage, final quality gates green, 24/24 v1.2 requirements complete."
+milestone: v1.3
+milestone_name: Navegação reorganizada + Dashboard de acompanhamento
+status: planning
+last_updated: "2026-08-11T14:36:41.821Z"
+last_activity: 2026-08-11
 progress:
-  total_phases: 6
-  completed_phases: 6
-  total_plans: 9
-  completed_plans: 9
-  percent: 100
-current_phase: 17
-current_phase_name: Cross-Phase Verification & Quality Gates
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -28,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-08-10)
 
 ## Current Position
 
-Phase: Milestone v1.2 complete
+Phase: Not started (defining requirements)
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-08-10 — Milestone v1.2 completed and archived
+Status: Defining requirements
+Last activity: 2026-08-11 — Milestone v1.3 started
 
 ## Performance Metrics
 
