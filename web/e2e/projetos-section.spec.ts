@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { expect, type Page, test } from "@playwright/test";
+import { selectByText } from "./helpers/form-controls";
 
 // This spec runs in the `authed` project (restores the storageState persisted
 // by auth.setup.ts). Every generated record uses the `phase19-e2e-` prefix so
@@ -283,9 +284,13 @@ test.describe("etapas accordion (NEST-02)", () => {
   let etapaBaixaId = "";
   let etapaBaixaNome = "";
   let tarefaDoneId = "";
+  let tarefaDoneTitulo = "";
   let tarefaMistaId = "";
+  let tarefaMistaTitulo = "";
   let tarefaSemSubId = "";
+  let tarefaSemSubTitulo = "";
   let tarefaAtrasadaId = "";
+  let tarefaAtrasadaTitulo = "";
   let tarefaAltaId = "";
 
   test.beforeAll(() => {
@@ -330,12 +335,13 @@ test.describe("etapas accordion (NEST-02)", () => {
     etapaBaixaId = etapaBaixaCreated.id;
 
     // etapaBaixa's tarefas: 1 feita (all subtarefas concluida) out of 4 total.
+    tarefaDoneTitulo = uniqueName("tarefa-concluida");
     const tarefaDoneCreated = JSON.parse(
       apolloCli([
         "tarefa",
         "criar",
         "--titulo",
-        uniqueName("tarefa-concluida"),
+        tarefaDoneTitulo,
         "--tipo-prazo",
         "soft",
         "--status",
@@ -359,12 +365,13 @@ test.describe("etapas accordion (NEST-02)", () => {
       tarefaDoneId,
     ]);
 
+    tarefaMistaTitulo = uniqueName("tarefa-mista");
     const tarefaMistaCreated = JSON.parse(
       apolloCli([
         "tarefa",
         "criar",
         "--titulo",
-        uniqueName("tarefa-mista"),
+        tarefaMistaTitulo,
         "--tipo-prazo",
         "soft",
         "--status",
@@ -399,12 +406,13 @@ test.describe("etapas accordion (NEST-02)", () => {
       tarefaMistaId,
     ]);
 
+    tarefaSemSubTitulo = uniqueName("tarefa-sem-subs");
     const tarefaSemSubCreated = JSON.parse(
       apolloCli([
         "tarefa",
         "criar",
         "--titulo",
-        uniqueName("tarefa-sem-subs"),
+        tarefaSemSubTitulo,
         "--tipo-prazo",
         "hard",
         "--status",
@@ -415,12 +423,13 @@ test.describe("etapas accordion (NEST-02)", () => {
     ) as { id: string };
     tarefaSemSubId = tarefaSemSubCreated.id;
 
+    tarefaAtrasadaTitulo = uniqueName("tarefa-atrasada");
     const tarefaAtrasadaCreated = JSON.parse(
       apolloCli([
         "tarefa",
         "criar",
         "--titulo",
-        uniqueName("tarefa-atrasada"),
+        tarefaAtrasadaTitulo,
         "--tipo-prazo",
         "hard",
         "--status",
@@ -551,5 +560,155 @@ test.describe("etapas accordion (NEST-02)", () => {
     await expect(rows.nth(1)).toHaveAttribute("data-eid", novaEid as string);
 
     tryDelete("etapa", novaEid);
+  });
+
+  test("NEST-02: inline tarefas show a disabled completion checkbox matching tarefaConcluida", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await page.getByTestId("nav-projetos").click();
+    await page.getByTestId("project-item").filter({ hasText: projetoNome }).click();
+
+    const baixaRow = page.getByTestId("etapa-row").filter({ hasText: etapaBaixaNome });
+    await expect(baixaRow).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    await baixaRow.click();
+
+    const tarefasList = page.getByTestId("etapa-tarefas-list");
+    await expect(tarefasList).toBeVisible({ timeout: RESYNC_TIMEOUT });
+
+    const doneRow = tarefasList
+      .getByTestId("etapa-tarefa-row")
+      .filter({ hasText: tarefaDoneTitulo });
+    const mistaRow = tarefasList
+      .getByTestId("etapa-tarefa-row")
+      .filter({ hasText: tarefaMistaTitulo });
+    const semSubRow = tarefasList
+      .getByTestId("etapa-tarefa-row")
+      .filter({ hasText: tarefaSemSubTitulo });
+
+    // tarefaDone: ≥1 subtarefa, all concluida -> checked and disabled.
+    const doneCheckbox = doneRow.getByTestId("etapa-tarefa-concluida");
+    await expect(doneCheckbox).toBeChecked();
+    await expect(doneCheckbox).toBeDisabled();
+
+    // tarefaMista: mixed subtarefas -> unchecked, still disabled.
+    const mistaCheckbox = mistaRow.getByTestId("etapa-tarefa-concluida");
+    await expect(mistaCheckbox).not.toBeChecked();
+    await expect(mistaCheckbox).toBeDisabled();
+
+    // tarefaSemSub: zero subtarefas -> never counts as done.
+    const semSubCheckbox = semSubRow.getByTestId("etapa-tarefa-concluida");
+    await expect(semSubCheckbox).not.toBeChecked();
+    await expect(semSubCheckbox).toBeDisabled();
+  });
+
+  test("NEST-02: prazo is styled text-destructive only per vencido()'s exact rule", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await page.getByTestId("nav-projetos").click();
+    await page.getByTestId("project-item").filter({ hasText: projetoNome }).click();
+
+    const baixaRow = page.getByTestId("etapa-row").filter({ hasText: etapaBaixaNome });
+    await expect(baixaRow).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    await baixaRow.click();
+
+    const tarefasList = page.getByTestId("etapa-tarefas-list");
+    await expect(tarefasList).toBeVisible({ timeout: RESYNC_TIMEOUT });
+
+    // tarefaAtrasada: past dataPrevista, NOT concluida -> destructive.
+    const atrasadaRow = tarefasList
+      .getByTestId("etapa-tarefa-row")
+      .filter({ hasText: tarefaAtrasadaTitulo });
+    await expect(atrasadaRow.getByTestId("etapa-tarefa-prazo")).toHaveClass(/text-destructive/);
+
+    // tarefaDone: past dataPrevista too, but concluida -> NOT destructive
+    // (vencido()'s exact `!concluido` term).
+    const doneRow = tarefasList
+      .getByTestId("etapa-tarefa-row")
+      .filter({ hasText: tarefaDoneTitulo });
+    await expect(doneRow.getByTestId("etapa-tarefa-prazo")).not.toHaveClass(/text-destructive/);
+
+    // tarefaMista: future dataPrevista, not concluida -> not vencido either.
+    const mistaRow = tarefasList
+      .getByTestId("etapa-tarefa-row")
+      .filter({ hasText: tarefaMistaTitulo });
+    await expect(mistaRow.getByTestId("etapa-tarefa-prazo")).not.toHaveClass(/text-destructive/);
+  });
+
+  test("NEST-02: subtarefa chip shows the exact concluida/total count from the fixture", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await page.getByTestId("nav-projetos").click();
+    await page.getByTestId("project-item").filter({ hasText: projetoNome }).click();
+
+    const baixaRow = page.getByTestId("etapa-row").filter({ hasText: etapaBaixaNome });
+    await expect(baixaRow).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    await baixaRow.click();
+
+    const tarefasList = page.getByTestId("etapa-tarefas-list");
+    await expect(tarefasList).toBeVisible({ timeout: RESYNC_TIMEOUT });
+
+    const doneRow = tarefasList
+      .getByTestId("etapa-tarefa-row")
+      .filter({ hasText: tarefaDoneTitulo });
+    await expect(doneRow.getByTestId("etapa-tarefa-subtarefas-chip")).toHaveText("1/1");
+
+    const mistaRow = tarefasList
+      .getByTestId("etapa-tarefa-row")
+      .filter({ hasText: tarefaMistaTitulo });
+    await expect(mistaRow.getByTestId("etapa-tarefa-subtarefas-chip")).toHaveText("1/2");
+
+    const semSubRow = tarefasList
+      .getByTestId("etapa-tarefa-row")
+      .filter({ hasText: tarefaSemSubTitulo });
+    await expect(semSubRow.getByTestId("etapa-tarefa-subtarefas-chip")).toHaveText("0/0");
+
+    // The chip is a passive Badge, never an interactive <button> -- Phase 20
+    // wires the click (NEST-05, deferred per CONTEXT.md).
+    const chipTag = await doneRow
+      .getByTestId("etapa-tarefa-subtarefas-chip")
+      .evaluate((el) => el.tagName.toLowerCase());
+    expect(chipTag).not.toBe("button");
+  });
+
+  test("NEST-02: '+ tarefa nesta etapa' creates via the hidden-instance pattern, pre-linked to the live open etapa", async ({
+    page,
+  }) => {
+    test.setTimeout(60_000);
+    const novaTarefaTitulo = uniqueName("nova-tarefa");
+
+    await page.goto("/");
+    await page.getByTestId("nav-projetos").click();
+    await page.getByTestId("project-item").filter({ hasText: projetoNome }).click();
+
+    const baixaRow = page.getByTestId("etapa-row").filter({ hasText: etapaBaixaNome });
+    await expect(baixaRow).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    await baixaRow.click();
+
+    await page.getByTestId("etapa-add-tarefa-start").click();
+    await expect(page.getByTestId("field-titulo")).toBeVisible({ timeout: RESYNC_TIMEOUT });
+
+    // The etapa link select is still visible/editable, pre-filled to the
+    // currently open etapa -- no need to re-select it.
+    await expect(page.getByTestId("link-etapa")).toBeVisible();
+    await expect(page.getByTestId("link-etapa")).toHaveText(etapaBaixaNome, {
+      timeout: RESYNC_TIMEOUT,
+    });
+
+    await page.getByTestId("field-titulo").fill(novaTarefaTitulo);
+    await selectByText(page, "field-tipoPrazo", "soft");
+    await page.getByTestId("field-status").fill("pendente");
+    await submitForm(page);
+
+    const novaTarefaRow = page
+      .getByTestId("etapa-tarefas-list")
+      .getByTestId("etapa-tarefa-row")
+      .filter({ hasText: novaTarefaTitulo });
+    await expect(novaTarefaRow).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    const novaTarefaEid = await novaTarefaRow.getAttribute("data-eid");
+
+    tryDelete("tarefa", novaTarefaEid);
   });
 });
