@@ -4,16 +4,16 @@ milestone: v1.3
 milestone_name: Navegação reorganizada + Dashboard de acompanhamento
 current_phase: 19
 current_phase_name: Projetos Section (Master-Detail)
-status: planning
-stopped_at: Completed 18-03-PLAN.md
-last_updated: "2026-08-11T17:30:27.361Z"
+status: executing
+stopped_at: Completed 19-01-PLAN.md
+last_updated: "2026-08-11T18:36:11.888Z"
 last_activity: 2026-08-11
 last_activity_desc: ROADMAP.md created for v1.3 (Phases 18-23), 21/21 requirements mapped
 progress:
   total_phases: 6
   completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
+  total_plans: 7
+  completed_plans: 4
   percent: 17
 ---
 
@@ -29,11 +29,11 @@ See: .planning/PROJECT.md (updated 2026-08-10)
 ## Current Position
 
 Phase: 19 of 23 (Projetos Section (Master-Detail))
-Plan: Not started
-Status: Ready to plan
+Plan: 2 of 4
+Status: Ready to execute
 Last activity: 2026-08-11 — Phase 18 complete, transitioned to Phase 19
 
-Progress: [██████████] 100%
+Progress: [██████░░░░] 57%
 
 ## Performance Metrics
 
@@ -62,6 +62,7 @@ Progress: [██████████] 100%
 | Phase 18 P01 | 40min | 2 tasks | 16 files |
 | Phase 18 P02 | 95min | 1 tasks | 1 files |
 | Phase 18 P03 | 75min | 3 tasks | 9 files |
+| Phase 19 P01 | 25min | 2 tasks | 16 files |
 
 ## Accumulated Context
 
@@ -78,6 +79,9 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase 18 P01]: gotoNested's interim (Phase 18) affordance groups the 4 nested entities by the first primary entity each links to (via links, never xorLink), falling back to 'Outros' -- data-driven, zero per-etype branching; only the helper body changes when Phase 19/20 ship real nested UI.
 - [Phase ?]: Verified NEST-01's byte-identical acceptance criterion via a controlled A/B full-suite comparison (diff/no-diff, same post-18-01 baseline) rather than a single unedited-suite run, because 18-01 landed its topbar restructuring in the shared working tree (no worktree isolation) before this plan's verification ran, and 18-03's e2e migration (NAV-05) had not yet landed.
 - [Phase ?]: Fixed 3 pre-existing e2e regressions exposed by Plan 18-01 landing first (no worktree isolation): stale fundos-default-mount assumption, instanciasRotina Tab-count formula, an uncatalogued nav-tarefas call site -- all within this plan's declared scope
+- [Phase ?]: [Phase 19 P01] Bespoke db.useQuery pattern for ProjetosSection: any section screen needing more than one level of link nesting writes its own query, never extends EntityScreen.buildQuery.
+- [Phase ?]: [Phase 19 P01] Hidden-EntityScreen-instance + bounded-poll selector-click pattern reuses the generic create/edit dialog from outside its own mount, without a new EntityScreen prop; openProjetoDialog polls up to 5s since row-scoped targets (e.g. row-edit) only exist after the hidden instance's own db.useQuery resolves.
+- [Phase ?]: [Phase 19 P01] Pruned etapas/tarefas from Shell.svelte's interim nested-goto dropdown via a HANDLED_BY_SECTION allowlist now that ProjetosSection gives them a real home; templatesRotina/subtarefas stay until Phase 20 (19-CONTEXT.md Open Question 2).
 
 ### Pending Todos
 
@@ -109,8 +113,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-11T17:20:33.553Z
-Stopped at: Completed 18-03-PLAN.md
+Last session: 2026-08-11T18:36:11.877Z
+Stopped at: Completed 19-01-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
