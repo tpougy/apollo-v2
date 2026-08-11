@@ -10,10 +10,14 @@ import type { Page } from "@playwright/test";
 // Phase 19, "etapas"/"tarefas" no longer resolve through the interim
 // `nested-goto` Select in Shell.svelte — both now have a real, parent-hosted
 // home inside ProjetosSection.svelte, so this function drives real UI to
-// land on equivalent markup instead. Every other `etype` (templatesRotina,
-// subtarefas) still falls through to the original `nested-goto` dropdown,
-// unchanged. None of the call sites using `gotoNested(page, etype)` need to
-// change again.
+// land on equivalent markup instead. As of Phase 20, "templatesRotina" no
+// longer resolves through the interim `nested-goto` Select either — it now
+// has a real home as RotinasSection.svelte's second tab (20-02-PLAN.md). Only
+// "subtarefas" still falls through to the original `nested-goto` dropdown,
+// unchanged (20-RESEARCH.md Pitfall 3 — its 6+ call sites need individual,
+// parent-id-aware rewrites in a later plan of this phase, not a body
+// extension here). None of the call sites using `gotoNested(page, etype)`
+// need to change again for the etypes already migrated above.
 export async function gotoNested(page: Page, etype: string): Promise<void> {
   await page.goto("/");
 
@@ -38,6 +42,17 @@ export async function gotoNested(page: Page, etype: string): Promise<void> {
     // call-site changes required.
     await page.getByTestId("nav-projetos").click();
     await page.getByTestId("projetos-tab-todas").click();
+    return;
+  }
+
+  if (etype === "templatesRotina") {
+    // Templates is RotinasSection's second tab (Phase 20), per spec-ui.md
+    // §2.3 — it reproduces the exact unscoped EntityScreen(templatesRotinaConfig)
+    // markup every other gotoNested("templatesRotina") call site already
+    // depends on, with zero call-site changes required
+    // (entities-rotina-log.spec.ts's WEB-06 test).
+    await page.getByTestId("nav-instanciasRotina").click();
+    await page.getByTestId("rotinas-tab-templates").click();
     return;
   }
 
