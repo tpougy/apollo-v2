@@ -3,7 +3,9 @@
   import { tick } from "svelte";
   import * as Accordion from "$lib/components/ui/accordion";
   import { Alert, AlertDescription } from "$lib/components/ui/alert";
+  import { Badge } from "$lib/components/ui/badge";
   import { Button } from "$lib/components/ui/button";
+  import { Checkbox } from "$lib/components/ui/checkbox";
   import { Input } from "$lib/components/ui/input";
   import * as Select from "$lib/components/ui/select";
   import { Skeleton } from "$lib/components/ui/skeleton";
@@ -11,12 +13,11 @@
   import EntityScreen from "../entities/EntityScreen.svelte";
   import { configByEtype } from "../entities/registry";
   import type { EntityConfig } from "../entities/types";
-  import { progressoEtapa } from "./projetosDerive";
+  import { progressoEtapa, tarefaConcluida, vencido } from "./projetosDerive";
 
   // Never import a defs/*.ts module directly here — always resolve through
   // the registry so its own default-export validation (registry.ts:21-29)
-  // runs first. `tarefasConfig` is resolved the same way in Plan 19-02
-  // Task 2 when first needed, not here.
+  // runs first.
   function requireConfig(etype: string): EntityConfig {
     const cfg = configByEtype(etype);
     if (!cfg) throw new Error(`ProjetosSection: missing EntityConfig for etype "${etype}"`);
@@ -24,6 +25,7 @@
   }
   const projetosConfig = requireConfig("projetos");
   const etapasConfig = requireConfig("etapas");
+  const tarefasConfig = requireConfig("tarefas");
 
   // Row shapes mirror the exact nesting of the bespoke query below — one
   // level deeper than the generic EntityScreen.buildQuery can express
@@ -226,6 +228,35 @@
   function startCreateEtapa(): void {
     void openEtapaDialog('[data-testid="entity-create-start"]');
   }
+
+  // Hidden host for "+ tarefa nesta etapa" — a THIRD independent instance of
+  // the same hidden-EntityScreen pattern (do not reuse `etapaHostEl`).
+  let tarefaHostReady = $state(false);
+  let tarefaHostEl = $state<HTMLDivElement | undefined>(undefined);
+
+  // Same bounded-poll shape as the other two hosts' open functions above.
+  async function openTarefaDialog(selector: string): Promise<void> {
+    tarefaHostReady = true;
+    await tick();
+    const deadline = Date.now() + 5000;
+    while (Date.now() < deadline) {
+      const el = tarefaHostEl?.querySelector<HTMLButtonElement>(selector);
+      if (el) {
+        el.click();
+        return;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+  }
+
+  // `presetLinks` for this host is `{ etapa: openEtapaId }`, computed inline
+  // from the live `openEtapaId` `$state` at the moment the dialog opens
+  // (right where the button's `onclick` reads it below) — always targets
+  // whichever etapa is actually expanded at click time, never a stale
+  // snapshot from an earlier selection.
+  function startCreateTarefa(): void {
+    void openTarefaDialog('[data-testid="entity-create-start"]');
+  }
 </script>
 
 <section class="space-y-6">
@@ -372,7 +403,64 @@
                         <span class="text-xs text-muted-foreground">{feitas}/{total}</span>
                       </Accordion.Trigger>
                       <Accordion.Content>
-                        <!-- Task 2 adds the inline tarefas list + "+ tarefa nesta etapa" here. -->
+                        <!--
+                          bits-ui's Accordion.Content stays mounted in the DOM
+                          for every item regardless of open state (Radix-style
+                          height-animated collapse, never `display: none`) --
+                          without this guard, `etapa-tarefas-list` and
+                          `etapa-add-tarefa-start` would exist once per etapa
+                          simultaneously, breaking every testid-scoped e2e
+                          query with a strict-mode violation the moment a
+                          project has more than one etapa. Only the currently
+                          open etapa's tarefas/add-button actually render.
+                        -->
+                        {#if openEtapaId === etapa.id}
+                        <div data-testid="etapa-tarefas-list" class="space-y-2">
+                          {#each [...(etapa.tarefas ?? [])] as tarefa (tarefa.id)}
+                            {@const subs = tarefa.subtarefas ?? []}
+                            <div
+                              data-testid="etapa-tarefa-row"
+                              data-eid={tarefa.id}
+                              class="flex items-center gap-4"
+                            >
+                              <Checkbox
+                                data-testid="etapa-tarefa-concluida"
+                                checked={tarefaConcluida(tarefa)}
+                                disabled
+                              />
+                              <span class="flex-1">{tarefa.titulo}</span>
+                              <span
+                                data-testid="etapa-tarefa-prazo"
+                                class={vencido(
+                                  tarefa.dataPrevista,
+                                  tarefaConcluida(tarefa),
+                                  new Date(),
+                                )
+                                  ? "text-destructive"
+                                  : ""}
+                              >
+                                {tarefa.dataPrevista ? tarefa.dataPrevista.slice(0, 10) : "—"}
+                              </span>
+                              <!-- Intentionally inert: this chip is a passive count
+                                   display pending Phase 20's SubtarefasPanel
+                                   (NEST-05, deferred per 19-CONTEXT.md). It must
+                                   never be a <button> in this phase. -->
+                              <Badge data-testid="etapa-tarefa-subtarefas-chip" variant="outline">
+                                {subs.filter((s) => s.concluida).length}/{subs.length}
+                              </Badge>
+                            </div>
+                          {/each}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          data-testid="etapa-add-tarefa-start"
+                          onclick={startCreateTarefa}
+                        >
+                          + tarefa nesta etapa
+                        </Button>
+                        {/if}
                       </Accordion.Content>
                     </Accordion.Item>
                   {/each}
@@ -402,6 +490,15 @@
       <EntityScreen
         config={etapasConfig}
         presetLinks={selectedProjetoId ? { projeto: selectedProjetoId } : null}
+      />
+    </div>
+  {/if}
+
+  {#if tarefaHostReady}
+    <div class="hidden" aria-hidden="true" data-testid="tarefa-host" bind:this={tarefaHostEl}>
+      <EntityScreen
+        config={tarefasConfig}
+        presetLinks={openEtapaId ? { etapa: openEtapaId } : null}
       />
     </div>
   {/if}

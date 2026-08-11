@@ -1,6 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { expect, type Page, test } from "@playwright/test";
-import { selectByText } from "./helpers/form-controls";
+import { selectByText } from "./helpers/form-controls.ts";
 
 // This spec runs in the `authed` project (restores the storageState persisted
 // by auth.setup.ts). Every generated record uses the `phase19-e2e-` prefix so
