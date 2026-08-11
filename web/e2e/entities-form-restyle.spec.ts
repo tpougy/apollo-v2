@@ -3,6 +3,7 @@ import { expect, test } from "@playwright/test";
 import { deleteInstance, seedInstance } from "./fixtures/instancia-admin-fixture.ts";
 import { confirmRowDelete } from "./helpers/delete-confirmation.ts";
 import { openAndReadSelectOptions, pickDate, selectByText } from "./helpers/form-controls.ts";
+import { gotoNested } from "./helpers/gotoNested.ts";
 
 // Proves ENTFRM-01/02 for the fundos (full-CRUD) capability class against the
 // restyled shadcn Dialog/Input/Textarea/Checkbox/Popover+Calendar form, live
@@ -288,8 +289,7 @@ test.describe("templatesRotina — Select field conversion", () => {
 
     const nome = uniqueName("template");
 
-    await page.goto("/");
-    await page.getByTestId("nav-templatesRotina").click();
+    await gotoNested(page, "templatesRotina");
     await page.getByTestId("entity-create-start").click();
     await expect(page.getByRole("dialog")).toBeVisible();
 
@@ -421,8 +421,7 @@ test.describe("subtarefas — xorLink two-step Select chooser", () => {
 
     const titulo = uniqueName("subtarefa-xor");
 
-    await page.goto("/");
-    await page.getByTestId("nav-subtarefas").click();
+    await gotoNested(page, "subtarefas");
     await page.getByTestId("entity-create-start").click();
     await expect(page.getByRole("dialog")).toBeVisible();
 

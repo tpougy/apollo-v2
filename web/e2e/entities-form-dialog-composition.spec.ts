@@ -2,6 +2,7 @@ import { execFileSync } from "node:child_process";
 import { expect, test } from "@playwright/test";
 import { deleteInstance, seedInstance } from "./fixtures/instancia-admin-fixture.ts";
 import { pickDate } from "./helpers/form-controls.ts";
+import { gotoNested } from "./helpers/gotoNested.ts";
 
 // Proves ENTFRM-05/06/07/08 explicitly, live against InstantDB, on top of
 // Plan 15-01's EntityScreen.svelte Dialog/form restructuring (space-y-4/
@@ -38,8 +39,7 @@ function uniqueName(prefix: string): string {
 test("ENTFRM-05: tarefas create Dialog uses a uniform two-tier space-y-4/space-y-2 spacing scale across fields and links", async ({
   page,
 }) => {
-  await page.goto("/");
-  await page.getByTestId("nav-tarefas").click();
+  await gotoNested(page, "tarefas");
   await page.getByTestId("entity-create-start").click();
   await expect(page.getByRole("dialog")).toBeVisible();
 
@@ -96,8 +96,7 @@ test("ENTFRM-05: tarefas create Dialog uses a uniform two-tier space-y-4/space-y
 test("ENTFRM-06: tarefas create Dialog composes Dialog.Description (reusing config.descricao) and Dialog.Footer (wrapping entity-submit/entity-cancel)", async ({
   page,
 }) => {
-  await page.goto("/");
-  await page.getByTestId("nav-tarefas").click();
+  await gotoNested(page, "tarefas");
 
   const headerDescription = page.getByTestId("entity-description");
   const headerDescriptionText = await headerDescription.textContent();
@@ -174,8 +173,7 @@ test("ENTFRM-08: required-indicator appears only on required fields, across full
 
   // (1) tarefas (full-CRUD): required fields show the indicator, optional
   // fields never do.
-  await page.goto("/");
-  await page.getByTestId("nav-tarefas").click();
+  await gotoNested(page, "tarefas");
   await page.getByTestId("entity-create-start").click();
   await expect(page.getByRole("dialog")).toBeVisible();
 

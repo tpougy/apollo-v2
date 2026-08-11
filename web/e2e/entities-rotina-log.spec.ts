@@ -8,6 +8,7 @@ import {
 } from "./fixtures/instancia-admin-fixture.ts";
 import { confirmRowDelete } from "./helpers/delete-confirmation.ts";
 import { openAndReadSelectOptions, selectByText } from "./helpers/form-controls.ts";
+import { gotoNested } from "./helpers/gotoNested.ts";
 
 // This spec runs in the `authed` project (restores the storageState persisted
 // by auth.setup.ts — see 04-01). Every generated record uses the
@@ -115,8 +116,7 @@ test("WEB-06: templatesRotina full CRUD, including the self-referential antecess
   const nomeA = uniqueName("template-a");
   const nomeB = uniqueName("template-b");
 
-  await page.goto("/");
-  await page.getByTestId("nav-templatesRotina").click();
+  await gotoNested(page, "templatesRotina");
 
   // tipoGeracao offers exactly du_fixo, corrido_fixo, encadeado — matching
   // the CLI's click.Choice(_TIPO_GERACAO_CHOICES), no free text.
@@ -168,8 +168,7 @@ test("WEB-06: templatesRotina full CRUD, including the self-referential antecess
   await submitForm(page);
   await expect(page.getByTestId("entity-submit")).toHaveCount(0);
   await waitForSettle(page);
-  await page.reload();
-  await page.getByTestId("nav-templatesRotina").click();
+  await gotoNested(page, "templatesRotina");
   const reloadedRowB = page.getByTestId("row").filter({ hasText: nomeB });
   await expect(reloadedRowB.locator("td").nth(3)).toHaveText("não", {
     timeout: RESYNC_TIMEOUT,

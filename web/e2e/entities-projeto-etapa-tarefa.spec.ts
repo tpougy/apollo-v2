@@ -2,6 +2,7 @@ import { execFileSync } from "node:child_process";
 import { expect, type Page, test } from "@playwright/test";
 import { confirmRowDelete } from "./helpers/delete-confirmation.ts";
 import { openAndReadSelectOptions, pickDate, selectByText } from "./helpers/form-controls.ts";
+import { gotoNested } from "./helpers/gotoNested.ts";
 
 // This spec runs in the `authed` project (restores the storageState persisted
 // by auth.setup.ts — see 04-01). Every generated record uses the
@@ -225,8 +226,7 @@ test("WEB-04: etapas full browser CRUD round trip, with a numeric ordem and a pr
 
   const nome = uniqueName("etapa");
 
-  await page.goto("/");
-  await page.getByTestId("nav-etapas").click();
+  await gotoNested(page, "etapas");
 
   // (1) Create an etapa with ordem 10, linked to the chain projeto. Assert
   // the row shows "10" and the projeto's nome.
@@ -253,9 +253,7 @@ test("WEB-04: etapas full browser CRUD round trip, with a numeric ordem and a pr
   await expect(page.getByTestId("field-ordem")).toHaveValue("20");
   await submitForm(page);
   await expect(page.getByTestId("entity-submit")).toHaveCount(0);
-  await page.waitForTimeout(1500);
-  await page.reload();
-  await page.getByTestId("nav-etapas").click();
+  await gotoNested(page, "etapas");
 
   const reloadedRow = page.getByTestId("row").filter({ hasText: nome });
   await expect(reloadedRow).toHaveAttribute("data-eid", eid ?? "", { timeout: RESYNC_TIMEOUT });
@@ -280,8 +278,7 @@ test("WEB-05: tarefas tipoPrazo is a strict hard/soft select, and optional dates
   const titulo = uniqueName("tarefa");
   const tituloEditado = `${titulo}-editado`;
 
-  await page.goto("/");
-  await page.getByTestId("nav-tarefas").click();
+  await gotoNested(page, "tarefas");
   await page.getByTestId("entity-create-start").click();
 
   // (0) Assert the tipoPrazo select offers EXACTLY "hard" and "soft" —
@@ -342,8 +339,7 @@ test("WEB-04 threat T-04-04: a dangling projeto link is blocked with a visible e
     apolloCli(["projeto", "criar", "--nome", nomeProjetoVitima, "--status", "ativo"]),
   ) as { id: string };
 
-  await page.goto("/");
-  await page.getByTestId("nav-etapas").click();
+  await gotoNested(page, "etapas");
   await page.getByTestId("entity-create-start").click();
   await page.getByTestId("field-nome").fill(nomeEtapa);
   await page.getByTestId("field-ordem").fill("1");
