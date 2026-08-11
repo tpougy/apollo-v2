@@ -473,12 +473,23 @@ test("VERIFY-05: keyboard/focus-visible smoke -- instanciasRotina (restricted, u
     // the nav bar (it is not, by ordem) -- Tab forward from it would land on
     // the NEXT nav button, not into the active screen's content, since every
     // nav button precedes <main> in DOM order regardless of which entity is
-    // active. Tab through every remaining nav button, then through Plan
-    // 18-01's interim `nested-goto` Select trigger (also inside <main>,
-    // between <nav> and the active screen's content), plus one more to
-    // enter <main>'s active screen, to reach the first focusable element in
-    // this capability class's content -- a row-edit button, the only row
-    // action available.
+    // active. Tab through every remaining nav button, then into
+    // RotinasSection's own Tabs.Root (Plan 20-02), which sits ahead of
+    // EntityScreen(instanciasRotina)'s content since Plan 20-05 deleted the
+    // interim `nested-goto` dropdown that used to occupy this DOM position.
+    // Two intermediate stops live inside that Tabs.Root before reaching any
+    // row action, both asserted explicitly below (not folded into a blind
+    // fixed count) so a future DOM change here fails loud with a clear
+    // "expected X, got Y" instead of reproducing DEF-01's silent staleness:
+    //   1. `rotinas-tab-instancias` -- the active tab's own bits-ui
+    //      Tabs.Trigger, a roving-tabindex single stop for the whole
+    //      Tabs.List (verified live: only ONE trigger is ever in the Tab
+    //      sequence, the currently-active one).
+    //   2. bits-ui's own Tabs.Content tabpanel wrapper `<div>` (no
+    //      data-testid of its own) -- a real, separate `tabindex="0"` stop
+    //      per the ARIA tabs pattern (verified live in
+    //      node_modules/bits-ui/dist/bits/tabs/tabs.svelte.js), landing on
+    //      the panel itself before any of its children.
     const navButtons = page.locator('[data-testid^="nav-"]');
     const navTestIds = await navButtons.evaluateAll((els) =>
       els.map((el) => el.getAttribute("data-testid")),
@@ -488,10 +499,17 @@ test("VERIFY-05: keyboard/focus-visible smoke -- instanciasRotina (restricted, u
     await navButtons.nth(idx).focus();
     await expect(navButtons.nth(idx)).toBeFocused();
 
-    const tabsToRowEdit = navTestIds.length - idx + 1;
-    for (let i = 0; i < tabsToRowEdit; i++) {
+    const remainingNavTabs = navTestIds.length - idx - 1;
+    for (let i = 0; i < remainingNavTabs; i++) {
       await page.keyboard.press("Tab");
     }
+
+    await page.keyboard.press("Tab");
+    await expect(page.getByTestId("rotinas-tab-instancias")).toBeFocused();
+
+    await page.keyboard.press("Tab"); // enters bits-ui's Tabs.Content tabpanel wrapper itself
+
+    await page.keyboard.press("Tab");
     const focusedTestId = await page.evaluate(
       () => document.activeElement?.getAttribute("data-testid") ?? null,
     );

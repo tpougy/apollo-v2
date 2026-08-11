@@ -40,5 +40,31 @@ into `RotinasSection`'s own content, a route this plan's diff never renders).
 Tabs.Trigger stop Plan 20-02 introduced (either add `+1` to `tabsToRowEdit`, or assert on
 `rotinas-tab-templates` as an intermediate expected stop before continuing to `row-edit`).
 
-**Status:** Open — not fixed by Plan 20-03 (scope boundary). Flagged for the phase's
-regression-proof wave or a follow-up plan.
+**Status:** RESOLVED — fixed during Plan 20-05's phase-gate regression pass.
+
+**Actual fix applied:** Live probing (`document.activeElement` after each `Tab` press, from
+`nav-instanciasRotina` focused) revealed the real Tab sequence has **two** additional stops
+inside `RotinasSection`'s `Tabs.Root`, not one:
+1. `rotinas-tab-instancias` — the active tab's own bits-ui `Tabs.Trigger`. Confirmed live that
+   bits-ui's `Tabs.List` uses roving `tabindex` (only the currently-active trigger is ever a Tab
+   stop, `rotinas-tab-templates` is skipped since it's inactive) — so this is exactly ONE stop,
+   matching the original suggested fix's assumption.
+2. bits-ui's own `Tabs.Content` tabpanel wrapper `<div>` (`role="tabpanel"`, `tabindex="0"`, no
+   `data-testid`) — a real, separate focus stop per the ARIA tabs pattern, verified live in
+   `node_modules/bits-ui/dist/bits/tabs/tabs.svelte.js`. This second stop was not anticipated by
+   either 20-03-SUMMARY.md's or this deferred item's own root-cause analysis.
+
+Because Plan 20-05 (this same wave) also deleted the interim `nested-goto` Select trigger that
+used to occupy one DOM stop in this exact path, the net change versus the pre-Plan-20-02 DOM is
++1 stop (+2 from `RotinasSection`'s `Tabs.Root`, -1 from the retired dropdown), not the 0 a naive
+"one stop added, one stop removed" reading would suggest — confirmed by first re-running the
+test unmodified immediately after Plan 20-05's Task 1 dropdown removal, which produced a
+DIFFERENT failure (`Received: null`, i.e. focus ran out of stops before reaching `row-edit`),
+proving the fixed-count approach itself needed replacing, not just a `+1`/`+2` tweak.
+
+`web/e2e/cross-phase-verification.spec.ts`'s instanciasRotina test now replaces the single fixed
+`tabsToRowEdit` count with three explicit, individually-asserted stops (remaining nav buttons →
+`rotinas-tab-instancias` focused-assertion → the bits-ui tabpanel `<div>` → `row-edit`), so any
+future DOM change to this path fails loud with a clear "expected X, got Y" instead of silently
+going stale the way this original fixed-count bug did. Verified: full
+`cross-phase-verification.spec.ts` run, 9/9 pass, including this test.
