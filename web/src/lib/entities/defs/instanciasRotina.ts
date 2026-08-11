@@ -39,7 +39,8 @@ const instanciasRotinaConfig: EntityConfig = {
   titulo: "Instâncias de rotina",
   descricao:
     "Instâncias de rotina geradas pelos templates. Apenas o status pode ser atualizado aqui.",
-  ordem: 6,
+  ordem: 1,
+  navTitulo: "Rotinas",
   capabilities: { create: false, update: true, delete: false },
   updatableFields: ["status"],
   fields: [

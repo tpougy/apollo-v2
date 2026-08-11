@@ -10,20 +10,58 @@ import { expect, test } from "@playwright/test";
 
 const NAV_TESTID_SELECTOR = '[data-testid^="nav-"]';
 
+// Some nav buttons show a short `navTitulo` (e.g. "Rotinas", "Log") that
+// differs from the resulting EntityScreen's own `<h2>{config.titulo}</h2>` —
+// so the per-button loop below asserts against this table (keyed by
+// data-testid) instead of the clicked button's own visible label.
+const EXPECTED_H2_BY_TESTID: Record<string, string> = {
+  "nav-dashboard": "Dashboard",
+  "nav-instanciasRotina": "Instâncias de rotina",
+  "nav-tickets": "Tickets",
+  "nav-projetos": "Projetos",
+  "nav-fundos": "Fundos",
+  "nav-logInferenciaClaude": "Log de inferências",
+};
+
 test("each nav Button renders its corresponding EntityScreen", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByTestId("app-shell")).toBeVisible();
 
   const navButtons = page.locator(NAV_TESTID_SELECTOR);
   const count = await navButtons.count();
-  expect(count).toBe(9);
+  expect(count).toBe(6);
 
   for (let i = 0; i < count; i++) {
     const button = navButtons.nth(i);
-    const label = (await button.innerText()).trim();
+    const testid = await button.getAttribute("data-testid");
     await button.click();
-    await expect(page.locator("h2")).toHaveText(label);
+    await expect(page.locator("h2")).toHaveText(EXPECTED_H2_BY_TESTID[testid ?? ""]);
   }
+});
+
+test("NAV-01/NAV-03: fresh load shows exactly the 6-item topbar in order, defaulting to the Dashboard route", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await expect(page.getByTestId("app-shell")).toBeVisible();
+
+  const testids = await page
+    .locator('[data-testid^="nav-"]')
+    .evaluateAll((els) => els.map((el) => el.getAttribute("data-testid")));
+  expect(testids).toEqual([
+    "nav-dashboard",
+    "nav-instanciasRotina",
+    "nav-tickets",
+    "nav-projetos",
+    "nav-fundos",
+    "nav-logInferenciaClaude",
+  ]);
+
+  await expect(page.getByTestId("nav-dashboard")).toHaveAttribute("aria-current", "true");
+  await expect(page.locator('[aria-current="true"]')).toHaveCount(1);
+  await expect(page.locator("h2")).toHaveText("Dashboard");
+  await expect(page.getByTestId("entity-table-frame")).toHaveCount(0);
+  await expect(page.getByTestId("entity-header")).toHaveCount(0);
 });
 
 test("exactly one nav Button shows the active-state indicator at a time", async ({ page }) => {
@@ -33,7 +71,7 @@ test("exactly one nav Button shows the active-state indicator at a time", async 
   const navButtons = page.locator(NAV_TESTID_SELECTOR);
   const count = await navButtons.count();
 
-  // `ativo` defaults to entityConfigs[0].etype on mount, so the first entry
+  // `rota` defaults to { section: "dashboard" } on mount, so nav-dashboard
   // is already active before any click.
   await expect(page.locator('[aria-current="true"]')).toHaveCount(1);
 

@@ -4,13 +4,17 @@
   import { Button } from "$lib/components/ui/button";
   import { Separator } from "$lib/components/ui/separator";
   import { db } from "./db";
+  import Dashboard from "./dashboard/Dashboard.svelte";
   import EntityScreen from "./entities/EntityScreen.svelte";
-  import { configByEtype, entityConfigs } from "./entities/registry";
+  import { configByEtype, navConfigs } from "./entities/registry";
   import { runRoutineInstanceJob } from "./routineJob";
 
   const auth = db.useAuth();
 
-  let ativo = $state(entityConfigs[0].etype);
+  type Route =
+    | { section: "dashboard" }
+    | { section: "entity"; etype: string; tab?: string; selectedId?: string | null };
+  let rota = $state<Route>({ section: "dashboard" });
 
   // Deliberately a plain, NON-reactive module-local `let` — not `$state`,
   // and this trigger deliberately does not use the reactive-effect rune.
@@ -83,23 +87,36 @@
 >
   <!-- outer content frame — do not duplicate padding inside EntityScreen -->
   <nav class="flex flex-wrap gap-2">
-    {#each entityConfigs as cfg (cfg.etype)}
+    <Button
+      type="button"
+      variant={rota.section === "dashboard" ? "secondary" : "ghost"}
+      data-testid="nav-dashboard"
+      aria-current={rota.section === "dashboard"}
+      onclick={() => (rota = { section: "dashboard" })}
+    >
+      Dashboard
+    </Button>
+    {#each navConfigs as cfg (cfg.etype)}
       <Button
         type="button"
-        variant={ativo === cfg.etype ? "secondary" : "ghost"}
+        variant={rota.section === "entity" && rota.etype === cfg.etype ? "secondary" : "ghost"}
         data-testid={`nav-${cfg.etype}`}
-        aria-current={ativo === cfg.etype}
-        onclick={() => (ativo = cfg.etype)}
+        aria-current={rota.section === "entity" && rota.etype === cfg.etype}
+        onclick={() => (rota = { section: "entity", etype: cfg.etype })}
       >
-        {cfg.titulo}
+        {cfg.navTitulo ?? cfg.titulo}
       </Button>
     {/each}
   </nav>
 
-  {#key ativo}
-    {@const active = configByEtype(ativo)}
-    {#if active}
-      <EntityScreen config={active} />
-    {/if}
-  {/key}
+  {#if rota.section === "dashboard"}
+    <Dashboard />
+  {:else}
+    {@const active = configByEtype(rota.etype)}
+    {#key rota.etype}
+      {#if active}
+        <EntityScreen config={active} />
+      {/if}
+    {/key}
+  {/if}
 </main>

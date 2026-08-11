@@ -13,7 +13,7 @@ const ticketsConfig: EntityConfig = {
   etype: "tickets",
   titulo: "Tickets",
   descricao: "Tickets recebidos por e-mail e seus prazos de atendimento.",
-  ordem: 7,
+  ordem: 2,
   capabilities: { create: true, update: true, delete: true },
   fields: [
     { name: "titulo", label: "Título", required: true, kind: "text" },

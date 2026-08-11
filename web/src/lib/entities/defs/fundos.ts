@@ -7,7 +7,7 @@ const fundosConfig: EntityConfig = {
   etype: "fundos",
   titulo: "Fundos",
   descricao: "Fundos de investimento geridos pela controladoria.",
-  ordem: 1,
+  ordem: 4,
   capabilities: { create: true, update: true, delete: true },
   fields: [
     { name: "nome", label: "Nome", required: true, kind: "text" },

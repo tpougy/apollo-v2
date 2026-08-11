@@ -35,3 +35,7 @@ export const entityConfigs: EntityConfig[] = configs;
 export function configByEtype(etype: string): EntityConfig | undefined {
   return entityConfigs.find((config) => config.etype === etype);
 }
+
+export const navConfigs: EntityConfig[] = entityConfigs.filter(
+  (c) => (c.nav ?? "primary") === "primary",
+);

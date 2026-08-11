@@ -23,7 +23,8 @@ const logInferenciaClaudeConfig: EntityConfig = {
   titulo: "Log de inferências",
   descricao:
     "Registro somente leitura das inferências feitas pela IA durante o preenchimento de dados.",
-  ordem: 9,
+  ordem: 5,
+  navTitulo: "Log",
   capabilities: { create: false, update: false, delete: false },
   fields: [
     { name: "campo", label: "Campo", required: true, kind: "text" },

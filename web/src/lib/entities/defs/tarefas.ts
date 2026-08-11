@@ -13,7 +13,8 @@ const tarefasConfig: EntityConfig = {
   etype: "tarefas",
   titulo: "Tarefas",
   descricao: "Tarefas vinculadas às etapas dos projetos.",
-  ordem: 4,
+  ordem: 11,
+  nav: "nested",
   capabilities: { create: true, update: true, delete: true },
   fields: [
     { name: "titulo", label: "Título", required: true, kind: "text" },

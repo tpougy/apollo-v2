@@ -15,7 +15,8 @@ const etapasConfig: EntityConfig = {
   etype: "etapas",
   titulo: "Etapas",
   descricao: "Etapas que compõem os projetos, em ordem de execução.",
-  ordem: 3,
+  ordem: 10,
+  nav: "nested",
   capabilities: { create: true, update: true, delete: true },
   fields: [
     { name: "nome", label: "Nome", required: true, kind: "text" },

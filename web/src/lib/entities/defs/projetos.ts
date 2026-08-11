@@ -9,7 +9,7 @@ const projetosConfig: EntityConfig = {
   etype: "projetos",
   titulo: "Projetos",
   descricao: "Projetos e suas etapas de execução.",
-  ordem: 2,
+  ordem: 3,
   capabilities: { create: true, update: true, delete: true },
   fields: [
     { name: "nome", label: "Nome", required: true, kind: "text" },

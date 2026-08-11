@@ -60,6 +60,8 @@ function configByEtype(etype: string): EntityConfig | undefined {
   return entityConfigs.find((config) => config.etype === etype);
 }
 
+const navConfigs = entityConfigs.filter((c) => (c.nav ?? "primary") === "primary");
+
 // Matches the schema's own formatting exactly: four-space-indented entity
 // keys immediately followed by `i.entity(` (see shared/instant.schema.ts).
 // A formatting change to the schema file must break this regex loudly (the
@@ -286,6 +288,40 @@ describe("registry structural integrity", () => {
           checkLink(config.etype, choice);
         }
       }
+    }
+  });
+});
+
+describe("registry coverage: navConfigs derivation (NAV-04)", () => {
+  test("navConfigs.length equals 5", () => {
+    expect(navConfigs.length).toBe(5);
+  });
+
+  test("navConfigs.map((c) => c.etype) equals exactly the ordem-ascending primary list", () => {
+    expect(navConfigs.map((c) => c.etype)).toEqual([
+      "instanciasRotina",
+      "tickets",
+      "projetos",
+      "fundos",
+      "logInferenciaClaude",
+    ]);
+  });
+
+  test.each(["etapas", "tarefas", "templatesRotina", "subtarefas"])(
+    "%s: configByEtype(...).nav is 'nested' and is absent from navConfigs",
+    (etype) => {
+      expect(configByEtype(etype)?.nav).toBe("nested");
+      expect(navConfigs.some((c) => c.etype === etype)).toBe(false);
+    },
+  );
+
+  test("navTitulo is set only for instanciasRotina (\"Rotinas\") and logInferenciaClaude (\"Log\")", () => {
+    expect(configByEtype("instanciasRotina")?.navTitulo).toBe("Rotinas");
+    expect(configByEtype("logInferenciaClaude")?.navTitulo).toBe("Log");
+    const expectedNavTitulo = new Set(["instanciasRotina", "logInferenciaClaude"]);
+    for (const config of entityConfigs) {
+      if (expectedNavTitulo.has(config.etype)) continue;
+      expect(config.navTitulo, `${config.etype}: navTitulo expected to be undefined`).toBeUndefined();
     }
   });
 });

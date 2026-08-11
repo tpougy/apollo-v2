@@ -28,7 +28,8 @@ const templatesRotinaConfig: EntityConfig = {
   etype: "templatesRotina",
   titulo: "Templates de rotina",
   descricao: "Modelos que geram instâncias de rotina automaticamente.",
-  ordem: 5,
+  ordem: 12,
+  nav: "nested",
   capabilities: { create: true, update: true, delete: true },
   fields: [
     { name: "nome", label: "Nome", required: true, kind: "text" },

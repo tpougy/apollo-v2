@@ -16,7 +16,8 @@ const subtarefasConfig: EntityConfig = {
   etype: "subtarefas",
   titulo: "Subtarefas",
   descricao: "Subtarefas vinculadas a uma tarefa ou a um ticket.",
-  ordem: 8,
+  ordem: 13,
+  nav: "nested",
   capabilities: { create: true, update: true, delete: true },
   fields: [
     { name: "titulo", label: "Título", required: true, kind: "text" },

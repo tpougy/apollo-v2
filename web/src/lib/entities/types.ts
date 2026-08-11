@@ -30,6 +30,8 @@ export interface EntityConfig {
   titulo: string; // nav + heading text
   descricao: string; // one-line sub-heading shown under `titulo` in the entity screen's page-header row (ENTTBL-04)
   ordem: number; // nav sort order
+  nav?: "primary" | "nested"; // Onde a entidade aparece na navegação. Ausente = 'primary'.
+  navTitulo?: string; // Rótulo curto na topbar quando difere de `titulo`.
   capabilities: { create: boolean; update: boolean; delete: boolean };
   updatableFields?: readonly string[]; // when set, edit form exposes ONLY these (instanciasRotina => ["status"])
   fields: readonly FieldDef[];
