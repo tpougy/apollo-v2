@@ -1,6 +1,7 @@
 <script lang="ts">
   import CircleAlert from "@lucide/svelte/icons/circle-alert";
   import { tick } from "svelte";
+  import * as Accordion from "$lib/components/ui/accordion";
   import { Alert, AlertDescription } from "$lib/components/ui/alert";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
@@ -10,17 +11,19 @@
   import EntityScreen from "../entities/EntityScreen.svelte";
   import { configByEtype } from "../entities/registry";
   import type { EntityConfig } from "../entities/types";
+  import { progressoEtapa } from "./projetosDerive";
 
   // Never import a defs/*.ts module directly here — always resolve through
   // the registry so its own default-export validation (registry.ts:21-29)
-  // runs first. `etapasConfig`/`tarefasConfig` are resolved the same way in
-  // Plan 19-02/19-03 when first needed, not here.
+  // runs first. `tarefasConfig` is resolved the same way in Plan 19-02
+  // Task 2 when first needed, not here.
   function requireConfig(etype: string): EntityConfig {
     const cfg = configByEtype(etype);
     if (!cfg) throw new Error(`ProjetosSection: missing EntityConfig for etype "${etype}"`);
     return cfg;
   }
   const projetosConfig = requireConfig("projetos");
+  const etapasConfig = requireConfig("etapas");
 
   // Row shapes mirror the exact nesting of the bespoke query below — one
   // level deeper than the generic EntityScreen.buildQuery can express
@@ -78,6 +81,16 @@
   let searchTerm = $state("");
   let groupBy = $state<GroupBy>("fundo");
   let selectedProjetoId = $state<string | null>(null);
+
+  // Which etapa (by id) is open in the detail column's accordion. Empty
+  // string means "none open" — the installed bits-ui Accordion.Root's
+  // `type="single"` value is typed `string` (default `""`), not
+  // `string | null`, and this version of bits-ui has no `collapsible` prop
+  // (verified absent from AccordionRootSinglePropsWithoutHTML); `""` is
+  // falsy exactly like `null` would be, so every downstream check
+  // (`openEtapaId ? {...} : null` for presetLinks) behaves identically
+  // either way. Single-open behavior itself only requires `type="single"`.
+  let openEtapaId = $state("");
 
   // Mirrors Shell.svelte's own nestedGroups grouping pattern (Map +
   // Array.from(entries), zero per-entity branching), extended to 3 modes.
@@ -180,6 +193,39 @@
       `[data-testid="row"][data-eid="${selectedProjetoId}"] [data-testid="row-edit"]`,
     );
   }
+
+  // Hidden host for "+ etapa" — a second independent instance of the same
+  // hidden-EntityScreen pattern as `projetoHostEl` above (19-RESEARCH.md
+  // Pattern 2), never a shared one. Scoped querySelector via `etapaHostEl`
+  // (never a bare global `document.querySelector`) so this host can never be
+  // mis-targeted by (or mis-target) the projeto/tarefa hosts.
+  let etapaHostReady = $state(false);
+  let etapaHostEl = $state<HTMLDivElement | undefined>(undefined);
+
+  // Same bounded-poll shape as `openProjetoDialog` above — the hidden host's
+  // own `db.useQuery` may not have resolved yet when this fires, so a single
+  // `tick()` is not sufficient in general (see 19-01-SUMMARY.md's documented
+  // bugfix for the projeto host's "editar" target). Applied identically here
+  // even though "+ etapa"'s own target (`entity-create-start`) does not
+  // strictly need it, so every hidden host in this component shares one
+  // dialog-opening code shape.
+  async function openEtapaDialog(selector: string): Promise<void> {
+    etapaHostReady = true;
+    await tick();
+    const deadline = Date.now() + 5000;
+    while (Date.now() < deadline) {
+      const el = etapaHostEl?.querySelector<HTMLButtonElement>(selector);
+      if (el) {
+        el.click();
+        return;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+  }
+
+  function startCreateEtapa(): void {
+    void openEtapaDialog('[data-testid="entity-create-start"]');
+  }
 </script>
 
 <section class="space-y-6">
@@ -264,6 +310,9 @@
 
       <div class="flex-1">
         {#if selectedProjeto}
+          {@const etapasOrdenadas = [...(selectedProjeto.etapas ?? [])].sort(
+            (a, b) => a.ordem - b.ordem,
+          )}
           <div data-testid="project-detail" class="space-y-4">
             <p data-testid="project-breadcrumb" class="text-xs text-muted-foreground">
               PROJETOS › {selectedProjeto.nome}
@@ -271,14 +320,24 @@
             <div data-testid="project-header" class="space-y-1">
               <div class="flex items-center justify-between gap-4">
                 <h3 class="text-lg font-semibold">{selectedProjeto.nome}</h3>
-                <Button
-                  type="button"
-                  variant="outline"
-                  data-testid="project-edit-start"
-                  onclick={startEditProjeto}
-                >
-                  editar projeto
-                </Button>
+                <div class="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    data-testid="project-add-etapa-start"
+                    onclick={startCreateEtapa}
+                  >
+                    + etapa
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    data-testid="project-edit-start"
+                    onclick={startEditProjeto}
+                  >
+                    editar projeto
+                  </Button>
+                </div>
               </div>
               <p class="text-sm text-muted-foreground">
                 {selectedProjeto.fundo?.nome ?? "Sem fundo vinculado"} ·
@@ -286,7 +345,40 @@
                 {totalTarefas(selectedProjeto)} tarefas
               </p>
             </div>
-            <!-- "+ etapa" (Plan 19-02) header action is added afterward. -->
+
+            <div data-testid="project-etapas-list" class="space-y-2">
+              {#if etapasOrdenadas.length === 0}
+                <p class="text-sm text-muted-foreground">Nenhuma etapa cadastrada.</p>
+              {:else}
+                <Accordion.Root type="single" bind:value={openEtapaId}>
+                  {#each etapasOrdenadas as etapa (etapa.id)}
+                    {@const { feitas, total } = progressoEtapa(etapa)}
+                    <Accordion.Item value={etapa.id}>
+                      <Accordion.Trigger
+                        data-testid="etapa-row"
+                        data-eid={etapa.id}
+                        class="items-center gap-4"
+                      >
+                        <span class="font-mono w-8">{etapa.ordem}</span>
+                        <span class="flex-1 text-left">{etapa.nome}</span>
+                        <div class="w-24">
+                          <div class="h-1 w-full rounded-full bg-muted">
+                            <div
+                              class="h-1 rounded-full bg-foreground"
+                              style={`width: ${total > 0 ? (feitas / total) * 100 : 0}%`}
+                            ></div>
+                          </div>
+                        </div>
+                        <span class="text-xs text-muted-foreground">{feitas}/{total}</span>
+                      </Accordion.Trigger>
+                      <Accordion.Content>
+                        <!-- Task 2 adds the inline tarefas list + "+ tarefa nesta etapa" here. -->
+                      </Accordion.Content>
+                    </Accordion.Item>
+                  {/each}
+                </Accordion.Root>
+              {/if}
+            </div>
           </div>
         {:else}
           <div data-testid="project-empty">
@@ -302,6 +394,15 @@
   {#if projetoHostReady}
     <div class="hidden" aria-hidden="true" data-testid="projeto-host" bind:this={projetoHostEl}>
       <EntityScreen config={projetosConfig} />
+    </div>
+  {/if}
+
+  {#if etapaHostReady}
+    <div class="hidden" aria-hidden="true" data-testid="etapa-host" bind:this={etapaHostEl}>
+      <EntityScreen
+        config={etapasConfig}
+        presetLinks={selectedProjetoId ? { projeto: selectedProjetoId } : null}
+      />
     </div>
   {/if}
 </section>

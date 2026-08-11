@@ -11,9 +11,9 @@ describe("tarefaConcluida", () => {
   });
 
   test("mixed subtarefas -> false (ALL must be true)", () => {
-    expect(
-      tarefaConcluida({ subtarefas: [{ concluida: true }, { concluida: false }] }),
-    ).toBe(false);
+    expect(tarefaConcluida({ subtarefas: [{ concluida: true }, { concluida: false }] })).toBe(
+      false,
+    );
   });
 
   test("subtarefas absent entirely (undefined) -> false", () => {
@@ -51,15 +51,11 @@ describe("progressoEtapa", () => {
 
 describe("vencido", () => {
   test("past dataPrevista, not concluido -> true", () => {
-    expect(
-      vencido("2020-01-01T00:00:00.000Z", false, new Date("2026-01-01")),
-    ).toBe(true);
+    expect(vencido("2020-01-01T00:00:00.000Z", false, new Date("2026-01-01"))).toBe(true);
   });
 
   test("past dataPrevista, concluido -> false (already concluded is never vencido)", () => {
-    expect(
-      vencido("2020-01-01T00:00:00.000Z", true, new Date("2026-01-01")),
-    ).toBe(false);
+    expect(vencido("2020-01-01T00:00:00.000Z", true, new Date("2026-01-01"))).toBe(false);
   });
 
   test("no dataPrevista -> false", () => {
@@ -71,8 +67,6 @@ describe("vencido", () => {
   });
 
   test("future dataPrevista, not concluido -> false", () => {
-    expect(
-      vencido("2030-01-01T00:00:00.000Z", false, new Date("2026-01-01")),
-    ).toBe(false);
+    expect(vencido("2030-01-01T00:00:00.000Z", false, new Date("2026-01-01"))).toBe(false);
   });
 });

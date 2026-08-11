@@ -50,6 +50,24 @@ function tryDelete(group: string, eid: string | null | undefined): void {
 }
 
 function sweepLeftovers(): void {
+  // Order matters: tarefas/subtarefas before etapas before projetos before
+  // fundos, mirroring entities-projeto-etapa-tarefa.spec.ts's own
+  // sweepLeftovers — InstantDB does not cascade-delete linked rows.
+  const subtarefas = JSON.parse(apolloCli(["subtarefa", "listar"])) as {
+    id: string;
+    titulo: string;
+  }[];
+  for (const record of subtarefas) {
+    if (record.titulo.startsWith(PREFIX)) tryDelete("subtarefa", record.id);
+  }
+  const tarefas = JSON.parse(apolloCli(["tarefa", "listar"])) as { id: string; titulo: string }[];
+  for (const record of tarefas) {
+    if (record.titulo.startsWith(PREFIX)) tryDelete("tarefa", record.id);
+  }
+  const etapas = JSON.parse(apolloCli(["etapa", "listar"])) as { id: string; nome: string }[];
+  for (const record of etapas) {
+    if (record.nome.startsWith(PREFIX)) tryDelete("etapa", record.id);
+  }
   const projetos = JSON.parse(apolloCli(["projeto", "listar"])) as { id: string; nome: string }[];
   for (const record of projetos) {
     if (record.nome.startsWith(PREFIX)) tryDelete("projeto", record.id);
@@ -252,4 +270,286 @@ test("NEST-02: 'editar projeto' opens the same hidden EntityScreen(projetosConfi
   } finally {
     tryDelete("projeto", eid);
   }
+});
+
+test.describe("etapas accordion (NEST-02)", () => {
+  let projetoId = "";
+  let projetoNome = "";
+  // Deliberately created out of `ordem` order: etapaAlta (ordem 20) first,
+  // etapaBaixa (ordem 10) second — proves the row is sorted by the
+  // row-level `etapas.ordem` field, never array insertion order.
+  let etapaAltaId = "";
+  let etapaAltaNome = "";
+  let etapaBaixaId = "";
+  let etapaBaixaNome = "";
+  let tarefaDoneId = "";
+  let tarefaMistaId = "";
+  let tarefaSemSubId = "";
+  let tarefaAtrasadaId = "";
+  let tarefaAltaId = "";
+
+  test.beforeAll(() => {
+    projetoNome = uniqueName("acc-projeto");
+    const projetoCreated = JSON.parse(
+      apolloCli(["projeto", "criar", "--nome", projetoNome, "--status", "ativo"]),
+    ) as { id: string };
+    projetoId = projetoCreated.id;
+
+    etapaAltaNome = uniqueName("etapa-alta");
+    const etapaAltaCreated = JSON.parse(
+      apolloCli([
+        "etapa",
+        "criar",
+        "--nome",
+        etapaAltaNome,
+        "--ordem",
+        "20",
+        "--status",
+        "ativo",
+        "--projeto-id",
+        projetoId,
+      ]),
+    ) as { id: string };
+    etapaAltaId = etapaAltaCreated.id;
+
+    etapaBaixaNome = uniqueName("etapa-baixa");
+    const etapaBaixaCreated = JSON.parse(
+      apolloCli([
+        "etapa",
+        "criar",
+        "--nome",
+        etapaBaixaNome,
+        "--ordem",
+        "10",
+        "--status",
+        "ativo",
+        "--projeto-id",
+        projetoId,
+      ]),
+    ) as { id: string };
+    etapaBaixaId = etapaBaixaCreated.id;
+
+    // etapaBaixa's tarefas: 1 feita (all subtarefas concluida) out of 4 total.
+    const tarefaDoneCreated = JSON.parse(
+      apolloCli([
+        "tarefa",
+        "criar",
+        "--titulo",
+        uniqueName("tarefa-concluida"),
+        "--tipo-prazo",
+        "soft",
+        "--status",
+        "pendente",
+        "--data-prevista",
+        "2020-01-01",
+        "--etapa-id",
+        etapaBaixaId,
+      ]),
+    ) as { id: string };
+    tarefaDoneId = tarefaDoneCreated.id;
+    apolloCli([
+      "subtarefa",
+      "criar",
+      "--titulo",
+      uniqueName("sub"),
+      "--ordem",
+      "1",
+      "--concluida",
+      "--tarefa-id",
+      tarefaDoneId,
+    ]);
+
+    const tarefaMistaCreated = JSON.parse(
+      apolloCli([
+        "tarefa",
+        "criar",
+        "--titulo",
+        uniqueName("tarefa-mista"),
+        "--tipo-prazo",
+        "soft",
+        "--status",
+        "pendente",
+        "--data-prevista",
+        "2030-01-01",
+        "--etapa-id",
+        etapaBaixaId,
+      ]),
+    ) as { id: string };
+    tarefaMistaId = tarefaMistaCreated.id;
+    apolloCli([
+      "subtarefa",
+      "criar",
+      "--titulo",
+      uniqueName("sub"),
+      "--ordem",
+      "1",
+      "--concluida",
+      "--tarefa-id",
+      tarefaMistaId,
+    ]);
+    apolloCli([
+      "subtarefa",
+      "criar",
+      "--titulo",
+      uniqueName("sub"),
+      "--ordem",
+      "2",
+      "--nao-concluida",
+      "--tarefa-id",
+      tarefaMistaId,
+    ]);
+
+    const tarefaSemSubCreated = JSON.parse(
+      apolloCli([
+        "tarefa",
+        "criar",
+        "--titulo",
+        uniqueName("tarefa-sem-subs"),
+        "--tipo-prazo",
+        "hard",
+        "--status",
+        "pendente",
+        "--etapa-id",
+        etapaBaixaId,
+      ]),
+    ) as { id: string };
+    tarefaSemSubId = tarefaSemSubCreated.id;
+
+    const tarefaAtrasadaCreated = JSON.parse(
+      apolloCli([
+        "tarefa",
+        "criar",
+        "--titulo",
+        uniqueName("tarefa-atrasada"),
+        "--tipo-prazo",
+        "hard",
+        "--status",
+        "pendente",
+        "--data-prevista",
+        "2020-01-01",
+        "--etapa-id",
+        etapaBaixaId,
+      ]),
+    ) as { id: string };
+    tarefaAtrasadaId = tarefaAtrasadaCreated.id;
+
+    // etapaAlta's tarefa: 1 feita / 1 total.
+    const tarefaAltaCreated = JSON.parse(
+      apolloCli([
+        "tarefa",
+        "criar",
+        "--titulo",
+        uniqueName("tarefa-alta-concluida"),
+        "--tipo-prazo",
+        "soft",
+        "--status",
+        "pendente",
+        "--etapa-id",
+        etapaAltaId,
+      ]),
+    ) as { id: string };
+    tarefaAltaId = tarefaAltaCreated.id;
+    apolloCli([
+      "subtarefa",
+      "criar",
+      "--titulo",
+      uniqueName("sub"),
+      "--ordem",
+      "1",
+      "--concluida",
+      "--tarefa-id",
+      tarefaAltaId,
+    ]);
+  });
+
+  test.afterAll(() => {
+    tryDelete("tarefa", tarefaDoneId);
+    tryDelete("tarefa", tarefaMistaId);
+    tryDelete("tarefa", tarefaSemSubId);
+    tryDelete("tarefa", tarefaAtrasadaId);
+    tryDelete("tarefa", tarefaAltaId);
+    tryDelete("etapa", etapaAltaId);
+    tryDelete("etapa", etapaBaixaId);
+    tryDelete("projeto", projetoId);
+    sweepLeftovers();
+  });
+
+  test("NEST-02: etapas render ordered by row-level ordem asc regardless of creation order, with progress bar/counter from progressoEtapa", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await page.getByTestId("nav-projetos").click();
+    await page.getByTestId("project-item").filter({ hasText: projetoNome }).click();
+
+    await expect(page.getByTestId("project-etapas-list")).toBeVisible({ timeout: RESYNC_TIMEOUT });
+
+    const rows = page.getByTestId("etapa-row");
+    await expect(rows).toHaveCount(2, { timeout: RESYNC_TIMEOUT });
+    // ordem ascending: etapaBaixa (10) before etapaAlta (20), despite
+    // etapaAlta having been created first via the CLI above.
+    await expect(rows.nth(0)).toHaveAttribute("data-eid", etapaBaixaId);
+    await expect(rows.nth(1)).toHaveAttribute("data-eid", etapaAltaId);
+
+    // etapaBaixa: 1 feita (tarefaDone, subtarefas all concluida) / 4 total.
+    await expect(rows.nth(0)).toContainText("1/4");
+    // etapaAlta: 1 feita / 1 total.
+    await expect(rows.nth(1)).toContainText("1/1");
+  });
+
+  test("NEST-02: accordion is single-open -- opening one etapa closes the other", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await page.getByTestId("nav-projetos").click();
+    await page.getByTestId("project-item").filter({ hasText: projetoNome }).click();
+
+    const baixaRow = page.getByTestId("etapa-row").filter({ hasText: etapaBaixaNome });
+    const altaRow = page.getByTestId("etapa-row").filter({ hasText: etapaAltaNome });
+    await expect(baixaRow).toBeVisible({ timeout: RESYNC_TIMEOUT });
+
+    await baixaRow.click();
+    await expect(baixaRow).toHaveAttribute("aria-expanded", "true");
+
+    await altaRow.click();
+    await expect(altaRow).toHaveAttribute("aria-expanded", "true");
+    await expect(baixaRow).toHaveAttribute("aria-expanded", "false");
+  });
+
+  test("NEST-02: '+ etapa' creates via the hidden-instance pattern, presetLinks pre-fills but does not lock the projeto link", async ({
+    page,
+  }) => {
+    test.setTimeout(60_000);
+    const novaEtapaNome = uniqueName("nova-etapa");
+
+    await page.goto("/");
+    await page.getByTestId("nav-projetos").click();
+    await page.getByTestId("project-item").filter({ hasText: projetoNome }).click();
+
+    await page.getByTestId("project-add-etapa-start").click();
+    await expect(page.getByTestId("field-nome")).toBeVisible({ timeout: RESYNC_TIMEOUT });
+
+    // The projeto link select is still visible/editable, pre-filled to the
+    // currently selected projeto (spec §2.1: "select do link continua
+    // visível e editável").
+    await expect(page.getByTestId("link-projeto")).toBeVisible();
+    await expect(page.getByTestId("link-projeto")).toHaveText(projetoNome, {
+      timeout: RESYNC_TIMEOUT,
+    });
+
+    await page.getByTestId("field-nome").fill(novaEtapaNome);
+    await page.getByTestId("field-ordem").fill("15");
+    await page.getByTestId("field-status").fill("ativo");
+    await submitForm(page);
+
+    const novaRow = page.getByTestId("etapa-row").filter({ hasText: novaEtapaNome });
+    await expect(novaRow).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    const novaEid = await novaRow.getAttribute("data-eid");
+
+    // Sorted position: ordem 15 lands between etapaBaixa (10) and etapaAlta (20).
+    const rows = page.getByTestId("etapa-row");
+    await expect(rows).toHaveCount(3);
+    await expect(rows.nth(1)).toHaveAttribute("data-eid", novaEid as string);
+
+    tryDelete("etapa", novaEid);
+  });
 });
