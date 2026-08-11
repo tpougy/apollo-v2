@@ -163,60 +163,84 @@ test("WEB-03: projetos full browser CRUD round trip, with and without an optiona
   await page.goto("/");
   await page.getByTestId("nav-projetos").click();
 
-  // (1) Create projeto A: nome + status only, no fundo link, both dates
-  // blank. Assert the row appears with an EMPTY fundo cell — not the literal
-  // "undefined"/"null" — proving the optional link renders blank cleanly.
-  await page.getByTestId("entity-create-start").click();
+  // (1) Create projeto A: nome + status only, no fundo link. Assert it
+  // appears in the master list, correctly grouped under "Sem fundo
+  // vinculado" (the master column's grouping default) — proving the
+  // optional link is genuinely absent, not silently defaulted.
+  await page.getByTestId("project-create-start").click();
   await page.getByTestId("field-nome").fill(nomeA);
   await page.getByTestId("field-status").fill("ativo");
   await submitForm(page);
 
-  const rowA = page.getByTestId("row").filter({ hasText: nomeA });
-  await expect(rowA).toBeVisible();
-  const eidA = await rowA.getAttribute("data-eid");
+  const itemA = page.getByTestId("project-item").filter({ hasText: nomeA });
+  await expect(itemA).toBeVisible({ timeout: RESYNC_TIMEOUT });
+  const eidA = await itemA.getAttribute("data-eid");
   expect(eidA).toBeTruthy();
 
-  const cellsA = rowA.locator("td");
-  const fundoCellTextA = await cellsA.nth(2).textContent();
-  expect(fundoCellTextA?.trim()).toBe("");
-  expect(fundoCellTextA).not.toContain("undefined");
-  expect(fundoCellTextA).not.toContain("null");
+  const groupA = itemA.locator("xpath=ancestor::*[@data-testid='project-group']");
+  await expect(groupA.getByTestId("project-group-heading")).toHaveText("Sem fundo vinculado");
 
-  // (2) Edit projeto A to set dataInicioPrevista, reload, assert the exact
-  // YYYY-MM-DD value round-trips through the ISO date helpers.
+  // (2) Select it; assert the detail header shows "Sem fundo vinculado" and
+  // zero etapas/tarefas counts.
+  await itemA.click();
+  const header = page.getByTestId("project-header");
+  await expect(header).toContainText("Sem fundo vinculado");
+  await expect(header).toContainText("0 etapas");
+  await expect(header).toContainText("0 tarefas");
+
+  // (3) Edit projeto A to set dataInicioPrevista, reload, assert the same
+  // data-eid resolves again (update-in-place, not delete+recreate) AND the
+  // edited date field actually persisted server-side. ProjetosSection's
+  // project-header does not render dataInicioPrevista anywhere in its
+  // markup (unlike the old flat EntityScreen table this test replaces,
+  // which had a visible column for it) -- confirmed by inspecting
+  // ProjetosSection.svelte, not assumed -- so the persisted value is
+  // verified via the CLI's own read path instead of a UI assertion,
+  // deliberately kept in a "no production runtime code touched" plan.
   await waitForCreateSettle(page);
-  await rowA.getByTestId("row-edit").click();
+  await page.getByTestId("project-edit-start").click();
   const dataInicioPrevistaValue = await pickDate(page, "field-dataInicioPrevista");
   await submitForm(page);
   await expect(page.getByTestId("entity-submit")).toHaveCount(0);
   await page.waitForTimeout(1500);
   await page.reload();
   await page.getByTestId("nav-projetos").click();
-  const reloadedRowA = page.getByTestId("row").filter({ hasText: nomeA });
-  await expect(reloadedRowA).toContainText(dataInicioPrevistaValue, { timeout: RESYNC_TIMEOUT });
 
-  // (3) Create projeto B WITH a fundo link selected; assert the fundo's
-  // nome renders in the column.
-  await page.getByTestId("entity-create-start").click();
+  const reloadedItemA = page.getByTestId("project-item").filter({ hasText: nomeA });
+  await expect(reloadedItemA).toHaveAttribute("data-eid", eidA ?? "", { timeout: RESYNC_TIMEOUT });
+  await expect
+    .poll(
+      () => {
+        const listed = JSON.parse(apolloCli(["projeto", "listar"])) as {
+          id: string;
+          dataInicioPrevista?: string;
+        }[];
+        return listed.find((r) => r.id === eidA)?.dataInicioPrevista ?? "";
+      },
+      { timeout: RESYNC_TIMEOUT },
+    )
+    .toContain(dataInicioPrevistaValue);
+
+  // (4) Create projeto B WITH a fundo link selected; assert it appears in
+  // the master list, correctly grouped under the fundo's own nome (not
+  // "Sem fundo vinculado").
+  await page.getByTestId("project-create-start").click();
   await page.getByTestId("field-nome").fill(nomeB);
   await page.getByTestId("field-status").fill("ativo");
   await selectByText(page, "link-fundo", chainFundoNome);
   await submitForm(page);
 
-  const rowB = page.getByTestId("row").filter({ hasText: nomeB });
-  await expect(rowB).toBeVisible();
-  await expect(rowB).toContainText(chainFundoNome);
+  const itemB = page.getByTestId("project-item").filter({ hasText: nomeB });
+  await expect(itemB).toBeVisible({ timeout: RESYNC_TIMEOUT });
+  const groupB = itemB.locator("xpath=ancestor::*[@data-testid='project-group']");
+  await expect(groupB.getByTestId("project-group-heading")).toHaveText(chainFundoNome);
 
-  // (4) Delete both.
-  await confirmRowDelete(page, reloadedRowA);
-  await expect(page.getByTestId("row").filter({ hasText: nomeA })).toHaveCount(0, {
-    timeout: RESYNC_TIMEOUT,
-  });
-
-  await confirmRowDelete(page, rowB);
-  await expect(page.getByTestId("row").filter({ hasText: nomeB })).toHaveCount(0, {
-    timeout: RESYNC_TIMEOUT,
-  });
+  // No UI-driven delete step: ProjetosSection has no delete affordance
+  // (spec-ui.md §2.2 lists only "editar projeto"/"+ etapa" as header
+  // actions). This file's existing sweepLeftovers() (CLI-driven,
+  // beforeAll/afterAll) already deletes every lingering phase04-e2e-
+  // prefixed projeto regardless of how it was created, so test hygiene is
+  // preserved without a UI delete step.
 });
 
 test("WEB-04: etapas full browser CRUD round trip, with a numeric ordem and a projeto link", async ({
