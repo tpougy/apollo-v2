@@ -210,3 +210,40 @@ test("NEST-02: selecting a project-item highlights it and shows its breadcrumb/h
   expect(itemBg).not.toBe(otherBgAfter);
   expect(otherBgAfter).toBe(otherBgBefore);
 });
+
+test("NEST-02: 'editar projeto' opens the same hidden EntityScreen(projetosConfig) instance's edit form, pre-filled, and updates in place", async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+
+  const nomeOriginal = uniqueName("editavel");
+  const nomeEditado = `${nomeOriginal}-editado`;
+  const created = JSON.parse(
+    apolloCli(["projeto", "criar", "--nome", nomeOriginal, "--status", "ativo"]),
+  ) as { id: string };
+  const eid = created.id;
+
+  try {
+    await page.goto("/");
+    await page.getByTestId("nav-projetos").click();
+
+    const item = page.getByTestId("project-item").filter({ hasText: nomeOriginal });
+    await expect(item).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    await item.click();
+
+    await page.getByTestId("project-edit-start").click();
+    await expect(page.getByTestId("field-nome")).toHaveValue(nomeOriginal);
+
+    await page.getByTestId("field-nome").fill(nomeEditado);
+    await submitForm(page);
+
+    const editedItem = page.getByTestId("project-item").filter({ hasText: nomeEditado });
+    await expect(editedItem).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    await expect(editedItem).toHaveAttribute("data-eid", eid);
+
+    const header = page.getByTestId("project-header");
+    await expect(header.locator("h3")).toHaveText(nomeEditado, { timeout: RESYNC_TIMEOUT });
+  } finally {
+    tryDelete("projeto", eid);
+  }
+});
