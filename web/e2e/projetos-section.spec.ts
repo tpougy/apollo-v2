@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { expect, type Page, test } from "@playwright/test";
+import { confirmRowDelete } from "./helpers/delete-confirmation.ts";
 import { selectByText } from "./helpers/form-controls.ts";
 
 // This spec runs in the `authed` project (restores the storageState persisted
@@ -665,12 +666,75 @@ test.describe("etapas accordion (NEST-02)", () => {
       .filter({ hasText: tarefaSemSubTitulo });
     await expect(semSubRow.getByTestId("etapa-tarefa-subtarefas-chip")).toHaveText("0/0");
 
-    // The chip is a passive Badge, never an interactive <button> -- Phase 20
-    // wires the click (NEST-05, deferred per CONTEXT.md).
+    // NEST-05 (Plan 20-03): the chip is now a real, keyboard-reachable
+    // button -- spec §0's rule that every clickable surface is a genuine
+    // <button>, never a passive element with an onclick bolted on.
     const chipTag = await doneRow
       .getByTestId("etapa-tarefa-subtarefas-chip")
       .evaluate((el) => el.tagName.toLowerCase());
-    expect(chipTag).not.toBe("button");
+    expect(chipTag).toBe("button");
+  });
+
+  test("NEST-05: etapa-detail subtarefa chip opens a SubtarefasPanel scoped to that tarefa, with create/delete round-trip via the panel", async ({
+    page,
+  }) => {
+    test.setTimeout(60_000);
+    const novaSubTitulo = uniqueName("chip-sub");
+
+    await page.goto("/");
+    await page.getByTestId("nav-projetos").click();
+    await page.getByTestId("project-item").filter({ hasText: projetoNome }).click();
+
+    const baixaRow = page.getByTestId("etapa-row").filter({ hasText: etapaBaixaNome });
+    await expect(baixaRow).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    await baixaRow.click();
+
+    const tarefasList = page.getByTestId("etapa-tarefas-list");
+    await expect(tarefasList).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    const doneRow = tarefasList
+      .getByTestId("etapa-tarefa-row")
+      .filter({ hasText: tarefaDoneTitulo });
+    await expect(doneRow).toBeVisible({ timeout: RESYNC_TIMEOUT });
+
+    await doneRow.getByTestId("etapa-tarefa-subtarefas-chip").click();
+
+    const panel = page.getByTestId("subtarefas-panel");
+    await expect(panel).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    // Exactly the fixture's one subtarefa -- never one belonging to a
+    // different tarefa (tarefaMista/tarefaAlta each have their own).
+    await expect(panel.getByTestId("row")).toHaveCount(1, { timeout: RESYNC_TIMEOUT });
+
+    await panel.getByTestId("subtarefa-add-start").click();
+    await expect(page.getByTestId("field-titulo")).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    // Driven entirely by SubtarefasPanel's own code -- this test never
+    // clicks xor-parent-type/link-tarefa itself.
+    await expect(page.getByTestId("xor-parent-type")).toHaveText("tarefa", {
+      timeout: RESYNC_TIMEOUT,
+    });
+    await expect(page.getByTestId("link-tarefa")).toHaveText(tarefaDoneTitulo, {
+      timeout: RESYNC_TIMEOUT,
+    });
+
+    await page.getByTestId("field-titulo").fill(novaSubTitulo);
+    await page.getByTestId("field-ordem").fill("2");
+    await submitForm(page);
+
+    const newRow = panel.getByTestId("row").filter({ hasText: novaSubTitulo });
+    await expect(newRow).toBeVisible({ timeout: RESYNC_TIMEOUT });
+
+    await confirmRowDelete(page, newRow);
+    await expect(panel.getByTestId("row").filter({ hasText: novaSubTitulo })).toHaveCount(0, {
+      timeout: RESYNC_TIMEOUT,
+    });
+
+    // Count badge reverts to the fixture's original 1/1.
+    await expect(doneRow.getByTestId("etapa-tarefa-subtarefas-chip")).toHaveText("1/1", {
+      timeout: RESYNC_TIMEOUT,
+    });
+
+    // Toggle: clicking the chip again closes the panel.
+    await doneRow.getByTestId("etapa-tarefa-subtarefas-chip").click();
+    await expect(page.getByTestId("subtarefas-panel")).toHaveCount(0);
   });
 
   test("NEST-02: '+ tarefa nesta etapa' creates via the hidden-instance pattern, pre-linked to the live open etapa", async ({
@@ -900,5 +964,52 @@ test.describe("Todas as tarefas / Sem etapa (NEST-03)", () => {
 
     await panel.getByTestId("tarefas-sem-etapa-toggle").uncheck();
     await expect(comEtapaRow).toBeVisible({ timeout: RESYNC_TIMEOUT });
+  });
+
+  test("NEST-05: clicking an orphan tarefa's row in 'Todas as tarefas' opens SubtarefasPanel scoped to it -- the escape hatch is not a dead end", async ({
+    page,
+  }) => {
+    test.setTimeout(60_000);
+    const subTitulo = uniqueName("orfa-sub");
+
+    await page.goto("/");
+    await page.getByTestId("nav-projetos").click();
+    await page.getByTestId("projetos-tab-todas").click();
+
+    const table = page.getByTestId("todas-tarefas-table");
+    // tarefaOrfa was created above with no --etapa-id -- the exact fixture
+    // this whole test proves stays reachable for its subtarefas too, once
+    // this phase retires the interim `subtarefas` nav route.
+    const orfaRow = table.getByTestId("row").filter({ hasText: tarefaOrfaTitulo });
+    await expect(orfaRow).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    await orfaRow.click();
+
+    const panel = page.getByTestId("subtarefas-panel");
+    await expect(panel).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    await expect(panel.getByTestId("row")).toHaveCount(0);
+
+    await panel.getByTestId("subtarefa-add-start").click();
+    await expect(page.getByTestId("field-titulo")).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    await expect(page.getByTestId("xor-parent-type")).toHaveText("tarefa", {
+      timeout: RESYNC_TIMEOUT,
+    });
+    await expect(page.getByTestId("link-tarefa")).toHaveText(tarefaOrfaTitulo, {
+      timeout: RESYNC_TIMEOUT,
+    });
+
+    await page.getByTestId("field-titulo").fill(subTitulo);
+    await page.getByTestId("field-ordem").fill("1");
+    await submitForm(page);
+
+    const newRow = panel.getByTestId("row").filter({ hasText: subTitulo });
+    await expect(newRow).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    const newId = await newRow.getAttribute("data-eid");
+
+    await confirmRowDelete(page, newRow);
+    await expect(panel.getByTestId("row").filter({ hasText: subTitulo })).toHaveCount(0, {
+      timeout: RESYNC_TIMEOUT,
+    });
+
+    tryDelete("subtarefa", newId);
   });
 });
