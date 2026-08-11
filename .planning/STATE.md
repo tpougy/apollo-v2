@@ -4,17 +4,17 @@ milestone: v1.3
 milestone_name: Navegação reorganizada + Dashboard de acompanhamento
 current_phase: 19
 current_phase_name: Projetos Section (Master-Detail)
-status: executing
-stopped_at: Completed 19-03-PLAN.md
-last_updated: "2026-08-11T19:56:51.768Z"
+status: verifying
+stopped_at: Completed 19-04-PLAN.md (Phase 19 fully complete)
+last_updated: "2026-08-11T20:49:00.580Z"
 last_activity: 2026-08-11
 last_activity_desc: 19-03-PLAN.md executed - etapas kanban toggle + Todas as tarefas tab with Sem etapa filter via scopeWhere isNull operator, live-verified against hosted InstantDB (NEST-03 complete, Phase 19 requirements done)
 progress:
   total_phases: 6
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 7
-  completed_plans: 6
-  percent: 17
+  completed_plans: 7
+  percent: 33
 ---
 
 # Project State
@@ -30,10 +30,10 @@ See: .planning/PROJECT.md (updated 2026-08-10)
 
 Phase: 19 of 23 (Projetos Section (Master-Detail))
 Plan: 4 of 4
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-08-11 — 19-03-PLAN.md complete (etapas kanban toggle + Todas as tarefas/Sem etapa, NEST-03) — Phase 19 requirements done, Plan 19-04 (regression fixes) remains
 
-Progress: [█████████░] 86%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -66,6 +66,7 @@ Progress: [█████████░] 86%
 | Phase 19 P01 | 25min | 2 tasks | 16 files |
 | Phase 19 P02 | 22min | 2 tasks | 4 files |
 | Phase 19 P03 | 35min | 2 tasks | 2 files |
+| Phase 19 P04 | 55min | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -91,6 +92,7 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase ?]: [Phase 19 P03] scopeWhere's $isNull operator ("Sem etapa" filter) was live-verified against the hosted InstantDB app — behaves exactly as documented, so the client-side-filter fallback CONTEXT.md/RESEARCH.md pre-authorized was never needed.
 - [Phase ?]: [Phase 19 P03] bits-ui's installed Tabs.Content always mounts its children (hidden attribute, never unmount) — every EntityScreen mounted inside a Tabs.Content must be additionally guarded with an {#if <active-tab>} check, mirroring Plan 19-02's identical Accordion.Content guard.
 - [Phase ?]: [Phase 19 P03] Kanban's horizontal scroll strip uses a plain overflow-x-auto div, not the installed ScrollArea component -- ScrollArea's custom-scrollbar viewport has no prior usage/e2e precedent in this codebase and this phase only needs the overflow/non-compression discipline.
+- [Phase ?]: 19-04: WEB-03's dataInicioPrevista persistence proven via CLI read path (ProjetosSection's project-header does not render that field); T-04-04's visible-error assertion moved to the sonner error toast (entity-error is invisible inside ProjetosSection's hidden-host EntityScreen instances) -- logged to WINDOWS.md as a future-phase UX gap.
 
 ### Pending Todos
 
@@ -122,8 +124,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-11T19:56:51.758Z
-Stopped at: Completed 19-03-PLAN.md
+Last session: 2026-08-11T20:49:00.568Z
+Stopped at: Completed 19-04-PLAN.md (Phase 19 fully complete)
 Resume file: None
 
 ## Operator Next Steps

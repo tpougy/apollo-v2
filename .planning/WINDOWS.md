@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 9
+open_count: 10
 waived_count: 0
 fixed_count: 3
-total_count: 12
-last_updated: 2026-08-11T16:49:59.027Z
+total_count: 13
+last_updated: 2026-08-11T20:46:42.335Z
 ---
 
 # Broken Windows Ledger
@@ -27,6 +27,7 @@ last_updated: 2026-08-11T16:49:59.027Z
 | 10 | 18 | deviation | web/e2e/entities-rotina-log.spec.ts |  | References dead nav-etapas/nav-templatesRotina/nav-subtarefas/nav-tarefas testids (removed by 18-01's NAV-02 topbar restructuring) and/or hardcoded 9-entity counts; requires 18-03's NAV-05 gotoNested e2e migration before this file passes again -- expected transient state within this phase's multi-plan sequence, empirically confirmed via 18-02's A/B verification run, not a regression introduced by 18-02's EntityScreen.svelte diff. | open |  | 2026-08-11T16:49:58.877Z |  |
 | 11 | 18 | deviation | web/e2e/entities-ticket-subtarefa.spec.ts |  | References dead nav-etapas/nav-templatesRotina/nav-subtarefas/nav-tarefas testids (removed by 18-01's NAV-02 topbar restructuring) and/or hardcoded 9-entity counts; requires 18-03's NAV-05 gotoNested e2e migration before this file passes again -- expected transient state within this phase's multi-plan sequence, empirically confirmed via 18-02's A/B verification run, not a regression introduced by 18-02's EntityScreen.svelte diff. | open |  | 2026-08-11T16:49:58.951Z |  |
 | 12 | 18 | deviation | web/e2e/shell-chrome.spec.ts |  | References dead nav-etapas/nav-templatesRotina/nav-subtarefas/nav-tarefas testids (removed by 18-01's NAV-02 topbar restructuring) and/or hardcoded 9-entity counts; requires 18-03's NAV-05 gotoNested e2e migration before this file passes again -- expected transient state within this phase's multi-plan sequence, empirically confirmed via 18-02's A/B verification run, not a regression introduced by 18-02's EntityScreen.svelte diff. | open |  | 2026-08-11T16:49:59.027Z |  |
+| 13 | 19 | deviation | web/src/lib/sections/ProjetosSection.svelte |  | Hidden-host dialog pattern (etapaHostEl/tarefaHostEl/projetoHostEl) mounts EntityScreen's formError <Alert> (entity-error testid) inside the same class="hidden" wrapper as the rest of the instance -- only the Dialog itself escapes via bits-ui's Portal, so entity-error never becomes visible when a create/edit fails through a hidden host. The sonner error toast (toast.error) still fires and is the only user-visible error signal for this flow. Discovered in 19-04's T-04-04 rewrite; not fixed (no production code touched by that plan). Consider surfacing formError inside the Dialog itself in a future phase. | open |  | 2026-08-11T20:46:42.335Z |  |
 
 ````json
 [
@@ -172,6 +173,18 @@ last_updated: 2026-08-11T16:49:59.027Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-08-11T16:49:59.027Z",
+    "resolved_at": null
+  },
+  {
+    "id": 13,
+    "kind": "deviation",
+    "phase": "19",
+    "file": "web/src/lib/sections/ProjetosSection.svelte",
+    "line": null,
+    "description": "Hidden-host dialog pattern (etapaHostEl/tarefaHostEl/projetoHostEl) mounts EntityScreen's formError <Alert> (entity-error testid) inside the same class=\"hidden\" wrapper as the rest of the instance -- only the Dialog itself escapes via bits-ui's Portal, so entity-error never becomes visible when a create/edit fails through a hidden host. The sonner error toast (toast.error) still fires and is the only user-visible error signal for this flow. Discovered in 19-04's T-04-04 rewrite; not fixed (no production code touched by that plan). Consider surfacing formError inside the Dialog itself in a future phase.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-11T20:46:42.335Z",
     "resolved_at": null
   }
 ]
