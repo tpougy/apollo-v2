@@ -2,11 +2,13 @@
   import { onMount } from "svelte";
   import { toast } from "svelte-sonner";
   import { Button } from "$lib/components/ui/button";
+  import * as Select from "$lib/components/ui/select";
   import { Separator } from "$lib/components/ui/separator";
-  import { db } from "./db";
   import Dashboard from "./dashboard/Dashboard.svelte";
+  import { db } from "./db";
   import EntityScreen from "./entities/EntityScreen.svelte";
-  import { configByEtype, navConfigs } from "./entities/registry";
+  import { configByEtype, entityConfigs, navConfigs } from "./entities/registry";
+  import type { EntityConfig } from "./entities/types";
   import { runRoutineInstanceJob } from "./routineJob";
 
   const auth = db.useAuth();
@@ -15,6 +17,28 @@
     | { section: "dashboard" }
     | { section: "entity"; etype: string; tab?: string; selectedId?: string | null };
   let rota = $state<Route>({ section: "dashboard" });
+
+  // Interim, fully-generic secondary access path for the 4 `nav: "nested"`
+  // entities (NAV-02) — grouped by the first primary entity each one links
+  // to (via its own `links`, never `xorLink`), falling back to "Outros"
+  // when no such link exists. Zero per-etype branching: every input is
+  // `entityConfigs`/`links`/`nav`/`configByEtype`, never a hardcoded etype.
+  const nestedGroups: { label: string; configs: EntityConfig[] }[] = (() => {
+    const nested = entityConfigs.filter((c) => c.nav === "nested");
+    const groups = new Map<string, EntityConfig[]>();
+    for (const cfg of nested) {
+      const primaryLink = (cfg.links ?? []).find((link) => {
+        const target = configByEtype(link.targetEtype);
+        return target !== undefined && (target.nav ?? "primary") === "primary";
+      });
+      const primaryTarget = primaryLink ? configByEtype(primaryLink.targetEtype) : undefined;
+      const label = primaryTarget ? primaryTarget.navTitulo ?? primaryTarget.titulo : "Outros";
+      const list = groups.get(label) ?? [];
+      list.push(cfg);
+      groups.set(label, list);
+    }
+    return Array.from(groups.entries(), ([label, configs]) => ({ label, configs }));
+  })();
 
   // Deliberately a plain, NON-reactive module-local `let` — not `$state`,
   // and this trigger deliberately does not use the reactive-effect rune.
@@ -108,6 +132,32 @@
       </Button>
     {/each}
   </nav>
+
+  <div class="flex items-center gap-2">
+    <span class="text-xs text-muted-foreground">Acesso direto (temporário):</span>
+    <Select.Root
+      type="single"
+      onValueChange={(value) => {
+        if (value) rota = { section: "entity", etype: value };
+      }}
+    >
+      <Select.Trigger data-testid="nested-goto" class="w-56">
+        Etapas, Templates, Subtarefas, Tarefas...
+      </Select.Trigger>
+      <Select.Content>
+        {#each nestedGroups as group (group.label)}
+          <Select.Group>
+            <Select.GroupHeading>{group.label}</Select.GroupHeading>
+            {#each group.configs as cfg (cfg.etype)}
+              <Select.Item value={cfg.etype} data-testid={`nested-goto-${cfg.etype}`}>
+                {cfg.titulo}
+              </Select.Item>
+            {/each}
+          </Select.Group>
+        {/each}
+      </Select.Content>
+    </Select.Root>
+  </div>
 
   {#if rota.section === "dashboard"}
     <Dashboard />

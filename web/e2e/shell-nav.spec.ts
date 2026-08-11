@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { gotoNested } from "./helpers/gotoNested.ts";
 
 // This spec runs in the `authed` project (picked up automatically by its
 // existing testMatch: /.*\.spec\.ts/ — no playwright.config.ts edit needed),
@@ -62,6 +63,24 @@ test("NAV-01/NAV-03: fresh load shows exactly the 6-item topbar in order, defaul
   await expect(page.locator("h2")).toHaveText("Dashboard");
   await expect(page.getByTestId("entity-table-frame")).toHaveCount(0);
   await expect(page.getByTestId("entity-header")).toHaveCount(0);
+});
+
+test("NAV-02: no first-level nav path for etapas/tarefas/templatesRotina/subtarefas, but each remains reachable via gotoNested", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await expect(page.getByTestId("app-shell")).toBeVisible();
+
+  await expect(
+    page.locator(
+      '[data-testid="nav-etapas"], [data-testid="nav-templatesRotina"], [data-testid="nav-subtarefas"], [data-testid="nav-tarefas"]',
+    ),
+  ).toHaveCount(0);
+
+  for (const etype of ["etapas", "tarefas", "templatesRotina", "subtarefas"]) {
+    await gotoNested(page, etype);
+    await expect(page.getByTestId("entity-table-frame")).toBeVisible();
+  }
 });
 
 test("exactly one nav Button shows the active-state indicator at a time", async ({ page }) => {

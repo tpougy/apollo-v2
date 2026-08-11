@@ -315,13 +315,16 @@ describe("registry coverage: navConfigs derivation (NAV-04)", () => {
     },
   );
 
-  test("navTitulo is set only for instanciasRotina (\"Rotinas\") and logInferenciaClaude (\"Log\")", () => {
+  test('navTitulo is set only for instanciasRotina ("Rotinas") and logInferenciaClaude ("Log")', () => {
     expect(configByEtype("instanciasRotina")?.navTitulo).toBe("Rotinas");
     expect(configByEtype("logInferenciaClaude")?.navTitulo).toBe("Log");
     const expectedNavTitulo = new Set(["instanciasRotina", "logInferenciaClaude"]);
     for (const config of entityConfigs) {
       if (expectedNavTitulo.has(config.etype)) continue;
-      expect(config.navTitulo, `${config.etype}: navTitulo expected to be undefined`).toBeUndefined();
+      expect(
+        config.navTitulo,
+        `${config.etype}: navTitulo expected to be undefined`,
+      ).toBeUndefined();
     }
   });
 });
