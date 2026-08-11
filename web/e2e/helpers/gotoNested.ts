@@ -10,14 +10,17 @@ import type { Page } from "@playwright/test";
 // Phase 19, "etapas"/"tarefas" no longer resolve through the interim
 // `nested-goto` Select in Shell.svelte — both now have a real, parent-hosted
 // home inside ProjetosSection.svelte, so this function drives real UI to
-// land on equivalent markup instead. As of Phase 20, "templatesRotina" no
+// land on equivalent markup instead. As of Plan 20-02, "templatesRotina" no
 // longer resolves through the interim `nested-goto` Select either — it now
-// has a real home as RotinasSection.svelte's second tab (20-02-PLAN.md). Only
-// "subtarefas" still falls through to the original `nested-goto` dropdown,
-// unchanged (20-RESEARCH.md Pitfall 3 — its 6+ call sites need individual,
-// parent-id-aware rewrites in a later plan of this phase, not a body
-// extension here). None of the call sites using `gotoNested(page, etype)`
-// need to change again for the etypes already migrated above.
+// has a real home as RotinasSection.svelte's second tab. As of Plan 20-05,
+// the interim `nested-goto` dropdown itself no longer exists in Shell.svelte
+// at all (Plan 20-04 already migrated every remaining "subtarefas" call site
+// off this helper onto the parent-scoped `SubtarefasPanel` helpers in
+// subtarefasPanel.ts, so no "subtarefas" branch is ever added here). Every
+// one of the 4 `nav: "nested"` entities now has an explicit branch below;
+// there is no remaining etype this function can legitimately be called with
+// that isn't already handled, so the fallback below throws instead of
+// silently trying to click a testid that no longer renders.
 export async function gotoNested(page: Page, etype: string): Promise<void> {
   await page.goto("/");
 
@@ -56,6 +59,13 @@ export async function gotoNested(page: Page, etype: string): Promise<void> {
     return;
   }
 
-  await page.getByTestId("nested-goto").click();
-  await page.getByTestId(`nested-goto-${etype}`).click();
+  throw new Error(
+    `gotoNested: unhandled etype '${etype}' — the interim nested-goto dropdown this ` +
+      "fallback used to drive was deleted from Shell.svelte in Plan 20-05 (per 20-RESEARCH.md's " +
+      "Code Example: delete the whole block rather than leaving a permanently-empty dropdown " +
+      "mounted). Every nav:'nested' entity (etapas, tarefas, templatesRotina) now has its own " +
+      "explicit branch above; 'subtarefas' was migrated off this helper entirely in Plan 20-04 " +
+      "onto openSubtarefasPanelForTicket/openSubtarefasPanelForTarefa (./subtarefasPanel.ts). " +
+      "Add a real branch here (or use the correct helper) instead of relying on this fallback.",
+  );
 }
