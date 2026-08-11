@@ -4,16 +4,16 @@ milestone: v1.3
 milestone_name: Navegação reorganizada + Dashboard de acompanhamento
 current_phase: 20
 current_phase_name: Rotinas & Tickets Sections
-status: planning
-stopped_at: Completed 19-04-PLAN.md (Phase 19 fully complete)
-last_updated: "2026-08-11T21:03:47.780Z"
+status: executing
+stopped_at: Completed 20-01-PLAN.md
+last_updated: "2026-08-11T22:10:58.079Z"
 last_activity: 2026-08-11
-last_activity_desc: 19-03-PLAN.md executed - etapas kanban toggle + Todas as tarefas tab with Sem etapa filter via scopeWhere isNull operator, live-verified against hosted InstantDB (NEST-03 complete, Phase 19 requirements done)
+last_activity_desc: 20-01-PLAN.md executed - SubtarefasPanel.svelte + TicketsSection.svelte with driven xor-parent create pre-resolution, live-verified against hosted InstantDB (NEST-05 complete)
 progress:
   total_phases: 6
   completed_phases: 2
-  total_plans: 7
-  completed_plans: 7
+  total_plans: 12
+  completed_plans: 8
   percent: 33
 ---
 
@@ -29,11 +29,11 @@ See: .planning/PROJECT.md (updated 2026-08-10)
 ## Current Position
 
 Phase: 20 of 23 (Rotinas & Tickets Sections)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-08-11 — Phase 19 complete, transitioned to Phase 20
+Plan: 01 of 05 complete (SubtarefasPanel + TicketsSection with driven xor-parent create)
+Status: In progress
+Last activity: 2026-08-11 — 20-01-PLAN.md executed, NEST-05 complete
 
-Progress: [██████████] 100%
+Progress: [███████░░░] 67%
 
 ## Performance Metrics
 
@@ -67,6 +67,7 @@ Progress: [██████████] 100%
 | Phase 19 P02 | 22min | 2 tasks | 4 files |
 | Phase 19 P03 | 35min | 2 tasks | 2 files |
 | Phase 19 P04 | 55min | 3 tasks | 5 files |
+| Phase 20-rotinas-tickets-sections P01 | 35min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -92,6 +93,9 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase ?]: [Phase 19 P03] bits-ui's installed Tabs.Content always mounts its children (hidden attribute, never unmount) — every EntityScreen mounted inside a Tabs.Content must be additionally guarded with an {#if <active-tab>} check, mirroring Plan 19-02's identical Accordion.Content guard.
 - [Phase ?]: [Phase 19 P03] Kanban's horizontal scroll strip uses a plain overflow-x-auto div, not the installed ScrollArea component -- ScrollArea's custom-scrollbar viewport has no prior usage/e2e precedent in this codebase and this phase only needs the overflow/non-compression discipline.
 - [Phase ?]: 19-04: WEB-03's dataInicioPrevista persistence proven via CLI read path (ProjetosSection's project-header does not render that field); T-04-04's visible-error assertion moved to the sonner error toast (entity-error is invisible inside ProjetosSection's hidden-host EntityScreen instances) -- logged to WINDOWS.md as a future-phase UX gap.
+- [Phase ?]: TicketsSection renders no separate h2; relies on EntityScreen's own heading to avoid a duplicate-h2 regression in shell-nav.spec.ts
+- [Phase ?]: SubtarefasPanel drives bits-ui Select via paired pointerdown/pointerup PointerEvents, not .click() -- verified .click() is a no-op against bits-ui Select triggers/items
+- [Phase ?]: tickets-section.spec.ts's edit test adds a waitForSettle buffer before page.reload() to avoid aborting an in-flight db.transact()
 
 ### Pending Todos
 
@@ -123,8 +127,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-11T20:49:00.568Z
-Stopped at: Completed 19-04-PLAN.md (Phase 19 fully complete)
+Last session: 2026-08-11T22:10:58.068Z
+Stopped at: Completed 20-01-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

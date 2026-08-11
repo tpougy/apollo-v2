@@ -142,11 +142,11 @@ without ever touching the raw parent-type selector.
   2. Selecting a ticket row opens an inline side panel inside the Shell frame (not a new Sheet) showing that ticket's subtarefas via `EntityScreen` with `scopeWhere`/`presetLinks` pre-resolved to the open ticket (NEST-05).
   3. The same shared panel opens from a task's subtarefa affordance — wherever tasks are shown, including inside Projetos' etapa detail from Phase 19 — pre-resolved to that task, and the `xor-parent-type` selector in the generic form is never touched by the user in this flow (NEST-05; spec §10 Aninhamento #3).
 
-**Plans**: 5 plans
+**Plans**: 1/5 plans executed
 
 Plans:
 
-- [ ] 20-01-PLAN.md — SubtarefasPanel + TicketsSection: driven-create xor pre-resolution for the ticket-parented path (NEST-05)
+- [x] 20-01-PLAN.md — SubtarefasPanel + TicketsSection: driven-create xor pre-resolution for the ticket-parented path (NEST-05)
 - [ ] 20-02-PLAN.md — RotinasSection (Instâncias/Templates tabs) + gotoNested templatesRotina branch (NEST-04)
 - [ ] 20-03-PLAN.md — ProjetosSection wiring: etapa-detail chip + "Todas as tarefas" orphan reachability (NEST-05)
 - [ ] 20-04-PLAN.md — e2e helper + migration of all remaining gotoNested(subtarefas) call sites (NEST-05)
@@ -230,7 +230,7 @@ form without duplicating any markup, and never get lost more than one level deep
 | 17. Cross-Phase Verification & Quality Gates | v1.2 | 2/2 | Complete    | 2026-08-10 |
 | 18. Navigation Foundation & EntityScreen Extension | v1.3 | 3/3 | Complete    | 2026-08-11 |
 | 19. Projetos Section (Master-Detail) | v1.3 | 4/4 | Complete    | 2026-08-11 |
-| 20. Rotinas & Tickets Sections | v1.3 | 0/5 | Planned | - |
+| 20. Rotinas & Tickets Sections | v1.3 | 1/5 | In Progress|  |
 | 21. Dashboard Data Layer, Shell, Week Calendar & Ticket Queue | v1.3 | 0/? | Not started | - |
 | 22. Dashboard Kanbans, Rotinas & Heatmap | v1.3 | 0/? | Not started | - |
 | 23. Focus Dialog System | v1.3 | 0/? | Not started | - |
