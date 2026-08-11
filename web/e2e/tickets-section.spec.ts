@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { expect, type Page, test } from "@playwright/test";
+import { confirmRowDelete } from "./helpers/delete-confirmation.ts";
 
 // This spec runs in the `authed` project (restores the storageState persisted
 // by auth.setup.ts). Every generated record uses the `phase20-e2e-` prefix so
@@ -91,6 +92,20 @@ async function submitForm(page: Page): Promise<void> {
     const formGone = (await page.locator("form").count()) === 0;
     if (!formGone) throw err;
   }
+}
+
+// A short buffer after a same-session create/edit, before the next
+// interaction (in particular before a `page.reload()`) -- mirrors
+// entities-ticket-subtarefa.spec.ts's own `waitForSettle`. `submitForm`'s
+// click resolves as soon as the click event dispatches, not once
+// `handleSubmit`'s async body (its own `await db.queryOnce(...)` parent
+// check, then `await db.transact(...)`) has actually reached the server --
+// reloading immediately after `submitForm` returns can abort that in-flight
+// request before it commits, which looks exactly like a persistence bug
+// but is purely a test-timing gap (verified live: without this wait, a
+// same-session edit-then-reload reproducibly reverts to the pre-edit row).
+async function waitForSettle(page: Page): Promise<void> {
+  await page.waitForTimeout(1500);
 }
 
 let ticketAId = "";
@@ -220,4 +235,146 @@ test("NEST-05: selecting a ticket opens a scoped panel; '+ subtarefa' drives the
   expect(byTarefa.some((r) => r.id === newId)).toBe(false);
 
   tryDelete("subtarefa", newId);
+});
+
+test("NEST-05: scopeWhere isolates ticketA's subtarefas from ticketB's panel", async ({ page }) => {
+  test.setTimeout(60_000);
+  const subtitulo = uniqueName("sub-isolation");
+
+  await page.goto("/");
+  await page.getByTestId("nav-tickets").click();
+
+  const rowA = page.getByTestId("row").filter({ hasText: ticketATitulo });
+  await expect(rowA).toBeVisible({ timeout: RESYNC_TIMEOUT });
+  await rowA.click();
+
+  const panelA = page.getByTestId("subtarefas-panel");
+  await expect(panelA).toBeVisible({ timeout: RESYNC_TIMEOUT });
+
+  await panelA.getByTestId("subtarefa-add-start").click();
+  await expect(page.getByTestId("field-titulo")).toBeVisible({ timeout: RESYNC_TIMEOUT });
+  await page.getByTestId("field-titulo").fill(subtitulo);
+  await page.getByTestId("field-ordem").fill("2");
+  await submitForm(page);
+
+  const newRowInA = panelA.getByTestId("row").filter({ hasText: subtitulo });
+  await expect(newRowInA).toBeVisible({ timeout: RESYNC_TIMEOUT });
+  const newId = await newRowInA.getAttribute("data-eid");
+
+  // Switch to ticketB -- {#key selectedTicketId} forces a clean remount, and
+  // ticketA's subtarefa must not leak into ticketB's scoped list.
+  const rowB = page.getByTestId("row").filter({ hasText: ticketBTitulo });
+  await rowB.click();
+
+  const panelB = page.getByTestId("subtarefas-panel");
+  await expect(panelB).toBeVisible({ timeout: RESYNC_TIMEOUT });
+  await expect(panelB.getByTestId("row").filter({ hasText: subtitulo })).toHaveCount(0);
+
+  tryDelete("subtarefa", newId);
+});
+
+test("NEST-05: editing an existing subtarefa through the panel persists -- startEdit needs no fix", async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+  const originalTitulo = uniqueName("sub-edit");
+  const editedTitulo = `${originalTitulo}-editado`;
+
+  const created = JSON.parse(
+    apolloCli([
+      "subtarefa",
+      "criar",
+      "--titulo",
+      originalTitulo,
+      "--ordem",
+      "3",
+      "--nao-concluida",
+      "--ticket-id",
+      ticketAId,
+    ]),
+  ) as { id: string };
+  const subId = created.id;
+
+  try {
+    await page.goto("/");
+    await page.getByTestId("nav-tickets").click();
+
+    const rowA = page.getByTestId("row").filter({ hasText: ticketATitulo });
+    await expect(rowA).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    await rowA.click();
+
+    const panel = page.getByTestId("subtarefas-panel");
+    const subRow = panel.getByTestId("row").filter({ hasText: originalTitulo });
+    await expect(subRow).toBeVisible({ timeout: RESYNC_TIMEOUT });
+
+    await subRow.getByTestId("row-edit").click();
+    await expect(page.getByTestId("field-titulo")).toHaveValue(originalTitulo, {
+      timeout: RESYNC_TIMEOUT,
+    });
+    await page.getByTestId("field-titulo").fill(editedTitulo);
+    await page.getByTestId("field-concluida").click();
+    await submitForm(page);
+    await waitForSettle(page);
+
+    await page.reload();
+    await page.getByTestId("nav-tickets").click();
+    const rowAAgain = page.getByTestId("row").filter({ hasText: ticketATitulo });
+    await expect(rowAAgain).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    await rowAAgain.click();
+
+    const panelAgain = page.getByTestId("subtarefas-panel");
+    const editedRow = panelAgain.getByTestId("row").filter({ hasText: editedTitulo });
+    await expect(editedRow).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    await expect(editedRow).toContainText("sim");
+  } finally {
+    tryDelete("subtarefa", subId);
+  }
+});
+
+test("NEST-05: deleting a subtarefa through the panel removes it from the scoped list; closing the panel leaves the tickets table intact", async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+  const titulo = uniqueName("sub-delete");
+
+  const created = JSON.parse(
+    apolloCli([
+      "subtarefa",
+      "criar",
+      "--titulo",
+      titulo,
+      "--ordem",
+      "4",
+      "--nao-concluida",
+      "--ticket-id",
+      ticketAId,
+    ]),
+  ) as { id: string };
+  const subId = created.id;
+
+  try {
+    await page.goto("/");
+    await page.getByTestId("nav-tickets").click();
+
+    const rowA = page.getByTestId("row").filter({ hasText: ticketATitulo });
+    await expect(rowA).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    await rowA.click();
+
+    const panel = page.getByTestId("subtarefas-panel");
+    const subRow = panel.getByTestId("row").filter({ hasText: titulo });
+    await expect(subRow).toBeVisible({ timeout: RESYNC_TIMEOUT });
+
+    await confirmRowDelete(page, subRow);
+    await expect(panel.getByTestId("row").filter({ hasText: titulo })).toHaveCount(0, {
+      timeout: RESYNC_TIMEOUT,
+    });
+
+    await panel.getByTestId("subtarefas-panel-close").click();
+    await expect(page.getByTestId("subtarefas-panel")).toHaveCount(0);
+    await expect(page.getByTestId("tickets-table")).toBeVisible();
+    await expect(page.getByTestId("row").filter({ hasText: ticketATitulo })).toBeVisible();
+    await expect(page.getByTestId("row").filter({ hasText: ticketBTitulo })).toBeVisible();
+  } finally {
+    tryDelete("subtarefa", subId);
+  }
 });
