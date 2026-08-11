@@ -5,15 +5,15 @@ milestone_name: Navegação reorganizada + Dashboard de acompanhamento
 current_phase: 19
 current_phase_name: Projetos Section (Master-Detail)
 status: executing
-stopped_at: Completed 19-02-PLAN.md
-last_updated: "2026-08-11T19:03:00.000Z"
+stopped_at: Completed 19-03-PLAN.md
+last_updated: "2026-08-11T19:56:51.768Z"
 last_activity: 2026-08-11
-last_activity_desc: 19-02-PLAN.md executed — projetosDerive.ts + etapas accordion + inline tarefas + "+ etapa"/"+ tarefa nesta etapa" (NEST-02 complete)
+last_activity_desc: 19-03-PLAN.md executed - etapas kanban toggle + Todas as tarefas tab with Sem etapa filter via scopeWhere isNull operator, live-verified against hosted InstantDB (NEST-03 complete, Phase 19 requirements done)
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 7
-  completed_plans: 5
+  completed_plans: 6
   percent: 17
 ---
 
@@ -29,31 +29,31 @@ See: .planning/PROJECT.md (updated 2026-08-10)
 ## Current Position
 
 Phase: 19 of 23 (Projetos Section (Master-Detail))
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Ready to execute
-Last activity: 2026-08-11 — 19-02-PLAN.md complete (etapas accordion + inline tarefas, NEST-02)
+Last activity: 2026-08-11 — 19-03-PLAN.md complete (etapas kanban toggle + Todas as tarefas/Sem etapa, NEST-03) — Phase 19 requirements done, Plan 19-04 (regression fixes) remains
 
-Progress: [██████░░░░] 57%
+Progress: [█████████░] 86%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 5 (v1.3, in progress; 40 lifetime across v1.0+v1.1+v1.2+v1.3)
-- Average duration: ~40min (v1.3 plans so far: 40, 95, 75, 25, 22 min)
-- Total execution time: ~4.3 hours (v1.3)
+- Total plans completed: 6 (v1.3, in progress; 41 lifetime across v1.0+v1.1+v1.2+v1.3)
+- Average duration: ~49min (v1.3 plans so far: 40, 95, 75, 25, 22, 35 min)
+- Total execution time: ~4.9 hours (v1.3)
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 18 | 3 | 210min | 70min |
-| 19 | 2 | 47min | 24min |
+| 19 | 3 | 82min | 27min |
 
 **Recent Trend:**
 
-- Last 5 plans: 18-01 (40min), 18-02 (95min), 18-03 (75min), 19-01 (25min), 19-02 (22min)
-- Trend: Decreasing duration as Phase 19's hidden-instance/bespoke-query patterns get reused across plans.
+- Last 5 plans: 18-02 (95min), 18-03 (75min), 19-01 (25min), 19-02 (22min), 19-03 (35min)
+- Trend: Lower duration than Phase 18 as Phase 19's hidden-instance/bespoke-query patterns get reused across plans; 19-03's small uptick over 19-02 reflects the two-file Tabs+kanban scope, still well below Phase 18's 70min average.
 
 *Updated after each plan completion*
 **Per-Plan Metrics:**
@@ -65,6 +65,7 @@ Progress: [██████░░░░] 57%
 | Phase 18 P03 | 75min | 3 tasks | 9 files |
 | Phase 19 P01 | 25min | 2 tasks | 16 files |
 | Phase 19 P02 | 22min | 2 tasks | 4 files |
+| Phase 19 P03 | 35min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -87,6 +88,9 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase ?]: [Phase 19 P02] projetosDerive.ts is a phase-local pure module (tarefaConcluida/progressoEtapa/vencido) mirroring bizdays.ts's style, matching REQUIREMENTS.md §5.3/§5.4 verbatim -- ahead of Phase 21's canonical dashboard/derive.ts, per 19-CONTEXT.md's explicit allowance for Phase 21 to consolidate/dedupe later.
 - [Phase ?]: [Phase 19 P02] bits-ui's installed Accordion.Content stays mounted for every item regardless of open/closed state (never display:none) -- every Accordion.Content usage in this codebase must gate its children behind `{#if <open-check>}` or every per-item testid exists once per item simultaneously, breaking strict-mode Playwright queries the moment there is more than one item.
 - [Phase ?]: [Phase 19 P02] openEtapaId uses "" (not null) as the "closed" sentinel -- the installed bits-ui Accordion.Root (type="single") types value as `string` (default ""), not `string | null`, and this bits-ui version has no `collapsible` prop.
+- [Phase ?]: [Phase 19 P03] scopeWhere's $isNull operator ("Sem etapa" filter) was live-verified against the hosted InstantDB app — behaves exactly as documented, so the client-side-filter fallback CONTEXT.md/RESEARCH.md pre-authorized was never needed.
+- [Phase ?]: [Phase 19 P03] bits-ui's installed Tabs.Content always mounts its children (hidden attribute, never unmount) — every EntityScreen mounted inside a Tabs.Content must be additionally guarded with an {#if <active-tab>} check, mirroring Plan 19-02's identical Accordion.Content guard.
+- [Phase ?]: [Phase 19 P03] Kanban's horizontal scroll strip uses a plain overflow-x-auto div, not the installed ScrollArea component -- ScrollArea's custom-scrollbar viewport has no prior usage/e2e precedent in this codebase and this phase only needs the overflow/non-compression discipline.
 
 ### Pending Todos
 
@@ -118,8 +122,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-11T19:03:00.000Z
-Stopped at: Completed 19-02-PLAN.md
+Last session: 2026-08-11T19:56:51.758Z
+Stopped at: Completed 19-03-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

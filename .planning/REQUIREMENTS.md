@@ -45,7 +45,7 @@ uma única função pura, reusada por calendário/kanban/rotinas/heatmap.
 
 - [x] **NEST-01**: `EntityScreen.svelte` recebe duas props opcionais e aditivas — `scopeWhere` e `presetLinks` — sem nenhum `if (config.etype === ...)`; com ambas `null` o comportamento é byte-a-byte o de hoje, provado pelos e2e existentes sem edição.
 - [x] **NEST-02**: Seção Projetos é master-detail: coluna esquerda lista projetos agrupados por fundo (grupo "Sem fundo vinculado" sempre por último) com busca e controle de agrupamento; coluna direita mostra etapas do projeto selecionado como linhas colapsáveis ordenadas por `etapas.ordem`, accordion single, com as tarefas daquela etapa dentro.
-- [ ] **NEST-03**: Dentro do detalhe de projeto existe alternância "etapas ▾" lista/kanban, e uma aba "Todas as tarefas" (sem `scopeWhere`) com filtro de conveniência "Sem etapa", para que tarefa órfã (sem etapa vinculada) permaneça alcançável.
+- [x] **NEST-03**: Dentro do detalhe de projeto existe alternância "etapas ▾" lista/kanban, e uma aba "Todas as tarefas" (sem `scopeWhere`) com filtro de conveniência "Sem etapa", para que tarefa órfã (sem etapa vinculada) permaneça alcançável.
 - [ ] **NEST-04**: Seção Rotinas tem duas abas — Instâncias (default, `capabilities.create`/`.delete` continuam `false`, sem affordance de criar/excluir) e Templates (com parágrafo de contexto).
 - [ ] **NEST-05**: Seção Tickets: selecionar uma linha abre painel lateral interno (não Sheet) com as subtarefas daquele ticket via `EntityScreen` de `subtarefas` com `scopeWhere`/`presetLinks` já resolvidos para o pai aberto; o mesmo painel é usado a partir de Tarefas. O seletor `xor-parent-type` continua existindo no form genérico mas nunca precisa ser tocado no fluxo normal.
 - [x] **NEST-06**: Seções Fundos e Log permanecem inalteradas (`EntityScreen` direto).
@@ -78,7 +78,7 @@ uma única função pura, reusada por calendário/kanban/rotinas/heatmap.
 | NEST-01 | Phase 18: Navigation Foundation & EntityScreen Extension | Complete |
 | NEST-06 | Phase 18: Navigation Foundation & EntityScreen Extension | Complete |
 | NEST-02 | Phase 19: Projetos Section (Master-Detail) | Complete |
-| NEST-03 | Phase 19: Projetos Section (Master-Detail) | Pending |
+| NEST-03 | Phase 19: Projetos Section (Master-Detail) | Complete |
 | NEST-04 | Phase 20: Rotinas & Tickets Sections | Pending |
 | NEST-05 | Phase 20: Rotinas & Tickets Sections | Pending |
 | DASH-06 | Phase 21: Dashboard Data Layer, Shell, Week Calendar & Ticket Queue | Pending |
