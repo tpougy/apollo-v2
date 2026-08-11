@@ -10,6 +10,7 @@
   import { configByEtype, entityConfigs, navConfigs } from "./entities/registry";
   import type { EntityConfig } from "./entities/types";
   import { runRoutineInstanceJob } from "./routineJob";
+  import ProjetosSection from "./sections/ProjetosSection.svelte";
 
   const auth = db.useAuth();
 
@@ -18,13 +19,22 @@
     | { section: "entity"; etype: string; tab?: string; selectedId?: string | null };
   let rota = $state<Route>({ section: "dashboard" });
 
-  // Interim, fully-generic secondary access path for the 4 `nav: "nested"`
-  // entities (NAV-02) — grouped by the first primary entity each one links
-  // to (via its own `links`, never `xorLink`), falling back to "Outros"
-  // when no such link exists. Zero per-etype branching: every input is
-  // `entityConfigs`/`links`/`nav`/`configByEtype`, never a hardcoded etype.
+  // Interim, fully-generic secondary access path for the `nav: "nested"`
+  // entities not yet covered by a real section (NAV-02) — grouped by the
+  // first primary entity each one links to (via its own `links`, never
+  // `xorLink`), falling back to "Outros" when no such link exists. Zero
+  // per-etype branching: every input is `entityConfigs`/`links`/`nav`/
+  // `configByEtype`, never a hardcoded etype.
+  // Router-level allowlist of etypes that now have a real first-class home
+  // (ProjetosSection) — not a generic-engine etype branch. `templatesRotina`/
+  // `subtarefas` stay in the interim dropdown below until Phase 20 retires it
+  // (19-CONTEXT.md Open Question 2).
+  const HANDLED_BY_SECTION = new Set(["etapas", "tarefas"]);
+
   const nestedGroups: { label: string; configs: EntityConfig[] }[] = (() => {
-    const nested = entityConfigs.filter((c) => c.nav === "nested");
+    const nested = entityConfigs.filter(
+      (c) => c.nav === "nested" && !HANDLED_BY_SECTION.has(c.etype),
+    );
     const groups = new Map<string, EntityConfig[]>();
     for (const cfg of nested) {
       const primaryLink = (cfg.links ?? []).find((link) => {
@@ -161,6 +171,15 @@
 
   {#if rota.section === "dashboard"}
     <Dashboard />
+  {:else if rota.etype === "projetos"}
+    <!-- The one permitted per-route mount-point branch in Shell.svelte
+         (spec-ui.md §0.6): a router deciding which top-level component to
+         mount is not the etype-branch anti-pattern the spec bans inside a
+         generic engine — EntityScreen.svelte/registry.ts are untouched by
+         this line. -->
+    {#key rota.etype}
+      <ProjetosSection />
+    {/key}
   {:else}
     {@const active = configByEtype(rota.etype)}
     {#key rota.etype}
