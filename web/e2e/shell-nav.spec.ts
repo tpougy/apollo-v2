@@ -87,7 +87,18 @@ test("NAV-02: no first-level nav path for etapas/tarefas/templatesRotina/subtare
   const created = JSON.parse(
     execFileSync(
       "uv",
-      ["run", "--project", "cli", "apollo", "projeto", "criar", "--nome", nome, "--status", "ativo"],
+      [
+        "run",
+        "--project",
+        "cli",
+        "apollo",
+        "projeto",
+        "criar",
+        "--nome",
+        nome,
+        "--status",
+        "ativo",
+      ],
       { cwd: REPO_ROOT, encoding: "utf-8" },
     ),
   ) as { id: string };
