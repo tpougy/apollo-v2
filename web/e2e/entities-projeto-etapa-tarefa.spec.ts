@@ -243,55 +243,41 @@ test("WEB-03: projetos full browser CRUD round trip, with and without an optiona
   // preserved without a UI delete step.
 });
 
-test("WEB-04: etapas full browser CRUD round trip, with a numeric ordem and a projeto link", async ({
+test("WEB-04: etapas create-only via '+ etapa', with a numeric ordem and a pre-filled projeto link", async ({
   page,
 }) => {
   test.setTimeout(90_000);
 
   const nome = uniqueName("etapa");
 
-  await gotoNested(page, "etapas");
-
-  // (1) Create an etapa with ordem 10, linked to the chain projeto. Assert
-  // the row shows "10" and the projeto's nome.
-  await page.getByTestId("entity-create-start").click();
-  await page.getByTestId("field-nome").fill(nome);
-  await page.getByTestId("field-ordem").fill("10");
-  await page.getByTestId("field-status").fill("ativo");
-  await selectByText(page, "link-projeto", chainProjetoNome);
-  await submitForm(page);
-
-  const row = page.getByTestId("row").filter({ hasText: nome });
-  await expect(row).toBeVisible();
-  const eid = await row.getAttribute("data-eid");
-  expect(eid).toBeTruthy();
-  await expect(row).toContainText("10");
-  await expect(row).toContainText(chainProjetoNome);
-
-  // (2) Edit ordem to 20, reload, assert the cell text is exactly "20" —
-  // proves it round-trips as a number (i.number() in the schema), not a
-  // quoted string and not blank.
-  await waitForCreateSettle(page);
-  await row.getByTestId("row-edit").click();
-  await page.getByTestId("field-ordem").fill("20");
-  await expect(page.getByTestId("field-ordem")).toHaveValue("20");
-  await submitForm(page);
-  await expect(page.getByTestId("entity-submit")).toHaveCount(0);
-  await gotoNested(page, "etapas");
-
-  const reloadedRow = page.getByTestId("row").filter({ hasText: nome });
-  await expect(reloadedRow).toHaveAttribute("data-eid", eid ?? "", { timeout: RESYNC_TIMEOUT });
-  // Retry-based assertion (not a one-shot textContent() read): the reload
-  // forces a real network resync before the reactive query reflects the
-  // server-confirmed "ordem: 20" value, exactly like 04-02's boolean-persists
-  // assertion.
-  await expect(reloadedRow.locator("td").nth(0)).toHaveText("20", { timeout: RESYNC_TIMEOUT });
-
-  // (3) Delete.
-  await confirmRowDelete(page, reloadedRow);
-  await expect(page.getByTestId("row").filter({ hasText: nome })).toHaveCount(0, {
+  // No etapa edit/delete affordance exists in this UI -- spec-ui.md §2.2
+  // describes "+ etapa" only; deferred to Phase 23's Etapa dialog (per
+  // 19-CONTEXT.md's Open Question 1 resolution). This test proves
+  // create-only, via the real "+ etapa" flow from a selected projeto.
+  await page.goto("/");
+  await page.getByTestId("nav-projetos").click();
+  const projetoItem = page.getByTestId("project-item").filter({ hasText: chainProjetoNome });
+  await projetoItem.click();
+  await expect(page.getByTestId("project-header")).toContainText(chainProjetoNome, {
     timeout: RESYNC_TIMEOUT,
   });
+
+  // "+ etapa" opens the hidden EntityScreen(etapasConfig) create dialog with
+  // presetLinks pre-filling "projeto" to the currently selected projeto --
+  // still visible/editable per spec-ui.md §2.1, left as-is here since this
+  // etapa genuinely belongs to the selected chain projeto.
+  await page.getByTestId("project-add-etapa-start").click();
+  await page.getByTestId("field-nome").fill(nome);
+  await page.getByTestId("field-ordem").fill("30");
+  await page.getByTestId("field-status").fill("ativo");
+  await expect(page.getByTestId("link-projeto")).toContainText(chainProjetoNome);
+  await submitForm(page);
+
+  const row = page.getByTestId("etapa-row").filter({ hasText: nome });
+  await expect(row).toBeVisible({ timeout: RESYNC_TIMEOUT });
+  const eid = await row.getAttribute("data-eid");
+  expect(eid).toBeTruthy();
+  await expect(row).toContainText("30");
 });
 
 test("WEB-05: tarefas tipoPrazo is a strict hard/soft select, and optional dates round-trip", async ({
@@ -363,15 +349,22 @@ test("WEB-04 threat T-04-04: a dangling projeto link is blocked with a visible e
     apolloCli(["projeto", "criar", "--nome", nomeProjetoVitima, "--status", "ativo"]),
   ) as { id: string };
 
-  await gotoNested(page, "etapas");
-  await page.getByTestId("entity-create-start").click();
+  // Drive "+ etapa" from the selected chain projeto -- proves the
+  // preset-linked "projeto" select stays genuinely editable (spec-ui.md
+  // §2.1), by overriding it to the doomed projeto instead of the pre-filled
+  // chain projeto.
+  await page.goto("/");
+  await page.getByTestId("nav-projetos").click();
+  await page.getByTestId("project-item").filter({ hasText: chainProjetoNome }).click();
+  await page.getByTestId("project-add-etapa-start").click();
   await page.getByTestId("field-nome").fill(nomeEtapa);
   await page.getByTestId("field-ordem").fill("1");
   await page.getByTestId("field-status").fill("ativo");
 
-  // Select the soon-to-be-deleted projeto BEFORE deleting it — the select
-  // list is populated from a live query, but `selectedLinks` retains the id
-  // string regardless of subsequent list updates.
+  // Override the preset link (pre-filled to the chain projeto) to the
+  // soon-to-be-deleted projeto BEFORE deleting it — the select list is
+  // populated from a live query, but `selectedLinks` retains the id string
+  // regardless of subsequent list updates.
   await selectByText(page, "link-projeto", nomeProjetoVitima);
 
   // Delete the target out from under the in-flight form, between selection
@@ -381,11 +374,26 @@ test("WEB-04 threat T-04-04: a dangling projeto link is blocked with a visible e
 
   await page.getByTestId("entity-submit").click();
 
-  await expect(page.getByTestId("entity-error")).toBeVisible({ timeout: RESYNC_TIMEOUT });
-  await expect(page.getByTestId("entity-error")).toContainText("parent_not_found");
+  // The "+ etapa" hidden-host pattern (ProjetosSection.svelte's etapaHostEl)
+  // mounts the WHOLE EntityScreen(etapasConfig) instance inside a
+  // `class="hidden"` wrapper div; EntityScreen's own formError <Alert> (the
+  // `entity-error` testid) lives outside its Dialog.Content, in that same
+  // hidden main-page region, so it never becomes visible while driven
+  // through a hidden host -- confirmed by inspecting EntityScreen.svelte
+  // (only the Dialog itself escapes the hidden ancestor via bits-ui's
+  // Portal). The user-visible error surface for THIS flow is the sonner
+  // toast (`toast.error(formError)`, fired unconditionally alongside
+  // formError), which this test asserts on instead -- same underlying
+  // parent-existence guard, same blocked-with-visible-error proof, just via
+  // the signal that actually reaches the user in this specific hidden-host
+  // flow. Logged in 19-04-SUMMARY.md as a known UX gap for a future phase
+  // (not fixed here -- this plan touches no production runtime code).
+  const errorToast = page.locator('[data-sonner-toast][data-type="error"]');
+  await expect(errorToast).toBeVisible({ timeout: RESYNC_TIMEOUT });
+  await expect(errorToast).toContainText("parent_not_found");
 
   // No new etapa row was created.
-  await expect(page.getByTestId("row").filter({ hasText: nomeEtapa })).toHaveCount(0);
+  await expect(page.getByTestId("etapa-row").filter({ hasText: nomeEtapa })).toHaveCount(0);
 
   // Cleanup: cancel the still-open form and confirm no leftover was written
   // server-side either (not just optimistically absent from the DOM).
