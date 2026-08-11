@@ -28,7 +28,15 @@
 
   const dateFormatter = new DateFormatter("pt-BR", { dateStyle: "long" });
 
-  let { config: configProp }: { config: EntityConfig } = $props();
+  let {
+    config: configProp,
+    scopeWhere = null,
+    presetLinks = null,
+  }: {
+    config: EntityConfig;
+    scopeWhere?: Record<string, unknown> | null;
+    presetLinks?: Record<string, string> | null;
+  } = $props();
 
   // EntityScreen is always mounted keyed on etype (see Shell.svelte's
   // `{#key ativo}`), so config is fixed for the component's lifetime.
@@ -64,7 +72,7 @@
     if (cfg.xorLink) {
       for (const choice of cfg.xorLink.choices) sub[choice.label] = {};
     }
-    return { [cfg.etype]: { $: {}, ...sub } };
+    return { [cfg.etype]: { $: scopeWhere ? { where: scopeWhere } : {}, ...sub } };
   }
 
   // Cast at the InstaQL boundary: config.etype is a runtime string, not a
@@ -203,7 +211,7 @@
     formValues = values;
     const links: Record<string, string> = {};
     for (const link of config.links ?? []) links[link.label] = "";
-    selectedLinks = links;
+    selectedLinks = presetLinks ? { ...links, ...presetLinks } : links;
     xorParentType = config.xorLink ? config.xorLink.choices[0].label : null;
     xorParentId = "";
     originalXorParentType = null;
