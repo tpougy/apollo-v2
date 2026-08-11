@@ -68,7 +68,31 @@ uma única função pura, reusada por calendário/kanban/rotinas/heatmap.
 
 ## Traceability
 
-(preenchido pelo roadmapper ao mapear requisitos → fases)
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| NAV-01 | Phase 18: Navigation Foundation & EntityScreen Extension | Pending |
+| NAV-02 | Phase 18: Navigation Foundation & EntityScreen Extension | Pending |
+| NAV-03 | Phase 18: Navigation Foundation & EntityScreen Extension | Pending |
+| NAV-04 | Phase 18: Navigation Foundation & EntityScreen Extension | Pending |
+| NAV-05 | Phase 18: Navigation Foundation & EntityScreen Extension | Pending |
+| NEST-01 | Phase 18: Navigation Foundation & EntityScreen Extension | Pending |
+| NEST-06 | Phase 18: Navigation Foundation & EntityScreen Extension | Pending |
+| NEST-02 | Phase 19: Projetos Section (Master-Detail) | Pending |
+| NEST-03 | Phase 19: Projetos Section (Master-Detail) | Pending |
+| NEST-04 | Phase 20: Rotinas & Tickets Sections | Pending |
+| NEST-05 | Phase 20: Rotinas & Tickets Sections | Pending |
+| DASH-06 | Phase 21: Dashboard Data Layer, Shell, Week Calendar & Ticket Queue | Pending |
+| DASH-07 | Phase 21: Dashboard Data Layer, Shell, Week Calendar & Ticket Queue | Pending |
+| DASH-01 | Phase 21: Dashboard Data Layer, Shell, Week Calendar & Ticket Queue | Pending |
+| DASH-02 | Phase 21: Dashboard Data Layer, Shell, Week Calendar & Ticket Queue | Pending |
+| DASH-03 | Phase 21: Dashboard Data Layer, Shell, Week Calendar & Ticket Queue | Pending |
+| DASH-05 | Phase 22: Dashboard Kanbans, Rotinas & Heatmap | Pending |
+| DASH-04 | Phase 22: Dashboard Kanbans, Rotinas & Heatmap | Pending |
+| DLG-01 | Phase 23: Focus Dialog System | Pending |
+| DLG-02 | Phase 23: Focus Dialog System | Pending |
+| DLG-03 | Phase 23: Focus Dialog System | Pending |
+
+**Coverage: 21/21 v1 requirements mapped. No orphans, no duplicates.**
 
 ## Future Requirements
 
