@@ -39,7 +39,7 @@ uma única função pura, reusada por calendário/kanban/rotinas/heatmap.
 - [x] **NAV-02**: Usuário não encontra caminho de primeiro nível para Etapas, Templates de rotina, Subtarefas ou Tarefas — só existem aninhados dentro de seus pais.
 - [x] **NAV-03**: Ao abrir o app, a rota inicial é o Dashboard (não uma entidade).
 - [x] **NAV-04**: `EntityConfig` ganha campos opcionais `nav?: "primary" | "nested"` e `navTitulo?: string`; `registry.ts` ganha o seletor derivado `navConfigs` (sem lista manual de entidades).
-- [ ] **NAV-05**: `nav-<etype>` dos 5 testids de nav primária hoje existentes não muda; `nav-etapas`, `nav-templatesRotina`, `nav-subtarefas`, `nav-tarefas` deixam de existir e os e2e que os usavam navegam pelo caminho aninhado via helper `gotoNested`.
+- [x] **NAV-05**: `nav-<etype>` dos 5 testids de nav primária hoje existentes não muda; `nav-etapas`, `nav-templatesRotina`, `nav-subtarefas`, `nav-tarefas` deixam de existir e os e2e que os usavam navegam pelo caminho aninhado via helper `gotoNested`.
 
 ### NEST — Seções aninhadas
 
@@ -74,7 +74,7 @@ uma única função pura, reusada por calendário/kanban/rotinas/heatmap.
 | NAV-02 | Phase 18: Navigation Foundation & EntityScreen Extension | Complete |
 | NAV-03 | Phase 18: Navigation Foundation & EntityScreen Extension | Complete |
 | NAV-04 | Phase 18: Navigation Foundation & EntityScreen Extension | Complete |
-| NAV-05 | Phase 18: Navigation Foundation & EntityScreen Extension | Pending |
+| NAV-05 | Phase 18: Navigation Foundation & EntityScreen Extension | Complete |
 | NEST-01 | Phase 18: Navigation Foundation & EntityScreen Extension | Complete |
 | NEST-06 | Phase 18: Navigation Foundation & EntityScreen Extension | Complete |
 | NEST-02 | Phase 19: Projetos Section (Master-Detail) | Pending |

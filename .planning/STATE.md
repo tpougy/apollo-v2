@@ -4,17 +4,17 @@ milestone: v1.3
 milestone_name: Navegação reorganizada + Dashboard de acompanhamento
 current_phase: 18
 current_phase_name: Navigation Foundation & EntityScreen Extension
-status: planning
-stopped_at: Completed 18-02-PLAN.md
-last_updated: "2026-08-11T16:48:52.980Z"
+status: verifying
+stopped_at: Completed 18-03-PLAN.md
+last_updated: "2026-08-11T17:20:33.560Z"
 last_activity: 2026-08-11
 last_activity_desc: ROADMAP.md created for v1.3 (Phases 18-23), 21/21 requirements mapped
 progress:
   total_phases: 6
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 3
-  completed_plans: 2
-  percent: 0
+  completed_plans: 3
+  percent: 17
 ---
 
 # Project State
@@ -30,10 +30,10 @@ See: .planning/PROJECT.md (updated 2026-08-10)
 
 Phase: 18 of 23 (Navigation Foundation & EntityScreen Extension)
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-08-11 — ROADMAP.md created for v1.3 (Phases 18-23), 21/21 requirements mapped
 
-Progress: [███████░░░] 67%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -61,6 +61,7 @@ Progress: [███████░░░] 67%
 |------|----------|-------|-------|
 | Phase 18 P01 | 40min | 2 tasks | 16 files |
 | Phase 18 P02 | 95min | 1 tasks | 1 files |
+| Phase 18 P03 | 75min | 3 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -78,6 +79,7 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase 17]: Fixed EntityScreen.svelte's page-header sitting flush (0px gap) against table/loading/empty content via `space-y-6`, locked in with a permanent Playwright assertion — the closing v1.2 cross-phase audit's one genuine finding.
 - [Phase 18 P01]: gotoNested's interim (Phase 18) affordance groups the 4 nested entities by the first primary entity each links to (via links, never xorLink), falling back to 'Outros' -- data-driven, zero per-etype branching; only the helper body changes when Phase 19/20 ship real nested UI.
 - [Phase ?]: Verified NEST-01's byte-identical acceptance criterion via a controlled A/B full-suite comparison (diff/no-diff, same post-18-01 baseline) rather than a single unedited-suite run, because 18-01 landed its topbar restructuring in the shared working tree (no worktree isolation) before this plan's verification ran, and 18-03's e2e migration (NAV-05) had not yet landed.
+- [Phase ?]: Fixed 3 pre-existing e2e regressions exposed by Plan 18-01 landing first (no worktree isolation): stale fundos-default-mount assumption, instanciasRotina Tab-count formula, an uncatalogued nav-tarefas call site -- all within this plan's declared scope
 
 ### Pending Todos
 
@@ -109,8 +111,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-11T16:48:52.972Z
-Stopped at: Completed 18-02-PLAN.md
+Last session: 2026-08-11T17:20:33.553Z
+Stopped at: Completed 18-03-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

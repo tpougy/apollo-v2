@@ -95,13 +95,13 @@ build on.
   4. `registry.ts`'s `navConfigs` selector is derived from `entityConfigs` filtering on the new `EntityConfig.nav`/`navTitulo` fields, with no hand-maintained entity list anywhere in the file (NAV-04; spec §10 Navegação #3).
   5. The pre-existing Playwright suite passes for Fundos and Log completely unmodified (NEST-06), every spec that used the 4 removed nav testids now passes via a new `gotoNested` helper with zero remaining reference to `nav-etapas`/`nav-templatesRotina`/`nav-subtarefas`/`nav-tarefas` (NAV-05), and `EntityScreen.svelte` with `scopeWhere`/`presetLinks` both `null` behaves byte-identically to before — proven by the full pre-existing e2e suite passing without edits and zero `if (config.etype === ...)` branches introduced (NEST-01; spec §10 Aninhamento #6, Disciplina visual #4).
 
-**Plans**: 2/3 plans executed
+**Plans**: 3/3 plans executed
 
 Plans:
 
 - [x] 18-01-PLAN.md — Navigation data model (types/registry/defs), Shell topbar Route + Dashboard mount, interim nested-entity affordance + gotoNested helper (NAV-01, NAV-02, NAV-03, NAV-04, NEST-06)
 - [x] 18-02-PLAN.md — EntityScreen additive scopeWhere/presetLinks extension, zero-regression proof (NEST-01)
-- [ ] 18-03-PLAN.md — e2e regression migration: wildcard nav-count fixes + 27-call-site gotoNested migration (NAV-05, NEST-06)
+- [x] 18-03-PLAN.md — e2e regression migration: wildcard nav-count fixes + 27-call-site gotoNested migration (NAV-05, NEST-06)
 
 **UI hint**: yes
 
@@ -211,7 +211,7 @@ form without duplicating any markup, and never get lost more than one level deep
 | 15. Entity Screen — Form & Dialog Composition | v1.2 | 1/1 | Complete    | 2026-08-10 |
 | 16. Entity Screen — Row Actions & Delete Confirmation | v1.2 | 2/2 | Complete    | 2026-08-10 |
 | 17. Cross-Phase Verification & Quality Gates | v1.2 | 2/2 | Complete    | 2026-08-10 |
-| 18. Navigation Foundation & EntityScreen Extension | v1.3 | 2/3 | In Progress|  |
+| 18. Navigation Foundation & EntityScreen Extension | v1.3 | 3/3 | In Progress|  |
 | 19. Projetos Section (Master-Detail) | v1.3 | 0/? | Not started | - |
 | 20. Rotinas & Tickets Sections | v1.3 | 0/? | Not started | - |
 | 21. Dashboard Data Layer, Shell, Week Calendar & Ticket Queue | v1.3 | 0/? | Not started | - |
