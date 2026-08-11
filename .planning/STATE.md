@@ -5,15 +5,15 @@ milestone_name: Navegação reorganizada + Dashboard de acompanhamento
 current_phase: 20
 current_phase_name: Rotinas & Tickets Sections
 status: executing
-stopped_at: Completed 20-01-PLAN.md
-last_updated: "2026-08-11T22:10:58.079Z"
+stopped_at: Completed 20-02-PLAN.md
+last_updated: "2026-08-11T22:19:05.994Z"
 last_activity: 2026-08-11
 last_activity_desc: 20-01-PLAN.md executed - SubtarefasPanel.svelte + TicketsSection.svelte with driven xor-parent create pre-resolution, live-verified against hosted InstantDB (NEST-05 complete)
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 12
-  completed_plans: 8
+  completed_plans: 9
   percent: 33
 ---
 
@@ -29,11 +29,11 @@ See: .planning/PROJECT.md (updated 2026-08-10)
 ## Current Position
 
 Phase: 20 of 23 (Rotinas & Tickets Sections)
-Plan: 01 of 05 complete (SubtarefasPanel + TicketsSection with driven xor-parent create)
-Status: In progress
+Plan: 2 of 05 complete (SubtarefasPanel + TicketsSection with driven xor-parent create)
+Status: Ready to execute
 Last activity: 2026-08-11 — 20-01-PLAN.md executed, NEST-05 complete
 
-Progress: [███████░░░] 67%
+Progress: [████████░░] 75%
 
 ## Performance Metrics
 
@@ -68,6 +68,7 @@ Progress: [███████░░░] 67%
 | Phase 19 P03 | 35min | 2 tasks | 2 files |
 | Phase 19 P04 | 55min | 3 tasks | 5 files |
 | Phase 20-rotinas-tickets-sections P01 | 35min | 2 tasks | 4 files |
+| Phase 20-rotinas-tickets-sections P02 | 8min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -96,6 +97,9 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase ?]: TicketsSection renders no separate h2; relies on EntityScreen's own heading to avoid a duplicate-h2 regression in shell-nav.spec.ts
 - [Phase ?]: SubtarefasPanel drives bits-ui Select via paired pointerdown/pointerup PointerEvents, not .click() -- verified .click() is a no-op against bits-ui Select triggers/items
 - [Phase ?]: tickets-section.spec.ts's edit test adds a waitForSettle buffer before page.reload() to avoid aborting an in-flight db.transact()
+- [Phase ?]: No RotinasSection-level <h2> -- EntityScreen(instanciasRotinaConfig)'s own header already satisfies shell-nav.spec.ts's single-<h2> assertion
+- [Phase ?]: Both Tabs.Content blocks in RotinasSection are guarded behind {#if activeTab === ...}, since both tabs mount an EntityScreen directly (unlike ProjetosSection's default tab)
+- [Phase ?]: Templates context paragraph reads 'Configuração que gera as instâncias.' -- e2e assertion is case-insensitive against the binding spec phrase
 
 ### Pending Todos
 
@@ -127,8 +131,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-11T22:10:58.068Z
-Stopped at: Completed 20-01-PLAN.md
+Last session: 2026-08-11T22:19:05.983Z
+Stopped at: Completed 20-02-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
