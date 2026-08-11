@@ -757,3 +757,148 @@ test.describe("etapas accordion (NEST-02)", () => {
     await expect(rows.nth(1)).toHaveAttribute("data-eid", etapaAltaId);
   });
 });
+
+test.describe("Todas as tarefas / Sem etapa (NEST-03)", () => {
+  let projetoId = "";
+  let etapaId = "";
+  let tarefaComEtapaId = "";
+  let tarefaComEtapaTitulo = "";
+  let tarefaOrfaId = "";
+  let tarefaOrfaTitulo = "";
+
+  test.beforeAll(() => {
+    const projetoNome = uniqueName("todas-projeto");
+    const projetoCreated = JSON.parse(
+      apolloCli(["projeto", "criar", "--nome", projetoNome, "--status", "ativo"]),
+    ) as { id: string };
+    projetoId = projetoCreated.id;
+
+    const etapaNome = uniqueName("todas-etapa");
+    const etapaCreated = JSON.parse(
+      apolloCli([
+        "etapa",
+        "criar",
+        "--nome",
+        etapaNome,
+        "--ordem",
+        "10",
+        "--status",
+        "ativo",
+        "--projeto-id",
+        projetoId,
+      ]),
+    ) as { id: string };
+    etapaId = etapaCreated.id;
+
+    tarefaComEtapaTitulo = uniqueName("tarefa-com-etapa");
+    const tarefaComEtapaCreated = JSON.parse(
+      apolloCli([
+        "tarefa",
+        "criar",
+        "--titulo",
+        tarefaComEtapaTitulo,
+        "--tipo-prazo",
+        "soft",
+        "--status",
+        "pendente",
+        "--etapa-id",
+        etapaId,
+      ]),
+    ) as { id: string };
+    tarefaComEtapaId = tarefaComEtapaCreated.id;
+
+    // Deliberately created with NO --etapa-id -- the escape hatch this
+    // whole test proves stays reachable (tarefas.etapa is required: false).
+    tarefaOrfaTitulo = uniqueName("tarefa-orfa");
+    const tarefaOrfaCreated = JSON.parse(
+      apolloCli([
+        "tarefa",
+        "criar",
+        "--titulo",
+        tarefaOrfaTitulo,
+        "--tipo-prazo",
+        "soft",
+        "--status",
+        "pendente",
+      ]),
+    ) as { id: string };
+    tarefaOrfaId = tarefaOrfaCreated.id;
+  });
+
+  test.afterAll(() => {
+    tryDelete("tarefa", tarefaComEtapaId);
+    tryDelete("tarefa", tarefaOrfaId);
+    tryDelete("etapa", etapaId);
+    tryDelete("projeto", projetoId);
+    sweepLeftovers();
+  });
+
+  test("NEST-03: 'Todas as tarefas' tab is reachable with no projeto selected, showing every tarefa unscoped", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await page.getByTestId("nav-projetos").click();
+
+    // Default landing: no projeto selected, "Projeto" tab active showing
+    // project-empty -- "Todas as tarefas" must still be reachable.
+    await expect(page.getByTestId("project-empty")).toBeVisible();
+    // Exactly one <h2> on the default landing state (shell-nav.spec.ts's
+    // single-<h2> contract) -- the "todas" Tabs.Content's EntityScreen must
+    // not be mounted while inactive.
+    await expect(page.locator("h2")).toHaveCount(1);
+
+    await page.getByTestId("projetos-tab-todas").click();
+
+    const panel = page.getByTestId("todas-tarefas-panel");
+    await expect(panel).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    await expect(panel.getByTestId("row").filter({ hasText: tarefaOrfaTitulo })).toBeVisible({
+      timeout: RESYNC_TIMEOUT,
+    });
+    await expect(panel.getByTestId("row").filter({ hasText: tarefaComEtapaTitulo })).toBeVisible({
+      timeout: RESYNC_TIMEOUT,
+    });
+
+    // Now the "todas" tab's own EntityScreen(tarefasConfig) is mounted and
+    // active, adding its own <h2>Tarefas</h2> alongside ProjetosSection's
+    // always-rendered <h2>Projetos</h2> (2 total) -- this is expected and
+    // does not violate the plan's hard constraint, which is scoped to the
+    // *default landing state* only (asserted above, before this click):
+    // shell-nav.spec.ts's single-<h2> assertion runs immediately after
+    // clicking nav-projetos, never after a user has actively switched tabs.
+    await expect(page.locator("h2")).toHaveCount(2);
+    await expect(page.locator("h2").last()).toHaveText("Tarefas");
+  });
+
+  test("NEST-03: 'Sem etapa' narrows 'Todas as tarefas' to orphaned tarefas, with orphans staying fully editable either way", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await page.getByTestId("nav-projetos").click();
+    await page.getByTestId("projetos-tab-todas").click();
+
+    const panel = page.getByTestId("todas-tarefas-panel");
+    await expect(panel).toBeVisible({ timeout: RESYNC_TIMEOUT });
+
+    const comEtapaRow = panel.getByTestId("row").filter({ hasText: tarefaComEtapaTitulo });
+    const orfaRow = panel.getByTestId("row").filter({ hasText: tarefaOrfaTitulo });
+    await expect(comEtapaRow).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    await expect(orfaRow).toBeVisible({ timeout: RESYNC_TIMEOUT });
+
+    await panel.getByTestId("tarefas-sem-etapa-toggle").check();
+
+    // The etapa-linked tarefa's row disappears; the orphan's row remains --
+    // this is the exact assertion 19-RESEARCH.md's Pitfall 5 flags as the
+    // one unverified InstaQL fact this phase introduces ($isNull via
+    // scopeWhere). See 19-03-SUMMARY.md for which of the two documented
+    // paths (scopeWhere $isNull vs. the client-side fallback) shipped.
+    await expect(orfaRow).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    await expect(comEtapaRow).toHaveCount(0, { timeout: RESYNC_TIMEOUT });
+
+    // The orphan stays fully editable through this same unscoped-engine
+    // path (NEST-01, unmodified) -- not a read-only supplementary list.
+    await expect(orfaRow.getByTestId("row-edit")).toBeVisible();
+
+    await panel.getByTestId("tarefas-sem-etapa-toggle").uncheck();
+    await expect(comEtapaRow).toBeVisible({ timeout: RESYNC_TIMEOUT });
+  });
+});

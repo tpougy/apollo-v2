@@ -7,8 +7,10 @@
   import { Button } from "$lib/components/ui/button";
   import { Checkbox } from "$lib/components/ui/checkbox";
   import { Input } from "$lib/components/ui/input";
+  import { Label } from "$lib/components/ui/label";
   import * as Select from "$lib/components/ui/select";
   import { Skeleton } from "$lib/components/ui/skeleton";
+  import * as Tabs from "$lib/components/ui/tabs";
   import { db } from "../db";
   import EntityScreen from "../entities/EntityScreen.svelte";
   import { configByEtype } from "../entities/registry";
@@ -98,6 +100,17 @@
   // the exact same etapasOrdenadas computed below; never triggers a second
   // db.useQuery call.
   let etapasView = $state<"lista" | "kanban">("lista");
+
+  // Detail-column Tabs.Root state (NEST-03): "detalhe" (default, the
+  // project-detail/project-empty block from Plan 19-01/19-02) or "todas"
+  // (the unscoped EntityScreen(tarefas) escape hatch for orphaned tarefas).
+  let detailTab = $state<"detalhe" | "todas">("detalhe");
+
+  // "Sem etapa" convenience filter for the "Todas as tarefas" tab. Primary
+  // path: InstantDB's documented $isNull operator via the existing
+  // scopeWhere prop (see 19-RESEARCH.md Pitfall 5 / Assumption A1) — smoke
+  // tested live in projetos-section.spec.ts before being trusted here.
+  let semEtapa = $state(false);
 
   // Mirrors Shell.svelte's own nestedGroups grouping pattern (Map +
   // Array.from(entries), zero per-entity branching), extended to 3 modes.
@@ -345,6 +358,19 @@
       </div>
 
       <div class="flex-1">
+        <Tabs.Root
+          value={detailTab}
+          onValueChange={(v) => {
+            if (v) detailTab = v as "detalhe" | "todas";
+          }}
+        >
+          <Tabs.List>
+            <Tabs.Trigger value="detalhe" data-testid="projetos-tab-detalhe">Projeto</Tabs.Trigger>
+            <Tabs.Trigger value="todas" data-testid="projetos-tab-todas">
+              Todas as tarefas
+            </Tabs.Trigger>
+          </Tabs.List>
+          <Tabs.Content value="detalhe">
         {#if selectedProjeto}
           {@const etapasOrdenadas = [...(selectedProjeto.etapas ?? [])].sort(
             (a, b) => a.ordem - b.ordem,
@@ -558,6 +584,41 @@
             </p>
           </div>
         {/if}
+          </Tabs.Content>
+          <Tabs.Content value="todas">
+            <!--
+              bits-ui's Tabs.Content always mounts its children in the DOM
+              (sets a `hidden` HTML attribute for the inactive tab, never
+              unmounts -- verified in node_modules/bits-ui/dist/bits/tabs/
+              tabs.svelte.js's TabsContentState.props). Without this guard,
+              EntityScreen(tarefasConfig) would render its own
+              <h2>Tarefas</h2> unconditionally the instant a user lands on
+              Projetos, breaking shell-nav.spec.ts's single-<h2> assertion
+              (page.locator("h2") strict-mode-violates on 2 elements) even
+              though the tab itself is invisible. Only mount the panel while
+              "todas" is the active tab.
+            -->
+            {#if detailTab === "todas"}
+              <div data-testid="todas-tarefas-panel" class="space-y-4">
+                <div class="flex items-center gap-2">
+                  <Checkbox
+                    id="tarefas-sem-etapa"
+                    data-testid="tarefas-sem-etapa-toggle"
+                    checked={semEtapa}
+                    onCheckedChange={(v) => {
+                      semEtapa = v === true;
+                    }}
+                  />
+                  <Label for="tarefas-sem-etapa">Sem etapa</Label>
+                </div>
+                <EntityScreen
+                  config={tarefasConfig}
+                  scopeWhere={semEtapa ? { "etapa.id": { $isNull: true } } : null}
+                />
+              </div>
+            {/if}
+          </Tabs.Content>
+        </Tabs.Root>
       </div>
     </div>
   {/if}
