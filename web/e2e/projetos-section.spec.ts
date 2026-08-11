@@ -125,7 +125,9 @@ test("NEST-02: master column groups projetos by fundo, 'Sem fundo vinculado' las
   const fundoGroup = page.getByTestId("project-group").filter({
     has: page.getByTestId("project-group-heading").filter({ hasText: fundoNome }),
   });
-  await expect(fundoGroup.getByTestId("project-item").filter({ hasText: projetoComFundoNome })).toBeVisible();
+  await expect(
+    fundoGroup.getByTestId("project-item").filter({ hasText: projetoComFundoNome }),
+  ).toBeVisible();
 
   // The fundo-less projeto is under "Sem fundo vinculado".
   const semFundoGroup = page.getByTestId("project-group").filter({
@@ -156,8 +158,12 @@ test("NEST-02: name search filters client-side over already-loaded rows", async 
   // the other fixture's item while keeping this one visible.
   await page.getByTestId("project-search").fill(projetoComFundoNome);
 
-  await expect(page.getByTestId("project-item").filter({ hasText: projetoComFundoNome })).toBeVisible();
-  await expect(page.getByTestId("project-item").filter({ hasText: projetoSemFundoNome })).toHaveCount(0);
+  await expect(
+    page.getByTestId("project-item").filter({ hasText: projetoComFundoNome }),
+  ).toBeVisible();
+  await expect(
+    page.getByTestId("project-item").filter({ hasText: projetoSemFundoNome }),
+  ).toHaveCount(0);
 });
 
 test("NEST-02: '+ novo projeto' opens EntityScreen's own create dialog, new projeto appears with no reload", async ({

@@ -141,14 +141,44 @@
   let projetoHostReady = $state(false);
   let projetoHostEl = $state<HTMLDivElement | undefined>(undefined);
 
+  // "+ novo projeto"'s own target (`entity-create-start`) always exists as
+  // soon as the hidden EntityScreen mounts, regardless of query state — a
+  // single `tick()` after `projetoHostReady` flips is enough. "editar
+  // projeto"'s target (a specific row's `row-edit` button) only exists once
+  // the hidden instance's OWN `db.useQuery` has resolved over the network
+  // and rendered that row, which a single `tick()` cannot wait for (`tick()`
+  // flushes pending Svelte updates, not in-flight async fetches). Poll for
+  // the selector, bounded, so both callers share one code path.
   async function openProjetoDialog(selector: string): Promise<void> {
     projetoHostReady = true;
     await tick();
-    projetoHostEl?.querySelector<HTMLButtonElement>(selector)?.click();
+    const deadline = Date.now() + 5000;
+    while (Date.now() < deadline) {
+      const el = projetoHostEl?.querySelector<HTMLButtonElement>(selector);
+      if (el) {
+        el.click();
+        return;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
   }
 
   function startCreateProjeto(): void {
     void openProjetoDialog('[data-testid="entity-create-start"]');
+  }
+
+  // Reuses the exact same hidden host/selector-click plumbing as
+  // startCreateProjeto above — do NOT mount a second hidden `projetosConfig`
+  // instance. The hidden host's own unscoped query already returns every
+  // projeto, including the selected one, with a matching data-eid. Guarded
+  // as a no-op when nothing is selected for defense-in-depth, even though
+  // the button itself is only ever rendered inside the `{#if selectedProjeto}`
+  // block below.
+  function startEditProjeto(): void {
+    if (!selectedProjetoId) return;
+    void openProjetoDialog(
+      `[data-testid="row"][data-eid="${selectedProjetoId}"] [data-testid="row-edit"]`,
+    );
   }
 </script>
 
@@ -239,18 +269,24 @@
               PROJETOS › {selectedProjeto.nome}
             </p>
             <div data-testid="project-header" class="space-y-1">
-              <h3 class="text-lg font-semibold">{selectedProjeto.nome}</h3>
+              <div class="flex items-center justify-between gap-4">
+                <h3 class="text-lg font-semibold">{selectedProjeto.nome}</h3>
+                <Button
+                  type="button"
+                  variant="outline"
+                  data-testid="project-edit-start"
+                  onclick={startEditProjeto}
+                >
+                  editar projeto
+                </Button>
+              </div>
               <p class="text-sm text-muted-foreground">
                 {selectedProjeto.fundo?.nome ?? "Sem fundo vinculado"} ·
                 {(selectedProjeto.etapas ?? []).length} etapas ·
                 {totalTarefas(selectedProjeto)} tarefas
               </p>
             </div>
-            <!--
-              "editar projeto" (Task 2 of this plan) and "+ etapa" (Plan
-              19-02) header actions are added afterward — this task adds
-              neither button.
-            -->
+            <!-- "+ etapa" (Plan 19-02) header action is added afterward. -->
           </div>
         {:else}
           <div data-testid="project-empty">
