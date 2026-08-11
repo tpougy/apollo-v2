@@ -70,7 +70,7 @@ per-project mini-kanbans, and a 7-dialog focus system. UI and organization only:
 `instant.perms.ts`, CLI, or `routineJob.ts` changes; zero human UAT anywhere in the milestone
 (per PROJECT.md Context — this project runs fully autonomously).
 
-- [ ] **Phase 18: Navigation Foundation & EntityScreen Extension** - 6-section topbar with nested entities hidden from first level, `EntityScreen` gains additive `scopeWhere`/`presetLinks` with proven zero-regression behavior
+- [x] **Phase 18: Navigation Foundation & EntityScreen Extension** - 6-section topbar with nested entities hidden from first level, `EntityScreen` gains additive `scopeWhere`/`presetLinks` with proven zero-regression behavior (completed 2026-08-11)
 - [ ] **Phase 19: Projetos Section (Master-Detail)** - Projects grouped by fundo with etapas/tasks inline in the detail column, plus a "Todas as tarefas" escape hatch for orphaned tasks
 - [ ] **Phase 20: Rotinas & Tickets Sections** - Instâncias/Templates tabs for Rotinas; Tickets and Tarefas share one inline subtarefas panel with the parent pre-resolved
 - [ ] **Phase 21: Dashboard Data Layer, Shell, Week Calendar & Ticket Queue** - Pure unit-tested `derive.ts`, single-query `dashboardQuery.ts`, the Dashboard's 3-column grid shell, weekly business-day calendar, and pending-ticket queue
@@ -211,7 +211,7 @@ form without duplicating any markup, and never get lost more than one level deep
 | 15. Entity Screen — Form & Dialog Composition | v1.2 | 1/1 | Complete    | 2026-08-10 |
 | 16. Entity Screen — Row Actions & Delete Confirmation | v1.2 | 2/2 | Complete    | 2026-08-10 |
 | 17. Cross-Phase Verification & Quality Gates | v1.2 | 2/2 | Complete    | 2026-08-10 |
-| 18. Navigation Foundation & EntityScreen Extension | v1.3 | 3/3 | In Progress|  |
+| 18. Navigation Foundation & EntityScreen Extension | v1.3 | 3/3 | Complete    | 2026-08-11 |
 | 19. Projetos Section (Master-Detail) | v1.3 | 0/? | Not started | - |
 | 20. Rotinas & Tickets Sections | v1.3 | 0/? | Not started | - |
 | 21. Dashboard Data Layer, Shell, Week Calendar & Ticket Queue | v1.3 | 0/? | Not started | - |

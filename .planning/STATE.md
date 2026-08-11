@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Navegação reorganizada + Dashboard de acompanhamento
-current_phase: 18
-current_phase_name: Navigation Foundation & EntityScreen Extension
-status: verifying
+current_phase: 19
+current_phase_name: Projetos Section (Master-Detail)
+status: planning
 stopped_at: Completed 18-03-PLAN.md
-last_updated: "2026-08-11T17:20:33.560Z"
+last_updated: "2026-08-11T17:30:27.361Z"
 last_activity: 2026-08-11
 last_activity_desc: ROADMAP.md created for v1.3 (Phases 18-23), 21/21 requirements mapped
 progress:
@@ -28,10 +28,10 @@ See: .planning/PROJECT.md (updated 2026-08-10)
 
 ## Current Position
 
-Phase: 18 of 23 (Navigation Foundation & EntityScreen Extension)
-Plan: 3 of 3
-Status: Phase complete — ready for verification
-Last activity: 2026-08-11 — ROADMAP.md created for v1.3 (Phases 18-23), 21/21 requirements mapped
+Phase: 19 of 23 (Projetos Section (Master-Detail))
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-08-11 — Phase 18 complete, transitioned to Phase 19
 
 Progress: [██████████] 100%
 
@@ -39,7 +39,7 @@ Progress: [██████████] 100%
 
 **Velocity:**
 
-- Total plans completed: 0 (v1.3 not yet started; 35 lifetime across v1.0+v1.1+v1.2)
+- Total plans completed: 3 (v1.3 not yet started; 35 lifetime across v1.0+v1.1+v1.2)
 - Average duration: N/A (no v1.3 plans yet)
 - Total execution time: 0 hours (v1.3)
 
@@ -47,7 +47,7 @@ Progress: [██████████] 100%
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| 18 | 3 | - | - |
 
 **Recent Trend:**
 
@@ -74,8 +74,6 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - v1.3 roadmap: NEST-05 (shared inline subtarefas panel) is owned entirely by Phase 20, even though the panel is also used from the task view built in Phase 19's Projetos section — Phase 19 builds the etapa/task list without the panel wired in yet; Phase 20 builds `SubtarefasPanel.svelte` once and retroactively wires it to both Tickets and the Phase 19 task surface, matching `spec-ui.md` §9's own step ordering (step 3 ProjetosSection before step 4 Rotinas/Tickets + SubtarefasPanel).
 - v1.3 roadmap: DASH-05 (mini-kanbans) and DASH-04 (rotinas-by-fundo + heatmap) were merged into one phase (22) rather than split per `spec-ui.md` §9's steps 7/8 — each would otherwise be a single-requirement phase, and both are adjacent, purely additive Dashboard-content slices with no independent user-facing milestone value on their own.
 - v1.2/v1.3 kickoff: No human UAT gate anywhere — every phase's success criteria must be Playwright-provable against the live InstantDB app (C-12).
-- [Phase 15]: Fixed a busy-guard double-submit race in EntityScreen.svelte's handleSubmit (plan-checker-flagged deviation) — busy=true now set immediately after the re-entrancy guard, wrapping the entire validation+queryOnce+transact flow in try/finally, not just the transact try/catch.
-- [Phase 16 P02]: Fixed bits-ui's AlertDialogCancelState never emitting a disabled HTML attribute (only gating its own onclick/onkeydown internally) via a child-snippet override in the vendored alert-dialog-cancel.svelte, discovered by the new busy-gating test.
 - [Phase 17]: Fixed EntityScreen.svelte's page-header sitting flush (0px gap) against table/loading/empty content via `space-y-6`, locked in with a permanent Playwright assertion — the closing v1.2 cross-phase audit's one genuine finding.
 - [Phase 18 P01]: gotoNested's interim (Phase 18) affordance groups the 4 nested entities by the first primary entity each links to (via links, never xorLink), falling back to 'Outros' -- data-driven, zero per-etype branching; only the helper body changes when Phase 19/20 ship real nested UI.
 - [Phase ?]: Verified NEST-01's byte-identical acceptance criterion via a controlled A/B full-suite comparison (diff/no-diff, same post-18-01 baseline) rather than a single unedited-suite run, because 18-01 landed its topbar restructuring in the shared working tree (no worktree isolation) before this plan's verification ran, and 18-03's e2e migration (NAV-05) had not yet landed.
