@@ -26,11 +26,17 @@
     hojeIso,
     onVerProjetos,
     onOpenFundo,
+    onOpenProjeto,
+    onOpenEtapa,
+    onOpenTarefa,
   }: {
     projetos: ProjetoRow[];
     hojeIso: string;
     onVerProjetos: () => void;
     onOpenFundo: (id: string) => void;
+    onOpenProjeto: (id: string) => void;
+    onOpenEtapa: (id: string) => void;
+    onOpenTarefa: (id: string) => void;
   } = $props();
 
   // This phase's locked, documented resolution of "projeto em andamento": a
@@ -160,7 +166,12 @@
           >
             {collapsedByProjeto[projeto.id] ? "▸" : "▾"}
           </button>
-          <button type="button" data-testid="project-strip-nome" class="text-sm font-medium">
+          <button
+            type="button"
+            data-testid="project-strip-nome"
+            class="text-sm font-medium"
+            onclick={() => onOpenProjeto(projeto.id)}
+          >
             {projeto.nome}
           </button>
           <button
@@ -196,7 +207,12 @@
                   data-eid={etapa.id}
                   class="w-36 shrink-0 box-border border-r px-2 space-y-2 [scroll-snap-align:start]"
                 >
-                  <button type="button" data-testid="project-strip-column-header" class="block w-full text-left space-y-1">
+                  <button
+                    type="button"
+                    data-testid="project-strip-column-header"
+                    class="block w-full text-left space-y-1"
+                    onclick={() => onOpenEtapa(etapa.id)}
+                  >
                     <span class="font-mono text-xs">{etapa.ordem}</span>
                     <span class="block text-sm font-medium">{etapa.nome}</span>
                     <span class="block text-xs text-muted-foreground">{feitas}/{total}</span>
@@ -215,6 +231,10 @@
                       class={atrasada
                         ? "block w-full rounded border p-2 text-left space-y-1 border-l-[3px] border-destructive"
                         : "block w-full rounded border p-2 text-left space-y-1"}
+                      onclick={(e) => {
+                        e.stopPropagation();
+                        onOpenTarefa(tarefa.id);
+                      }}
                     >
                       <p class="line-clamp-2 text-sm">{tarefa.titulo}</p>
                       <p class={atrasada ? "text-xs text-destructive" : "text-xs text-muted-foreground"}>

@@ -3,7 +3,9 @@
   import { useDashboardQuery } from "./dashboardQuery";
   import { agendaPorDia, cargaDoMes, rotinasPorFundo, semanaUtil } from "./derive";
   import DayDialog from "./dialogs/DayDialog.svelte";
+  import EtapaDialog from "./dialogs/EtapaDialog.svelte";
   import FundoDialog from "./dialogs/FundoDialog.svelte";
+  import ProjectDialog from "./dialogs/ProjectDialog.svelte";
   import RotinaDialog from "./dialogs/RotinaDialog.svelte";
   import TaskDialog from "./dialogs/TaskDialog.svelte";
   import TicketDialog from "./dialogs/TicketDialog.svelte";
@@ -174,6 +176,48 @@
   function openTarefaDialog(id: string): void {
     openDialog({ kind: "tarefa", id });
   }
+
+  // Plan 23-06: the second depth-2 launch point (with Dia) -- Projeto opens
+  // Etapa/Tarefa from inside its own kanban body via the SAME
+  // openDialog/openEtapaDialog/openTarefaDialog functions, pushing a second
+  // dialogStack entry (never a third).
+  function openProjetoDialog(id: string): void {
+    openDialog({ kind: "projeto", id });
+  }
+
+  function openEtapaDialog(id: string): void {
+    openDialog({ kind: "etapa", id });
+  }
+
+  // Shapes projetoRows()'s already-fetched row (now correctly carrying
+  // subtarefas through etapas.tarefas per Task 1's query fix) into
+  // ProjectDialog's flat ProjectDialogRow contract -- zero new query.
+  const activeProjetoForDialog = $derived.by(() =>
+    activeDialogRef?.kind === "projeto"
+      ? projetoRows().find((p) => p.id === activeDialogRef.id)
+      : undefined,
+  );
+
+  // Same find-by-id scan idiom as ProjetosSection.svelte's findEtapaById --
+  // attaches the owning projeto's nome/fundo?.nome while flattening into
+  // EtapaDialog's EtapaDialogRow contract.
+  const activeEtapaForDialog = $derived.by(() => {
+    if (activeDialogRef?.kind !== "etapa") return undefined;
+    for (const p of projetoRows()) {
+      const e = p.etapas?.find((x) => x.id === activeDialogRef.id);
+      if (e) {
+        return {
+          id: e.id,
+          nome: e.nome,
+          ordem: e.ordem,
+          projetoNome: p.nome,
+          fundoNome: p.fundo?.nome ?? null,
+          tarefas: e.tarefas ?? [],
+        };
+      }
+    }
+    return undefined;
+  });
 
   // Belt (this no-op guard) and suspenders (each call site's own onclick
   // guard, added in RoutinesByFundo.svelte/ProjectStrips.svelte) against
@@ -485,6 +529,9 @@
         {hojeIso}
         onVerProjetos={goToProjetos}
         onOpenFundo={openFundoDialog}
+        onOpenProjeto={openProjetoDialog}
+        onOpenEtapa={openEtapaDialog}
+        onOpenTarefa={openTarefaDialog}
       />
     </div>
   </div>
@@ -548,6 +595,46 @@
       instanciasRotina={dadosNormalizados.instanciasRotina}
       projetos={fundoDialogProjetos}
       tickets={fundoDialogTickets}
+      onOpenChange={(open) => {
+        if (!open) closeAllDialogs();
+      }}
+    />
+  {:else if activeDialogRef?.kind === "projeto"}
+    <ProjectDialog
+      open={true}
+      projeto={activeProjetoForDialog
+        ? {
+            id: activeProjetoForDialog.id,
+            nome: activeProjetoForDialog.nome,
+            fundoNome: activeProjetoForDialog.fundo?.nome ?? null,
+            etapas: (activeProjetoForDialog.etapas ?? []).map((e) => ({
+              id: e.id,
+              nome: e.nome,
+              ordem: e.ordem,
+              tarefas: (e.tarefas ?? []).map((t) => ({
+                id: t.id,
+                titulo: t.titulo,
+                tipoPrazo: t.tipoPrazo,
+                dataPrevista: t.dataPrevista,
+                status: t.status,
+                subtarefas: t.subtarefas,
+              })),
+            })),
+          }
+        : undefined}
+      onOpenEtapa={openEtapaDialog}
+      onOpenTarefa={openTarefaDialog}
+      onOpenChange={(open) => {
+        if (!open) closeAllDialogs();
+      }}
+    />
+  {:else if activeDialogRef?.kind === "etapa"}
+    <EtapaDialog
+      open={true}
+      etapa={activeEtapaForDialog}
+      breadcrumb={breadcrumbRef
+        ? { label: breadcrumbLabelFor(breadcrumbRef), onClick: popToFirst }
+        : undefined}
       onOpenChange={(open) => {
         if (!open) closeAllDialogs();
       }}
