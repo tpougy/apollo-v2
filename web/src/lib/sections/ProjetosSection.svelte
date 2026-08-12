@@ -15,7 +15,7 @@
   import EntityScreen from "../entities/EntityScreen.svelte";
   import { configByEtype } from "../entities/registry";
   import type { EntityConfig } from "../entities/types";
-  import { progressoEtapa, tarefaConcluida, vencido } from "./projetosDerive";
+  import { progressoEtapa, tarefaConcluida, vencido } from "../dashboard/derive";
   import SubtarefasPanel from "./SubtarefasPanel.svelte";
 
   // Never import a defs/*.ts module directly here — always resolve through

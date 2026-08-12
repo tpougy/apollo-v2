@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { progressoEtapa, tarefaConcluida, vencido } from "./projetosDerive";
+import { progressoEtapa, tarefaConcluida, vencido } from "./derive";
 
 describe("tarefaConcluida", () => {
   test("no subtarefas -> never counts as done", () => {

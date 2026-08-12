@@ -1,14 +1,21 @@
-// Phase 19's phase-local copy of the "conclusão"/"atraso" rules locked by
-// REQUIREMENTS.md §5.3/§5.4 (spec-ui.md §5.2/§5.3/§5.4). Pure, no `db`
-// import, `hoje` always passed as a parameter — never an implicit
-// `Date.now()`/`new Date()` default inside a function — same spirit as
-// `web/src/lib/bizdays.ts`'s own module-level doc-comment style.
-//
-// Phase 21's `web/src/lib/dashboard/derive.ts` is the eventual canonical
-// owner of this same rule set (spec §5.2 names `progressoEtapa`/`vencido` as
-// derive.ts exports); it does not exist yet, and this module does not depend
-// on it. Phase 21 may import or re-derive this logic and consolidate/dedupe
-// this file at that point (19-CONTEXT.md's explicit allowance).
+/**
+ * DASH-06's canonical, pure derivation module for the Dashboard feature (and,
+ * per Phase 21's consolidation of Phase 19's provisional
+ * `web/src/lib/sections/projetosDerive.ts`, for `ProjetosSection.svelte`'s
+ * etapa-progress UI too — one rule set, no drift between the two).
+ *
+ * Pure like `web/src/lib/bizdays.ts`: no `db` import, no internal
+ * `Date.now()`/argless `new Date()` call anywhere. Every date-dependent
+ * export takes its "today" reference (`hoje`/`base`) as an explicit
+ * parameter — the caller constructs the `Date`/ISO string, this module never
+ * reads the clock itself.
+ */
+
+// ---------------------------------------------------------------------------
+// Migrated verbatim from web/src/lib/sections/projetosDerive.ts (Phase 19).
+// Same names, signatures, and doc comments — this phase's Task 1 is a pure
+// file relocation + import-path repoint, zero behavior change.
+// ---------------------------------------------------------------------------
 
 export interface SubtarefaLike {
   concluida: boolean;
