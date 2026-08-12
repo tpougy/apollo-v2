@@ -15,6 +15,32 @@ uv sync
 `uv` provisions and pins Python 3.12 itself (`cli/.python-version`) — never
 invoke a bare `python3`/`pip` in this package.
 
+### Global install (`uv tool install`)
+
+`apollo` can also be installed as a standalone global tool, runnable from any
+directory with no `apollo-v2` checkout present at all — the vendored ANBIMA
+calendar and a public default InstantDB `app_id` both ship inside the wheel
+(see PKG-01/PKG-03 in `.planning/phases/24-packaging-installability/`):
+
+```bash
+cd cli
+uv build --out-dir /tmp/apollo-dist
+uv tool install --force /tmp/apollo-dist/apollo_cli-*.whl
+
+# from any directory outside apollo-v2:
+apollo --version
+apollo doctor
+
+uv tool uninstall apollo-cli   # note: the project name, not the "apollo" console script
+uv tool list                    # confirms no tools remain installed
+```
+
+Without a reachable `.env.instantdb`/`APOLLO_ENV_FILE`, `doctor` reports the
+embedded-default `app_id` source (see "Run" below) — every subcommand still
+works, authenticated as whichever real user runs `apollo auth login`.
+`cli/tests/test_packaging_live.py` is the permanent automated regression
+proof of this whole round trip (marked `packaging`).
+
 ## Run
 
 ```bash
@@ -23,10 +49,15 @@ uv run apollo --version
 uv run apollo doctor
 ```
 
-`apollo doctor` resolves the repo-root `.env.instantdb` file (by walking
-upward from the package's own location) regardless of the caller's current
-working directory, and reports whether the InstantDB app id and admin token
-are present — without ever printing either value in full.
+`apollo doctor` resolves the InstantDB `app_id` through a fallback chain: an
+explicit `env_file` argument, then `APOLLO_ENV_FILE`, then the repo-root
+`.env.instantdb` file (by walking upward from the package's own location),
+and finally an embedded public default `app_id` baked into the package —
+used only when none of the file-based sources resolve one, which is the
+expected outcome for a real `uv tool install` outside the monorepo (see
+"Global install" below). `doctor` reports which source resolved the app id
+(`file` or `embedded default`) and whether an admin token is present in the
+file, without ever printing either value in full.
 
 ## Quality gates
 

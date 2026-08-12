@@ -97,15 +97,14 @@ def test_installed_wheel_runs_outside_repo_with_no_shared_or_env_file(
     # CORRECTLY (not just "imports without crashing") via importlib.resources
     # from an installed package — plan 24-01's own live proof alone stops
     # being checked once its scratch dirs are deleted.
+    bizdays_snippet = (
+        "from apollo_cli.bizdays import is_business_day, add_business_days; "
+        "assert is_business_day('2024-03-28') is True; "
+        "assert is_business_day('2024-03-29') is False; "
+        "assert add_business_days('2024-03-28', 1) == '2024-04-01'"
+    )
     bizdays_check = subprocess.run(
-        [
-            str(venv_python),
-            "-c",
-            "from apollo_cli.bizdays import is_business_day, add_business_days; "
-            "assert is_business_day('2024-03-28') is True; "
-            "assert is_business_day('2024-03-29') is False; "
-            "assert add_business_days('2024-03-28', 1) == '2024-04-01'",
-        ],
+        [str(venv_python), "-c", bizdays_snippet],
         cwd=str(outside_cwd),
         capture_output=True,
         text=True,
