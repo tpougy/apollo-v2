@@ -5,16 +5,16 @@ milestone_name: Navegação reorganizada + Dashboard de acompanhamento
 current_phase: 23
 current_phase_name: Focus Dialog System
 status: planning
-stopped_at: Completed 23-05-PLAN.md
-last_updated: "2026-08-12T06:35:00.000Z"
+stopped_at: Completed 23-06-PLAN.md
+last_updated: "2026-08-12T06:21:36.489Z"
 last_activity: 2026-08-12
-last_activity_desc: 23-05-PLAN.md executed (FundoDialog.svelte, Dashboard.svelte fundo branch, RoutinesByFundo.svelte/ProjectStrips.svelte fundo-badge/rotinas-fundo-titulo/rotinas-row wiring, 6-test e2e proof)
+last_activity_desc: 23-06-PLAN.md executed (ProjectDialog.svelte, Dashboard.svelte projeto/etapa branches, ProjectStrips.svelte nome/column-header/card wiring, dashboardQuery.ts subtarefas fix, 6-test e2e proof)
 progress:
   total_phases: 6
   completed_phases: 5
   total_plans: 24
   completed_plans: 23
-  percent: 96
+  percent: 83
 ---
 
 # Project State
@@ -29,9 +29,9 @@ See: .planning/PROJECT.md (updated 2026-08-10)
 ## Current Position
 
 Phase: 23 of 23 (Focus Dialog System)
-Plan: 23-01, 23-02, 23-03, 23-04, 23-05 complete (5/7 plans done this phase so far)
+Plan: 23-01, 23-02, 23-03, 23-04, 23-05, 23-06 complete (6/7 plans done this phase so far)
 Status: In progress
-Last activity: 2026-08-12 — 23-05-PLAN.md executed (FundoDialog.svelte + Dashboard.svelte fundo branch + RoutinesByFundo.svelte/ProjectStrips.svelte fundo-badge/rotinas-fundo-titulo/rotinas-row wiring, e2e-proven)
+Last activity: 2026-08-12 — 23-06-PLAN.md executed (ProjectDialog.svelte + Dashboard.svelte projeto/etapa branches + ProjectStrips.svelte remaining wiring + dashboardQuery.ts subtarefas fix, e2e-proven)
 
 Progress: [██████████] 96%
 
@@ -82,6 +82,7 @@ Progress: [██████████] 96%
 | Phase 23-focus-dialog-system P03 | 35min | 3 tasks | 4 files |
 | Phase 23-focus-dialog-system P04 | 40min | 3 tasks | 6 files |
 | Phase 23-focus-dialog-system P05 | 35min | 3 tasks | 6 files |
+| Phase 23-focus-dialog-system P06 | 40min | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -141,6 +142,7 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase ?]: 23-04: DayDialog.svelte omits editar/ver-pagina entirely (footerExtra carries only ir-para-semana), zero FocusDialog change; RotinaDialog's status-only editar inherited for free from EntityScreen's existing editableFields() narrowing
 - [Phase ?]: 23-04: WeekCalendar/MonthHeatmap fully wired (day-header, 3-way item dispatch, weekend popover restructured with per-day dash-weekend-day-header, heatmap-cell); rotina-UUID-as-titulo display bug fixed at its source via WeekCalendar's labelFor() and mirrored in DayDialog
 - [Phase ?]: 23-05: FundoDialog.svelte (M) is the one dialog that calls derive.ts's rotinasDoFundo directly (week-unbounded); Dashboard.svelte's dialogStack now covers 5/7 kinds; RoutinesByFundo.svelte/ProjectStrips.svelte's fundo-targeting buttons null-guarded (belt at openFundoDialog + suspenders at each call site); derive.ts's InstanciaAgendaLike.template widened with optional nome (Rule 1/2)
+- [Phase ?]: 23-06: ProjectDialog.svelte (L) is the second depth-2 launch point (with Dia) -- unbounded etapa/tarefa kanban, per-column '+ tarefa' via a third independent hidden EntityScreen host; dashboardQuery.ts's subtarefas fix proven live on both the new dialog and pre-existing ProjectStrips.svelte; Dashboard.svelte's dialog-stack chain now covers all 7 kinds
 
 ### Pending Todos
 
@@ -172,8 +174,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-12T06:35:00.000Z
-Stopped at: Completed 23-05-PLAN.md
+Last session: 2026-08-12T06:21:36.379Z
+Stopped at: Completed 23-06-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
