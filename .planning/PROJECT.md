@@ -33,7 +33,8 @@ The user can execute every piece of controladoria data-entry work — full CRUD 
 
 <!-- Current scope. Building toward these. -->
 
-(None — run `/gsd-new-milestone` para definir a próxima milestone, ou os itens de tech debt não-bloqueantes registrados em `.planning/milestones/v1.3-MILESTONE-AUDIT.md`)
+- `cli/` (Python) instalável via `uv tool install` fora do checkout do monorepo, sem quebrar em runtime — v1.4 (em andamento)
+- Login (`apollo auth login`) sem depender de `INSTANT_APP_ADMIN_TOKEN` — v1.4 (em andamento)
 
 ### Out of Scope
 

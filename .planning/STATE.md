@@ -1,20 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.3
-milestone_name: Navegação reorganizada + Dashboard de acompanhamento
-status: Awaiting next milestone
-stopped_at: Completed 23-07-PLAN.md -- Phase 23 (final functional phase of v1.3) complete
-last_updated: "2026-08-12T08:09:26.798Z"
+milestone: v1.4
+milestone_name: CLI instalável via uv tool, login sem admin token
+status: planning
+last_updated: "2026-08-12T18:43:27.625Z"
 last_activity: 2026-08-12
-last_activity_desc: 23-07-PLAN.md executed (consolidated 16/16 DLG-02 button-inventory + keyboard-accessibility + depth-cap-2 sweep, live re-verification of 23-03's nested-button no-SSR reasoning, bun run lint debt closed, 3 full Playwright suite runs green)
 progress:
-  total_phases: 6
-  completed_phases: 6
-  total_plans: 24
-  completed_plans: 24
-  percent: 100
-current_phase: 23
-current_phase_name: Focus Dialog System
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -28,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-08-12)
 
 ## Current Position
 
-Phase: Milestone v1.3 complete
+Phase: Not started (defining requirements)
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-08-12 — Milestone v1.3 completed and archived
+Status: Defining requirements
+Last activity: 2026-08-12 — Milestone v1.4 started
 
 ## Performance Metrics
 
