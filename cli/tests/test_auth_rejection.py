@@ -23,12 +23,20 @@ import pytest
 from instantdb import Instant, InstantAPIError
 from instantdb import id as new_id
 
+from apollo_cli.auth import EXIT_NETWORK_ERROR
 from apollo_cli.config import find_repo_root, load_instant_config
 from apollo_cli.crud_helpers import now_iso
 from apollo_cli.instant_client import session_client
 from apollo_cli.session import Session
+from tests.conftest import RunCli
 
-pytestmark = pytest.mark.live
+# NOTE: unlike an earlier version of this module, there is no module-level
+# `pytestmark = pytest.mark.live` here -- tests 4/6/7 and the new network-
+# error test (test 8, phase 25) are genuinely offline (no real InstantDB
+# network I/O), so each test that DOES need the real network is marked
+# `@pytest.mark.live` individually instead. This mirrors the same pattern
+# `test_cross_user_isolation.py`'s docstring already documents for the same
+# reason (one test there must run offline under `-m "not live"`).
 
 
 def _cli_dir() -> Path:
@@ -43,6 +51,7 @@ def _permission_denied_type(error: InstantAPIError) -> str | None:
 # --- 1. Guest write is denied (live) ---------------------------------------
 
 
+@pytest.mark.live
 def test_guest_write_is_denied_with_permission_denied() -> None:
     config = load_instant_config()
     client = Instant(app_id=config.app_id, admin_token="").as_user(guest=True)
@@ -66,6 +75,7 @@ def test_guest_write_is_denied_with_permission_denied() -> None:
 # --- 2. Nonexistent-token write is rejected (live) --------------------------
 
 
+@pytest.mark.live
 def test_nonexistent_refresh_token_write_is_rejected() -> None:
     fake_session = Session(
         user_id="does-not-matter",
@@ -91,6 +101,7 @@ def test_nonexistent_refresh_token_write_is_rejected() -> None:
 # --- 3. Mismatched donoId is denied (live, real session) --------------------
 
 
+@pytest.mark.live
 def test_mismatched_donoid_is_denied_even_with_a_real_session(live_session: Session) -> None:
     client = session_client(live_session)
     other_user_id = str(uuid.uuid4())
@@ -133,6 +144,7 @@ def test_cli_criar_with_no_session_file_exits_1_with_no_session_error(tmp_path: 
 # --- 5. CLI surface with an invalid session (subprocess) --------------------
 
 
+@pytest.mark.live
 def test_cli_criar_with_invalid_session_rejects_and_creates_nothing(
     tmp_path: Path,
     live_client: Instant,
@@ -197,7 +209,14 @@ _ADMIN_TOKEN_EXEMPT_FILENAMES = {"instant_client.py", "config.py"}
 # `whoami` — this is a documented Plan 03-01 design decision, not new scope
 # introduced here.
 _INSTANT_CONSTRUCTOR_EXEMPT_FILENAMES = {"instant_client.py", "auth.py"}
-_LOGIN_CLIENT_CALLER_EXEMPT_FILENAMES = {"auth.py", "instant_client.py"}
+# As of phase 25, `auth.py`'s `login()` no longer calls `login_client()` at
+# all (it talks to the public `/runtime/auth/*` endpoints directly via
+# `httpx` instead) -- so it no longer needs this exemption.
+# `instant_client.py` stays exempt for clarity even though it only *defines*
+# `login_client`, never *calls* it (the `ast.Call` check below never fires
+# on that file either way; keeping it exempt vs. dropping it to `set()` are
+# behaviorally identical).
+_LOGIN_CLIENT_CALLER_EXEMPT_FILENAMES = {"instant_client.py"}
 
 
 def _package_python_files() -> list[Path]:
@@ -249,6 +268,31 @@ def test_admin_token_confinement(path: Path) -> None:
                 )
                 if name == "Instant":
                     pytest.fail(f"{path.name}:{node.lineno} constructs 'Instant(' directly")
+
+
+# --- 8. Network error is surfaced structurally (real refused connection, no mocking) --
+
+
+def test_login_with_unreachable_api_uri_exits_network_error(
+    run_cli: RunCli,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A real (if deliberately unreachable) TCP endpoint, per RESEARCH.md Pitfall 3.
+
+    No InstantDB mocking: `httpx.post()` genuinely attempts to connect to
+    `127.0.0.1:1` (a port nothing listens on) and gets a real, immediate
+    connection-refused error, which `login()`'s existing `except
+    httpx.HTTPError` branch already maps to `network_error`/exit 4.
+    """
+    monkeypatch.setattr("apollo_cli.auth.DEFAULT_API_URI", "http://127.0.0.1:1")
+    monkeypatch.setenv("APOLLO_SESSION_FILE", str(tmp_path / "session"))
+
+    invocation = run_cli(["auth", "login", "--email", "probe@example.com"])
+
+    assert invocation.result.exit_code == EXIT_NETWORK_ERROR, invocation.result.output
+    error_body = json.loads(invocation.result.output or invocation.result.stderr)
+    assert error_body["error"] == "network_error"
 
 
 def _subprocess_env(session_file: str) -> dict[str, str]:

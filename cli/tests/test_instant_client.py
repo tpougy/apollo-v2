@@ -15,6 +15,10 @@ from apollo_cli.config import find_repo_root
 from apollo_cli.instant_client import AdminTokenMissingError, login_client, session_client
 from apollo_cli.session import Session
 
+# Exempts files that legitimately reference the `INSTANT_APP_ADMIN_TOKEN`
+# *key name* itself -- unrelated to who may *call* `login_client`, which is
+# `test_auth_rejection.py`'s separate, narrower
+# `_LOGIN_CLIENT_CALLER_EXEMPT_FILENAMES` gate.
 _EXEMPT_FILENAMES = {"instant_client.py", "config.py"}
 
 
