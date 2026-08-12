@@ -51,19 +51,25 @@ export interface SeedInstanceFields {
  * Seeds exactly one `instanciasRotina` record, owned by `ownerEmail` (must be
  * an existing InstantDB user — the auth.setup.ts `authed` project user in
  * this suite), via the admin API. Returns the new record's id.
+ *
+ * `templateId` is optional (Phase 21): when supplied, chains `.link({
+ * template: templateId })` onto the same `.update()` call before it is
+ * passed to `adminDb.transact(...)` — the exact chainable `.update().link()`
+ * shape already proven at `routineJob.ts:653-664`. Every existing caller
+ * that omits this third argument keeps its exact prior behavior unchanged.
  */
 export async function seedInstance(
   fields: SeedInstanceFields,
   ownerEmail: string,
+  templateId?: string,
 ): Promise<string> {
   const owner = await adminDb.auth.getUser({ email: ownerEmail });
   const newId = crypto.randomUUID();
-  await adminDb.transact(
-    adminDb.tx.instanciasRotina[newId].update({
-      ...fields,
-      donoId: owner.id,
-    }),
-  );
+  const tx = adminDb.tx.instanciasRotina[newId].update({
+    ...fields,
+    donoId: owner.id,
+  });
+  await adminDb.transact(templateId ? tx.link({ template: templateId }) : tx);
   return newId;
 }
 
@@ -83,6 +89,20 @@ export async function deleteInstance(eid: string): Promise<void> {
     // Already deleted — fine (mirrors the CLI-cleanup tolerance pattern used
     // throughout this phase's other e2e specs).
   }
+}
+
+/**
+ * TEST-ONLY escape hatch (Phase 21): a thin generic pass-through to
+ * `adminDb.query(...)`, letting a spec run an arbitrary InstaQL shape
+ * through the admin API without adding a new named function per shape —
+ * mirrors this file's existing `deleteAdminRecord`'s "generic by etype"
+ * precedent. Used by `dashboard.spec.ts` to run the exact same
+ * `DASHBOARD_QUERY` object `useDashboardQuery()` runs, via the admin API
+ * instead of the reactive client, proving the live two-hop
+ * `instanciasRotina.template.fundo` path resolves.
+ */
+export async function adminQuery<T>(query: Record<string, unknown>): Promise<T> {
+  return (await adminDb.query(query as never)) as T;
 }
 
 /**

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { db } from "../db";
   import { useDashboardQuery } from "./dashboardQuery";
   import TicketQueue from "./TicketQueue.svelte";
 
@@ -47,7 +48,7 @@
     fundos?: FundoRow[];
   };
 
-  const query = useDashboardQuery();
+  const query = useDashboardQuery(db);
 
   function ticketRows(): TicketRow[] {
     const data = query.data as DashboardData | undefined;
