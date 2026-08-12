@@ -2,6 +2,9 @@
   import { db } from "../db";
   import { useDashboardQuery } from "./dashboardQuery";
   import { agendaPorDia, cargaDoMes, rotinasPorFundo, semanaUtil } from "./derive";
+  import DayDialog from "./dialogs/DayDialog.svelte";
+  import RotinaDialog from "./dialogs/RotinaDialog.svelte";
+  import TaskDialog from "./dialogs/TaskDialog.svelte";
   import TicketDialog from "./dialogs/TicketDialog.svelte";
   import MonthHeatmap from "./MonthHeatmap.svelte";
   import ProjectStrips from "./ProjectStrips.svelte";
@@ -25,18 +28,38 @@
     fundo?: FundoRow;
     etapas?: EtapaRow[];
   };
+  // Widened (Plan 23-04, Task 2) to add `descricao`/`dataPrevistaEstimada`/
+  // `competencia`/`status` and to widen `etapa` to carry `nome` -- every new
+  // field is optional (or, for `status`, already fetched at runtime for
+  // every tarefa regardless of nesting), so both the flat `data.tarefas`
+  // usage AND the nested `EtapaRow.tarefas` usage of this same declaration
+  // stay type-compatible. The query's `etapa: { projeto: {} }` traversal
+  // already returns `nome` as an own scalar of `etapas` -- it was simply
+  // undeclared until now.
   type TarefaRow = {
     id: string;
     titulo: string;
+    descricao?: string | null;
     tipoPrazo: string;
     dataPrevista?: string;
-    etapa?: { id: string; projeto?: ProjetoRow };
+    dataPrevistaEstimada?: string | null;
+    competencia?: string | null;
+    status: string;
+    etapa?: { id: string; nome: string; projeto?: ProjetoRow };
     subtarefas?: SubtarefaRow[];
   };
   type TemplateRow = { id: string; nome: string; fundo?: FundoRow };
+  // Widened (Plan 23-04, Task 2) to add `dedupeKey`/`dataPrevistaEstimada`/
+  // `competencia` -- all already fetched at runtime via the unchanged
+  // `instanciasRotina: { template: { fundo: {} } }` query branch
+  // (defs/instanciasRotina.ts's own field list), needed by RotinaDialog's
+  // read-only body.
   type InstanciaRotinaRow = {
     id: string;
+    dedupeKey: string;
     dataPrevista: string;
+    dataPrevistaEstimada?: string | null;
+    competencia: string;
     status: string;
     tipoPrazo: string;
     template?: TemplateRow;
@@ -114,14 +137,18 @@
   const activeDialogRef = $derived(dialogStack[dialogStack.length - 1]);
   const breadcrumbRef = $derived(dialogStack.length === 2 ? dialogStack[0] : undefined);
 
-  // The "dia" branch returns the raw ISO for now -- Plan 23-04 refines it to
-  // a formatted date when Dia becomes an actual first-level launch point;
-  // this is a deliberate placeholder, not a bug, since no code path can
-  // reach `breadcrumbRef.kind === "dia"` before Plan 23-04 lands.
+  // Refined (Plan 23-04): Dia is now an actual first-level launch point, so
+  // this branch formats the ISO into the same short weekday-abbrev + DD/MM
+  // shape used elsewhere, rather than returning the raw ISO placeholder Plan
+  // 23-01 deliberately left here.
   function breadcrumbLabelFor(ref: DialogRef | undefined): string {
     if (!ref) return "";
     if (ref.kind === "projeto") return projetoRows().find((p) => p.id === ref.id)?.nome ?? "Projeto";
-    if (ref.kind === "dia") return ref.id;
+    if (ref.kind === "dia") {
+      const dow = new Date(`${ref.id}T00:00:00.000Z`).getUTCDay();
+      const names = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
+      return `${names[dow]} ${ref.id.slice(8, 10)}/${ref.id.slice(5, 7)}`;
+    }
     return "";
   }
 
@@ -134,6 +161,87 @@
       ? ticketRows().find((t) => t.id === activeDialogRef.id)
       : undefined,
   );
+
+  function openDiaDialog(iso: string): void {
+    openDialog({ kind: "dia", id: iso });
+  }
+
+  function openRotinaDialog(id: string): void {
+    openDialog({ kind: "rotina", id });
+  }
+
+  function openTarefaDialog(id: string): void {
+    openDialog({ kind: "tarefa", id });
+  }
+
+  // spec-ui.md §4 row 2's "ir para esta semana" -- reuses the existing
+  // semanaUtil/semanaBase already driving week navigation.
+  function irParaEstaSemana(iso: string): void {
+    semanaBase = semanaUtil(iso).dias[0];
+    closeAllDialogs();
+  }
+
+  // Dashboard-local lookup (not a new derive.ts export) -- the exact
+  // componentry-level join 23-RESEARCH.md's Q1 recommends, distinct from the
+  // one genuinely new pure function, `rotinasDoFundo`, already added in Plan
+  // 23-02.
+  const fundoByProjetoId = $derived.by(() => {
+    const map = new Map<string, FundoRow | null>();
+    for (const p of projetoRows()) map.set(p.id, p.fundo ?? null);
+    return map;
+  });
+
+  const activeDiaItems = $derived.by(() =>
+    activeDialogRef?.kind === "dia" ? (agenda.get(activeDialogRef.id) ?? []) : [],
+  );
+
+  const activeRotina = $derived.by(() => {
+    if (activeDialogRef?.kind !== "rotina") return undefined;
+    const raw = (query.data as DashboardData | undefined)?.instanciasRotina?.find(
+      (i) => i.id === activeDialogRef.id,
+    );
+    if (!raw) return undefined;
+    return {
+      id: raw.id,
+      dedupeKey: raw.dedupeKey,
+      dataPrevista: raw.dataPrevista,
+      dataPrevistaEstimada: raw.dataPrevistaEstimada,
+      competencia: raw.competencia,
+      tipoPrazo: raw.tipoPrazo,
+      status: raw.status,
+      templateNome: raw.template?.nome ?? null,
+      fundoNome: raw.template?.fundo?.nome ?? null,
+    };
+  });
+
+  // T-23-08 (threat register): this lookup MUST read from the flat,
+  // top-level `data.tarefas` array (which carries `subtarefas`), NEVER from
+  // `projetoRows()`'s nested `etapas[].tarefas[]` -- that nested branch never
+  // fetched `subtarefas` (documented 22-01 query gap), so any lookup through
+  // it would silently show every tarefa as having zero subtarefas regardless
+  // of reality.
+  const activeTarefaForDialog = $derived.by(() => {
+    if (activeDialogRef?.kind !== "tarefa") return undefined;
+    const data = query.data as DashboardData | undefined;
+    const raw = (data?.tarefas ?? []).find((t) => t.id === activeDialogRef.id);
+    if (!raw) return undefined;
+    const projetoId = raw.etapa?.projeto?.id ?? null;
+    const fundo = projetoId ? (fundoByProjetoId.get(projetoId) ?? null) : null;
+    return {
+      id: raw.id,
+      titulo: raw.titulo,
+      descricao: raw.descricao,
+      tipoPrazo: raw.tipoPrazo,
+      dataPrevista: raw.dataPrevista,
+      dataPrevistaEstimada: raw.dataPrevistaEstimada,
+      competencia: raw.competencia,
+      status: raw.status,
+      subtarefas: raw.subtarefas,
+      etapaNome: raw.etapa?.nome ?? null,
+      projetoNome: raw.etapa?.projeto?.nome ?? null,
+      fundoNome: fundo?.nome ?? null,
+    };
+  });
 
   // Local, non-persisted helpers — not part of derive.ts's DASH-06 public
   // contract (neither is one of its 7 named exports), since both are
@@ -318,6 +426,9 @@
         {hojeIso}
         sabado={semana.sabado}
         domingo={semana.domingo}
+        {rotinaNomeById}
+        onOpenDia={openDiaDialog}
+        onOpenItem={(tipo, id) => openDialog({ kind: tipo, id })}
       />
     </div>
     <div
@@ -332,7 +443,7 @@
     >
       <div class="space-y-6">
         <RoutinesByFundo grupos={rotinaGrupos} nomeById={rotinaNomeById} {hojeIso} />
-        <MonthHeatmap carga={carga} ano={anoMes.ano} mes={anoMes.mes} />
+        <MonthHeatmap carga={carga} ano={anoMes.ano} mes={anoMes.mes} onOpenDia={openDiaDialog} />
       </div>
     </div>
     <div
@@ -353,6 +464,40 @@
     <TicketDialog
       open={true}
       ticket={activeTicket}
+      breadcrumb={breadcrumbRef
+        ? { label: breadcrumbLabelFor(breadcrumbRef), onClick: popToFirst }
+        : undefined}
+      onOpenChange={(open) => {
+        if (!open) closeAllDialogs();
+      }}
+    />
+  {:else if activeDialogRef?.kind === "dia"}
+    <DayDialog
+      open={true}
+      iso={activeDialogRef.id}
+      items={activeDiaItems}
+      {rotinaNomeById}
+      onOpenItem={(tipo, id) => openDialog({ kind: tipo, id })}
+      onIrParaSemana={irParaEstaSemana}
+      onOpenChange={(open) => {
+        if (!open) closeAllDialogs();
+      }}
+    />
+  {:else if activeDialogRef?.kind === "rotina"}
+    <RotinaDialog
+      open={true}
+      rotina={activeRotina}
+      breadcrumb={breadcrumbRef
+        ? { label: breadcrumbLabelFor(breadcrumbRef), onClick: popToFirst }
+        : undefined}
+      onOpenChange={(open) => {
+        if (!open) closeAllDialogs();
+      }}
+    />
+  {:else if activeDialogRef?.kind === "tarefa"}
+    <TaskDialog
+      open={true}
+      tarefa={activeTarefaForDialog}
       breadcrumb={breadcrumbRef
         ? { label: breadcrumbLabelFor(breadcrumbRef), onClick: popToFirst }
         : undefined}
