@@ -2,6 +2,7 @@
   import { db } from "../db";
   import { useDashboardQuery } from "./dashboardQuery";
   import { agendaPorDia, semanaUtil } from "./derive";
+  import ProjectStrips from "./ProjectStrips.svelte";
   import TicketQueue from "./TicketQueue.svelte";
   import WeekCalendar from "./WeekCalendar.svelte";
 
@@ -58,6 +59,11 @@
     return data?.tickets ?? [];
   }
 
+  function projetoRows(): ProjetoRow[] {
+    const data = query.data as DashboardData | undefined;
+    return data?.projetos ?? [];
+  }
+
   // The only way Dashboard.svelte can move Shell.svelte's `rota` $state to
   // the Tickets section, since Shell.svelte itself receives zero changes
   // this phase (it already mounts <Dashboard /> unconditionally since Phase
@@ -65,6 +71,10 @@
   // a plain shadcn Button wiring a standard onclick.
   function goToTickets(): void {
     document.querySelector<HTMLButtonElement>('[data-testid="nav-tickets"]')?.click();
+  }
+
+  function goToProjetos(): void {
+    document.querySelector<HTMLButtonElement>('[data-testid="nav-projetos"]')?.click();
   }
 
   // Local, non-persisted helpers — not part of derive.ts's DASH-06 public
@@ -239,7 +249,7 @@
       data-testid="dash-placeholder-projetos"
       class="order-4 lg:order-none lg:col-start-2 lg:row-start-2"
     >
-      Em breve: projetos em andamento
+      <ProjectStrips projetos={projetoRows()} {hojeIso} onVerProjetos={goToProjetos} />
     </div>
   </div>
 {/if}
