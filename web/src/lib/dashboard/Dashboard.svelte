@@ -3,6 +3,7 @@
   import { useDashboardQuery } from "./dashboardQuery";
   import { agendaPorDia, cargaDoMes, rotinasPorFundo, semanaUtil } from "./derive";
   import DayDialog from "./dialogs/DayDialog.svelte";
+  import FundoDialog from "./dialogs/FundoDialog.svelte";
   import RotinaDialog from "./dialogs/RotinaDialog.svelte";
   import TaskDialog from "./dialogs/TaskDialog.svelte";
   import TicketDialog from "./dialogs/TicketDialog.svelte";
@@ -173,6 +174,29 @@
   function openTarefaDialog(id: string): void {
     openDialog({ kind: "tarefa", id });
   }
+
+  // Belt (this no-op guard) and suspenders (each call site's own onclick
+  // guard, added in RoutinesByFundo.svelte/ProjectStrips.svelte) against
+  // Pitfall 2: a null/empty fundo id ("Sem fundo vinculado") must never open
+  // a blank Fundo dialog.
+  function openFundoDialog(id: string): void {
+    if (!id) return;
+    openDialog({ kind: "fundo", id });
+  }
+
+  function fundoNomeFor(id: string): string {
+    return (query.data as DashboardData | undefined)?.fundos?.find((f) => f.id === id)?.nome ?? "Fundo";
+  }
+
+  // Built straight from already-fetched data (projetoRows()/ticketRows(),
+  // both sourced from the one DASHBOARD_QUERY call) -- zero new query.
+  // FundoDialog.svelte only ever narrows further via its own `.filter()`.
+  const fundoDialogProjetos = $derived(
+    projetoRows().map((p) => ({ id: p.id, nome: p.nome, fundoId: p.fundo?.id ?? null })),
+  );
+  const fundoDialogTickets = $derived(
+    ticketRows().map((t) => ({ id: t.id, titulo: t.titulo, fundoId: t.fundo?.id ?? null })),
+  );
 
   // spec-ui.md §4 row 2's "ir para esta semana" -- reuses the existing
   // semanaUtil/semanaBase already driving week navigation.
@@ -442,7 +466,13 @@
       class="order-3 lg:order-none lg:col-start-3 lg:row-start-1 lg:row-span-2"
     >
       <div class="space-y-6">
-        <RoutinesByFundo grupos={rotinaGrupos} nomeById={rotinaNomeById} {hojeIso} />
+        <RoutinesByFundo
+          grupos={rotinaGrupos}
+          nomeById={rotinaNomeById}
+          {hojeIso}
+          onOpenFundo={openFundoDialog}
+          onOpenRotina={openRotinaDialog}
+        />
         <MonthHeatmap carga={carga} ano={anoMes.ano} mes={anoMes.mes} onOpenDia={openDiaDialog} />
       </div>
     </div>
@@ -450,7 +480,12 @@
       data-testid="dash-placeholder-projetos"
       class="order-4 lg:order-none lg:col-start-2 lg:row-start-2"
     >
-      <ProjectStrips projetos={projetoRows()} {hojeIso} onVerProjetos={goToProjetos} />
+      <ProjectStrips
+        projetos={projetoRows()}
+        {hojeIso}
+        onVerProjetos={goToProjetos}
+        onOpenFundo={openFundoDialog}
+      />
     </div>
   </div>
   <!--
@@ -501,6 +536,18 @@
       breadcrumb={breadcrumbRef
         ? { label: breadcrumbLabelFor(breadcrumbRef), onClick: popToFirst }
         : undefined}
+      onOpenChange={(open) => {
+        if (!open) closeAllDialogs();
+      }}
+    />
+  {:else if activeDialogRef?.kind === "fundo"}
+    <FundoDialog
+      open={true}
+      fundoId={activeDialogRef.id}
+      fundoNome={fundoNomeFor(activeDialogRef.id)}
+      instanciasRotina={dadosNormalizados.instanciasRotina}
+      projetos={fundoDialogProjetos}
+      tickets={fundoDialogTickets}
       onOpenChange={(open) => {
         if (!open) closeAllDialogs();
       }}

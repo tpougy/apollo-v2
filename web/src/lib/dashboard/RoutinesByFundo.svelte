@@ -13,7 +13,15 @@
     grupos,
     nomeById,
     hojeIso,
-  }: { grupos: Grupo[]; nomeById: Map<string, string>; hojeIso: string } = $props();
+    onOpenFundo,
+    onOpenRotina,
+  }: {
+    grupos: Grupo[];
+    nomeById: Map<string, string>;
+    hojeIso: string;
+    onOpenFundo: (id: string) => void;
+    onOpenRotina: (id: string) => void;
+  } = $props();
 
   type SortBy = "data-asc" | "data-desc";
   type StatusFilter = "todas" | "atrasadas";
@@ -123,6 +131,7 @@
           type="button"
           data-testid="rotinas-fundo-titulo"
           class="block text-left text-sm font-medium"
+          onclick={grupo.fundoId ? () => onOpenFundo(grupo.fundoId!) : undefined}
         >
           {grupo.fundoNome ?? "Sem fundo vinculado"}
         </button>
@@ -139,6 +148,10 @@
               data-testid="rotinas-row"
               data-eid={instancia.id}
               class="flex w-full items-center gap-2 text-left"
+              onclick={(e) => {
+                e.stopPropagation();
+                onOpenRotina(instancia.id);
+              }}
             >
               <span
                 data-testid="rotinas-row-bolinha"

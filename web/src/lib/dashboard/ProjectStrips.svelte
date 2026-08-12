@@ -25,7 +25,13 @@
     projetos,
     hojeIso,
     onVerProjetos,
-  }: { projetos: ProjetoRow[]; hojeIso: string; onVerProjetos: () => void } = $props();
+    onOpenFundo,
+  }: {
+    projetos: ProjetoRow[];
+    hojeIso: string;
+    onVerProjetos: () => void;
+    onOpenFundo: (id: string) => void;
+  } = $props();
 
   // This phase's locked, documented resolution of "projeto em andamento": a
   // project gets a strip solely because it has at least one etapa to render
@@ -161,6 +167,12 @@
             type="button"
             data-testid="project-strip-fundo-badge"
             data-eid={projeto.fundo?.id ?? ""}
+            onclick={projeto.fundo?.id
+              ? (e) => {
+                  e.stopPropagation();
+                  onOpenFundo(projeto.fundo!.id);
+                }
+              : undefined}
           >
             <Badge variant="outline">{projeto.fundo?.nome ?? "Sem fundo vinculado"}</Badge>
           </button>
