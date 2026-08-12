@@ -4,17 +4,17 @@ milestone: v1.4
 milestone_name: CLI instalável via uv tool, login sem admin token
 current_phase: 25
 current_phase_name: Public Auth Login
-status: planning
-stopped_at: Completed 24-02-PLAN.md -- Phase 24 (Packaging & Installability) complete
-last_updated: "2026-08-12T19:57:33.640Z"
+status: in_progress
+stopped_at: Completed 25-01-PLAN.md
+last_updated: "2026-08-12T20:45:29.359Z"
 last_activity: 2026-08-12
-last_activity_desc: "Completed 24-02-PLAN.md: permanent test_packaging_live.py regression gate (PKG-05), admin-token confinement gates confirmed unchanged, full quality gate green, real uv tool install/uninstall acceptance round trip captured verbatim"
+last_activity_desc: "Completed 25-01-PLAN.md: apollo auth login rewritten to call InstantDB's public /runtime/auth/* endpoints directly via httpx, zero login_client()/admin-token usage, proven live with the admin token entirely absent; AST-walk gate tightened, new offline network-error test, full quality gate green"
 progress:
   total_phases: 2
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
-  percent: 50
+  total_plans: 4
+  completed_plans: 3
+  percent: 75
 ---
 
 # Project State
@@ -24,16 +24,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-12)
 
 **Core value:** The user can execute every piece of controladoria data-entry work from either the Svelte SPA or the Python CLI, both authenticated as the same real user under the same InstantDB permission rules. Validated in v1.0. v1.1 made the SPA visually coherent on shadcn-svelte defaults; v1.2 refined composition/spacing/hierarchy on the same four screens; v1.3 reorganized navigation into a 6-section topbar and shipped the Dashboard landing screen; v1.4 makes the CLI itself installable outside the monorepo and drops its login flow's admin-token dependency — `cli/`-only, no schema/perms/web change.
-**Current focus:** v1.4 Phase 24 (Packaging & Installability) complete — PKG-01 through PKG-05 all live-verified. Phase 25 (Public Auth Login) is next.
+**Current focus:** v1.4 Phase 25 in progress — Plan 25-01 complete (`apollo auth login` rewritten to InstantDB's public `/runtime/auth/*` endpoints via `httpx`, zero admin-token dependency, proven live). Plan 25-02 (real send+verify magic-code round trip, admin-token-absent) remains.
 
 ## Current Position
 
 Phase: 25 of 25 (Public Auth Login)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-08-12 — Phase 24 complete, transitioned to Phase 25
+Plan: 25-01 complete (1/2 plans done this phase so far)
+Status: In progress
+Last activity: 2026-08-12 — Completed 25-01-PLAN.md (public runtime endpoints transport rewrite, live invalid-code + network-error proofs, docstrings/README corrected, AST-walk gate tightened)
 
-Progress: [██████████] 100%
+Progress: [████████░░] 75%
 
 ## Performance Metrics
 
@@ -62,6 +62,7 @@ Progress: [██████████] 100%
 |------|----------|-------|-------|
 | Phase 24 P01 | 25min | 2 tasks | 7 files |
 | Phase 24 P02 | ~30min | 2 tasks | 3 files |
+| Phase 25 P01 | ~12min | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -77,6 +78,8 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase 24, Plan 01]: Ran a live RED reproduction of the pre-fix `find_repo_root()` crash (real `uv build`/`venv`/install from outside the repo) before implementing, then reran the identical round trip post-fix for GREEN.
 - [Phase 24, Plan 02]: Isolated `APOLLO_SESSION_FILE` (nonexistent path) for every `fundo listar` invocation in both the new `test_packaging_live.py` and the manual acceptance round trip — this dev machine's real persisted session would otherwise mask the `no_session`/exit-1 contract being proven.
 - [Phase 24, Plan 02]: Phase 24 (Packaging & Installability) is now fully complete — PKG-01 through PKG-05 all live-verified; `test_packaging_live.py` is the permanent standing regression gate for PKG-05, and the real `uv tool install --force`/`uv tool uninstall apollo-cli` round trip was executed once, live, with output captured verbatim in `24-02-SUMMARY.md`.
+- [Phase 25, Plan 01]: apollo auth login rewritten to call InstantDB's public /runtime/auth/send_magic_code and verify_magic_code endpoints directly via httpx, reusing instantdb's own api_error_from_response()/DEFAULT_API_URI/DEFAULT_TIMEOUT internals -- zero login_client()/admin-token usage remains in login(); proven live with INSTANT_APP_ADMIN_TOKEN entirely absent.
+- [Phase 25, Plan 01]: httpx package-legitimacy resolved autonomously (Task 0, no blocking human checkpoint) -- already a pinned, installed transitive dependency of instantdb; promoted to an explicit cli/pyproject.toml dependency with zero new install surface.
 
 ### Pending Todos
 
@@ -112,8 +115,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-12T19:52:00.000Z
-Stopped at: Completed 24-02-PLAN.md -- Phase 24 (Packaging & Installability) complete
+Last session: 2026-08-12T20:45:29.349Z
+Stopped at: Completed 25-01-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

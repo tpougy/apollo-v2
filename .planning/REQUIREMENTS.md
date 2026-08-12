@@ -25,11 +25,11 @@ Esta milestone nasceu de uma discussão (não de research) sobre por que `cli/` 
 
 ### Autenticação (AUTH)
 
-- [ ] **AUTH-01**: `apollo auth login` (envio e verificação de magic code) chama diretamente `POST {api_uri}/runtime/auth/send_magic_code` e `POST {api_uri}/runtime/auth/verify_magic_code` via `httpx`, em vez de `client.auth.send_magic_code`/`check_magic_code` do pacote `instantdb` — eliminando a exigência de `INSTANT_APP_ADMIN_TOKEN` no fluxo de login.
-- [ ] **AUTH-02**: O formato de saída observável de `apollo auth login` (JSON em stdout/stderr, exit codes, mensagens de erro para código expirado/inválido/rede) permanece idêntico ao comportamento atual — mudança é só na implementação interna de transporte.
-- [ ] **AUTH-03**: Nenhum comando do CLI, incluindo `apollo auth login`, lê ou depende de `INSTANT_APP_ADMIN_TOKEN` para funcionar operacionalmente. `session_client()` continua nunca carregando admin token (comportamento já existente, preservado).
+- [x] **AUTH-01**: `apollo auth login` (envio e verificação de magic code) chama diretamente `POST {api_uri}/runtime/auth/send_magic_code` e `POST {api_uri}/runtime/auth/verify_magic_code` via `httpx`, em vez de `client.auth.send_magic_code`/`check_magic_code` do pacote `instantdb` — eliminando a exigência de `INSTANT_APP_ADMIN_TOKEN` no fluxo de login.
+- [x] **AUTH-02**: O formato de saída observável de `apollo auth login` (JSON em stdout/stderr, exit codes, mensagens de erro para código expirado/inválido/rede) permanece idêntico ao comportamento atual — mudança é só na implementação interna de transporte.
+- [x] **AUTH-03**: Nenhum comando do CLI, incluindo `apollo auth login`, lê ou depende de `INSTANT_APP_ADMIN_TOKEN` para funcionar operacionalmente. `session_client()` continua nunca carregando admin token (comportamento já existente, preservado).
 - [ ] **AUTH-04**: `admin_token_present` (campo em `InstantConfig`) e o comando `apollo doctor` continuam existindo e funcionando exatamente como hoje — apoio a desenvolvimento/operações do projeto, não removidos nem alterados além do necessário para refletir a mudança de resolução do `app_id` (PKG-03/PKG-04).
-- [ ] **AUTH-05**: Testes existentes que hoje verificam ausência de admin token durante o uso normal (`tests/test_auth_rejection.py`, `tests/test_instant_client.py`) são atualizados para refletir a garantia mais forte ("CLI nunca usa admin token em lugar nenhum, nem no login"), sem perder a intenção original de que a sessão do usuário nunca carrega admin token.
+- [x] **AUTH-05**: Testes existentes que hoje verificam ausência de admin token durante o uso normal (`tests/test_auth_rejection.py`, `tests/test_instant_client.py`) são atualizados para refletir a garantia mais forte ("CLI nunca usa admin token em lugar nenhum, nem no login"), sem perder a intenção original de que a sessão do usuário nunca carrega admin token.
 
 ## Future Requirements
 
