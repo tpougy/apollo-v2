@@ -75,7 +75,7 @@ per-project mini-kanbans, and a 7-dialog focus system. UI and organization only:
 - [x] **Phase 20: Rotinas & Tickets Sections** - Instâncias/Templates tabs for Rotinas; Tickets and Tarefas share one inline subtarefas panel with the parent pre-resolved (completed 2026-08-11)
 - [x] **Phase 21: Dashboard Data Layer, Shell, Week Calendar & Ticket Queue** - Pure unit-tested `derive.ts`, single-query `dashboardQuery.ts`, the Dashboard's 3-column grid shell, weekly business-day calendar, and pending-ticket queue (completed 2026-08-11)
 - [x] **Phase 22: Dashboard Kanbans, Rotinas & Heatmap** - Per-project mini-kanban strips with non-compressing columns, fundo-grouped weekly routines, and the 5-band monthly workload heatmap (completed 2026-08-12)
-- [ ] **Phase 23: Focus Dialog System** - All 7 read-first focus dialogs, every Dashboard/section surface wired as a real keyboard-accessible `<button>`, max navigation depth of 2
+- [x] **Phase 23: Focus Dialog System** - All 7 read-first focus dialogs, every Dashboard/section surface wired as a real keyboard-accessible `<button>`, max navigation depth of 2 (completed 2026-08-12)
 
 ## Phase Details
 
@@ -217,7 +217,7 @@ form without duplicating any markup, and never get lost more than one level deep
   3. From any dialog, opening a related item never creates a third navigation level (e.g. projeto → tarefa is allowed; nothing opens a third level from there) (DLG-03; spec §10 Dashboard #8).
   4. Esc, click-outside, and the × control close every dialog except while a write is in progress (matching `EntityScreen`'s `escapeKeydownBehavior` pattern), and any destructive action still surfaces its own `AlertDialog` on top (DLG-03).
 
-**Plans**: 6/7 plans executed
+**Plans**: 7/7 plans executed
 
 Plans:
 
@@ -227,7 +227,7 @@ Plans:
 - [x] 23-04-PLAN.md — DayDialog + RotinaDialog + full WeekCalendar/MonthHeatmap wiring + rotina-label bugfix (DLG-01, DLG-02, DLG-03)
 - [x] 23-05-PLAN.md — FundoDialog + RoutinesByFundo/ProjectStrips fundo wiring (DLG-01, DLG-02)
 - [x] 23-06-PLAN.md — ProjectDialog (depth-2) + remaining ProjectStrips wiring + dashboardQuery.ts completeness fix (DLG-01, DLG-02, DLG-03)
-- [ ] 23-07-PLAN.md — Consolidated button-inventory audit + full-suite regression gate (DLG-02, DLG-03)
+- [x] 23-07-PLAN.md — Consolidated button-inventory audit + full-suite regression gate (DLG-02, DLG-03)
 
 **UI hint**: yes
 
@@ -257,4 +257,4 @@ Plans:
 | 20. Rotinas & Tickets Sections | v1.3 | 5/5 | Complete    | 2026-08-11 |
 | 21. Dashboard Data Layer, Shell, Week Calendar & Ticket Queue | v1.3 | 3/3 | Complete    | 2026-08-11 |
 | 22. Dashboard Kanbans, Rotinas & Heatmap | v1.3 | 2/2 | Complete    | 2026-08-12 |
-| 23. Focus Dialog System | v1.3 | 6/7 | In Progress|  |
+| 23. Focus Dialog System | v1.3 | 7/7 | Complete    | 2026-08-12 |

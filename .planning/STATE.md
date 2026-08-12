@@ -4,17 +4,17 @@ milestone: v1.3
 milestone_name: Navegação reorganizada + Dashboard de acompanhamento
 current_phase: 23
 current_phase_name: Focus Dialog System
-status: planning
-stopped_at: Completed 23-06-PLAN.md
-last_updated: "2026-08-12T06:21:36.489Z"
+status: complete
+stopped_at: Completed 23-07-PLAN.md -- Phase 23 (final functional phase of v1.3) complete
+last_updated: "2026-08-12T07:38:31.985Z"
 last_activity: 2026-08-12
-last_activity_desc: 23-06-PLAN.md executed (ProjectDialog.svelte, Dashboard.svelte projeto/etapa branches, ProjectStrips.svelte nome/column-header/card wiring, dashboardQuery.ts subtarefas fix, 6-test e2e proof)
+last_activity_desc: 23-07-PLAN.md executed (consolidated 16/16 DLG-02 button-inventory + keyboard-accessibility + depth-cap-2 sweep, live re-verification of 23-03's nested-button no-SSR reasoning, bun run lint debt closed, 3 full Playwright suite runs green)
 progress:
   total_phases: 6
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 24
-  completed_plans: 23
-  percent: 83
+  completed_plans: 24
+  percent: 100
 ---
 
 # Project State
@@ -24,16 +24,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-10)
 
 **Core value:** The user can execute every piece of controladoria data-entry work from either the Svelte SPA or the Python CLI, both authenticated as the same real user under the same InstantDB permission rules. Validated in v1.0. v1.1 made the SPA visually coherent on shadcn-svelte defaults; v1.2 refined composition/spacing/hierarchy on the same four screens; v1.3 reorganizes navigation into a 6-section topbar and ships the Dashboard landing screen (calendar, tickets, rotinas, heatmap, mini-kanbans, 7 focus dialogs) — UI and organization only, no schema/CLI/routineJob change.
-**Current focus:** v1.3 milestone (Phases 18-23) — roadmap created, ready to plan Phase 18
+**Current focus:** v1.3 milestone (Phases 18-23) — all 6 phases (24 plans) complete; functional scope done, milestone audit/close is next
 
 ## Current Position
 
-Phase: 23 of 23 (Focus Dialog System)
-Plan: 23-01, 23-02, 23-03, 23-04, 23-05, 23-06 complete (6/7 plans done this phase so far)
-Status: In progress
-Last activity: 2026-08-12 — 23-06-PLAN.md executed (ProjectDialog.svelte + Dashboard.svelte projeto/etapa branches + ProjectStrips.svelte remaining wiring + dashboardQuery.ts subtarefas fix, e2e-proven)
+Phase: 23 of 23 (Focus Dialog System) — COMPLETE, last functional phase of v1.3
+Plan: 23-01 through 23-07 complete (7/7 plans done this phase)
+Status: Phase complete — milestone v1.3 functional scope complete, milestone audit/close is next step
+Last activity: 2026-08-12 — 23-07-PLAN.md executed (consolidated button-inventory audit, depth-cap-2 live proof, nested-button re-verification, bun run lint closed, full-suite regression gate green)
 
-Progress: [██████████] 96%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -83,6 +83,7 @@ Progress: [██████████] 96%
 | Phase 23-focus-dialog-system P04 | 40min | 3 tasks | 6 files |
 | Phase 23-focus-dialog-system P05 | 35min | 3 tasks | 6 files |
 | Phase 23-focus-dialog-system P06 | 40min | 3 tasks | 5 files |
+| Phase 23-focus-dialog-system P07 | 65min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -143,6 +144,7 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase ?]: 23-04: WeekCalendar/MonthHeatmap fully wired (day-header, 3-way item dispatch, weekend popover restructured with per-day dash-weekend-day-header, heatmap-cell); rotina-UUID-as-titulo display bug fixed at its source via WeekCalendar's labelFor() and mirrored in DayDialog
 - [Phase ?]: 23-05: FundoDialog.svelte (M) is the one dialog that calls derive.ts's rotinasDoFundo directly (week-unbounded); Dashboard.svelte's dialogStack now covers 5/7 kinds; RoutinesByFundo.svelte/ProjectStrips.svelte's fundo-targeting buttons null-guarded (belt at openFundoDialog + suspenders at each call site); derive.ts's InstanciaAgendaLike.template widened with optional nome (Rule 1/2)
 - [Phase ?]: 23-06: ProjectDialog.svelte (L) is the second depth-2 launch point (with Dia) -- unbounded etapa/tarefa kanban, per-column '+ tarefa' via a third independent hidden EntityScreen host; dashboardQuery.ts's subtarefas fix proven live on both the new dialog and pre-existing ProjectStrips.svelte; Dashboard.svelte's dialog-stack chain now covers all 7 kinds
+- [Phase ?]: 23-07: Consolidated completeness sweep (16/16 DLG-02 targets proven real+keyboard-accessible), depth-cap-2 proven live for both launch points, live re-verification confirms 23-03's nested-button no-SSR reasoning holds; closed bun run lint debt accumulated across Plans 23-01/23-03/23-06; 3 full Playwright suite runs green (150/150 on the clean run), all flakes confirmed unrelated/pre-existing
 
 ### Pending Todos
 
@@ -174,10 +176,10 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-12T06:21:36.379Z
-Stopped at: Completed 23-06-PLAN.md
+Last session: 2026-08-12T07:38:31.974Z
+Stopped at: Completed 23-07-PLAN.md -- Phase 23 (final functional phase of v1.3) complete
 Resume file: None
 
 ## Operator Next Steps
 
-- Run `/gsd-plan-phase 18` to plan "Navigation Foundation & EntityScreen Extension", the first phase of v1.3.
+- Phase 23 (and v1.3's entire functional scope, Phases 18-23) is complete. Next: run the milestone-level audit/close sequence (e.g. `/gsd-audit-milestone` then `/gsd-complete-milestone`) to archive v1.3 and tag the release, per `23-CONTEXT.md`'s own deferred-ideas note.
