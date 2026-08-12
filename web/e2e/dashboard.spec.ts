@@ -7,6 +7,7 @@ import { DASHBOARD_QUERY } from "../src/lib/dashboard/dashboardQuery.ts";
 // Monday-anchor algorithm the app itself uses, instead of duplicating it.
 import { semanaUtil } from "../src/lib/dashboard/derive.ts";
 import { adminQuery, deleteInstance, seedInstance } from "./fixtures/instancia-admin-fixture.ts";
+import { selectByText } from "./helpers/form-controls.ts";
 
 // This spec runs in the `authed` project (restores the storageState persisted
 // by auth.setup.ts). Every generated record uses the `phase21-e2e-` prefix so
@@ -751,5 +752,302 @@ test.describe("DASH-03: week navigation", () => {
         .evaluateAll((els) => els.map((el) => el.getAttribute("data-eid")));
       expect(restoredEids).toEqual(originalEids);
     }).toPass({ timeout: RESYNC_TIMEOUT });
+  });
+});
+
+test.describe("DASH-04: rotinas by fundo", () => {
+  const semana = computeSemana();
+  const hoje = hojeIso();
+  // This week's 7 date keys, ascending (Mon..Fri, then this week's own
+  // Sat/Dom) -- the exact window rotinasPorFundo filters to.
+  const keys = [...semana.dias, semana.sabado, semana.domingo];
+  const pastDays = keys.filter((k) => k < hoje);
+  const naoPastDays = keys.filter((k) => k >= hoje);
+  // `vencidaDia` is null only when `hoje` is this week's own Monday (the
+  // window's earliest key) -- the one weekday with zero earlier days inside
+  // its own week. Tests that need a genuinely-overdue instance skip
+  // themselves in that rare case rather than asserting on a day this fixture
+  // cannot construct without reaching outside rotinasPorFundo's window.
+  const vencidaDia = pastDays.length > 0 ? pastDays[pastDays.length - 1] : null;
+
+  let fundoId = "";
+  let fundoNome = "";
+  let templateId = "";
+  let fundoOrdenarId = "";
+  let templateOrdenarId = "";
+  let outroTemplateId = "";
+  const instanceIds: string[] = [];
+  const ordenarInstanceIds: string[] = [];
+  let vencidaInstanceId = "";
+  let futureInstanceId = "";
+  let semFundoInstanceId = "";
+  let templateNome = "";
+
+  test.beforeAll(async () => {
+    fundoNome = uniqueName("fundo-rotinas");
+    fundoId = (
+      JSON.parse(
+        apolloCli(["fundo", "criar", "--nome", fundoNome, "--codigo", uniqueCodigo("T22A")]),
+      ) as { id: string }
+    ).id;
+
+    templateNome = uniqueName("template-rotinas");
+    templateId = (
+      JSON.parse(
+        apolloCli([
+          "rotina",
+          "template",
+          "criar",
+          "--nome",
+          templateNome,
+          "--tipo-geracao",
+          "du_fixo",
+          "--regra-competencia",
+          "mes-corrente",
+          "--fundo-id",
+          fundoId,
+        ]),
+      ) as { id: string }
+    ).id;
+
+    // 5 instances linked to `templateId`: one dated on `vencidaDia` (when it
+    // exists) and 4 more dated on/after `hoje`, cycling through
+    // `naoPastDays` when fewer than 4 distinct "not vencida" days exist in
+    // the window (e.g. when this suite runs on a Friday/Saturday/Sunday).
+    const dias: string[] = vencidaDia ? [vencidaDia] : [];
+    for (let i = 0; dias.length < 5; i++) {
+      dias.push(naoPastDays[i % naoPastDays.length]);
+    }
+    for (let i = 0; i < 5; i++) {
+      const dia = dias[i];
+      const id = await seedInstance(
+        {
+          dedupeKey: uniqueName(`dedupe-rotinas-${i}`),
+          dataPrevista: `${dia}T00:00:00.000Z`,
+          competencia: "2026-08",
+          tipoPrazo: "hard",
+          status: "pendente",
+        },
+        OWNER_EMAIL,
+        templateId,
+      );
+      instanceIds.push(id);
+      if (vencidaDia && dia === vencidaDia && !vencidaInstanceId) {
+        vencidaInstanceId = id;
+      } else if (!futureInstanceId) {
+        futureInstanceId = id;
+      }
+    }
+
+    // A SECOND fundo/template with exactly 3 instances, all dated on/after
+    // `hoje` (never vencida) -- dedicated, under-the-4-cap fixture for the
+    // ordenar test, so every instance is always visible and "reverses order"
+    // can be asserted as an exact full-list reversal without the 4-row cap
+    // interfering.
+    const fundoOrdenarNome = uniqueName("fundo-rotinas-ordenar");
+    fundoOrdenarId = (
+      JSON.parse(
+        apolloCli(["fundo", "criar", "--nome", fundoOrdenarNome, "--codigo", uniqueCodigo("T22B")]),
+      ) as { id: string }
+    ).id;
+
+    templateOrdenarId = (
+      JSON.parse(
+        apolloCli([
+          "rotina",
+          "template",
+          "criar",
+          "--nome",
+          uniqueName("template-rotinas-ordenar"),
+          "--tipo-geracao",
+          "du_fixo",
+          "--regra-competencia",
+          "mes-corrente",
+          "--fundo-id",
+          fundoOrdenarId,
+        ]),
+      ) as { id: string }
+    ).id;
+
+    for (let i = 0; i < 3; i++) {
+      const dia = naoPastDays[i % naoPastDays.length];
+      const id = await seedInstance(
+        {
+          dedupeKey: uniqueName(`dedupe-rotinas-ordenar-${i}`),
+          dataPrevista: `${dia}T00:00:00.000Z`,
+          competencia: "2026-08",
+          tipoPrazo: "hard",
+          status: "pendente",
+        },
+        OWNER_EMAIL,
+        templateOrdenarId,
+      );
+      ordenarInstanceIds.push(id);
+    }
+
+    // A template with NO fundo -- its one instance lands in the always-last
+    // "Sem fundo vinculado" group.
+    outroTemplateId = (
+      JSON.parse(
+        apolloCli([
+          "rotina",
+          "template",
+          "criar",
+          "--nome",
+          uniqueName("template-sem-fundo"),
+          "--tipo-geracao",
+          "du_fixo",
+          "--regra-competencia",
+          "mes-corrente",
+        ]),
+      ) as { id: string }
+    ).id;
+
+    semFundoInstanceId = await seedInstance(
+      {
+        dedupeKey: uniqueName("dedupe-sem-fundo"),
+        dataPrevista: `${naoPastDays[0]}T00:00:00.000Z`,
+        competencia: "2026-08",
+        tipoPrazo: "hard",
+        status: "pendente",
+      },
+      OWNER_EMAIL,
+      outroTemplateId,
+    );
+  });
+
+  test.afterAll(async () => {
+    for (const id of instanceIds) await deleteInstance(id);
+    for (const id of ordenarInstanceIds) await deleteInstance(id);
+    if (semFundoInstanceId) await deleteInstance(semFundoInstanceId);
+    tryDelete("rotina template", templateId);
+    tryDelete("rotina template", templateOrdenarId);
+    tryDelete("rotina template", outroTemplateId);
+    tryDelete("fundo", fundoId);
+    tryDelete("fundo", fundoOrdenarId);
+  });
+
+  test("fundo-grouping order: 'Sem fundo vinculado' card is always last", async ({ page }) => {
+    test.setTimeout(60_000);
+
+    await page.goto("/");
+    await expect(page.getByTestId("dash-grid")).toBeVisible({ timeout: RESYNC_TIMEOUT });
+
+    const cards = page.getByTestId("rotinas-fundo-card");
+    await expect(cards).not.toHaveCount(0);
+    const lastCard = cards.last();
+    await expect(lastCard).toHaveAttribute("data-eid", "", { timeout: RESYNC_TIMEOUT });
+    await expect(lastCard).toContainText("Sem fundo vinculado");
+  });
+
+  test("the 5-instance fundo's card caps at 4 rotinas-row plus one +1 rotinas-overflow", async ({
+    page,
+  }) => {
+    test.setTimeout(60_000);
+
+    await page.goto("/");
+    const card = page.locator(`[data-testid="rotinas-fundo-card"][data-eid="${fundoId}"]`);
+    await expect(card).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    await expect(card.getByTestId("rotinas-row")).toHaveCount(4);
+    await expect(card.getByTestId("rotinas-overflow")).toContainText("+1");
+  });
+
+  test("each rotinas-row shows the linked template's nome, not the instancia id", async ({
+    page,
+  }) => {
+    test.setTimeout(60_000);
+
+    await page.goto("/");
+    const card = page.locator(`[data-testid="rotinas-fundo-card"][data-eid="${fundoId}"]`);
+    await expect(card).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    const firstRow = card.getByTestId("rotinas-row").first();
+    await expect(firstRow).toContainText(templateNome, { timeout: RESYNC_TIMEOUT });
+    const rowEids = await card
+      .getByTestId("rotinas-row")
+      .evaluateAll((els) => els.map((el) => el.getAttribute("data-eid")));
+    for (const eid of rowEids) {
+      const row = card.locator(`[data-testid="rotinas-row"][data-eid="${eid}"]`);
+      await expect(row).not.toContainText(eid as string);
+    }
+  });
+
+  test("a vencida instance's bolinha is bg-destructive; a not-vencida one is bg-muted-foreground", async ({
+    page,
+  }) => {
+    test.setTimeout(60_000);
+    test.skip(
+      !vencidaDia,
+      "no day earlier than hoje exists inside the current week's window on this run (hoje is this week's own Monday)",
+    );
+
+    await page.goto("/");
+    await expect(page.getByTestId("dash-grid")).toBeVisible({ timeout: RESYNC_TIMEOUT });
+
+    const vencidaRow = page.locator(`[data-testid="rotinas-row"][data-eid="${vencidaInstanceId}"]`);
+    await expect(vencidaRow.getByTestId("rotinas-row-bolinha")).toHaveClass(/bg-destructive/, {
+      timeout: RESYNC_TIMEOUT,
+    });
+
+    const futureRow = page.locator(`[data-testid="rotinas-row"][data-eid="${futureInstanceId}"]`);
+    await expect(futureRow.getByTestId("rotinas-row-bolinha")).toHaveClass(/bg-muted-foreground/);
+  });
+
+  test("status: atrasadas leaves only the vencida row visible; status: todas restores every row", async ({
+    page,
+  }) => {
+    test.setTimeout(60_000);
+    test.skip(
+      !vencidaDia,
+      "no day earlier than hoje exists inside the current week's window on this run (hoje is this week's own Monday)",
+    );
+
+    await page.goto("/");
+    const card = page.locator(`[data-testid="rotinas-fundo-card"][data-eid="${fundoId}"]`);
+    await expect(card).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    await expect(card.getByTestId("rotinas-row")).toHaveCount(4, { timeout: RESYNC_TIMEOUT });
+
+    await selectByText(page, "rotinas-status", "atrasadas");
+    await expect(card.getByTestId("rotinas-row")).toHaveCount(1, { timeout: RESYNC_TIMEOUT });
+    await expect(card.getByTestId("rotinas-row").first()).toHaveAttribute(
+      "data-eid",
+      vencidaInstanceId,
+    );
+
+    await selectByText(page, "rotinas-status", "todas");
+    await expect(card.getByTestId("rotinas-row")).toHaveCount(4, { timeout: RESYNC_TIMEOUT });
+  });
+
+  test("ordenar: data (mais distante) reverses the fundo group's row order", async ({ page }) => {
+    test.setTimeout(60_000);
+
+    await page.goto("/");
+    const card = page.locator(`[data-testid="rotinas-fundo-card"][data-eid="${fundoOrdenarId}"]`);
+    await expect(card).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    await expect(card.getByTestId("rotinas-row")).toHaveCount(3, { timeout: RESYNC_TIMEOUT });
+
+    const originalEids = await card
+      .getByTestId("rotinas-row")
+      .evaluateAll((els) => els.map((el) => el.getAttribute("data-eid")));
+
+    await selectByText(page, "rotinas-ordenar", "data (mais distante)");
+
+    await expect(async () => {
+      const reversedEids = await card
+        .getByTestId("rotinas-row")
+        .evaluateAll((els) => els.map((el) => el.getAttribute("data-eid")));
+      expect(reversedEids).toEqual([...originalEids].reverse());
+    }).toPass({ timeout: RESYNC_TIMEOUT });
+  });
+
+  test("agrupar/ordenar/status controls are all present, real Select.Root triggers", async ({
+    page,
+  }) => {
+    test.setTimeout(60_000);
+
+    await page.goto("/");
+    await expect(page.getByTestId("dash-grid")).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    await expect(page.getByTestId("rotinas-agrupar")).toContainText("agrupar: fundo");
+    await expect(page.getByTestId("rotinas-ordenar")).toContainText("ordenar: data-asc");
+    await expect(page.getByTestId("rotinas-status")).toContainText("status: todas");
   });
 });

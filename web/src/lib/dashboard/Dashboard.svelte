@@ -1,8 +1,9 @@
 <script lang="ts">
   import { db } from "../db";
   import { useDashboardQuery } from "./dashboardQuery";
-  import { agendaPorDia, semanaUtil } from "./derive";
+  import { agendaPorDia, rotinasPorFundo, semanaUtil } from "./derive";
   import ProjectStrips from "./ProjectStrips.svelte";
+  import RoutinesByFundo from "./RoutinesByFundo.svelte";
   import TicketQueue from "./TicketQueue.svelte";
   import WeekCalendar from "./WeekCalendar.svelte";
 
@@ -142,8 +143,14 @@
         id: i.id,
         dataPrevista: i.dataPrevista,
         tipoPrazo: i.tipoPrazo,
+        // `nome` is the ONLY change this plan makes to satisfy CONTEXT.md's
+        // "surface template.nome" decision (22-RESEARCH.md Open Question 2):
+        // derive.ts and dashboardQuery.ts's DASHBOARD_QUERY stay completely
+        // unmodified -- TemplateRow already declares `nome: string` and the
+        // query's `template: {}` traversal already fetches it as a scalar.
         template: i.template
           ? {
+              nome: i.template.nome,
               fundo: i.template.fundo
                 ? { id: i.template.fundo.id, nome: i.template.fundo.nome }
                 : null,
@@ -175,6 +182,20 @@
     ),
   );
   const mesNome = $derived(MESES_PT_BR[new Date(`${semana.dias[4]}T00:00:00.000Z`).getUTCMonth()]);
+
+  const rotinaGrupos = $derived(rotinasPorFundo(dadosNormalizados.instanciasRotina, semana));
+
+  // Sourced straight from `query.data` (not `dadosNormalizados`, which never
+  // carries a bare id -> label lookup shape) -- the only place this map's
+  // `template.nome` field is read from.
+  const rotinaNomeById = $derived.by(() => {
+    const data = query.data as DashboardData | undefined;
+    const map = new Map<string, string>();
+    for (const i of data?.instanciasRotina ?? []) {
+      if (i.template?.nome) map.set(i.id, i.template.nome);
+    }
+    return map;
+  });
 </script>
 
 <h2 class="text-xl font-semibold tracking-tight">Dashboard</h2>
@@ -243,7 +264,9 @@
       data-testid="dash-placeholder-rotinas"
       class="order-3 lg:order-none lg:col-start-3 lg:row-start-1 lg:row-span-2"
     >
-      Em breve: rotinas da semana e carga do mês
+      <div class="space-y-6">
+        <RoutinesByFundo grupos={rotinaGrupos} nomeById={rotinaNomeById} {hojeIso} />
+      </div>
     </div>
     <div
       data-testid="dash-placeholder-projetos"
