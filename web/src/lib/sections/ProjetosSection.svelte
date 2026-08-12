@@ -12,6 +12,8 @@
   import { Skeleton } from "$lib/components/ui/skeleton";
   import * as Tabs from "$lib/components/ui/tabs";
   import { progressoEtapa, tarefaConcluida, vencido } from "../dashboard/derive";
+  import EtapaDialog from "../dashboard/dialogs/EtapaDialog.svelte";
+  import TaskDialog from "../dashboard/dialogs/TaskDialog.svelte";
   import { db } from "../db";
   import EntityScreen from "../entities/EntityScreen.svelte";
   import { configByEtype } from "../entities/registry";
@@ -34,12 +36,22 @@
   // level deeper than the generic EntityScreen.buildQuery can express
   // (19-RESEARCH.md Pattern 1).
   type SubtarefaRow = { id: string; titulo: string; concluida: boolean };
+  // Widened beyond the original NEST-02 shape (Deviation: Rule 1/2, same
+  // "too-narrow local TS type, zero new query" precedent 23-01-SUMMARY.md
+  // documents for Dashboard.svelte's TicketRow/SubtarefaRow) -- `descricao`,
+  // `dataPrevistaEstimada`, and `competencia` are already fetched at runtime
+  // (defs/tarefas.ts's own field list) via the unchanged
+  // `etapas: { tarefas: {...} }` query branch; TaskDialog.svelte's read-only
+  // body needs them.
   type TarefaRow = {
     id: string;
     titulo: string;
     status: string;
     tipoPrazo: string;
+    descricao?: string;
     dataPrevista?: string;
+    dataPrevistaEstimada?: string;
+    competencia?: string;
     subtarefas?: SubtarefaRow[];
   };
   type EtapaRow = {
@@ -125,6 +137,75 @@
   // required: false, per spec §2.2), so it must offer the identical
   // affordance the etapa-detail chip does, not a lesser one.
   let activeOrphanSubtarefaId = $state<string | null>(null);
+
+  // Plan 23-03 (DLG-01/02): this section's OWN independent depth-cap-2 host
+  // (23-RESEARCH.md Q5) for the Etapa/Tarefa focus dialogs opened from either
+  // the "etapas ▾ kanban" toggle or the additive list-view targets below. A
+  // single nullable ref (not a length-2 stack) is deliberately sufficient
+  // here: per the resolved depth-cap-2 decision, neither dialog ever opens a
+  // further dialog from inside itself, so this host can never reach depth 2.
+  let activeKanbanDialog = $state<{ kind: "etapa" | "tarefa"; id: string } | null>(null);
+
+  function openKanbanDialog(kind: "etapa" | "tarefa", id: string): void {
+    activeKanbanDialog = { kind, id };
+  }
+
+  function closeKanbanDialog(): void {
+    activeKanbanDialog = null;
+  }
+
+  // Both lookups read from `rowsOf()` -- the SAME array already rendered by
+  // this component's own already-fetched query -- never a second fetch.
+  // Attaches the owning projeto's nome/fundo?.nome (and, for a tarefa, its
+  // owning etapa's nome) while building the flat row shape
+  // TaskDialog.svelte/EtapaDialog.svelte expect.
+  function findEtapaById(id: string) {
+    for (const projeto of rowsOf()) {
+      const etapa = (projeto.etapas ?? []).find((e) => e.id === id);
+      if (etapa) {
+        return {
+          id: etapa.id,
+          nome: etapa.nome,
+          ordem: etapa.ordem,
+          projetoNome: projeto.nome,
+          fundoNome: projeto.fundo?.nome ?? null,
+          tarefas: (etapa.tarefas ?? []).map((tarefa) => ({
+            id: tarefa.id,
+            titulo: tarefa.titulo,
+            dataPrevista: tarefa.dataPrevista,
+            status: tarefa.status,
+            subtarefas: tarefa.subtarefas,
+          })),
+        };
+      }
+    }
+    return undefined;
+  }
+
+  function findTarefaById(id: string) {
+    for (const projeto of rowsOf()) {
+      for (const etapa of projeto.etapas ?? []) {
+        const tarefa = (etapa.tarefas ?? []).find((t) => t.id === id);
+        if (tarefa) {
+          return {
+            id: tarefa.id,
+            titulo: tarefa.titulo,
+            descricao: tarefa.descricao,
+            tipoPrazo: tarefa.tipoPrazo,
+            dataPrevista: tarefa.dataPrevista,
+            dataPrevistaEstimada: tarefa.dataPrevistaEstimada,
+            competencia: tarefa.competencia,
+            status: tarefa.status,
+            subtarefas: tarefa.subtarefas,
+            etapaNome: etapa.nome,
+            projetoNome: projeto.nome,
+            fundoNome: projeto.fundo?.nome ?? null,
+          };
+        }
+      }
+    }
+    return undefined;
+  }
   let activeOrphanSubtarefaTitulo = $state("");
 
   // Mirrors Shell.svelte's own nestedGroups grouping pattern (Map +
@@ -477,25 +558,41 @@
                 <Accordion.Root type="single" bind:value={openEtapaId}>
                   {#each etapasOrdenadas as etapa (etapa.id)}
                     {@const { feitas, total } = progressoEtapa(etapa)}
-                    <Accordion.Item value={etapa.id}>
-                      <Accordion.Trigger
-                        data-testid="etapa-row"
-                        data-eid={etapa.id}
-                        class="items-center gap-4"
-                      >
-                        <span class="font-mono w-8">{etapa.ordem}</span>
-                        <span class="flex-1 text-left">{etapa.nome}</span>
-                        <div class="w-24">
-                          <div class="h-1 w-full rounded-full bg-muted">
-                            <div
-                              class="h-1 rounded-full bg-foreground"
-                              style={`width: ${total > 0 ? (feitas / total) * 100 : 0}%`}
-                            ></div>
+                    <!--
+                      Plan 23-03 (DLG-02, resolved ProjetosSection-wiring-scope
+                      decision): `etapa-row-abrir` below is a SIBLING of
+                      Accordion.Item/Accordion.Trigger, never a child of the
+                      Trigger itself -- bits-ui's own Accordion.Trigger already
+                      renders as a real <button>
+                      (accordion-trigger.svelte:19-31), and nesting a second
+                      button inside it would be invalid button-inside-button
+                      HTML. This wrapping `relative` div exists purely so the
+                      new button can be absolutely positioned over the
+                      trigger's own chevron area without touching the
+                      Trigger's own markup/click semantics -- `etapa-row`'s
+                      existing accordion-toggle behavior is completely
+                      untouched.
+                    -->
+                    <div class="relative">
+                      <Accordion.Item value={etapa.id}>
+                        <Accordion.Trigger
+                          data-testid="etapa-row"
+                          data-eid={etapa.id}
+                          class="items-center gap-4"
+                        >
+                          <span class="font-mono w-8">{etapa.ordem}</span>
+                          <span class="flex-1 text-left">{etapa.nome}</span>
+                          <div class="w-24">
+                            <div class="h-1 w-full rounded-full bg-muted">
+                              <div
+                                class="h-1 rounded-full bg-foreground"
+                                style={`width: ${total > 0 ? (feitas / total) * 100 : 0}%`}
+                              ></div>
+                            </div>
                           </div>
-                        </div>
-                        <span class="text-xs text-muted-foreground">{feitas}/{total}</span>
-                      </Accordion.Trigger>
-                      <Accordion.Content>
+                          <span class="text-xs text-muted-foreground">{feitas}/{total}</span>
+                        </Accordion.Trigger>
+                        <Accordion.Content>
                         <!--
                           bits-ui's Accordion.Content stays mounted in the DOM
                           for every item regardless of open state (Radix-style
@@ -521,7 +618,23 @@
                                   checked={tarefaConcluida(tarefa)}
                                   disabled
                                 />
-                                <span class="flex-1">{tarefa.titulo}</span>
+                                <!-- Plan 23-03 (DLG-02, additive list-view
+                                     wiring): a real, keyboard-activatable
+                                     button -- a SIBLING of the pre-existing
+                                     `etapa-tarefa-subtarefas-chip` button
+                                     inside this same row `<div>`, never
+                                     nested inside it, so no invalid HTML
+                                     results. Opens the Tarefa dialog; the
+                                     row's checkbox/prazo/chip stay exactly
+                                     as they are today. -->
+                                <button
+                                  type="button"
+                                  data-testid="etapa-tarefa-row-abrir"
+                                  class="flex-1 text-left"
+                                  onclick={() => openKanbanDialog("tarefa", tarefa.id)}
+                                >
+                                  {tarefa.titulo}
+                                </button>
                                 <span
                                   data-testid="etapa-tarefa-prazo"
                                   class={vencido(
@@ -575,7 +688,20 @@
                           </Button>
                         {/if}
                       </Accordion.Content>
-                    </Accordion.Item>
+                      </Accordion.Item>
+                      <button
+                        type="button"
+                        data-testid="etapa-row-abrir"
+                        aria-label={`Abrir ${etapa.nome}`}
+                        class="absolute right-8 top-2 text-xs text-muted-foreground hover:text-foreground"
+                        onclick={(e) => {
+                          e.stopPropagation();
+                          openKanbanDialog("etapa", etapa.id);
+                        }}
+                      >
+                        ver
+                      </button>
+                    </div>
                   {/each}
                 </Accordion.Root>
               {:else}
@@ -594,10 +720,19 @@
                 <div data-testid="etapas-kanban" class="flex gap-2 overflow-x-auto pb-2">
                   {#each etapasOrdenadas as etapa (etapa.id)}
                     {@const { feitas, total } = progressoEtapa(etapa)}
-                    <div
+                    <!--
+                      Plan 23-03 (DLG-02, Pitfall 3 / Exhaustive Inert-Button
+                      Inventory #13): converted from a plain, non-interactive
+                      <div> to a real <button> -- a genuine pre-existing
+                      DLG-02 violation, not merely "inert." Opens the Etapa
+                      dialog.
+                    -->
+                    <button
+                      type="button"
                       data-testid="etapa-kanban-column"
                       data-eid={etapa.id}
-                      class="w-48 shrink-0 border-r px-2 space-y-2"
+                      class="w-48 shrink-0 border-r px-2 space-y-2 text-left"
+                      onclick={() => openKanbanDialog("etapa", etapa.id)}
                     >
                       <div class="space-y-1">
                         <div class="flex items-center gap-2">
@@ -607,10 +742,34 @@
                         <span class="text-xs text-muted-foreground">{feitas}/{total}</span>
                       </div>
                       {#each [...(etapa.tarefas ?? [])] as tarefa (tarefa.id)}
-                        <div
+                        <!--
+                          Plan 23-03 (DLG-02, Pitfall 3 / Inventory #14): same
+                          conversion as etapa-kanban-column above -- a real
+                          <button>, per this plan's own explicit resolution
+                          (its Task 2 action text/23-e2e test (a) both require
+                          `tagName === "button"` for BOTH elements). This
+                          button IS a structural descendant of the column
+                          button above (same {#each} nesting the pre-existing
+                          markup already used) -- `stopPropagation` is what
+                          keeps its click from ALSO firing the column's own
+                          handler; this app is a plain client-rendered Vite
+                          SPA with an empty `index.html` shell (no SSR/
+                          HTML-string parse of this markup), so the DOM-API-
+                          constructed nested <button> renders and dispatches
+                          click/keyboard events correctly despite HTML's
+                          content-model preferring no nested interactive
+                          elements -- documented as this plan's explicit,
+                          deliberate choice in 23-03-SUMMARY.md.
+                        -->
+                        <button
+                          type="button"
                           data-testid="etapa-kanban-card"
                           data-eid={tarefa.id}
-                          class="rounded border p-2 space-y-1"
+                          class="block w-full rounded border p-2 space-y-1 text-left"
+                          onclick={(e) => {
+                            e.stopPropagation();
+                            openKanbanDialog("tarefa", tarefa.id);
+                          }}
                         >
                           <p class="text-sm">{tarefa.titulo}</p>
                           <span
@@ -625,9 +784,9 @@
                           >
                             {tarefa.dataPrevista ? tarefa.dataPrevista.slice(0, 10) : "—"}
                           </span>
-                        </div>
+                        </button>
                       {/each}
-                    </div>
+                    </button>
                   {/each}
                 </div>
               {/if}
@@ -732,5 +891,32 @@
         presetLinks={openEtapaId ? { etapa: openEtapaId } : null}
       />
     </div>
+  {/if}
+
+  <!--
+    Plan 23-03 (DLG-01/02/03): swap-in-place render of this section's own
+    depth-cap-2 host -- only ONE of Etapa/Tarefa dialog is ever mounted at a
+    time, keyed on `activeKanbanDialog`'s kind, mirroring Dashboard.svelte's
+    own dialogStack render idiom. Reachable from either the "etapas ▾ kanban"
+    toggle or the additive list-view etapa-row-abrir/etapa-tarefa-row-abrir
+    targets above -- neither dialog ever opens a further dialog from inside
+    itself, so this ref can never reach depth 2.
+  -->
+  {#if activeKanbanDialog?.kind === "etapa"}
+    <EtapaDialog
+      open={true}
+      etapa={findEtapaById(activeKanbanDialog.id)}
+      onOpenChange={(open) => {
+        if (!open) closeKanbanDialog();
+      }}
+    />
+  {:else if activeKanbanDialog?.kind === "tarefa"}
+    <TaskDialog
+      open={true}
+      tarefa={findTarefaById(activeKanbanDialog.id)}
+      onOpenChange={(open) => {
+        if (!open) closeKanbanDialog();
+      }}
+    />
   {/if}
 </section>
