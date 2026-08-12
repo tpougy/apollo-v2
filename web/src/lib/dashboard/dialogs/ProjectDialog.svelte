@@ -144,7 +144,20 @@
       <div data-testid="project-dialog-kanban" class="flex gap-2 overflow-x-auto pb-2">
         {#each [...projeto.etapas].sort((a, b) => a.ordem - b.ordem) as etapa (etapa.id)}
           {@const { feitas, total } = progressoEtapa(etapa)}
-          <div class="w-48 shrink-0 box-border border-r px-2 space-y-2">
+          <!--
+            data-testid/data-eid on the wrapping column div (not called out
+            explicitly by this plan's action text, which only names the
+            header/card testids) mirrors ProjectStrips.svelte's own
+            project-strip-column container -- added at Claude's discretion
+            purely for e2e scoping symmetry, documented in this plan's
+            SUMMARY per the "resolve ambiguity, document the call"
+            instruction.
+          -->
+          <div
+            data-testid="project-dialog-column"
+            data-eid={etapa.id}
+            class="w-48 shrink-0 box-border border-r px-2 space-y-2"
+          >
             <button
               type="button"
               data-testid="project-dialog-column-header"
