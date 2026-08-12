@@ -21,10 +21,10 @@ current_phase_name: Focus Dialog System
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-08-10)
+See: .planning/PROJECT.md (updated 2026-08-12)
 
-**Core value:** The user can execute every piece of controladoria data-entry work from either the Svelte SPA or the Python CLI, both authenticated as the same real user under the same InstantDB permission rules. Validated in v1.0. v1.1 made the SPA visually coherent on shadcn-svelte defaults; v1.2 refined composition/spacing/hierarchy on the same four screens; v1.3 reorganizes navigation into a 6-section topbar and ships the Dashboard landing screen (calendar, tickets, rotinas, heatmap, mini-kanbans, 7 focus dialogs) — UI and organization only, no schema/CLI/routineJob change.
-**Current focus:** v1.3 milestone (Phases 18-23) — all 6 phases (24 plans) complete; functional scope done, milestone audit/close is next
+**Core value:** The user can execute every piece of controladoria data-entry work from either the Svelte SPA or the Python CLI, both authenticated as the same real user under the same InstantDB permission rules. Validated in v1.0. v1.1 made the SPA visually coherent on shadcn-svelte defaults; v1.2 refined composition/spacing/hierarchy on the same four screens; v1.3 reorganized navigation into a 6-section topbar and shipped the Dashboard landing screen (calendar, tickets, rotinas, heatmap, mini-kanbans, 7 focus dialogs) — UI and organization only, no schema/CLI/routineJob change.
+**Current focus:** Planning next milestone — v1.3 shipped and archived 2026-08-12 (6 phases, 24 plans, 21/21 requirements, audit passed)
 
 ## Current Position
 
