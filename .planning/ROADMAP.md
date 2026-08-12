@@ -115,7 +115,11 @@ Full detail archived at `.planning/milestones/v1.3-ROADMAP.md`; closing audit at
   4. `apollo doctor` and `InstantConfig.admin_token_present` still correctly detect and report an admin token when one is present in `.env.instantdb`, updated only as needed for Phase 24's new `app_id` resolution order — not removed, not behaviorally altered otherwise (AUTH-04).
   5. Updated `tests/test_auth_rejection.py` and `tests/test_instant_client.py` pass under a real `pytest` run and assert the stronger guarantee ("CLI never uses admin token anywhere, including login"), with `ruff` and `ty` both clean on the full `cli/` tree (AUTH-05).
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 25-01-PLAN.md — Rewrite `apollo auth login` for public runtime endpoints; tighten admin-token structural gates
+- [ ] 25-02-PLAN.md — Live admin-token-free magic-code round trip proof (real email)
 
 ## Progress
 
@@ -145,7 +149,7 @@ Full detail archived at `.planning/milestones/v1.3-ROADMAP.md`; closing audit at
 | 22. Dashboard Kanbans, Rotinas & Heatmap | v1.3 | 2/2 | Complete | 2026-08-12 |
 | 23. Focus Dialog System | v1.3 | 7/7 | Complete | 2026-08-12 |
 | 24. Packaging & Installability | v1.4 | 2/2 | Complete    | 2026-08-12 |
-| 25. Public Auth Login | v1.4 | 0/TBD | Not started | - |
+| 25. Public Auth Login | v1.4 | 0/2 | Planned | - |
 
 | Milestone | Phases | Plans | Status | Shipped |
 |-----------|--------|-------|--------|---------|

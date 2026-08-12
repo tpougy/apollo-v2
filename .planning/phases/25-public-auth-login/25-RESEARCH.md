@@ -353,8 +353,20 @@ print(r.status_code); print(r.text)
    - What we know: Both approaches are functionally correct and produce byte-identical behavior today; the private-module approach is more DRY and lower-drift-risk but sets a new precedent (no existing file in this codebase imports from `instantdb._sync.*`/`instantdb._http_errors`); the local-copy approach is more defensive against a future breaking rename of those specific symbols but duplicates vendor logic this project's "Don't Hand-Roll" philosophy generally discourages duplicating.
    - What's unclear: Whether the team has an implicit "never import a `_`-prefixed vendor symbol" rule not yet written down anywhere (searched — no such rule exists in `CLAUDE.md`, `ruff` config, or any RESEARCH.md/PROJECT.md constraint found this session).
    - Recommendation: Reuse (import), given the tight, already-pinned version range (`<2`) and the fact these symbols back the SDK's own public error contract — but flag this explicitly for a one-line confirmation at plan-review time rather than deciding it silently, since it is a new import pattern.
+   - **Resolved at plan time (25-01-PLAN.md, Task 1):** Reuse (import), per the recommendation above.
+     Rationale locked into the plan's action text and required to be copied into `25-01-SUMMARY.md`
+     verbatim/adapted: these symbols back `instantdb`'s own public error/timeout contract at the
+     currently-pinned `<2` range, so they cannot change shape without breaking the SDK's own public API;
+     reuse eliminates ~10 duplicated lines that could drift on a future patch bump, at the cost of a new
+     (but version-bounded, low-risk) "import a `_`-prefixed vendor module" pattern for this codebase.
 
 2. **Exact wording for `instant_client.py`'s updated module/function docstrings once `login_client()` becomes test-only-with-no-production-caller** — left as a plan-time drafting task; this research supplies the correct *facts* (who calls it now, why it must stay) but not the exact prose, per this project's convention of writing these decisions inline during implementation (see PROJECT.md's Key Decisions table entries, which are written post-hoc, not pre-drafted).
+   - **Resolved at plan time (25-01-PLAN.md, Task 2):** left to the executor's drafting, as recommended —
+     the plan specifies the exact facts the new docstrings must state (no `apollo_cli` operational command
+     calls `login_client()` anymore; its one remaining legitimate caller is
+     `test_cross_user_isolation.py`'s admin-only `delete_user` teardown, which has no public-endpoint
+     equivalent) and requires both the module docstring and `login_client()`'s own docstring to be updated
+     to state them, without prescribing the exact sentence.
 
 ## Environment Availability
 
