@@ -14,9 +14,10 @@ from typing import Any, Final
 import click
 import httpx
 from instantdb import Instant, InstantAPIError
+from instantdb._http_errors import api_error_from_response
+from instantdb._sync.http import DEFAULT_API_URI, DEFAULT_TIMEOUT
 
 from apollo_cli.config import load_instant_config
-from apollo_cli.instant_client import login_client
 from apollo_cli.session import (
     MissingSessionError,
     Session,
@@ -29,6 +30,25 @@ from apollo_cli.session import (
 EXIT_NO_SESSION: Final[int] = 1
 EXIT_API_ERROR: Final[int] = 3
 EXIT_NETWORK_ERROR: Final[int] = 4
+
+
+def _post_public_auth(path: str, body: dict[str, Any]) -> dict[str, Any] | None:
+    """POST to an unauthenticated InstantDB `/runtime/auth/*` endpoint.
+
+    Mirrors `instantdb._sync.http._HTTP._request`'s unauthenticated=True path
+    exactly: same base URL, same timeout, same content-type header, same
+    response/error translation -- just without going through an `Instant()`
+    client instance, since these endpoints need no admin token or session.
+    """
+    response = httpx.post(
+        f"{DEFAULT_API_URI}{path}",
+        json=body,
+        headers={"content-type": "application/json"},
+        timeout=DEFAULT_TIMEOUT,
+    )
+    if response.is_success:
+        return response.json() if response.content else None
+    raise api_error_from_response(response)
 
 
 def _emit(payload: dict[str, Any], *, err: bool = False) -> None:
@@ -70,9 +90,13 @@ def group() -> None:
 def login(email: str, code: str | None) -> None:
     """Send or verify a magic code, then persist the session on success."""
     try:
-        client = login_client()
+        config = load_instant_config()
         if code is None:
-            client.auth.send_magic_code(email)  # discard the returned code
+            # discard the returned body ({"sent": true} -- no code on this endpoint)
+            _post_public_auth(
+                "/runtime/auth/send_magic_code",
+                {"app-id": config.app_id, "email": email},
+            )
             _emit(
                 {
                     "status": "code_sent",
@@ -82,7 +106,13 @@ def login(email: str, code: str | None) -> None:
             )
             return
 
-        user, created = client.auth.check_magic_code(email=email, code=code)
+        body = _post_public_auth(
+            "/runtime/auth/verify_magic_code",
+            {"app-id": config.app_id, "email": email, "code": code},
+        )
+        assert body is not None, "verify_magic_code returned an empty success response"
+        user = body["user"]
+        created = body["created"]
         save_session(
             Session(
                 user_id=user["id"],
