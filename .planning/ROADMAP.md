@@ -217,7 +217,18 @@ form without duplicating any markup, and never get lost more than one level deep
   3. From any dialog, opening a related item never creates a third navigation level (e.g. projeto → tarefa is allowed; nothing opens a third level from there) (DLG-03; spec §10 Dashboard #8).
   4. Esc, click-outside, and the × control close every dialog except while a write is in progress (matching `EntityScreen`'s `escapeKeydownBehavior` pattern), and any destructive action still surfaces its own `AlertDialog` on top (DLG-03).
 
-**Plans**: TBD
+**Plans**: 7 plans
+
+Plans:
+
+- [ ] 23-01-PLAN.md — FocusDialog chrome + TicketDialog + dialogStack skeleton + TicketQueue wiring (tracer) (DLG-01, DLG-02, DLG-03)
+- [ ] 23-02-PLAN.md — derive.ts rotinasDoFundo pure export + unit tests (DLG-01)
+- [ ] 23-03-PLAN.md — TaskDialog + EtapaDialog + ProjetosSection kanban/list-view wiring (DLG-01, DLG-02, DLG-03)
+- [ ] 23-04-PLAN.md — DayDialog + RotinaDialog + full WeekCalendar/MonthHeatmap wiring + rotina-label bugfix (DLG-01, DLG-02, DLG-03)
+- [ ] 23-05-PLAN.md — FundoDialog + RoutinesByFundo/ProjectStrips fundo wiring (DLG-01, DLG-02)
+- [ ] 23-06-PLAN.md — ProjectDialog (depth-2) + remaining ProjectStrips wiring + dashboardQuery.ts completeness fix (DLG-01, DLG-02, DLG-03)
+- [ ] 23-07-PLAN.md — Consolidated button-inventory audit + full-suite regression gate (DLG-02, DLG-03)
+
 **UI hint**: yes
 
 ## Progress
