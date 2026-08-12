@@ -110,15 +110,23 @@ is **deliberately never read by this CLI's runtime**. `apollo doctor` reports
 only whether the token is present in the file, never its value, and no other
 code path in `apollo_cli` touches it.
 
-The *only* other place this CLI reads that token at all is inside
-`apollo auth login` (via `apollo_cli/instant_client.py`'s `login_client()`),
-because completing a magic-code login requires an admin-capable client to
-verify the code server-side. It is never used for `fundo`, `projeto`,
+No `apollo` command — including `auth login` — reads or requires that token.
+`apollo auth login` sends and verifies magic codes via direct calls to
+InstantDB's public, unauthenticated `/runtime/auth/send_magic_code` /
+`/runtime/auth/verify_magic_code` endpoints (`apollo_cli/auth.py`, via
+`httpx`), which need no admin credential. The token is used in exactly two
+places: `instant-cli` (developer tooling, run from `web/`, for schema/
+permission pushes) and, internally, this project's own live test harness's
+teardown (`cli/tests/test_cross_user_isolation.py`'s `delete_user` step, via
+`apollo_cli/instant_client.py`'s `login_client()` — an admin-only operation
+with no public-endpoint equivalent). It is never used for `fundo`, `projeto`,
 `etapa`, `tarefa`, `ticket`, `subtarefa`, `rotina`, or `log-inferencia` — nor
-for `auth whoami`/`auth logout`. Every one of those goes through
-`session_client()`, which impersonates the authenticated user and carries no
-admin token, ever, even if `INSTANT_APP_ADMIN_TOKEN` is set in the process
-environment. This confinement is enforced by an automated structural test
+for `auth login`/`auth whoami`/`auth logout`. Every `apollo_cli` operation
+goes through either `session_client()` (impersonates the authenticated user,
+carries no admin token, ever, even if `INSTANT_APP_ADMIN_TOKEN` is set in the
+process environment) or a direct, unauthenticated call (a bare `httpx.post()`
+or an `Instant(admin_token="")` client) — never an admin-token-bearing one.
+This confinement is enforced by an automated structural test
 (`cli/tests/test_auth_rejection.py::test_admin_token_confinement`), and
 independently re-checked by `verify-phase-03.sh`'s CLI-11 gate on every run.
 
