@@ -5,7 +5,13 @@
     carga,
     ano,
     mes,
-  }: { carga: Map<string, number>; ano: number; mes: number } = $props();
+    onOpenDia,
+  }: {
+    carga: Map<string, number>;
+    ano: number;
+    mes: number;
+    onOpenDia: (iso: string) => void;
+  } = $props();
 
   // spec-ui.md section 6's exact token table.
   //
@@ -63,6 +69,7 @@
         data-eid={iso}
         aria-label={weekend ? `${iso}: fim de semana` : `${iso}: ${n} afazeres`}
         class="aspect-square rounded-sm {weekend ? 'bg-muted/40' : FAIXA_CLASSES[faixa]}"
+        onclick={() => onOpenDia(iso)}
       ></button>
     {/each}
   </div>

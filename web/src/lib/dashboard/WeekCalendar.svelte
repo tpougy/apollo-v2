@@ -11,12 +11,18 @@
     hojeIso,
     sabado,
     domingo,
+    rotinaNomeById,
+    onOpenDia,
+    onOpenItem,
   }: {
     dias: string[];
     agenda: Map<string, Item[]>;
     hojeIso: string;
     sabado: string;
     domingo: string;
+    rotinaNomeById: Map<string, string>;
+    onOpenDia: (iso: string) => void;
+    onOpenItem: (tipo: ItemTipo, id: string) => void;
   } = $props();
 
   // dias[0] is always Monday per semanaUtil's own contract — no weekday
@@ -30,10 +36,18 @@
     return "border-destructive";
   }
 
+  // Pitfall 1 fix (23-04-PLAN.md Task 3): a rotina Item's `titulo` is only
+  // ever `instancia.id` (derive.ts:252-258's own documented placeholder) --
+  // resolve the real template name via the Dashboard-provided lookup instead.
+  function labelFor(item: Item): string {
+    return item.tipo === "rotina" ? (rotinaNomeById.get(item.id) ?? "Rotina") : item.titulo;
+  }
+
   const weekendCount = $derived(
     (agenda.get(sabado)?.length ?? 0) + (agenda.get(domingo)?.length ?? 0),
   );
-  const weekendItems = $derived([...(agenda.get(sabado) ?? []), ...(agenda.get(domingo) ?? [])]);
+  const sabadoItems = $derived(agenda.get(sabado) ?? []);
+  const domingoItems = $derived(agenda.get(domingo) ?? []);
 </script>
 
 <div data-testid="dash-week" class="grid grid-cols-5 gap-2">
@@ -49,6 +63,7 @@
         class="w-full px-2 py-1 text-left text-xs font-medium {dia === hojeIso
           ? 'bg-muted'
           : ''}"
+        onclick={() => onOpenDia(dia)}
       >
         {WEEKDAY_ABBREV[i]} {Number(dia.slice(8, 10))} ({items.length})
       </button>
@@ -62,8 +77,9 @@
             class="block w-full truncate border-l-[3px] {borderClassFor(
               item.tipo,
             )} px-1 text-left text-xs"
+            onclick={() => onOpenItem(item.tipo, item.id)}
           >
-            {item.titulo}
+            {labelFor(item)}
           </button>
         {/each}
         {#if overflow > 0}
@@ -90,15 +106,47 @@
         sáb/dom ({weekendCount})
       </Popover.Trigger>
       <Popover.Content data-testid="dash-weekend-popover" class="w-64">
-        {#each weekendItems as item (item.id)}
-          <div
+        <button
+          type="button"
+          data-testid="dash-weekend-day-header"
+          data-eid={sabado}
+          class="w-full px-1 py-1 text-left text-xs font-medium"
+          onclick={() => onOpenDia(sabado)}
+        >
+          sábado {Number(sabado.slice(8, 10))}
+        </button>
+        {#each sabadoItems as item (item.id)}
+          <button
+            type="button"
             data-testid="dash-weekend-popover-item"
             data-eid={item.id}
             data-tipo={item.tipo}
-            class="border-l-[3px] {borderClassFor(item.tipo)} px-1 text-xs"
+            class="block w-full text-left border-l-[3px] {borderClassFor(item.tipo)} px-1 text-xs"
+            onclick={() => onOpenItem(item.tipo, item.id)}
           >
-            {item.titulo}
-          </div>
+            {labelFor(item)}
+          </button>
+        {/each}
+        <button
+          type="button"
+          data-testid="dash-weekend-day-header"
+          data-eid={domingo}
+          class="w-full px-1 py-1 text-left text-xs font-medium"
+          onclick={() => onOpenDia(domingo)}
+        >
+          domingo {Number(domingo.slice(8, 10))}
+        </button>
+        {#each domingoItems as item (item.id)}
+          <button
+            type="button"
+            data-testid="dash-weekend-popover-item"
+            data-eid={item.id}
+            data-tipo={item.tipo}
+            class="block w-full text-left border-l-[3px] {borderClassFor(item.tipo)} px-1 text-xs"
+            onclick={() => onOpenItem(item.tipo, item.id)}
+          >
+            {labelFor(item)}
+          </button>
         {/each}
       </Popover.Content>
     </Popover.Root>
