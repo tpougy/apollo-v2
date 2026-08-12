@@ -52,13 +52,13 @@ uma única função pura, reusada por calendário/kanban/rotinas/heatmap.
 
 ### DASH — Dashboard (tela inicial)
 
-- [ ] **DASH-01**: Novo componente `Dashboard.svelte` (não é `EntityScreen`, não entra no registry), montado pelo `Shell` na rota `dashboard`, com grid de 3 colunas em `lg:` (tickets | semana+kanbans | rotinas+heatmap) e 1 coluna abaixo de `lg`.
-- [ ] **DASH-02**: Coluna esquerda lista tickets a fazer (fonte definida na decisão §5.3 acima), ordenados por prazo hard primeiro, card clicável abrindo o dialog de Ticket, com link "ver todos" e estado vazio.
+- [x] **DASH-01**: Novo componente `Dashboard.svelte` (não é `EntityScreen`, não entra no registry), montado pelo `Shell` na rota `dashboard`, com grid de 3 colunas em `lg:` (tickets | semana+kanbans | rotinas+heatmap) e 1 coluna abaixo de `lg`.
+- [x] **DASH-02**: Coluna esquerda lista tickets a fazer (fonte definida na decisão §5.3 acima), ordenados por prazo hard primeiro, card clicável abrindo o dialog de Ticket, com link "ver todos" e estado vazio.
 - [ ] **DASH-03**: Faixa central mostra exatamente 5 cards (segunda a sexta); sábado/domingo aparecem só via chip (renderizado apenas quando há itens) que abre popover; cada card de dia mostra até 3 itens + `+N`, com borda esquerda por tipo (tarefa/rotina/ticket-hard) e destaque de hoje via `bg-muted`.
 - [ ] **DASH-04**: Coluna direita agrupa rotinas da semana por fundo em cards leves e transparentes (até 4 rotinas por card + `+N`), grupo "Sem fundo vinculado" sempre por último, com controles funcionais de agrupar/ordenar/status; abaixo, heatmap mensal de carga (grade 7×5–6, 5 faixas fixas, só tokens do §6 da spec, fim de semana em `bg-muted/40`, legenda visível).
 - [ ] **DASH-05**: Abaixo da faixa central, uma faixa de mini-kanban por projeto em andamento (colunas = etapas por `ordem` asc, cards = tarefas da etapa, até 3 cards por coluna + `+N`, colunas de largura fixa que nunca comprimem, faixa com scroll horizontal e indicador `›` só quando `scrollWidth > clientWidth` medido). Colapso por projeto persiste em `localStorage` (`apollo.dash.collapsed.<projetoId>`).
 - [ ] **DASH-06**: Módulo puro `derive.ts` (sem `db`, recebe `hoje` por parâmetro) implementa `semanaUtil`, `agendaPorDia`, `rotinasPorFundo`, `cargaDoMes`, `faixaHeatmap`, `progressoEtapa`, `vencido`, cobertos por testes de unidade (`derive.test.ts`).
-- [ ] **DASH-07**: Módulo `dashboardQuery.ts` faz uma única `db.useQuery` (não sete) trazendo `projetos`, `tarefas`, `instanciasRotina` (incluindo `template.fundo`, sem adicionar esses links ao `defs/instanciasRotina.ts`), `tickets`, `fundos` — sem store global, sem cache.
+- [x] **DASH-07**: Módulo `dashboardQuery.ts` faz uma única `db.useQuery` (não sete) trazendo `projetos`, `tarefas`, `instanciasRotina` (incluindo `template.fundo`, sem adicionar esses links ao `defs/instanciasRotina.ts`), `tickets`, `fundos` — sem store global, sem cache.
 
 ### DLG — Sistema de dialogs
 
@@ -82,9 +82,9 @@ uma única função pura, reusada por calendário/kanban/rotinas/heatmap.
 | NEST-04 | Phase 20: Rotinas & Tickets Sections | Complete |
 | NEST-05 | Phase 20: Rotinas & Tickets Sections | Complete |
 | DASH-06 | Phase 21: Dashboard Data Layer, Shell, Week Calendar & Ticket Queue | Pending |
-| DASH-07 | Phase 21: Dashboard Data Layer, Shell, Week Calendar & Ticket Queue | Pending |
-| DASH-01 | Phase 21: Dashboard Data Layer, Shell, Week Calendar & Ticket Queue | Pending |
-| DASH-02 | Phase 21: Dashboard Data Layer, Shell, Week Calendar & Ticket Queue | Pending |
+| DASH-07 | Phase 21: Dashboard Data Layer, Shell, Week Calendar & Ticket Queue | Complete |
+| DASH-01 | Phase 21: Dashboard Data Layer, Shell, Week Calendar & Ticket Queue | Complete |
+| DASH-02 | Phase 21: Dashboard Data Layer, Shell, Week Calendar & Ticket Queue | Complete |
 | DASH-03 | Phase 21: Dashboard Data Layer, Shell, Week Calendar & Ticket Queue | Pending |
 | DASH-05 | Phase 22: Dashboard Kanbans, Rotinas & Heatmap | Pending |
 | DASH-04 | Phase 22: Dashboard Kanbans, Rotinas & Heatmap | Pending |

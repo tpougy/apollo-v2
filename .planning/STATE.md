@@ -5,15 +5,15 @@ milestone_name: Navegação reorganizada + Dashboard de acompanhamento
 current_phase: 21
 current_phase_name: Dashboard Data Layer, Shell, Week Calendar & Ticket Queue
 status: planning
-stopped_at: Completed 20-05-PLAN.md (Phase 20 complete)
-last_updated: "2026-08-12T00:09:35.457Z"
+stopped_at: Completed 21-02-PLAN.md (wave 1, parallel with 21-01)
+last_updated: "2026-08-12T01:02:59.799Z"
 last_activity: 2026-08-11
 last_activity_desc: 20-01-PLAN.md executed - SubtarefasPanel.svelte + TicketsSection.svelte with driven xor-parent create pre-resolution, live-verified against hosted InstantDB (NEST-05 complete)
 progress:
   total_phases: 6
   completed_phases: 3
-  total_plans: 12
-  completed_plans: 12
+  total_plans: 15
+  completed_plans: 13
   percent: 50
 ---
 
@@ -29,11 +29,11 @@ See: .planning/PROJECT.md (updated 2026-08-10)
 ## Current Position
 
 Phase: 21 of 23 (Dashboard Data Layer, Shell, Week Calendar & Ticket Queue)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-08-11 — Phase 20 complete, transitioned to Phase 21
+Plan: 2 of 3
+Status: Plan 21-02 complete (wave 1, parallel with 21-01)
+Last activity: 2026-08-11 — 21-02-PLAN.md executed (dashboardQuery.ts, Dashboard.svelte grid shell, TicketQueue.svelte, live e2e proof)
 
-Progress: [██████████] 100%
+Progress: [█████████░] 87%
 
 ## Performance Metrics
 
@@ -72,6 +72,7 @@ Progress: [██████████] 100%
 | Phase 20-rotinas-tickets-sections P03 | 33min | 3 tasks | 2 files |
 | Phase 20 P04 | 40min | 2 tasks | 3 files |
 | Phase 20 P05 | 45min | 3 tasks | 5 files |
+| Phase 21 P02 | 35min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -109,6 +110,8 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase ?]: [Phase 20 P05] gotoNested.ts's hardened fallback throws a descriptive Error naming the unhandled etype and the correct replacement helper, not a bare assertion.
 - [Phase ?]: [Phase 20 P05] DEF-01 root cause was TWO added Tab stops inside RotinasSection's Tabs.Root (active Tabs.Trigger's roving-tabindex stop + bits-ui's own Tabs.Content tabpanel div, a real separate tabindex=0 stop), not the one originally suspected -- fixed via explicit per-stop assertions instead of a corrected fixed count.
 - [Phase ?]: [Phase 20 P05] Phase 20 phase-gate: full bun run test:e2e run twice, both green except two documented pre-existing/out-of-scope flakes (login-flow.spec.ts magic-code timing predating Phase 20 since Phase 10; entities-form-restyle.spec.ts's SubtarefasPanel pollFor timeout, a Plan 20-01 resource-contention timing issue) -- both reproduced passing in isolation.
+- [Phase ?]: dashboardQuery.ts takes db as a parameter instead of importing it, so DASHBOARD_QUERY stays importable standalone by the e2e Node/Playwright process (importing db.ts transitively pulls in @instantdb/svelte's .svelte component graph, which Playwright's Node-based TS transform cannot parse).
+- [Phase ?]: InstantDB's admin API returns has:"one" links as single-element arrays (not bare objects), unlike the client SDK's db.useQuery -- dashboard.spec.ts's DASH-07 proof normalizes this the same way routineJob.ts:622 already does.
 
 ### Pending Todos
 
@@ -140,8 +143,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-11T23:47:15.417Z
-Stopped at: Completed 20-05-PLAN.md (Phase 20 complete)
+Last session: 2026-08-12T01:02:59.788Z
+Stopped at: Completed 21-02-PLAN.md (wave 1, parallel with 21-01)
 Resume file: None
 
 ## Operator Next Steps
