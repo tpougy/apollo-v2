@@ -14,7 +14,12 @@
     fundo?: { id: string; nome: string } | null;
   };
 
-  let { tickets, onVerTodos }: { tickets: TicketRow[]; onVerTodos: () => void } = $props();
+  let {
+    tickets,
+    onVerTodos,
+    onOpenTicket,
+  }: { tickets: TicketRow[]; onVerTodos: () => void; onOpenTicket: (id: string) => void } =
+    $props();
 
   // Per REQUIREMENTS.md §5.3: `tickets` has no non-string completion field,
   // so the queue lists every ticket — no filter by any completion signal.
@@ -51,6 +56,7 @@
           data-testid="dash-ticket-card"
           data-eid={ticket.id}
           class="w-full rounded border p-2 text-left space-y-1"
+          onclick={() => onOpenTicket(ticket.id)}
         >
           <p class="line-clamp-2 text-sm">{ticket.titulo}</p>
           <p class="text-xs text-muted-foreground">

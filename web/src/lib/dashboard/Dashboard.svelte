@@ -2,6 +2,7 @@
   import { db } from "../db";
   import { useDashboardQuery } from "./dashboardQuery";
   import { agendaPorDia, cargaDoMes, rotinasPorFundo, semanaUtil } from "./derive";
+  import TicketDialog from "./dialogs/TicketDialog.svelte";
   import MonthHeatmap from "./MonthHeatmap.svelte";
   import ProjectStrips from "./ProjectStrips.svelte";
   import RoutinesByFundo from "./RoutinesByFundo.svelte";
@@ -10,7 +11,11 @@
 
   // Row types mirror DASHBOARD_QUERY's exact shape, one level of nesting per
   // key — same convention as ProjetosSection.svelte's ProjetoRow/TarefaRow.
-  type SubtarefaRow = { id: string; concluida: boolean };
+  // Widened to add `titulo` (Deviation: Rule 1/2, TicketDialog's read-only
+  // subtarefas list needs it; already fetched at runtime via the unchanged
+  // `subtarefas: {}` query branch, same "widen too-narrow local TS type, add
+  // zero new query" precedent this plan already applies to TicketRow below).
+  type SubtarefaRow = { id: string; titulo: string; concluida: boolean };
   type FundoRow = { id: string; nome: string };
   type EtapaRow = { id: string; nome: string; ordem: number; tarefas?: TarefaRow[] };
   type ProjetoRow = {
@@ -39,6 +44,9 @@
   type TicketRow = {
     id: string;
     titulo: string;
+    corpo: string;
+    remetente: string;
+    status: string;
     tipoPrazo: string;
     dataPrevista?: string;
     dataRecebimento: string;
@@ -78,6 +86,54 @@
   function goToProjetos(): void {
     document.querySelector<HTMLButtonElement>('[data-testid="nav-projetos"]')?.click();
   }
+
+  // Generic dialog-stack mechanism (spec-ui.md §4 "Profundidade máxima 2"),
+  // designed from the start to support depth 2 even though this plan only
+  // exercises depth 1 -- every later plan in this phase extends the
+  // DialogKind union and the render chain below, never replaces this
+  // mechanism. Capped at length 2: openDialog always keeps dialogStack[0]
+  // (the first-level dialog) and swaps in a new second-level entry, never
+  // growing past 2 -- "swap-in-place," never two simultaneous Dialog.Root
+  // instances.
+  type DialogKind = "ticket" | "dia" | "tarefa" | "projeto" | "fundo" | "etapa" | "rotina";
+  type DialogRef = { kind: DialogKind; id: string };
+  let dialogStack = $state<DialogRef[]>([]);
+
+  function openDialog(ref: DialogRef): void {
+    dialogStack = dialogStack.length === 0 ? [ref] : [dialogStack[0], ref];
+  }
+
+  function popToFirst(): void {
+    dialogStack = dialogStack.slice(0, 1);
+  }
+
+  function closeAllDialogs(): void {
+    dialogStack = [];
+  }
+
+  const activeDialogRef = $derived(dialogStack[dialogStack.length - 1]);
+  const breadcrumbRef = $derived(dialogStack.length === 2 ? dialogStack[0] : undefined);
+
+  // The "dia" branch returns the raw ISO for now -- Plan 23-04 refines it to
+  // a formatted date when Dia becomes an actual first-level launch point;
+  // this is a deliberate placeholder, not a bug, since no code path can
+  // reach `breadcrumbRef.kind === "dia"` before Plan 23-04 lands.
+  function breadcrumbLabelFor(ref: DialogRef | undefined): string {
+    if (!ref) return "";
+    if (ref.kind === "projeto") return projetoRows().find((p) => p.id === ref.id)?.nome ?? "Projeto";
+    if (ref.kind === "dia") return ref.id;
+    return "";
+  }
+
+  function openTicketDialog(id: string): void {
+    openDialog({ kind: "ticket", id });
+  }
+
+  const activeTicket = $derived.by(() =>
+    activeDialogRef?.kind === "ticket"
+      ? ticketRows().find((t) => t.id === activeDialogRef.id)
+      : undefined,
+  );
 
   // Local, non-persisted helpers — not part of derive.ts's DASH-06 public
   // contract (neither is one of its 7 named exports), since both are
@@ -268,7 +324,7 @@
       data-testid="dash-tickets-slot"
       class="order-2 lg:order-none lg:col-start-1 lg:row-start-1 lg:row-span-2"
     >
-      <TicketQueue tickets={ticketRows()} onVerTodos={goToTickets} />
+      <TicketQueue tickets={ticketRows()} onVerTodos={goToTickets} onOpenTicket={openTicketDialog} />
     </div>
     <div
       data-testid="dash-placeholder-rotinas"
@@ -286,4 +342,23 @@
       <ProjectStrips projetos={projetoRows()} {hojeIso} onVerProjetos={goToProjetos} />
     </div>
   </div>
+  <!--
+    ONE mount point every later plan in this phase appends an
+    `{:else if activeDialogRef?.kind === "Y"}` branch to -- never mount two
+    dialog components simultaneously, and never restructure this into a
+    lookup table/component map (spec §0.6's "one permitted router branch"
+    precedent, applied here to dialog kind, not entity type).
+  -->
+  {#if activeDialogRef?.kind === "ticket"}
+    <TicketDialog
+      open={true}
+      ticket={activeTicket}
+      breadcrumb={breadcrumbRef
+        ? { label: breadcrumbLabelFor(breadcrumbRef), onClick: popToFirst }
+        : undefined}
+      onOpenChange={(open) => {
+        if (!open) closeAllDialogs();
+      }}
+    />
+  {/if}
 {/if}
