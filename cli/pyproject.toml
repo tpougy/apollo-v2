@@ -45,4 +45,5 @@ python-version = "3.12"
 [tool.pytest.ini_options]
 markers = [
     "live: exercises the real InstantDB app over the network using the persisted session (skips when no session exists)",
+    "packaging: exercises real subprocess uv build/uv venv/uv pip install filesystem/build tooling (PKG-05) — not the InstantDB network API; kept distinct from `live` so `uv run pytest -m \"not live and not packaging\"` stays a fast, fully-offline inner loop",
 ]
