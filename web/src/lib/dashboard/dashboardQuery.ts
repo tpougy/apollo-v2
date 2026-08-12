@@ -14,8 +14,21 @@
 // No `donoId` where-clause is added: `instant.perms.ts`'s `view` rule already
 // scopes every row server-side, and every existing bespoke query in this
 // codebase (`EntityScreen.svelte`, `ProjetosSection.svelte`) omits one too.
+// Plan 23-06 (Task 1): widened `projetos.etapas.tarefas` by one nesting
+// level to also fetch `subtarefas` -- closes a pre-existing, Phase-22-
+// documented query-completeness gap (STATE.md: "DASHBOARD_QUERY's
+// projetos.etapas.tarefas branch omits subtarefas... so tarefaConcluida() on
+// a nested strip card always evaluates false"). This deepens the SAME query
+// object by one nesting level -- it does NOT add a new `db.useQuery` call
+// site anywhere, so DASH-07's "uma query, não sete" is unaffected. Every
+// reader of this nested path (ProjectStrips.svelte's own
+// project-strip-column-header `{feitas}/{total}`, and this plan's own new
+// ProjectDialog.svelte column headers) reads through `progressoEtapa`/
+// `tarefaConcluida` (derive.ts), both of which require `subtarefas` to be
+// present to compute a non-zero `feitas` count -- without this fix, both
+// surfaces would silently show 0/N regardless of reality.
 export const DASHBOARD_QUERY = {
-  projetos: { fundo: {}, etapas: { tarefas: {} } },
+  projetos: { fundo: {}, etapas: { tarefas: { subtarefas: {} } } },
   tarefas: { etapa: { projeto: {} }, subtarefas: {} },
   instanciasRotina: { template: { fundo: {} } },
   tickets: { fundo: {}, subtarefas: {} },
