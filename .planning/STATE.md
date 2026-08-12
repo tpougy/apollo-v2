@@ -5,16 +5,16 @@ milestone_name: Navegação reorganizada + Dashboard de acompanhamento
 current_phase: 23
 current_phase_name: Focus Dialog System
 status: planning
-stopped_at: Completed 22-02-PLAN.md — RoutinesByFundo.svelte + MonthHeatmap.svelte, Phase 22 complete
-last_updated: "2026-08-12T04:05:11.092Z"
+stopped_at: Completed 23-02-PLAN.md — derive.ts rotinasDoFundo pure export + unit tests
+last_updated: "2026-08-12T04:54:46.262Z"
 last_activity: 2026-08-12
 last_activity_desc: 22-01-PLAN.md executed (ProjectStrips.svelte, measured overflow indicator, localStorage collapse, live e2e proof)
 progress:
   total_phases: 6
   completed_phases: 5
-  total_plans: 17
-  completed_plans: 17
-  percent: 83
+  total_plans: 24
+  completed_plans: 18
+  percent: 75
 ---
 
 # Project State
@@ -29,11 +29,11 @@ See: .planning/PROJECT.md (updated 2026-08-10)
 ## Current Position
 
 Phase: 23 of 23 (Focus Dialog System)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-08-12 — Phase 22 complete, transitioned to Phase 23
+Plan: 23-02 complete (1/7 plans done this phase so far; wave 1 concurrent with 23-01 may still be in progress)
+Status: In progress
+Last activity: 2026-08-12 — 23-02-PLAN.md executed (derive.ts rotinasDoFundo pure export + unit tests)
 
-Progress: [██████████] 100%
+Progress: [████████░░] 75%
 
 ## Performance Metrics
 
@@ -77,6 +77,7 @@ Progress: [██████████] 100%
 | Phase 21 P03 | 45min | 2 tasks | 3 files |
 | Phase 22 P01 | 16min | 2 tasks | 3 files |
 | Phase 22 P02 | 42min | 2 tasks | 4 files |
+| Phase 23 P02 | 8min | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -128,6 +129,7 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase ?]: 22-02: RoutinesByFundo/MonthHeatmap -- template.nome surfaced via a Dashboard.svelte-local dadosNormalizados addition only; derive.ts/dashboardQuery.ts stay byte-for-byte unchanged
 - [Phase ?]: 22-02: spec-ui.md section 6 token correction -- text-background used for heatmap band 4 instead of the nonexistent --destructive-foreground token, confirmed against app.css
 - [Phase ?]: 22-02: agrupar: fundo renders as a real one-item Select.Root (deliberate no-op) since fundo grouping already arrives pre-computed via rotinasPorFundo and no other grouping key exists this phase
+- [Phase ?]: 23-02: rotinasDoFundo added to derive.ts as week-unbounded fundo filter, InstanciaAgendaLike stays un-exported (rotinasPorFundo precedent); TDD RED/GREEN via git stash push/pop (non-worktree session)
 
 ### Pending Todos
 
@@ -159,8 +161,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-12T03:47:32.525Z
-Stopped at: Completed 22-02-PLAN.md — RoutinesByFundo.svelte + MonthHeatmap.svelte, Phase 22 complete
+Last session: 2026-08-12T04:54:46.250Z
+Stopped at: Completed 23-02-PLAN.md — derive.ts rotinasDoFundo pure export + unit tests
 Resume file: None
 
 ## Operator Next Steps
