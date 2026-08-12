@@ -1,10 +1,15 @@
 """Business-day math over the vendored ANBIMA calendar.
 
-Holidays come exclusively from `shared/anbima-calendar.json` — a committed,
-reviewed snapshot of the ANBIMA calendar (see plan 02-01). No algorithmic or
-third-party holiday-computing package may ever be introduced here (C-03): a
-system that silently answers from a different calendar than the one that was
-reviewed and committed is worse than one that refuses to answer.
+Holidays come exclusively from the vendored `apollo_cli/data/anbima-calendar.json`
+copy — a committed, reviewed snapshot of the ANBIMA calendar (see plan 02-01),
+read via `importlib.resources` so it works identically whether this package is
+an editable dev install or a real installed wheel with no monorepo checkout
+anywhere on disk (see plan 24-01). `cli/tests/test_calendar_vendored_parity.py`
+proves this vendored copy stays byte-identical to `shared/anbima-calendar.json`,
+the original the `web/` app also reads. No algorithmic or third-party
+holiday-computing package may ever be introduced here (C-03): a system that
+silently answers from a different calendar than the one that was reviewed and
+committed is worse than one that refuses to answer.
 
 FORBIDDEN/PROHIBITED: `Calendar.load("ANBIMA")` anywhere in this module (and in
 any shipped code). It sources holidays from the `bizdays` library's own bundled
@@ -24,25 +29,24 @@ from __future__ import annotations
 import json
 import re
 from datetime import date, timedelta
+from importlib import resources
 from typing import Final
 
 from bizdays import Calendar
 
-from apollo_cli.config import find_repo_root
-
 _ISO_DATE_RE: Final[re.Pattern[str]] = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
-_CALENDAR_PATH: Final = find_repo_root() / "shared" / "anbima-calendar.json"
+_CALENDAR_RESOURCE: Final = resources.files("apollo_cli.data").joinpath("anbima-calendar.json")
 # Let a missing/unparseable file raise loudly at import time — never fall
 # back to a bundled or algorithmic calendar.
-_PAYLOAD: Final[dict[str, object]] = json.loads(_CALENDAR_PATH.read_text(encoding="utf-8"))
+_PAYLOAD: Final[dict[str, object]] = json.loads(_CALENDAR_RESOURCE.read_text(encoding="utf-8"))
 
 CALENDAR_START: Final[str] = str(_PAYLOAD["start"])
 CALENDAR_END: Final[str] = str(_PAYLOAD["end"])
 
 _holidays_raw: object = _PAYLOAD["holidays"]
 if not isinstance(_holidays_raw, list):
-    msg = f"{_CALENDAR_PATH}: 'holidays' is not a list"
+    msg = f"{_CALENDAR_RESOURCE}: 'holidays' is not a list"
     raise TypeError(msg)
 _HOLIDAYS: Final[list[str]] = _holidays_raw
 

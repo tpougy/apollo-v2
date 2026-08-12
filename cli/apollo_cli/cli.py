@@ -39,12 +39,14 @@ register_entity_groups(apollo)
 
 @apollo.command()
 def doctor() -> None:
-    """Check that the repo-root `.env.instantdb` file resolves and is valid.
+    """Check that the InstantDB app id and env file resolve and are valid.
 
-    Prints the resolved env file path, whether the InstantDB app id is
-    present (showing only its last 4 characters), and whether an admin
-    token is present in the file (never used at runtime — see the README).
-    Never prints either credential value in full.
+    Prints the resolved env file path (or a note that none was found and the
+    embedded default app id is being used), whether the InstantDB app id is
+    present (showing only its last 4 characters) along with its provenance
+    (file vs embedded default), and whether an admin token is present in the
+    file (never used at runtime — see the README). Never prints either
+    credential value in full.
     """
     try:
         config = load_instant_config()
@@ -52,8 +54,13 @@ def doctor() -> None:
         click.echo(str(error), err=True)
         raise SystemExit(1) from error
 
-    click.echo(f"env file: {config.env_file}")
-    click.echo(f"app id: ok (...{config.app_id[-4:]})")
+    if config.env_file is None:
+        click.echo("env file: (none — using embedded default app id)")
+    else:
+        click.echo(f"env file: {config.env_file}")
+    click.echo(
+        f"app id: ok (...{config.app_id[-4:]}) — source: {config.app_id_source.replace('_', ' ')}"
+    )
     if config.admin_token_present:
         click.echo("admin token: present (dev/ops only — never used at runtime)")
     else:
