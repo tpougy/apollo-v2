@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: CLI instalável via uv tool, login sem admin token
-current_phase: 24
-current_phase_name: Packaging & Installability
-status: complete
+current_phase: 25
+current_phase_name: Public Auth Login
+status: planning
 stopped_at: Completed 24-02-PLAN.md -- Phase 24 (Packaging & Installability) complete
-last_updated: "2026-08-12T19:52:00.000Z"
+last_updated: "2026-08-12T19:57:33.640Z"
 last_activity: 2026-08-12
 last_activity_desc: "Completed 24-02-PLAN.md: permanent test_packaging_live.py regression gate (PKG-05), admin-token confinement gates confirmed unchanged, full quality gate green, real uv tool install/uninstall acceptance round trip captured verbatim"
 progress:
@@ -14,7 +14,7 @@ progress:
   completed_phases: 1
   total_plans: 2
   completed_plans: 2
-  percent: 100
+  percent: 50
 ---
 
 # Project State
@@ -28,10 +28,10 @@ See: .planning/PROJECT.md (updated 2026-08-12)
 
 ## Current Position
 
-Phase: 24 of 25 (Packaging & Installability) — COMPLETE
-Plan: 24-01, 24-02 complete (2/2 plans done this phase)
-Status: Phase complete — Phase 25 (Public Auth Login) is next
-Last activity: 2026-08-12 — Completed 24-02-PLAN.md (permanent packaging regression test, admin-token gates confirmed unchanged, full quality gate green, real `uv tool install`/`uninstall` acceptance round trip captured verbatim)
+Phase: 25 of 25 (Public Auth Login)
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-08-12 — Phase 24 complete, transitioned to Phase 25
 
 Progress: [██████████] 100%
 
@@ -47,7 +47,7 @@ Progress: [██████████] 100%
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 24 | 2 | ~55min | ~27min |
+| 24 | 2 | - | - |
 | 25 | - | - | - |
 
 **Recent Trend:**

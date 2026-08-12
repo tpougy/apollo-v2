@@ -28,13 +28,13 @@ The user can execute every piece of controladoria data-entry work — full CRUD 
 - ✓ Navegação reorganizada em topbar de 6 seções (Dashboard, Rotinas, Tickets, Projetos, Fundos, Log); `etapas`/`templatesRotina`/`subtarefas`/`tarefas` deixam de ser destinos de primeiro nível, alcançáveis apenas aninhados dentro de seus pais (`ProjetosSection`, `RotinasSection`, `SubtarefasPanel`); `EntityScreen.svelte` ganhou exatamente uma extensão aditiva (`scopeWhere`/`presetLinks`) reutilizada em toda a milestone sem nenhum branch por `etype` — v1.3
 - ✓ Dashboard como tela inicial: `dashboardQuery.ts` (uma única `db.useQuery`) + `derive.ts` (módulo puro, unit-testado) alimentam calendário semanal de 5 dias úteis, fila de tickets, mini-kanbans de largura fixa por projeto (nunca comprimem, indicador de overflow medido via `ResizeObserver`), rotinas agrupadas por fundo, heatmap mensal de 5 faixas (só tokens `chart-*`/`destructive` existentes), e sistema de 7 dialogs de foco (Ticket/Dia/Tarefa/Projeto/Fundo/Etapa/Rotina) com profundidade máxima 2 — v1.3
 - ✓ Playwright e2e suite chegou a 174 testes unitários (`bun test src`) + suíte e2e completa (3 projetos) verde, zero UAT humano em toda a milestone; 24 planos em 6 fases, auditoria de milestone sem blockers (21/21 requisitos) — v1.3
+- ✓ `cli/` instalável via `uv tool install` fora do checkout do monorepo: calendário ANBIMA vendorizado em `apollo_cli/data/anbima-calendar.json` (lido via `importlib.resources`, `uv_build` já inclui o arquivo sem config extra), `app_id` público com default embutido em `config.py` (`_DEFAULT_APP_ID`, override via `.env.instantdb`/`APOLLO_ENV_FILE` preservado), `find_repo_root()`'s `FileNotFoundError` tratado no ponto de chamada — provado com round-trip real (`uv build` → `uv tool install` → rodar fora do repo → `uv tool uninstall`), incluindo checagem de corretude do calendário (não só "não quebra") — Phase 24/v1.4
 
 ### Active
 
 <!-- Current scope. Building toward these. -->
 
-- `cli/` (Python) instalável via `uv tool install` fora do checkout do monorepo, sem quebrar em runtime — v1.4 (em andamento)
-- Login (`apollo auth login`) sem depender de `INSTANT_APP_ADMIN_TOKEN` — v1.4 (em andamento)
+- Login (`apollo auth login`) sem depender de `INSTANT_APP_ADMIN_TOKEN` — v1.4 (em andamento, Phase 25)
 
 ### Out of Scope
 
@@ -99,6 +99,9 @@ All constraints below originate from the approved SPEC and are **LOCKED** — do
 | Hidden-`EntityScreen`-instance + driven-DOM-click pattern for every "+ novo"/"editar" affordance outside the generic table (ProjetosSection, SubtarefasPanel, all 7 focus dialogs) | `EntityScreen.svelte` is capped at exactly one additive extension (`scopeWhere`/`presetLinks`, spec-ui.md §0.6) — a second prop or an `if (etype===...)` branch was never on the table, so every new create/edit affordance had to compose the generic engine from the outside | ✓ Good — reused identically across 4 phases with zero drift, zero regression |
 | `dashboardQuery.ts` bypasses `EntityConfig` entirely for `instanciasRotina.template.fundo` (a live schema link never exposed on that entity's presentation-layer config) | Exposing `template`/`fundo` on `defs/instanciasRotina.ts` would let `EntityScreen` render a re-parenting select that could break the `dedupeKey` idempotency invariant — the Dashboard reads via its own raw query instead, proven live via the InstantDB admin API before trusting it in the UI | ✓ Good — zero schema/perms change, two-hop query genuinely worked as designed |
 | Depth-cap-2 dialog stack as a local `$state` array (max length 2), never two simultaneous `Dialog.Root` instances | Spec-ui.md §4 requires "profundidade máxima 2" — a capped array is simpler and more mechanically enforceable than a tree/router-based dialog history, and only Projeto/Dia are ever first-level launch points that need to push a second entry | ✓ Good — structurally impossible to exceed depth 2, proven live for both launch points |
+| `uv_build` needs zero `pyproject.toml` changes to include `cli/apollo_cli/data/anbima-calendar.json` in the wheel — existing `module-root = ""` already includes the whole module directory by default (no setuptools-style `package_data`/`MANIFEST.in` equivalent exists or is needed) | Verified live (Phase 24 research): built both a toy package and the real `cli/` package, inspected wheel contents with `zipfile` | ✓ Good — avoided inventing a nonexistent config key by analogy to setuptools/hatchling |
+| `_DEFAULT_APP_ID` embedded in `config.py` as a plain literal, extracted from the public `NEXT_PUBLIC_INSTANT_APP_ID` baked into the `web/` build bundle (`.env.instantdb` itself is hard-denied to Read/Bash by sandbox policy, by design) | The value is not secret (already public in the shipped web bundle) — the admin token remains the only real secret and gets no embedded default, ever | ✓ Good — reconfirmed via a fresh `web/` rebuild before use, ruling out staleness |
+| `find_repo_root()`'s `FileNotFoundError` (not the downstream "no app_id key" `ValueError`) is the real crash cause for any CLI command run outside the repo — `cli.py`'s eager entity-module imports mean even `apollo --version` was affected | Discovered by literally reproducing the crash live (build wheel → `uv tool install` → run from `/tmp`) before writing the fix, rather than trusting the phase description's simplified framing of the bug | ✓ Good — the fix wraps the call site itself, not just the app-id-missing branch |
 
 ## Evolution
 
@@ -118,4 +121,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-08-12 — milestone v1.3 (navegação reorganizada + Dashboard de acompanhamento) shipped and archived*
+*Last updated: 2026-08-12 — v1.4 Phase 24 (Packaging & Installability) complete; Phase 25 (Public Auth Login) next*
