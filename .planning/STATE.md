@@ -4,9 +4,9 @@ milestone: v1.4
 milestone_name: CLI instalável via uv tool, login sem admin token
 current_phase: 25
 current_phase_name: Public Auth Login
-status: complete
+status: completed
 stopped_at: Completed 25-02-PLAN.md -- Phase 25 (Public Auth Login) complete -- v1.4 milestone fully done
-last_updated: "2026-08-12T20:55:35.000Z"
+last_updated: "2026-08-12T21:05:47.450Z"
 last_activity: 2026-08-12
 last_activity_desc: "Completed 25-02-PLAN.md: real magic-code send+verify login round trip proven live against the real InstantDB API and the real tp@rbrasset.com.br inbox, INSTANT_APP_ADMIN_TOKEN entirely absent throughout; apollo doctor re-confirmed unchanged; full cli/ pytest suite (all markers, 418 passed) plus ruff/ruff format/ty clean with the admin token genuinely unset"
 progress:
@@ -28,10 +28,10 @@ See: .planning/PROJECT.md (updated 2026-08-12)
 
 ## Current Position
 
-Phase: 25 of 25 (Public Auth Login) — COMPLETE
-Plan: 25-01, 25-02 complete (2/2 plans done this phase)
-Status: Phase complete — v1.4 milestone fully done, ready for milestone-level audit/close
-Last activity: 2026-08-12 — Completed 25-02-PLAN.md (real admin-token-free magic-code send+verify round trip, live, real email; `apollo doctor` re-confirmed unchanged; full quality gate green)
+Phase: 25 of 25 (Public Auth Login)
+Plan: Not started
+Status: All phases complete
+Last activity: 2026-08-12 — Phase 25 complete
 
 Progress: [██████████] 100%
 
@@ -48,7 +48,7 @@ Progress: [██████████] 100%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 24 | 2 | ~55min | ~27min |
-| 25 | 2 | ~20min | ~10min |
+| 25 | 2 | - | - |
 
 **Recent Trend:**
 
