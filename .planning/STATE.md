@@ -5,16 +5,16 @@ milestone_name: Navegação reorganizada + Dashboard de acompanhamento
 current_phase: 22
 current_phase_name: Dashboard Kanbans, Rotinas & Heatmap
 status: planning
-stopped_at: Completed 22-01-PLAN.md — ProjectStrips.svelte (fixed-width kanban strips, measured overflow, localStorage collapse)
-last_updated: "2026-08-12T03:01:01.563Z"
+stopped_at: Completed 22-02-PLAN.md — RoutinesByFundo.svelte + MonthHeatmap.svelte, Phase 22 complete
+last_updated: "2026-08-12T03:47:32.537Z"
 last_activity: 2026-08-12
 last_activity_desc: 22-01-PLAN.md executed (ProjectStrips.svelte, measured overflow indicator, localStorage collapse, live e2e proof)
 progress:
   total_phases: 6
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 17
-  completed_plans: 16
-  percent: 67
+  completed_plans: 17
+  percent: 83
 ---
 
 # Project State
@@ -33,7 +33,7 @@ Plan: 2 of 2
 Status: Plan 22-01 complete
 Last activity: 2026-08-12 — 22-01-PLAN.md executed (ProjectStrips.svelte, measured overflow indicator, localStorage collapse, live e2e proof)
 
-Progress: [█████████░] 94%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -76,6 +76,7 @@ Progress: [█████████░] 94%
 | Phase 21 P01 | 40min | 3 tasks | 3 files |
 | Phase 21 P03 | 45min | 2 tasks | 3 files |
 | Phase 22 P01 | 16min | 2 tasks | 3 files |
+| Phase 22 P02 | 42min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -124,6 +125,9 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase ?]: 22-01: 'projeto em andamento' = has >=1 etapa, no projeto.status read/compared, mirroring REQUIREMENTS.md 5.3's ticket-queue precedent
 - [Phase ?]: 22-01: DASHBOARD_QUERY's projetos.etapas.tarefas branch omits subtarefas (only the flat tarefas branch fetches it), so tarefaConcluida() on a nested strip card always evaluates false -- documented, not patched, since this plan's own fixtures never expose it and Plan 22-02 makes an identical decision for template.nome
 - [Phase ?]: 22-01: verified InstantDB preserves creation order for linked rows with no explicit sort; e2e fixture creates the vencida tarefa first so it lands inside ProjectStrips.svelte's first-3 visible slice rather than the +1 overflow row
+- [Phase ?]: 22-02: RoutinesByFundo/MonthHeatmap -- template.nome surfaced via a Dashboard.svelte-local dadosNormalizados addition only; derive.ts/dashboardQuery.ts stay byte-for-byte unchanged
+- [Phase ?]: 22-02: spec-ui.md section 6 token correction -- text-background used for heatmap band 4 instead of the nonexistent --destructive-foreground token, confirmed against app.css
+- [Phase ?]: 22-02: agrupar: fundo renders as a real one-item Select.Root (deliberate no-op) since fundo grouping already arrives pre-computed via rotinasPorFundo and no other grouping key exists this phase
 
 ### Pending Todos
 
@@ -155,8 +159,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-12T03:01:01.552Z
-Stopped at: Completed 22-01-PLAN.md — ProjectStrips.svelte (fixed-width kanban strips, measured overflow, localStorage collapse)
+Last session: 2026-08-12T03:47:32.525Z
+Stopped at: Completed 22-02-PLAN.md — RoutinesByFundo.svelte + MonthHeatmap.svelte, Phase 22 complete
 Resume file: None
 
 ## Operator Next Steps
