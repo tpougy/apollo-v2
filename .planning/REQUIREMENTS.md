@@ -1,7 +1,7 @@
 # Requirements: Apollo v2 — Milestone v1.4
 
 **Milestone:** v1.4 — CLI instalável via `uv tool install`, sem dependência de admin token no fluxo de uso real
-**Status:** Defining → Roadmap in progress
+**Status:** Roadmap complete → Ready for planning
 
 ## Context
 
@@ -53,13 +53,13 @@ Esta milestone nasceu de uma discussão (não de research) sobre por que `cli/` 
 
 | Requirement | Phase |
 |-------------|-------|
-| PKG-01 | TBD (roadmap) |
-| PKG-02 | TBD (roadmap) |
-| PKG-03 | TBD (roadmap) |
-| PKG-04 | TBD (roadmap) |
-| PKG-05 | TBD (roadmap) |
-| AUTH-01 | TBD (roadmap) |
-| AUTH-02 | TBD (roadmap) |
-| AUTH-03 | TBD (roadmap) |
-| AUTH-04 | TBD (roadmap) |
-| AUTH-05 | TBD (roadmap) |
+| PKG-01 | Phase 24 |
+| PKG-02 | Phase 24 |
+| PKG-03 | Phase 24 |
+| PKG-04 | Phase 24 |
+| PKG-05 | Phase 24 |
+| AUTH-01 | Phase 25 |
+| AUTH-02 | Phase 25 |
+| AUTH-03 | Phase 25 |
+| AUTH-04 | Phase 25 |
+| AUTH-05 | Phase 25 |

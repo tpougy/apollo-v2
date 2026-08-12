@@ -3,10 +3,10 @@ gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: CLI instalável via uv tool, login sem admin token
 status: planning
-last_updated: "2026-08-12T18:43:27.625Z"
+last_updated: "2026-08-12T19:05:00.000Z"
 last_activity: 2026-08-12
 progress:
-  total_phases: 0
+  total_phases: 2
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -19,66 +19,39 @@ progress:
 
 See: .planning/PROJECT.md (updated 2026-08-12)
 
-**Core value:** The user can execute every piece of controladoria data-entry work from either the Svelte SPA or the Python CLI, both authenticated as the same real user under the same InstantDB permission rules. Validated in v1.0. v1.1 made the SPA visually coherent on shadcn-svelte defaults; v1.2 refined composition/spacing/hierarchy on the same four screens; v1.3 reorganized navigation into a 6-section topbar and shipped the Dashboard landing screen (calendar, tickets, rotinas, heatmap, mini-kanbans, 7 focus dialogs) — UI and organization only, no schema/CLI/routineJob change.
-**Current focus:** Planning next milestone — v1.3 shipped and archived 2026-08-12 (6 phases, 24 plans, 21/21 requirements, audit passed)
+**Core value:** The user can execute every piece of controladoria data-entry work from either the Svelte SPA or the Python CLI, both authenticated as the same real user under the same InstantDB permission rules. Validated in v1.0. v1.1 made the SPA visually coherent on shadcn-svelte defaults; v1.2 refined composition/spacing/hierarchy on the same four screens; v1.3 reorganized navigation into a 6-section topbar and shipped the Dashboard landing screen; v1.4 makes the CLI itself installable outside the monorepo and drops its login flow's admin-token dependency — `cli/`-only, no schema/perms/web change.
+**Current focus:** Roadmap complete for v1.4 (Phases 24-25). Ready to plan Phase 24.
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-08-12 — Milestone v1.4 started
+Phase: 24 of 25 (Packaging & Installability)
+Plan: — (not yet planned)
+Status: Ready to plan
+Last activity: 2026-08-12 — Roadmap created for v1.4 (Phases 24-25), REQUIREMENTS.md traceability updated
+
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 12 (v1.3, in progress; 41 lifetime across v1.0+v1.1+v1.2+v1.3)
-- Average duration: ~49min (v1.3 plans so far: 40, 95, 75, 25, 22, 35 min)
-- Total execution time: ~4.9 hours (v1.3)
+- Total plans completed: 0 (v1.4, just started; 41 lifetime across v1.0+v1.1+v1.2+v1.3)
+- Average duration: — (no v1.4 plans yet; historical average ~40min/plan across prior milestones)
+- Total execution time: 0 hours (v1.4)
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 21 | 3 | - | - |
-| 22 | 2 | - | - |
-| 23 | 7 | - | - |
+| 24 | - | - | - |
+| 25 | - | - | - |
 
 **Recent Trend:**
 
-- Last 5 plans: 18-02 (95min), 18-03 (75min), 19-01 (25min), 19-02 (22min), 19-03 (35min)
-- Trend: Lower duration than Phase 18 as Phase 19's hidden-instance/bespoke-query patterns get reused across plans; 19-03's small uptick over 19-02 reflects the two-file Tabs+kanban scope, still well below Phase 18's 70min average.
+- Last 5 plans: (v1.3 closing plans) 23-05 (35min), 23-06 (40min), 23-07 (65min) — no v1.4 plans executed yet
+- Trend: N/A — v1.4 has not started execution
 
 *Updated after each plan completion*
-**Per-Plan Metrics:**
-
-| Plan | Duration | Tasks | Files |
-|------|----------|-------|-------|
-| Phase 18 P01 | 40min | 2 tasks | 16 files |
-| Phase 18 P02 | 95min | 1 tasks | 1 files |
-| Phase 18 P03 | 75min | 3 tasks | 9 files |
-| Phase 19 P01 | 25min | 2 tasks | 16 files |
-| Phase 19 P02 | 22min | 2 tasks | 4 files |
-| Phase 19 P03 | 35min | 2 tasks | 2 files |
-| Phase 19 P04 | 55min | 3 tasks | 5 files |
-| Phase 20-rotinas-tickets-sections P01 | 35min | 2 tasks | 4 files |
-| Phase 20-rotinas-tickets-sections P02 | 8min | 2 tasks | 4 files |
-| Phase 20-rotinas-tickets-sections P03 | 33min | 3 tasks | 2 files |
-| Phase 20 P04 | 40min | 2 tasks | 3 files |
-| Phase 20 P05 | 45min | 3 tasks | 5 files |
-| Phase 21 P02 | 35min | 2 tasks | 5 files |
-| Phase 21 P01 | 40min | 3 tasks | 3 files |
-| Phase 21 P03 | 45min | 2 tasks | 3 files |
-| Phase 22 P01 | 16min | 2 tasks | 3 files |
-| Phase 22 P02 | 42min | 2 tasks | 4 files |
-| Phase 23 P02 | 8min | 1 tasks | 2 files |
-| Phase 23-focus-dialog-system P01 | 45min | 2 tasks | 5 files |
-| Phase 23-focus-dialog-system P03 | 35min | 3 tasks | 4 files |
-| Phase 23-focus-dialog-system P04 | 40min | 3 tasks | 6 files |
-| Phase 23-focus-dialog-system P05 | 35min | 3 tasks | 6 files |
-| Phase 23-focus-dialog-system P06 | 40min | 3 tasks | 5 files |
-| Phase 23-focus-dialog-system P07 | 65min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -86,60 +59,10 @@ Last activity: 2026-08-12 — Milestone v1.4 started
 
 Decisions are logged in PROJECT.md Key Decisions table (all sourced from the locked SPEC, see PROJECT.md Constraints).
 
-- v1.3 roadmap derivation: 21 requirements (NAV-01..05, NEST-01..06, DASH-01..07, DLG-01..03) grouped into 6 phases (18-23), following `spec-ui.md` §9's dependency-ordered execution sequence — nav/`EntityScreen` plumbing first, then the Projetos and Rotinas/Tickets nested sections, then the Dashboard's data layer + shell + week calendar + ticket queue, then mini-kanbans + fundo-grouped rotinas + heatmap, then the 7-dialog focus system last (deliberately sequenced after every dialog target already exists, since dialogs only wrap already-built surfaces).
-- v1.3 roadmap: NAV-03 ("rota inicial é Dashboard") is owned by Phase 18 alongside the rest of NAV-*, satisfied via the `Route` state defaulting to `{ section: "dashboard" }` plus a minimal `Dashboard.svelte` mount point — the full 3-column grid content (DASH-01) is a separate requirement delivered later in Phase 21 once `derive.ts`/`dashboardQuery.ts` exist to feed it. Phase 18 must not claim DASH-01.
-- v1.3 roadmap: NEST-05 (shared inline subtarefas panel) is owned entirely by Phase 20, even though the panel is also used from the task view built in Phase 19's Projetos section — Phase 19 builds the etapa/task list without the panel wired in yet; Phase 20 builds `SubtarefasPanel.svelte` once and retroactively wires it to both Tickets and the Phase 19 task surface, matching `spec-ui.md` §9's own step ordering (step 3 ProjetosSection before step 4 Rotinas/Tickets + SubtarefasPanel).
-- v1.3 roadmap: DASH-05 (mini-kanbans) and DASH-04 (rotinas-by-fundo + heatmap) were merged into one phase (22) rather than split per `spec-ui.md` §9's steps 7/8 — each would otherwise be a single-requirement phase, and both are adjacent, purely additive Dashboard-content slices with no independent user-facing milestone value on their own.
-- v1.2/v1.3 kickoff: No human UAT gate anywhere — every phase's success criteria must be Playwright-provable against the live InstantDB app (C-12).
-- [Phase ?]: Verified NEST-01's byte-identical acceptance criterion via a controlled A/B full-suite comparison (diff/no-diff, same post-18-01 baseline) rather than a single unedited-suite run, because 18-01 landed its topbar restructuring in the shared working tree (no worktree isolation) before this plan's verification ran, and 18-03's e2e migration (NAV-05) had not yet landed.
-- [Phase ?]: Fixed 3 pre-existing e2e regressions exposed by Plan 18-01 landing first (no worktree isolation): stale fundos-default-mount assumption, instanciasRotina Tab-count formula, an uncatalogued nav-tarefas call site -- all within this plan's declared scope
-- [Phase ?]: [Phase 19 P01] Bespoke db.useQuery pattern for ProjetosSection: any section screen needing more than one level of link nesting writes its own query, never extends EntityScreen.buildQuery.
-- [Phase ?]: [Phase 19 P01] Hidden-EntityScreen-instance + bounded-poll selector-click pattern reuses the generic create/edit dialog from outside its own mount, without a new EntityScreen prop; openProjetoDialog polls up to 5s since row-scoped targets (e.g. row-edit) only exist after the hidden instance's own db.useQuery resolves.
-- [Phase ?]: [Phase 19 P01] Pruned etapas/tarefas from Shell.svelte's interim nested-goto dropdown via a HANDLED_BY_SECTION allowlist now that ProjetosSection gives them a real home; templatesRotina/subtarefas stay until Phase 20 (19-CONTEXT.md Open Question 2).
-- [Phase ?]: [Phase 19 P02] projetosDerive.ts is a phase-local pure module (tarefaConcluida/progressoEtapa/vencido) mirroring bizdays.ts's style, matching REQUIREMENTS.md §5.3/§5.4 verbatim -- ahead of Phase 21's canonical dashboard/derive.ts, per 19-CONTEXT.md's explicit allowance for Phase 21 to consolidate/dedupe later.
-- [Phase ?]: [Phase 19 P02] bits-ui's installed Accordion.Content stays mounted for every item regardless of open/closed state (never display:none) -- every Accordion.Content usage in this codebase must gate its children behind `{#if <open-check>}` or every per-item testid exists once per item simultaneously, breaking strict-mode Playwright queries the moment there is more than one item.
-- [Phase ?]: [Phase 19 P02] openEtapaId uses "" (not null) as the "closed" sentinel -- the installed bits-ui Accordion.Root (type="single") types value as `string` (default ""), not `string | null`, and this bits-ui version has no `collapsible` prop.
-- [Phase ?]: [Phase 19 P03] scopeWhere's $isNull operator ("Sem etapa" filter) was live-verified against the hosted InstantDB app — behaves exactly as documented, so the client-side-filter fallback CONTEXT.md/RESEARCH.md pre-authorized was never needed.
-- [Phase ?]: [Phase 19 P03] bits-ui's installed Tabs.Content always mounts its children (hidden attribute, never unmount) — every EntityScreen mounted inside a Tabs.Content must be additionally guarded with an {#if <active-tab>} check, mirroring Plan 19-02's identical Accordion.Content guard.
-- [Phase ?]: [Phase 19 P03] Kanban's horizontal scroll strip uses a plain overflow-x-auto div, not the installed ScrollArea component -- ScrollArea's custom-scrollbar viewport has no prior usage/e2e precedent in this codebase and this phase only needs the overflow/non-compression discipline.
-- [Phase ?]: 19-04: WEB-03's dataInicioPrevista persistence proven via CLI read path (ProjetosSection's project-header does not render that field); T-04-04's visible-error assertion moved to the sonner error toast (entity-error is invisible inside ProjetosSection's hidden-host EntityScreen instances) -- logged to WINDOWS.md as a future-phase UX gap.
-- [Phase ?]: TicketsSection renders no separate h2; relies on EntityScreen's own heading to avoid a duplicate-h2 regression in shell-nav.spec.ts
-- [Phase ?]: SubtarefasPanel drives bits-ui Select via paired pointerdown/pointerup PointerEvents, not .click() -- verified .click() is a no-op against bits-ui Select triggers/items
-- [Phase ?]: tickets-section.spec.ts's edit test adds a waitForSettle buffer before page.reload() to avoid aborting an in-flight db.transact()
-- [Phase ?]: No RotinasSection-level <h2> -- EntityScreen(instanciasRotinaConfig)'s own header already satisfies shell-nav.spec.ts's single-<h2> assertion
-- [Phase ?]: Both Tabs.Content blocks in RotinasSection are guarded behind {#if activeTab === ...}, since both tabs mount an EntityScreen directly (unlike ProjetosSection's default tab)
-- [Phase ?]: Templates context paragraph reads 'Configuração que gera as instâncias.' -- e2e assertion is case-insensitive against the binding spec phrase
-- [Phase ?]: Task 1 and Task 2 committed as two separate atomic commits despite sharing one file (ProjetosSection.svelte), reconstructed via targeted Edit reverts/reapplies to keep each commit's diff scoped to one plan task.
-- [Phase ?]: Orphan-reachability e2e test reuses the existing tarefaOrfaId/tarefaOrfaTitulo fixture instead of minting a second redundant orphan tarefa.
-- [Phase ?]: [Phase 20 P04] Row lookups for a subtarefa just created/edited through SubtarefasPanel must scope to the visible subtarefas-panel testid -- the hidden driven-create host mounts an unscoped copy of every row once subtarefa-add-start is first clicked in a session.
-- [Phase ?]: [Phase 20 P04] When a test's final xor choice differs from the parent SubtarefasPanel was opened with, re-open a fresh panel scoped to the actual resulting parent before asserting/deleting -- the record leaves the originally-opened panel's scopeWhere-filtered list.
-- [Phase ?]: [Phase 20 P05] gotoNested.ts's hardened fallback throws a descriptive Error naming the unhandled etype and the correct replacement helper, not a bare assertion.
-- [Phase ?]: [Phase 20 P05] DEF-01 root cause was TWO added Tab stops inside RotinasSection's Tabs.Root (active Tabs.Trigger's roving-tabindex stop + bits-ui's own Tabs.Content tabpanel div, a real separate tabindex=0 stop), not the one originally suspected -- fixed via explicit per-stop assertions instead of a corrected fixed count.
-- [Phase ?]: [Phase 20 P05] Phase 20 phase-gate: full bun run test:e2e run twice, both green except two documented pre-existing/out-of-scope flakes (login-flow.spec.ts magic-code timing predating Phase 20 since Phase 10; entities-form-restyle.spec.ts's SubtarefasPanel pollFor timeout, a Plan 20-01 resource-contention timing issue) -- both reproduced passing in isolation.
-- [Phase ?]: dashboardQuery.ts takes db as a parameter instead of importing it, so DASHBOARD_QUERY stays importable standalone by the e2e Node/Playwright process (importing db.ts transitively pulls in @instantdb/svelte's .svelte component graph, which Playwright's Node-based TS transform cannot parse).
-- [Phase ?]: InstantDB's admin API returns has:"one" links as single-element arrays (not bare objects), unlike the client SDK's db.useQuery -- dashboard.spec.ts's DASH-07 proof normalizes this the same way routineJob.ts:622 already does.
-- [Phase ?]: derive.ts: migrated projetosDerive.ts verbatim, tarefaConcluida stays exported (ProjetosSection.svelte calls it directly)
-- [Phase ?]: semanaUtil uses plain UTC calendar-day arithmetic, never bizdays.ts's business-day steppers, so ANBIMA holidays inside the week never shift Friday
-- [Phase ?]: agendaPorDia adds explicit hoje: Date parameter (purity rule forbids internal clock read); rotina/ticket vencido hard-codes concluido=false
-- [Phase ?]: 21-03: hojeIso computed once (never reassigned), semanaBase the only $state week navigation touches -- agendaPorDia always receives hojeIso, so paging weeks can never change vencido/today-highlight math (T-21-06)
-- [Phase ?]: 21-03: dadosNormalizados bridges DashboardData's optional link fields to agendaPorDia's required-but-nullable *Like shapes via an explicit per-row .map(), not a boundary cast -- the two shapes are genuinely incompatible under strict null checks
-- [Phase ?]: 21-03: fixed Plan 21-02's InstanciaRotinaRow missing tipoPrazo (was substituting status in its place for agendaPorDia's rotina items) -- Rule 1 bug caught before commit
-- [Phase ?]: 22-01: 'projeto em andamento' = has >=1 etapa, no projeto.status read/compared, mirroring REQUIREMENTS.md 5.3's ticket-queue precedent
-- [Phase ?]: 22-01: DASHBOARD_QUERY's projetos.etapas.tarefas branch omits subtarefas (only the flat tarefas branch fetches it), so tarefaConcluida() on a nested strip card always evaluates false -- documented, not patched, since this plan's own fixtures never expose it and Plan 22-02 makes an identical decision for template.nome
-- [Phase ?]: 22-01: verified InstantDB preserves creation order for linked rows with no explicit sort; e2e fixture creates the vencida tarefa first so it lands inside ProjectStrips.svelte's first-3 visible slice rather than the +1 overflow row
-- [Phase ?]: 22-02: RoutinesByFundo/MonthHeatmap -- template.nome surfaced via a Dashboard.svelte-local dadosNormalizados addition only; derive.ts/dashboardQuery.ts stay byte-for-byte unchanged
-- [Phase ?]: 22-02: spec-ui.md section 6 token correction -- text-background used for heatmap band 4 instead of the nonexistent --destructive-foreground token, confirmed against app.css
-- [Phase ?]: 22-02: agrupar: fundo renders as a real one-item Select.Root (deliberate no-op) since fundo grouping already arrives pre-computed via rotinasPorFundo and no other grouping key exists this phase
-- [Phase ?]: 23-02: rotinasDoFundo added to derive.ts as week-unbounded fundo filter, InstanciaAgendaLike stays un-exported (rotinasPorFundo precedent); TDD RED/GREEN via git stash push/pop (non-worktree session)
-- [Phase ?]: 23-01: Built shared FocusDialog.svelte chrome wrapper (S/M/L widths, breadcrumb, busy-aware close, editar/ver-pagina/fechar footer); every one of the phase's 7 dialogs wraps it unmodified
-- [Phase ?]: 23-01: Dashboard.svelte's dialogStack is local $state (spec §0.9 no global store), DialogKind union pre-declares all 7 kinds so later plans only add a render branch, never touch openDialog/popToFirst/closeAllDialogs
-- [Phase ?]: 23-03: TaskDialog.svelte (S)/EtapaDialog.svelte (M) built self-contained, reusing 23-01's FocusDialog wrapper; ProjetosSection.svelte's etapa-kanban-column/etapa-kanban-card converted from plain <div>s into real <button>s (closing the codebase's one genuine pre-existing DLG-02 violation), plus additive list-view wiring (etapa-row-abrir sibling of Accordion.Item, etapa-tarefa-row-abrir sibling of the subtarefas chip) — zero regression to all 17 pre-existing projetos-section.spec.ts tests
-- [Phase ?]: 23-03: etapa-kanban-card is a real <button> nested inside etapa-kanban-column's own <button> (per the plan's literal instruction + its own e2e test requiring tagName===button for both) — valid only because this app is a client-only Vite SPA with no SSR HTML-string parse of this markup; logged to WINDOWS.md entry #14, revisit if SSR is ever adopted
-- [Phase ?]: 23-04: DayDialog.svelte omits editar/ver-pagina entirely (footerExtra carries only ir-para-semana), zero FocusDialog change; RotinaDialog's status-only editar inherited for free from EntityScreen's existing editableFields() narrowing
-- [Phase ?]: 23-04: WeekCalendar/MonthHeatmap fully wired (day-header, 3-way item dispatch, weekend popover restructured with per-day dash-weekend-day-header, heatmap-cell); rotina-UUID-as-titulo display bug fixed at its source via WeekCalendar's labelFor() and mirrored in DayDialog
-- [Phase ?]: 23-05: FundoDialog.svelte (M) is the one dialog that calls derive.ts's rotinasDoFundo directly (week-unbounded); Dashboard.svelte's dialogStack now covers 5/7 kinds; RoutinesByFundo.svelte/ProjectStrips.svelte's fundo-targeting buttons null-guarded (belt at openFundoDialog + suspenders at each call site); derive.ts's InstanciaAgendaLike.template widened with optional nome (Rule 1/2)
-- [Phase ?]: 23-06: ProjectDialog.svelte (L) is the second depth-2 launch point (with Dia) -- unbounded etapa/tarefa kanban, per-column '+ tarefa' via a third independent hidden EntityScreen host; dashboardQuery.ts's subtarefas fix proven live on both the new dialog and pre-existing ProjectStrips.svelte; Dashboard.svelte's dialog-stack chain now covers all 7 kinds
-- [Phase ?]: 23-07: Consolidated completeness sweep (16/16 DLG-02 targets proven real+keyboard-accessible), depth-cap-2 proven live for both launch points, live re-verification confirms 23-03's nested-button no-SSR reasoning holds; closed bun run lint debt accumulated across Plans 23-01/23-03/23-06; 3 full Playwright suite runs green (150/150 on the clean run), all flakes confirmed unrelated/pre-existing
+- v1.4 requirements (PKG-01..05, AUTH-01..05) originated from a live-code discussion, not a research phase: `find_repo_root()`-based lookups in `bizdays.py`/`config.py` break outside the monorepo checkout, and `apollo auth login` unnecessarily depends on `INSTANT_APP_ADMIN_TOKEN` because the `instantdb` Python Admin SDK only wraps the `/admin/*` magic-code endpoints, not the public `/runtime/auth/*` ones the JS SDK already uses.
+- v1.4 roadmap derivation: 10 requirements grouped into 2 phases (24-25) along the natural PKG/AUTH category boundary — no further split, per this milestone's explicit small/surgical scope (`cli/`-only, 3 related fixes). Phase 24 (packaging: vendored calendar + embedded default `app_id` + real `uv build`/`uv tool install` proof) sequenced before Phase 25 (auth: public `/runtime/auth/*` login) because AUTH-04 explicitly requires `apollo doctor`/`admin_token_present` to reflect PKG-03/PKG-04's new `app_id` resolution order — Phase 25 cannot be verified as "unaltered beyond what PKG-03/04 required" until Phase 24 lands.
+- v1.4 explicit non-goal, reaffirmed in REQUIREMENTS.md Context: `admin_token_present`/`apollo doctor` are kept exactly as-is (dev/ops support only), not removed even though the real login path no longer needs an admin token after this milestone.
+- v1.4 verification approach unchanged from v1.0-v1.3: no human UAT — every phase proven via real `uv build`/`uv tool install` runs in an isolated environment, real `pytest`/`ruff`/`ty` runs, and (for AUTH-01) a real magic-code email round trip against the live InstantDB app.
 
 ### Pending Todos
 
@@ -147,13 +70,15 @@ None yet.
 
 ### Blockers/Concerns
 
-None — v1.3 roadmap coverage is 21/21 requirements mapped with no orphans.
+None — v1.4 roadmap coverage is 10/10 requirements mapped with no orphans.
 
-**v1.2 milestone non-blocking tech debt** (carried forward, not addressed in v1.3 unless it intersects — see PROJECT.md Context for full detail):
+**v1.2 milestone non-blocking tech debt** (carried forward, not addressed in v1.3 or v1.4 unless it intersects — see PROJECT.md Context for full detail):
 
 - No type-level invariant enforces that any entity with `capabilities.delete: true` also has `capabilities.create: true` (all 9 current entities satisfy it; not a live bug).
 - A hung `db.transact` during delete leaves the AlertDialog permanently undismissable (no timeout/abort path).
-- Shell's nav uses `flex-wrap` with no explicit single-row assertion at desktop width (functionally fine today, minor coverage gap) — worth re-checking once the topbar drops from 9 items to 6 in Phase 18, since fewer items only makes wrapping less likely, not impossible.
+- `WINDOWS.md` carries ~9 stale ledger entries from the v1.3 Phase 18 era still marked "open" for files that now demonstrably pass (bookkeeping gap, not a code defect).
+- `ProjetosSection.svelte`'s `etapa-kanban-column`/`etapa-kanban-card` are literal nested `<button>` elements — fine in this SSR-free Vite SPA, would need revisiting if SSR is ever adopted (WINDOWS.md #14).
+- A Fundo detail read-only block (rotinas/projetos/tickets vinculados, spec-ui.md §2.5) outside the Dashboard's own Fundo dialog remains unbuilt — low priority, the dialog already covers the same content.
 
 ## Deferred Items
 
@@ -161,20 +86,22 @@ Items acknowledged and carried forward from previous milestone close:
 
 | Category | Item | Status | Deferred At |
 |----------|------|--------|-------------|
-| UI | 5-panel dashboard (Hoje/calendários/Projetos/Backlog, `.eml` drag-and-drop) — superseded by v1.3's own Dashboard design (different shape: week calendar + tickets + rotinas + heatmap + mini-kanbans + dialogs, no `.eml` drag-and-drop) | Superseded by v1.3 scope | v1.0 close |
+| UI | 5-panel dashboard (Hoje/calendários/Projetos/Backlog, `.eml` drag-and-drop) — superseded by v1.3's own Dashboard design | Superseded by v1.3 scope | v1.0 close |
 | Rules | Automatic soft-deadline reallocation, chained delay propagation | Deferred v2 rules | v1.0 close |
 | UI | Occasional live-email-timing test flake (magic-code round trip) | Deferred — non-blocking, pre-existing | v1.1 close |
 | Nav | Router/URL/deep link for Dashboard and sections | Deferred — explicit v1.3 out-of-scope (spec §10) | v1.3 kickoff |
 | UI | Drag-and-drop on the Projetos kanban | Deferred — explicit v1.3 out-of-scope (spec §10) | v1.3 kickoff |
 | UI | Inline status edit outside the Rotina dialog (nº 7) | Deferred — explicit v1.3 out-of-scope (spec §10) | v1.3 kickoff |
-| UI | Fundo detail read-only block (rotinas/projetos/tickets vinculados) outside the Dashboard's Fundo dialog | Deferred — Fundo dialog (nº 5) already covers this in v1.3; the standalone Fundos-page block stays deferred | v1.3 kickoff |
+| UI | Fundo detail read-only block (rotinas/projetos/tickets vinculados) outside the Dashboard's Fundo dialog | Deferred — Fundo dialog (nº 5) already covers this in v1.3; standalone Fundos-page block stays deferred | v1.3 kickoff |
+| Config | New config storage mechanism (e.g. `~/.config/apollo-cli/config.toml`) for multiple simultaneous InstantDB apps | Deferred — no real use case today (single-user, single-app) | v1.4 kickoff |
+| Release | Real PyPI publication / automated release CI | Deferred — out of scope for v1.4, which resolves only local `uv tool install` installability | v1.4 kickoff |
 
 ## Session Continuity
 
-Last session: 2026-08-12T07:38:31.974Z
-Stopped at: Completed 23-07-PLAN.md -- Phase 23 (final functional phase of v1.3) complete
+Last session: 2026-08-12T19:05:00.000Z
+Stopped at: ROADMAP.md created for v1.4 (Phases 24-25, 10/10 requirements mapped), REQUIREMENTS.md traceability updated
 Resume file: None
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- Plan Phase 24 with `/gsd-plan-phase 24`
