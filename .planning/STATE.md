@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Navegação reorganizada + Dashboard de acompanhamento
-current_phase: 22
-current_phase_name: Dashboard Kanbans, Rotinas & Heatmap
+current_phase: 23
+current_phase_name: Focus Dialog System
 status: planning
 stopped_at: Completed 22-02-PLAN.md — RoutinesByFundo.svelte + MonthHeatmap.svelte, Phase 22 complete
-last_updated: "2026-08-12T03:47:32.537Z"
+last_updated: "2026-08-12T04:05:11.092Z"
 last_activity: 2026-08-12
 last_activity_desc: 22-01-PLAN.md executed (ProjectStrips.svelte, measured overflow indicator, localStorage collapse, live e2e proof)
 progress:
@@ -28,10 +28,10 @@ See: .planning/PROJECT.md (updated 2026-08-10)
 
 ## Current Position
 
-Phase: 22 of 23 (Dashboard Kanbans, Rotinas & Heatmap)
-Plan: 2 of 2
-Status: Plan 22-01 complete
-Last activity: 2026-08-12 — 22-01-PLAN.md executed (ProjectStrips.svelte, measured overflow indicator, localStorage collapse, live e2e proof)
+Phase: 23 of 23 (Focus Dialog System)
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-08-12 — Phase 22 complete, transitioned to Phase 23
 
 Progress: [██████████] 100%
 
@@ -39,7 +39,7 @@ Progress: [██████████] 100%
 
 **Velocity:**
 
-- Total plans completed: 12 (v1.3, in progress; 41 lifetime across v1.0+v1.1+v1.2+v1.3)
+- Total plans completed: 10 (v1.3, in progress; 41 lifetime across v1.0+v1.1+v1.2+v1.3)
 - Average duration: ~49min (v1.3 plans so far: 40, 95, 75, 25, 22, 35 min)
 - Total execution time: ~4.9 hours (v1.3)
 
@@ -47,8 +47,8 @@ Progress: [██████████] 100%
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 20 | 5 | - | - |
 | 21 | 3 | - | - |
+| 22 | 2 | - | - |
 
 **Recent Trend:**
 

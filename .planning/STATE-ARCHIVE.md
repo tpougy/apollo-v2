@@ -132,3 +132,9 @@ Pruned entries from STATE.md. Recoverable but no longer loaded into agent contex
 ### Performance Metrics
 
 | 19 | 4 | - | - |
+
+## Pruned 2026-08-12 (phases 1-20, kept recent 3)
+
+### Performance Metrics
+
+| 20 | 5 | - | - |
