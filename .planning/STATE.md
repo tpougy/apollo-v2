@@ -5,10 +5,10 @@ milestone_name: Navegação reorganizada + Dashboard de acompanhamento
 current_phase: 23
 current_phase_name: Focus Dialog System
 status: planning
-stopped_at: Completed 23-01-PLAN.md
-last_updated: "2026-08-12T05:01:14.736Z"
+stopped_at: Completed 23-03-PLAN.md
+last_updated: "2026-08-12T05:25:00.000Z"
 last_activity: 2026-08-12
-last_activity_desc: 23-01-PLAN.md executed (FocusDialog.svelte, TicketDialog.svelte, Dashboard.svelte dialogStack mechanism, TicketQueue.svelte wiring, 7-test e2e proof)
+last_activity_desc: 23-03-PLAN.md executed (TaskDialog.svelte, EtapaDialog.svelte, ProjetosSection.svelte kanban+list-view wiring, 6-test e2e proof)
 progress:
   total_phases: 6
   completed_phases: 5
@@ -29,9 +29,9 @@ See: .planning/PROJECT.md (updated 2026-08-10)
 ## Current Position
 
 Phase: 23 of 23 (Focus Dialog System)
-Plan: 23-01 and 23-02 complete (2/7 plans done this phase so far)
+Plan: 23-01, 23-02, 23-03 complete (3/7 plans done this phase so far)
 Status: In progress
-Last activity: 2026-08-12 — 23-01-PLAN.md executed (FocusDialog chrome wrapper + TicketDialog + Dashboard.svelte dialogStack mechanism, e2e-proven)
+Last activity: 2026-08-12 — 23-03-PLAN.md executed (TaskDialog.svelte + EtapaDialog.svelte + ProjetosSection.svelte kanban/list-view wiring, e2e-proven)
 
 Progress: [████████░░] 79%
 
@@ -79,6 +79,7 @@ Progress: [████████░░] 79%
 | Phase 22 P02 | 42min | 2 tasks | 4 files |
 | Phase 23 P02 | 8min | 1 tasks | 2 files |
 | Phase 23-focus-dialog-system P01 | 45min | 2 tasks | 5 files |
+| Phase 23-focus-dialog-system P03 | 35min | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -133,6 +134,8 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase ?]: 23-02: rotinasDoFundo added to derive.ts as week-unbounded fundo filter, InstanciaAgendaLike stays un-exported (rotinasPorFundo precedent); TDD RED/GREEN via git stash push/pop (non-worktree session)
 - [Phase ?]: 23-01: Built shared FocusDialog.svelte chrome wrapper (S/M/L widths, breadcrumb, busy-aware close, editar/ver-pagina/fechar footer); every one of the phase's 7 dialogs wraps it unmodified
 - [Phase ?]: 23-01: Dashboard.svelte's dialogStack is local $state (spec §0.9 no global store), DialogKind union pre-declares all 7 kinds so later plans only add a render branch, never touch openDialog/popToFirst/closeAllDialogs
+- [Phase ?]: 23-03: TaskDialog.svelte (S)/EtapaDialog.svelte (M) built self-contained, reusing 23-01's FocusDialog wrapper; ProjetosSection.svelte's etapa-kanban-column/etapa-kanban-card converted from plain <div>s into real <button>s (closing the codebase's one genuine pre-existing DLG-02 violation), plus additive list-view wiring (etapa-row-abrir sibling of Accordion.Item, etapa-tarefa-row-abrir sibling of the subtarefas chip) — zero regression to all 17 pre-existing projetos-section.spec.ts tests
+- [Phase ?]: 23-03: etapa-kanban-card is a real <button> nested inside etapa-kanban-column's own <button> (per the plan's literal instruction + its own e2e test requiring tagName===button for both) — valid only because this app is a client-only Vite SPA with no SSR HTML-string parse of this markup; logged to WINDOWS.md entry #14, revisit if SSR is ever adopted
 
 ### Pending Todos
 
@@ -164,8 +167,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-12T05:01:14.723Z
-Stopped at: Completed 23-01-PLAN.md
+Last session: 2026-08-12T05:25:00.000Z
+Stopped at: Completed 23-03-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

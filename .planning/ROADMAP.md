@@ -217,13 +217,13 @@ form without duplicating any markup, and never get lost more than one level deep
   3. From any dialog, opening a related item never creates a third navigation level (e.g. projeto → tarefa is allowed; nothing opens a third level from there) (DLG-03; spec §10 Dashboard #8).
   4. Esc, click-outside, and the × control close every dialog except while a write is in progress (matching `EntityScreen`'s `escapeKeydownBehavior` pattern), and any destructive action still surfaces its own `AlertDialog` on top (DLG-03).
 
-**Plans**: 1/7 plans executed
+**Plans**: 3/7 plans executed
 
 Plans:
 
 - [x] 23-01-PLAN.md — FocusDialog chrome + TicketDialog + dialogStack skeleton + TicketQueue wiring (tracer) (DLG-01, DLG-02, DLG-03)
 - [x] 23-02-PLAN.md — derive.ts rotinasDoFundo pure export + unit tests (DLG-01)
-- [ ] 23-03-PLAN.md — TaskDialog + EtapaDialog + ProjetosSection kanban/list-view wiring (DLG-01, DLG-02, DLG-03)
+- [x] 23-03-PLAN.md — TaskDialog + EtapaDialog + ProjetosSection kanban/list-view wiring (DLG-01, DLG-02, DLG-03)
 - [ ] 23-04-PLAN.md — DayDialog + RotinaDialog + full WeekCalendar/MonthHeatmap wiring + rotina-label bugfix (DLG-01, DLG-02, DLG-03)
 - [ ] 23-05-PLAN.md — FundoDialog + RoutinesByFundo/ProjectStrips fundo wiring (DLG-01, DLG-02)
 - [ ] 23-06-PLAN.md — ProjectDialog (depth-2) + remaining ProjectStrips wiring + dashboardQuery.ts completeness fix (DLG-01, DLG-02, DLG-03)
@@ -257,4 +257,4 @@ Plans:
 | 20. Rotinas & Tickets Sections | v1.3 | 5/5 | Complete    | 2026-08-11 |
 | 21. Dashboard Data Layer, Shell, Week Calendar & Ticket Queue | v1.3 | 3/3 | Complete    | 2026-08-11 |
 | 22. Dashboard Kanbans, Rotinas & Heatmap | v1.3 | 2/2 | Complete    | 2026-08-12 |
-| 23. Focus Dialog System | v1.3 | 1/7 | In Progress|  |
+| 23. Focus Dialog System | v1.3 | 3/7 | In Progress|  |

@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 10
+open_count: 11
 waived_count: 0
 fixed_count: 3
-total_count: 13
-last_updated: 2026-08-11T20:46:42.335Z
+total_count: 14
+last_updated: 2026-08-12T05:19:40.923Z
 ---
 
 # Broken Windows Ledger
@@ -28,6 +28,7 @@ last_updated: 2026-08-11T20:46:42.335Z
 | 11 | 18 | deviation | web/e2e/entities-ticket-subtarefa.spec.ts |  | References dead nav-etapas/nav-templatesRotina/nav-subtarefas/nav-tarefas testids (removed by 18-01's NAV-02 topbar restructuring) and/or hardcoded 9-entity counts; requires 18-03's NAV-05 gotoNested e2e migration before this file passes again -- expected transient state within this phase's multi-plan sequence, empirically confirmed via 18-02's A/B verification run, not a regression introduced by 18-02's EntityScreen.svelte diff. | open |  | 2026-08-11T16:49:58.951Z |  |
 | 12 | 18 | deviation | web/e2e/shell-chrome.spec.ts |  | References dead nav-etapas/nav-templatesRotina/nav-subtarefas/nav-tarefas testids (removed by 18-01's NAV-02 topbar restructuring) and/or hardcoded 9-entity counts; requires 18-03's NAV-05 gotoNested e2e migration before this file passes again -- expected transient state within this phase's multi-plan sequence, empirically confirmed via 18-02's A/B verification run, not a regression introduced by 18-02's EntityScreen.svelte diff. | open |  | 2026-08-11T16:49:59.027Z |  |
 | 13 | 19 | deviation | web/src/lib/sections/ProjetosSection.svelte |  | Hidden-host dialog pattern (etapaHostEl/tarefaHostEl/projetoHostEl) mounts EntityScreen's formError <Alert> (entity-error testid) inside the same class="hidden" wrapper as the rest of the instance -- only the Dialog itself escapes via bits-ui's Portal, so entity-error never becomes visible when a create/edit fails through a hidden host. The sonner error toast (toast.error) still fires and is the only user-visible error signal for this flow. Discovered in 19-04's T-04-04 rewrite; not fixed (no production code touched by that plan). Consider surfacing formError inside the Dialog itself in a future phase. | open |  | 2026-08-11T20:46:42.335Z |  |
+| 14 | 23 | deviation | web/src/lib/sections/ProjetosSection.svelte |  | etapa-kanban-card is a real <button> nested inside etapa-kanban-column's own <button> (per 23-03-PLAN.md's literal Task 2 text and Task 3 test (a), which both require tagName===button for both elements). Valid only because this app is a client-only Vite SPA with an empty index.html shell (no SSR/HTML-string parse of this markup) -- svelte-check flags an expected SSR-hydration warning at this exact line. Revisit if SSR is ever adopted. | open |  | 2026-08-12T05:19:40.923Z |  |
 
 ````json
 [
@@ -185,6 +186,18 @@ last_updated: 2026-08-11T20:46:42.335Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-08-11T20:46:42.335Z",
+    "resolved_at": null
+  },
+  {
+    "id": 14,
+    "kind": "deviation",
+    "phase": "23",
+    "file": "web/src/lib/sections/ProjetosSection.svelte",
+    "line": null,
+    "description": "etapa-kanban-card is a real <button> nested inside etapa-kanban-column's own <button> (per 23-03-PLAN.md's literal Task 2 text and Task 3 test (a), which both require tagName===button for both elements). Valid only because this app is a client-only Vite SPA with an empty index.html shell (no SSR/HTML-string parse of this markup) -- svelte-check flags an expected SSR-hydration warning at this exact line. Revisit if SSR is ever adopted.",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-12T05:19:40.923Z",
     "resolved_at": null
   }
 ]
