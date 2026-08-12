@@ -63,8 +63,8 @@ uma única função pura, reusada por calendário/kanban/rotinas/heatmap.
 ### DLG — Sistema de dialogs
 
 - [x] **DLG-01**: 7 dialogs de foco (Ticket, Dia, Tarefa, Projeto, Fundo, Etapa, Rotina), três larguras só (S/M/L), todos com título, linha de contexto, corpo em leitura, rodapé "editar" + "ver na página completa →" + fechar; "editar" abre o form do `EntityScreen` correspondente sem duplicar formulário.
-- [ ] **DLG-02**: Todo elemento clicável do Dashboard (card, header de dia, chip fim de semana, célula de heatmap, linha de rotina, badge de fundo, cabeçalho de coluna de kanban, card de tarefa) é um `<button>` real, acessível por teclado (`focus-visible`, Enter/Espaço), e abre o dialog correto listado na tabela da spec §4; alvos aninhados usam `stopPropagation`.
-- [ ] **DLG-03**: Profundidade máxima de navegação entre dialogs é 2 (ex.: projeto → tarefa, nunca um terceiro nível); Esc/clique-fora/× fecham exceto com escrita em andamento (`escapeKeydownBehavior` igual ao padrão do `EntityScreen`); ação destrutiva continua em `AlertDialog` por cima.
+- [x] **DLG-02**: Todo elemento clicável do Dashboard (card, header de dia, chip fim de semana, célula de heatmap, linha de rotina, badge de fundo, cabeçalho de coluna de kanban, card de tarefa) é um `<button>` real, acessível por teclado (`focus-visible`, Enter/Espaço), e abre o dialog correto listado na tabela da spec §4; alvos aninhados usam `stopPropagation`.
+- [x] **DLG-03**: Profundidade máxima de navegação entre dialogs é 2 (ex.: projeto → tarefa, nunca um terceiro nível); Esc/clique-fora/× fecham exceto com escrita em andamento (`escapeKeydownBehavior` igual ao padrão do `EntityScreen`); ação destrutiva continua em `AlertDialog` por cima.
 
 ## Traceability
 
@@ -89,8 +89,8 @@ uma única função pura, reusada por calendário/kanban/rotinas/heatmap.
 | DASH-05 | Phase 22: Dashboard Kanbans, Rotinas & Heatmap | Complete |
 | DASH-04 | Phase 22: Dashboard Kanbans, Rotinas & Heatmap | Complete |
 | DLG-01 | Phase 23: Focus Dialog System | Complete |
-| DLG-02 | Phase 23: Focus Dialog System | Pending |
-| DLG-03 | Phase 23: Focus Dialog System | Pending |
+| DLG-02 | Phase 23: Focus Dialog System | Complete |
+| DLG-03 | Phase 23: Focus Dialog System | Complete |
 
 **Coverage: 21/21 v1 requirements mapped. No orphans, no duplicates.**
 

@@ -221,7 +221,7 @@ form without duplicating any markup, and never get lost more than one level deep
 
 Plans:
 
-- [ ] 23-01-PLAN.md — FocusDialog chrome + TicketDialog + dialogStack skeleton + TicketQueue wiring (tracer) (DLG-01, DLG-02, DLG-03)
+- [x] 23-01-PLAN.md — FocusDialog chrome + TicketDialog + dialogStack skeleton + TicketQueue wiring (tracer) (DLG-01, DLG-02, DLG-03)
 - [x] 23-02-PLAN.md — derive.ts rotinasDoFundo pure export + unit tests (DLG-01)
 - [ ] 23-03-PLAN.md — TaskDialog + EtapaDialog + ProjetosSection kanban/list-view wiring (DLG-01, DLG-02, DLG-03)
 - [ ] 23-04-PLAN.md — DayDialog + RotinaDialog + full WeekCalendar/MonthHeatmap wiring + rotina-label bugfix (DLG-01, DLG-02, DLG-03)
