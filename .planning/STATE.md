@@ -4,17 +4,17 @@ milestone: v1.4
 milestone_name: CLI instalável via uv tool, login sem admin token
 current_phase: 24
 current_phase_name: Packaging & Installability
-status: in_progress
-stopped_at: Completed 24-01-PLAN.md
-last_updated: "2026-08-12T19:42:06.316Z"
+status: complete
+stopped_at: Completed 24-02-PLAN.md -- Phase 24 (Packaging & Installability) complete
+last_updated: "2026-08-12T19:52:00.000Z"
 last_activity: 2026-08-12
-last_activity_desc: "Completed 24-01-PLAN.md: vendored ANBIMA calendar + embedded default app_id, live-verified outside the repo"
+last_activity_desc: "Completed 24-02-PLAN.md: permanent test_packaging_live.py regression gate (PKG-05), admin-token confinement gates confirmed unchanged, full quality gate green, real uv tool install/uninstall acceptance round trip captured verbatim"
 progress:
   total_phases: 2
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
-  percent: 50
+  completed_plans: 2
+  percent: 100
 ---
 
 # Project State
@@ -24,36 +24,36 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-12)
 
 **Core value:** The user can execute every piece of controladoria data-entry work from either the Svelte SPA or the Python CLI, both authenticated as the same real user under the same InstantDB permission rules. Validated in v1.0. v1.1 made the SPA visually coherent on shadcn-svelte defaults; v1.2 refined composition/spacing/hierarchy on the same four screens; v1.3 reorganized navigation into a 6-section topbar and shipped the Dashboard landing screen; v1.4 makes the CLI itself installable outside the monorepo and drops its login flow's admin-token dependency — `cli/`-only, no schema/perms/web change.
-**Current focus:** v1.4 Phase 24 in progress — Plan 24-01 complete (calendar vendoring + embedded default app_id, live-verified). Plan 24-02 (packaging live-test suite + real `uv tool install` acceptance round trip) remains.
+**Current focus:** v1.4 Phase 24 (Packaging & Installability) complete — PKG-01 through PKG-05 all live-verified. Phase 25 (Public Auth Login) is next.
 
 ## Current Position
 
-Phase: 24 of 25 (Packaging & Installability)
-Plan: 24-01 complete (1/2 plans done this phase so far)
-Status: In progress
-Last activity: 2026-08-12 — Completed 24-01-PLAN.md (vendored ANBIMA calendar + embedded default app_id, live-verified outside the repo)
+Phase: 24 of 25 (Packaging & Installability) — COMPLETE
+Plan: 24-01, 24-02 complete (2/2 plans done this phase)
+Status: Phase complete — Phase 25 (Public Auth Login) is next
+Last activity: 2026-08-12 — Completed 24-02-PLAN.md (permanent packaging regression test, admin-token gates confirmed unchanged, full quality gate green, real `uv tool install`/`uninstall` acceptance round trip captured verbatim)
 
-Progress: [█████░░░░░] 50%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 0 (v1.4, just started; 41 lifetime across v1.0+v1.1+v1.2+v1.3)
-- Average duration: — (no v1.4 plans yet; historical average ~40min/plan across prior milestones)
-- Total execution time: 0 hours (v1.4)
+- Total plans completed: 2 (v1.4, Phase 24 fully done; 43 lifetime across v1.0+v1.1+v1.2+v1.3+v1.4)
+- Average duration: ~27min (v1.4 plans so far: 25, ~30 min)
+- Total execution time: ~55 min (v1.4)
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 24 | - | - | - |
+| 24 | 2 | ~55min | ~27min |
 | 25 | - | - | - |
 
 **Recent Trend:**
 
-- Last 5 plans: (v1.3 closing plans) 23-05 (35min), 23-06 (40min), 23-07 (65min) — no v1.4 plans executed yet
-- Trend: N/A — v1.4 has not started execution
+- Last 5 plans: (v1.3 closing plans + v1.4 start) 23-06 (40min), 23-07 (65min), 24-01 (25min), 24-02 (~30min)
+- Trend: Stable — packaging-focused plans (24-01, 24-02) running faster than the v1.3 UI-wiring average
 
 *Updated after each plan completion*
 **Per-Plan Metrics:**
@@ -61,6 +61,7 @@ Progress: [█████░░░░░] 50%
 | Plan | Duration | Tasks | Files |
 |------|----------|-------|-------|
 | Phase 24 P01 | 25min | 2 tasks | 7 files |
+| Phase 24 P02 | ~30min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -74,6 +75,8 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - v1.4 verification approach unchanged from v1.0-v1.3: no human UAT — every phase proven via real `uv build`/`uv tool install` runs in an isolated environment, real `pytest`/`ruff`/`ty` runs, and (for AUTH-01) a real magic-code email round trip against the live InstantDB app.
 - [Phase 24, Plan 01]: Reconfirmed the embedded `_DEFAULT_APP_ID` value live by rebuilding `web/` fresh and re-extracting from the bundle, rather than trusting RESEARCH.md's `[ASSUMED]` tag blindly.
 - [Phase 24, Plan 01]: Ran a live RED reproduction of the pre-fix `find_repo_root()` crash (real `uv build`/`venv`/install from outside the repo) before implementing, then reran the identical round trip post-fix for GREEN.
+- [Phase 24, Plan 02]: Isolated `APOLLO_SESSION_FILE` (nonexistent path) for every `fundo listar` invocation in both the new `test_packaging_live.py` and the manual acceptance round trip — this dev machine's real persisted session would otherwise mask the `no_session`/exit-1 contract being proven.
+- [Phase 24, Plan 02]: Phase 24 (Packaging & Installability) is now fully complete — PKG-01 through PKG-05 all live-verified; `test_packaging_live.py` is the permanent standing regression gate for PKG-05, and the real `uv tool install --force`/`uv tool uninstall apollo-cli` round trip was executed once, live, with output captured verbatim in `24-02-SUMMARY.md`.
 
 ### Pending Todos
 
@@ -109,10 +112,10 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-12T19:41:38.210Z
-Stopped at: Completed 24-01-PLAN.md
+Last session: 2026-08-12T19:52:00.000Z
+Stopped at: Completed 24-02-PLAN.md -- Phase 24 (Packaging & Installability) complete
 Resume file: None
 
 ## Operator Next Steps
 
-- Execute Plan 24-02 (`.planning/phases/24-packaging-installability/24-02-PLAN.md`) — the packaging live-test suite (`test_packaging_live.py`), `packaging` pytest marker registration, full-suite acceptance round trip, and `cli/README.md` update.
+- Phase 24 (Packaging & Installability) is complete — all 5 requirements (PKG-01..05) live-verified. Next: run `/gsd-plan-phase 25` to plan Phase 25 (Public Auth Login), the final phase of v1.4.
