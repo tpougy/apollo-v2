@@ -11,11 +11,11 @@
   import * as Select from "$lib/components/ui/select";
   import { Skeleton } from "$lib/components/ui/skeleton";
   import * as Tabs from "$lib/components/ui/tabs";
+  import { progressoEtapa, tarefaConcluida, vencido } from "../dashboard/derive";
   import { db } from "../db";
   import EntityScreen from "../entities/EntityScreen.svelte";
   import { configByEtype } from "../entities/registry";
   import type { EntityConfig } from "../entities/types";
-  import { progressoEtapa, tarefaConcluida, vencido } from "../dashboard/derive";
   import SubtarefasPanel from "./SubtarefasPanel.svelte";
 
   // Never import a defs/*.ts module directly here — always resolve through

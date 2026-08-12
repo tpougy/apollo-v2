@@ -294,7 +294,7 @@ export function agendaPorDia(
     const dia = tarefa.dataPrevista.slice(0, 10);
     if (!keySet.has(dia)) continue;
     const projetoId = tarefa.etapa?.projeto?.id ?? null;
-    const fundoId = projetoId ? fundoIdByProjetoId.get(projetoId) ?? null : null;
+    const fundoId = projetoId ? (fundoIdByProjetoId.get(projetoId) ?? null) : null;
     const concluido = tarefaConcluida(tarefa);
     pushItem(dia, {
       tipo: "tarefa",

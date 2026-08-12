@@ -279,9 +279,7 @@ describe("agendaPorDia", () => {
     };
 
     const result = agendaPorDia(dados, SEMANA, HOJE);
-    const byId = new Map(
-      [...result.values()].flat().map((i) => [i.id, i]),
-    );
+    const byId = new Map([...result.values()].flat().map((i) => [i.id, i]));
 
     expect(byId.get("t-overdue")?.vencido).toBe(true);
     expect(byId.get("t-overdue-but-done")?.vencido).toBe(false);
@@ -439,9 +437,19 @@ describe("agendaPorDia", () => {
 describe("rotinasPorFundo", () => {
   test("groups by template.fundo.id, fundoNome from template.fundo.nome, null-fundo group forced last regardless of alphabetical position", () => {
     const instancias = [
-      { id: "r1", dataPrevista: "2026-08-10", tipoPrazo: "soft", template: { fundo: { id: "fundo-z", nome: "Zulu" } } },
+      {
+        id: "r1",
+        dataPrevista: "2026-08-10",
+        tipoPrazo: "soft",
+        template: { fundo: { id: "fundo-z", nome: "Zulu" } },
+      },
       { id: "r2", dataPrevista: "2026-08-11", tipoPrazo: "soft", template: null },
-      { id: "r3", dataPrevista: "2026-08-12", tipoPrazo: "soft", template: { fundo: { id: "fundo-a", nome: "Alfa" } } },
+      {
+        id: "r3",
+        dataPrevista: "2026-08-12",
+        tipoPrazo: "soft",
+        template: { fundo: { id: "fundo-a", nome: "Alfa" } },
+      },
     ];
 
     const groups = rotinasPorFundo(instancias, SEMANA);
@@ -452,9 +460,24 @@ describe("rotinasPorFundo", () => {
 
   test("within a group, instancias sort by dataPrevista ascending then id", () => {
     const instancias = [
-      { id: "r-b", dataPrevista: "2026-08-12", tipoPrazo: "soft", template: { fundo: { id: "fundo-a", nome: "Alfa" } } },
-      { id: "r-a-later-id", dataPrevista: "2026-08-10", tipoPrazo: "soft", template: { fundo: { id: "fundo-a", nome: "Alfa" } } },
-      { id: "r-a-earlier-id", dataPrevista: "2026-08-10", tipoPrazo: "soft", template: { fundo: { id: "fundo-a", nome: "Alfa" } } },
+      {
+        id: "r-b",
+        dataPrevista: "2026-08-12",
+        tipoPrazo: "soft",
+        template: { fundo: { id: "fundo-a", nome: "Alfa" } },
+      },
+      {
+        id: "r-a-later-id",
+        dataPrevista: "2026-08-10",
+        tipoPrazo: "soft",
+        template: { fundo: { id: "fundo-a", nome: "Alfa" } },
+      },
+      {
+        id: "r-a-earlier-id",
+        dataPrevista: "2026-08-10",
+        tipoPrazo: "soft",
+        template: { fundo: { id: "fundo-a", nome: "Alfa" } },
+      },
     ];
 
     const groups = rotinasPorFundo(instancias, SEMANA);
