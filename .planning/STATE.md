@@ -5,15 +5,15 @@ milestone_name: Navegação reorganizada + Dashboard de acompanhamento
 current_phase: 21
 current_phase_name: Dashboard Data Layer, Shell, Week Calendar & Ticket Queue
 status: planning
-stopped_at: Completed 21-02-PLAN.md (wave 1, parallel with 21-01)
-last_updated: "2026-08-12T01:02:59.799Z"
+stopped_at: Completed 21-01-PLAN.md
+last_updated: "2026-08-12T01:13:50.591Z"
 last_activity: 2026-08-11
 last_activity_desc: 20-01-PLAN.md executed - SubtarefasPanel.svelte + TicketsSection.svelte with driven xor-parent create pre-resolution, live-verified against hosted InstantDB (NEST-05 complete)
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 15
-  completed_plans: 13
+  completed_plans: 14
   percent: 50
 ---
 
@@ -29,11 +29,11 @@ See: .planning/PROJECT.md (updated 2026-08-10)
 ## Current Position
 
 Phase: 21 of 23 (Dashboard Data Layer, Shell, Week Calendar & Ticket Queue)
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Plan 21-02 complete (wave 1, parallel with 21-01)
 Last activity: 2026-08-11 — 21-02-PLAN.md executed (dashboardQuery.ts, Dashboard.svelte grid shell, TicketQueue.svelte, live e2e proof)
 
-Progress: [█████████░] 87%
+Progress: [█████████░] 93%
 
 ## Performance Metrics
 
@@ -73,6 +73,7 @@ Progress: [█████████░] 87%
 | Phase 20 P04 | 40min | 2 tasks | 3 files |
 | Phase 20 P05 | 45min | 3 tasks | 5 files |
 | Phase 21 P02 | 35min | 2 tasks | 5 files |
+| Phase 21 P01 | 40min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -112,6 +113,9 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase ?]: [Phase 20 P05] Phase 20 phase-gate: full bun run test:e2e run twice, both green except two documented pre-existing/out-of-scope flakes (login-flow.spec.ts magic-code timing predating Phase 20 since Phase 10; entities-form-restyle.spec.ts's SubtarefasPanel pollFor timeout, a Plan 20-01 resource-contention timing issue) -- both reproduced passing in isolation.
 - [Phase ?]: dashboardQuery.ts takes db as a parameter instead of importing it, so DASHBOARD_QUERY stays importable standalone by the e2e Node/Playwright process (importing db.ts transitively pulls in @instantdb/svelte's .svelte component graph, which Playwright's Node-based TS transform cannot parse).
 - [Phase ?]: InstantDB's admin API returns has:"one" links as single-element arrays (not bare objects), unlike the client SDK's db.useQuery -- dashboard.spec.ts's DASH-07 proof normalizes this the same way routineJob.ts:622 already does.
+- [Phase ?]: derive.ts: migrated projetosDerive.ts verbatim, tarefaConcluida stays exported (ProjetosSection.svelte calls it directly)
+- [Phase ?]: semanaUtil uses plain UTC calendar-day arithmetic, never bizdays.ts's business-day steppers, so ANBIMA holidays inside the week never shift Friday
+- [Phase ?]: agendaPorDia adds explicit hoje: Date parameter (purity rule forbids internal clock read); rotina/ticket vencido hard-codes concluido=false
 
 ### Pending Todos
 
@@ -143,8 +147,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-12T01:02:59.788Z
-Stopped at: Completed 21-02-PLAN.md (wave 1, parallel with 21-01)
+Last session: 2026-08-12T01:13:50.578Z
+Stopped at: Completed 21-01-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
