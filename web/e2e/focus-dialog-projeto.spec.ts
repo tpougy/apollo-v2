@@ -239,7 +239,7 @@ test.describe("Phase 23 Plan 06: Projeto dialog (depth-2 launch point) + remaini
     sweepLeftovers();
   });
 
-  test("(a) project-strip-nome opens the Projeto dialog (L) with an unbounded kanban -- 5 cards, no cap, unlike the Dashboard strip's own 3-card+\"+2\" rendering for the same etapa visible simultaneously underneath", async ({
+  test('(a) project-strip-nome opens the Projeto dialog (L) with an unbounded kanban -- 5 cards, no cap, unlike the Dashboard strip\'s own 3-card+"+2" rendering for the same etapa visible simultaneously underneath', async ({
     page,
   }) => {
     test.setTimeout(60_000);
@@ -252,7 +252,9 @@ test.describe("Phase 23 Plan 06: Projeto dialog (depth-2 launch point) + remaini
 
     // The Dashboard strip itself caps at 3 cards + "+2 tarefas" for this
     // 5-tarefa etapa.
-    const stripColumn = strip.locator(`[data-testid="project-strip-column"][data-eid="${etapaId}"]`);
+    const stripColumn = strip.locator(
+      `[data-testid="project-strip-column"][data-eid="${etapaId}"]`,
+    );
     await expect(stripColumn.getByTestId("project-strip-card")).toHaveCount(3);
     await expect(stripColumn.getByTestId("project-strip-card-overflow")).toHaveText("+2 tarefas");
 
@@ -263,7 +265,9 @@ test.describe("Phase 23 Plan 06: Projeto dialog (depth-2 launch point) + remaini
     await expect(dialog).toHaveClass(/sm:max-w-\[90vw\]/);
     await expect(dialog).toContainText(projetoNome);
 
-    const dialogColumn = dialog.locator(`[data-testid="project-dialog-column"][data-eid="${etapaId}"]`);
+    const dialogColumn = dialog.locator(
+      `[data-testid="project-dialog-column"][data-eid="${etapaId}"]`,
+    );
     await expect(dialogColumn).toBeVisible();
     await expect(dialogColumn.getByTestId("project-dialog-card")).toHaveCount(5);
 
@@ -296,7 +300,9 @@ test.describe("Phase 23 Plan 06: Projeto dialog (depth-2 launch point) + remaini
     // ProjectStrips surface -- this benefits from the SAME one-line
     // dashboardQuery.ts widening, with zero edits to ProjectStrips.svelte's
     // own progressoEtapa call.
-    const stripColumn = strip.locator(`[data-testid="project-strip-column"][data-eid="${etapaId}"]`);
+    const stripColumn = strip.locator(
+      `[data-testid="project-strip-column"][data-eid="${etapaId}"]`,
+    );
     await expect(stripColumn.getByTestId("project-strip-column-header")).toContainText("1/5");
 
     await strip.getByTestId("project-strip-nome").click();
@@ -419,7 +425,9 @@ test.describe("Phase 23 Plan 06: Projeto dialog (depth-2 launch point) + remaini
     const projetoDialog = page.getByRole("dialog");
     await expect(projetoDialog).toBeVisible({ timeout: RESYNC_TIMEOUT });
 
-    const card = projetoDialog.locator(`[data-testid="project-dialog-card"][data-eid="${tarefaComSubId}"]`);
+    const card = projetoDialog.locator(
+      `[data-testid="project-dialog-card"][data-eid="${tarefaComSubId}"]`,
+    );
     await card.click();
 
     await expect(page.getByRole("dialog")).toHaveCount(1, { timeout: RESYNC_TIMEOUT });
@@ -461,7 +469,9 @@ test.describe("Phase 23 Plan 06: Projeto dialog (depth-2 launch point) + remaini
     await page.keyboard.press("Escape");
     await expect(page.getByRole("dialog")).toHaveCount(0, { timeout: RESYNC_TIMEOUT });
 
-    const stripColumn = strip.locator(`[data-testid="project-strip-column"][data-eid="${etapaId}"]`);
+    const stripColumn = strip.locator(
+      `[data-testid="project-strip-column"][data-eid="${etapaId}"]`,
+    );
     const columnHeader = stripColumn.getByTestId("project-strip-column-header");
     expect(await columnHeader.evaluate((el) => el.tagName)).toBe("BUTTON");
     await columnHeader.click();

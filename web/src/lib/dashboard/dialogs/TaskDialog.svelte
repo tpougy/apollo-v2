@@ -1,10 +1,10 @@
 <script lang="ts">
   import { tick } from "svelte";
   import { Checkbox } from "$lib/components/ui/checkbox";
-  import { tarefaConcluida, vencido } from "../derive";
   import EntityScreen from "../../entities/EntityScreen.svelte";
   import { configByEtype } from "../../entities/registry";
   import type { EntityConfig } from "../../entities/types";
+  import { tarefaConcluida, vencido } from "../derive";
   import FocusDialog from "./FocusDialog.svelte";
 
   // Never import defs/tarefas.ts directly here -- always resolve through the

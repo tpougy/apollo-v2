@@ -1,10 +1,10 @@
 <script lang="ts">
   import { tick } from "svelte";
   import { Button } from "$lib/components/ui/button";
-  import { progressoEtapa, tarefaConcluida, vencido } from "../derive";
   import EntityScreen from "../../entities/EntityScreen.svelte";
   import { configByEtype } from "../../entities/registry";
   import type { EntityConfig } from "../../entities/types";
+  import { progressoEtapa, tarefaConcluida, vencido } from "../derive";
   import FocusDialog from "./FocusDialog.svelte";
 
   // Never import defs/projetos.ts or defs/tarefas.ts directly here -- always

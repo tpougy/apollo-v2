@@ -261,7 +261,10 @@ test.describe("Phase 23 Plan 03: Etapa/Tarefa focus dialogs in ProjetosSection",
     await expect(tarefasList).toContainText(tarefaAtrasadaTitulo);
     await expect(tarefasList).toContainText(tarefaFuturaTitulo);
 
-    const atrasadaRow = tarefasList.locator("div").filter({ hasText: tarefaAtrasadaTitulo }).first();
+    const atrasadaRow = tarefasList
+      .locator("div")
+      .filter({ hasText: tarefaAtrasadaTitulo })
+      .first();
     await expect(atrasadaRow.locator(".text-destructive")).toBeVisible();
     const futuraRow = tarefasList.locator("div").filter({ hasText: tarefaFuturaTitulo }).first();
     await expect(futuraRow.locator(".text-destructive")).toHaveCount(0);

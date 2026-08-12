@@ -631,7 +631,7 @@ test.describe("Phase 23 Plan 07: Consolidated button-inventory + keyboard-access
     const strip = page.locator(`[data-testid="project-strip"][data-eid="${projetoId}"]`);
     await strip.getByTestId("project-strip-nome").click();
 
-    let dialog = page.getByRole("dialog");
+    const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible({ timeout: RESYNC_TIMEOUT });
     await expect(page.locator('[role="dialog"]')).toHaveCount(1, { timeout: RESYNC_TIMEOUT });
 
@@ -757,7 +757,7 @@ test.describe("Phase 23 Plan 07: Consolidated button-inventory + keyboard-access
     expect(await card.evaluate((el) => el.tagName.toLowerCase())).toBe("button");
     const cardIsDescendantOfColumn = await card.evaluate((cardEl, columnTestId) => {
       const columnEl = cardEl.closest(`[data-testid="${columnTestId}"]`);
-      return columnEl !== null && columnEl.contains(cardEl) && columnEl !== cardEl;
+      return columnEl?.contains(cardEl) && columnEl !== cardEl;
     }, "etapa-kanban-column");
     expect(cardIsDescendantOfColumn).toBe(true);
 
