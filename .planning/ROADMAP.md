@@ -72,7 +72,7 @@ per-project mini-kanbans, and a 7-dialog focus system. UI and organization only:
 
 - [x] **Phase 18: Navigation Foundation & EntityScreen Extension** - 6-section topbar with nested entities hidden from first level, `EntityScreen` gains additive `scopeWhere`/`presetLinks` with proven zero-regression behavior (completed 2026-08-11)
 - [x] **Phase 19: Projetos Section (Master-Detail)** - Projects grouped by fundo with etapas/tasks inline in the detail column, plus a "Todas as tarefas" escape hatch for orphaned tasks (completed 2026-08-11)
-- [ ] **Phase 20: Rotinas & Tickets Sections** - Instâncias/Templates tabs for Rotinas; Tickets and Tarefas share one inline subtarefas panel with the parent pre-resolved
+- [x] **Phase 20: Rotinas & Tickets Sections** - Instâncias/Templates tabs for Rotinas; Tickets and Tarefas share one inline subtarefas panel with the parent pre-resolved (completed 2026-08-11)
 - [ ] **Phase 21: Dashboard Data Layer, Shell, Week Calendar & Ticket Queue** - Pure unit-tested `derive.ts`, single-query `dashboardQuery.ts`, the Dashboard's 3-column grid shell, weekly business-day calendar, and pending-ticket queue
 - [ ] **Phase 22: Dashboard Kanbans, Rotinas & Heatmap** - Per-project mini-kanban strips with non-compressing columns, fundo-grouped weekly routines, and the 5-band monthly workload heatmap
 - [ ] **Phase 23: Focus Dialog System** - All 7 read-first focus dialogs, every Dashboard/section surface wired as a real keyboard-accessible `<button>`, max navigation depth of 2
@@ -230,7 +230,7 @@ form without duplicating any markup, and never get lost more than one level deep
 | 17. Cross-Phase Verification & Quality Gates | v1.2 | 2/2 | Complete    | 2026-08-10 |
 | 18. Navigation Foundation & EntityScreen Extension | v1.3 | 3/3 | Complete    | 2026-08-11 |
 | 19. Projetos Section (Master-Detail) | v1.3 | 4/4 | Complete    | 2026-08-11 |
-| 20. Rotinas & Tickets Sections | v1.3 | 5/5 | In Progress|  |
+| 20. Rotinas & Tickets Sections | v1.3 | 5/5 | Complete    | 2026-08-11 |
 | 21. Dashboard Data Layer, Shell, Week Calendar & Ticket Queue | v1.3 | 0/? | Not started | - |
 | 22. Dashboard Kanbans, Rotinas & Heatmap | v1.3 | 0/? | Not started | - |
 | 23. Focus Dialog System | v1.3 | 0/? | Not started | - |

@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Navegação reorganizada + Dashboard de acompanhamento
-current_phase: 20
-current_phase_name: Rotinas & Tickets Sections
-status: executing
+current_phase: 21
+current_phase_name: Dashboard Data Layer, Shell, Week Calendar & Ticket Queue
+status: planning
 stopped_at: Completed 20-05-PLAN.md (Phase 20 complete)
-last_updated: "2026-08-11T23:47:15.428Z"
+last_updated: "2026-08-12T00:09:35.457Z"
 last_activity: 2026-08-11
 last_activity_desc: 20-01-PLAN.md executed - SubtarefasPanel.svelte + TicketsSection.svelte with driven xor-parent create pre-resolution, live-verified against hosted InstantDB (NEST-05 complete)
 progress:
@@ -28,10 +28,10 @@ See: .planning/PROJECT.md (updated 2026-08-10)
 
 ## Current Position
 
-Phase: 20 of 23 (Rotinas & Tickets Sections)
-Plan: 5 of 05 complete (SubtarefasPanel + TicketsSection with driven xor-parent create)
-Status: Ready to execute
-Last activity: 2026-08-11 — 20-01-PLAN.md executed, NEST-05 complete
+Phase: 21 of 23 (Dashboard Data Layer, Shell, Week Calendar & Ticket Queue)
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-08-11 — Phase 20 complete, transitioned to Phase 21
 
 Progress: [██████████] 100%
 
@@ -39,7 +39,7 @@ Progress: [██████████] 100%
 
 **Velocity:**
 
-- Total plans completed: 7 (v1.3, in progress; 41 lifetime across v1.0+v1.1+v1.2+v1.3)
+- Total plans completed: 12 (v1.3, in progress; 41 lifetime across v1.0+v1.1+v1.2+v1.3)
 - Average duration: ~49min (v1.3 plans so far: 40, 95, 75, 25, 22, 35 min)
 - Total execution time: ~4.9 hours (v1.3)
 
@@ -47,8 +47,8 @@ Progress: [██████████] 100%
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 18 | 3 | 210min | 70min |
 | 19 | 4 | - | - |
+| 20 | 5 | - | - |
 
 **Recent Trend:**
 
@@ -84,7 +84,6 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - v1.3 roadmap: NEST-05 (shared inline subtarefas panel) is owned entirely by Phase 20, even though the panel is also used from the task view built in Phase 19's Projetos section — Phase 19 builds the etapa/task list without the panel wired in yet; Phase 20 builds `SubtarefasPanel.svelte` once and retroactively wires it to both Tickets and the Phase 19 task surface, matching `spec-ui.md` §9's own step ordering (step 3 ProjetosSection before step 4 Rotinas/Tickets + SubtarefasPanel).
 - v1.3 roadmap: DASH-05 (mini-kanbans) and DASH-04 (rotinas-by-fundo + heatmap) were merged into one phase (22) rather than split per `spec-ui.md` §9's steps 7/8 — each would otherwise be a single-requirement phase, and both are adjacent, purely additive Dashboard-content slices with no independent user-facing milestone value on their own.
 - v1.2/v1.3 kickoff: No human UAT gate anywhere — every phase's success criteria must be Playwright-provable against the live InstantDB app (C-12).
-- [Phase 18 P01]: gotoNested's interim (Phase 18) affordance groups the 4 nested entities by the first primary entity each links to (via links, never xorLink), falling back to 'Outros' -- data-driven, zero per-etype branching; only the helper body changes when Phase 19/20 ship real nested UI.
 - [Phase ?]: Verified NEST-01's byte-identical acceptance criterion via a controlled A/B full-suite comparison (diff/no-diff, same post-18-01 baseline) rather than a single unedited-suite run, because 18-01 landed its topbar restructuring in the shared working tree (no worktree isolation) before this plan's verification ran, and 18-03's e2e migration (NAV-05) had not yet landed.
 - [Phase ?]: Fixed 3 pre-existing e2e regressions exposed by Plan 18-01 landing first (no worktree isolation): stale fundos-default-mount assumption, instanciasRotina Tab-count formula, an uncatalogued nav-tarefas call site -- all within this plan's declared scope
 - [Phase ?]: [Phase 19 P01] Bespoke db.useQuery pattern for ProjetosSection: any section screen needing more than one level of link nesting writes its own query, never extends EntityScreen.buildQuery.

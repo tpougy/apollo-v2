@@ -116,3 +116,13 @@ Pruned entries from STATE.md. Recoverable but no longer loaded into agent contex
 ### Decisions
 
 - [Phase 17]: Fixed EntityScreen.svelte's page-header sitting flush (0px gap) against table/loading/empty content via `space-y-6`, locked in with a permanent Playwright assertion — the closing v1.2 cross-phase audit's one genuine finding.
+
+## Pruned 2026-08-11 (phases 1-18, kept recent 3)
+
+### Decisions
+
+- [Phase 18 P01]: gotoNested's interim (Phase 18) affordance groups the 4 nested entities by the first primary entity each links to (via links, never xorLink), falling back to 'Outros' -- data-driven, zero per-etype branching; only the helper body changes when Phase 19/20 ship real nested UI.
+
+### Performance Metrics
+
+| 18 | 3 | 210min | 70min |
