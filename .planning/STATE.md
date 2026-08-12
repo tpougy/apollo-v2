@@ -4,17 +4,17 @@ milestone: v1.4
 milestone_name: CLI instalável via uv tool, login sem admin token
 current_phase: 25
 current_phase_name: Public Auth Login
-status: in_progress
-stopped_at: Completed 25-01-PLAN.md
-last_updated: "2026-08-12T20:45:29.359Z"
+status: complete
+stopped_at: Completed 25-02-PLAN.md -- Phase 25 (Public Auth Login) complete -- v1.4 milestone fully done
+last_updated: "2026-08-12T20:55:35.000Z"
 last_activity: 2026-08-12
-last_activity_desc: "Completed 25-01-PLAN.md: apollo auth login rewritten to call InstantDB's public /runtime/auth/* endpoints directly via httpx, zero login_client()/admin-token usage, proven live with the admin token entirely absent; AST-walk gate tightened, new offline network-error test, full quality gate green"
+last_activity_desc: "Completed 25-02-PLAN.md: real magic-code send+verify login round trip proven live against the real InstantDB API and the real tp@rbrasset.com.br inbox, INSTANT_APP_ADMIN_TOKEN entirely absent throughout; apollo doctor re-confirmed unchanged; full cli/ pytest suite (all markers, 418 passed) plus ruff/ruff format/ty clean with the admin token genuinely unset"
 progress:
   total_phases: 2
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 4
-  completed_plans: 3
-  percent: 75
+  completed_plans: 4
+  percent: 100
 ---
 
 # Project State
@@ -24,36 +24,36 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-12)
 
 **Core value:** The user can execute every piece of controladoria data-entry work from either the Svelte SPA or the Python CLI, both authenticated as the same real user under the same InstantDB permission rules. Validated in v1.0. v1.1 made the SPA visually coherent on shadcn-svelte defaults; v1.2 refined composition/spacing/hierarchy on the same four screens; v1.3 reorganized navigation into a 6-section topbar and shipped the Dashboard landing screen; v1.4 makes the CLI itself installable outside the monorepo and drops its login flow's admin-token dependency — `cli/`-only, no schema/perms/web change.
-**Current focus:** v1.4 Phase 25 in progress — Plan 25-01 complete (`apollo auth login` rewritten to InstantDB's public `/runtime/auth/*` endpoints via `httpx`, zero admin-token dependency, proven live). Plan 25-02 (real send+verify magic-code round trip, admin-token-absent) remains.
+**Current focus:** v1.4 (Phases 24-25) is now fully complete — PKG-01 through PKG-05 and AUTH-01 through AUTH-05 all live-verified. `apollo auth login` authenticates via InstantDB's public `/runtime/auth/*` endpoints with zero `INSTANT_APP_ADMIN_TOKEN` dependency, proven live end-to-end with a real email round trip. No further phases remain in this milestone.
 
 ## Current Position
 
-Phase: 25 of 25 (Public Auth Login)
-Plan: 25-01 complete (1/2 plans done this phase so far)
-Status: In progress
-Last activity: 2026-08-12 — Completed 25-01-PLAN.md (public runtime endpoints transport rewrite, live invalid-code + network-error proofs, docstrings/README corrected, AST-walk gate tightened)
+Phase: 25 of 25 (Public Auth Login) — COMPLETE
+Plan: 25-01, 25-02 complete (2/2 plans done this phase)
+Status: Phase complete — v1.4 milestone fully done, ready for milestone-level audit/close
+Last activity: 2026-08-12 — Completed 25-02-PLAN.md (real admin-token-free magic-code send+verify round trip, live, real email; `apollo doctor` re-confirmed unchanged; full quality gate green)
 
-Progress: [████████░░] 75%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 2 (v1.4, Phase 24 fully done; 43 lifetime across v1.0+v1.1+v1.2+v1.3+v1.4)
-- Average duration: ~27min (v1.4 plans so far: 25, ~30 min)
-- Total execution time: ~55 min (v1.4)
+- Total plans completed: 4 (v1.4, both phases fully done; 44 lifetime across v1.0+v1.1+v1.2+v1.3+v1.4)
+- Average duration: ~19min (v1.4 plans: 24-01 25min, 24-02 ~30min, 25-01 ~12min, 25-02 8min)
+- Total execution time: ~75 min (v1.4)
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 24 | 2 | - | - |
-| 25 | - | - | - |
+| 24 | 2 | ~55min | ~27min |
+| 25 | 2 | ~20min | ~10min |
 
 **Recent Trend:**
 
-- Last 5 plans: (v1.3 closing plans + v1.4 start) 23-06 (40min), 23-07 (65min), 24-01 (25min), 24-02 (~30min)
-- Trend: Stable — packaging-focused plans (24-01, 24-02) running faster than the v1.3 UI-wiring average
+- Last 5 plans: (v1.3 close + v1.4) 23-07 (65min), 24-01 (25min), 24-02 (~30min), 25-01 (~12min), 25-02 (8min)
+- Trend: Accelerating — auth-transport plans (25-01, 25-02) ran faster than packaging plans, reusing established live-test infrastructure (magic-code helper, `_subprocess_env` isolation idiom) rather than building new patterns from scratch.
 
 *Updated after each plan completion*
 **Per-Plan Metrics:**
@@ -63,6 +63,7 @@ Progress: [████████░░] 75%
 | Phase 24 P01 | 25min | 2 tasks | 7 files |
 | Phase 24 P02 | ~30min | 2 tasks | 3 files |
 | Phase 25 P01 | ~12min | 3 tasks | 7 files |
+| Phase 25 P02 | 8min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -80,6 +81,8 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase 24, Plan 02]: Phase 24 (Packaging & Installability) is now fully complete — PKG-01 through PKG-05 all live-verified; `test_packaging_live.py` is the permanent standing regression gate for PKG-05, and the real `uv tool install --force`/`uv tool uninstall apollo-cli` round trip was executed once, live, with output captured verbatim in `24-02-SUMMARY.md`.
 - [Phase 25, Plan 01]: apollo auth login rewritten to call InstantDB's public /runtime/auth/send_magic_code and verify_magic_code endpoints directly via httpx, reusing instantdb's own api_error_from_response()/DEFAULT_API_URI/DEFAULT_TIMEOUT internals -- zero login_client()/admin-token usage remains in login(); proven live with INSTANT_APP_ADMIN_TOKEN entirely absent.
 - [Phase 25, Plan 01]: httpx package-legitimacy resolved autonomously (Task 0, no blocking human checkpoint) -- already a pinned, installed transitive dependency of instantdb; promoted to an explicit cli/pyproject.toml dependency with zero new install surface.
+- [Phase 25, Plan 02]: Ported web/e2e/helpers/magic-code.ts's readLatestMagicCode/readMagicCodeAfter into cli/tests/helpers/magic_code.py verbatim (same orules.ps1 peek command, regex, sender check, block separator) -- zero re-derivation from PROJECT.md C-10's own stale prose. Used a real subprocess.run()-based live test (not CliRunner) to prove INSTANT_APP_ADMIN_TOKEN absence in a genuinely isolated child-process environment, reusing test_packaging_live.py's env-copy-and-override idiom.
+- [Phase 25, Plan 02]: Phase 25 (Public Auth Login) is now fully complete -- AUTH-01 through AUTH-05 all live-verified; the real magic-code send+verify round trip completed end-to-end against production InstantDB with the admin token entirely absent, closing the one gap Plan 25-01 could not close on its own. This also completes v1.4 in full (Phases 24-25, PKG-01..05 + AUTH-01..05, 10/10 requirements) -- no further phases remain in this milestone.
 
 ### Pending Todos
 
@@ -115,10 +118,10 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-12T20:45:29.349Z
-Stopped at: Completed 25-01-PLAN.md
+Last session: 2026-08-12T20:55:35.000Z
+Stopped at: Completed 25-02-PLAN.md -- Phase 25 (Public Auth Login) complete -- v1.4 milestone fully done
 Resume file: None
 
 ## Operator Next Steps
 
-- Phase 24 (Packaging & Installability) is complete — all 5 requirements (PKG-01..05) live-verified. Next: run `/gsd-plan-phase 25` to plan Phase 25 (Public Auth Login), the final phase of v1.4.
+- v1.4 (CLI instalável via uv tool, login sem admin token) is fully complete — both phases (24, 25), all 10 requirements (PKG-01..05, AUTH-01..05) live-verified. Next: run `/gsd-audit-milestone` (or `/gsd-complete-milestone`) to close out v1.4, or start scoping the next milestone.
