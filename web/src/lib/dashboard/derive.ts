@@ -1,7 +1,7 @@
 /**
  * DASH-06's canonical, pure derivation module for the Dashboard feature (and,
- * per Phase 21's consolidation of Phase 19's provisional
- * `web/src/lib/sections/projetosDerive.ts`, for `ProjetosSection.svelte`'s
+ * per Phase 21's consolidation of Phase 19's provisional phase-local
+ * derivation module under `web/src/lib/sections/`, for `ProjetosSection.svelte`'s
  * etapa-progress UI too — one rule set, no drift between the two).
  *
  * Pure like `web/src/lib/bizdays.ts`: no `db` import, no internal
@@ -12,9 +12,10 @@
  */
 
 // ---------------------------------------------------------------------------
-// Migrated verbatim from web/src/lib/sections/projetosDerive.ts (Phase 19).
-// Same names, signatures, and doc comments — this phase's Task 1 is a pure
-// file relocation + import-path repoint, zero behavior change.
+// Migrated verbatim from Phase 19's provisional phase-local derivation module
+// (previously under web/src/lib/sections/). Same names, signatures, and doc
+// comments — this phase's Task 1 is a pure file relocation + import-path
+// repoint, zero behavior change.
 // ---------------------------------------------------------------------------
 
 export interface SubtarefaLike {
