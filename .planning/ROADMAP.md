@@ -194,11 +194,11 @@ heatmap using only the project's existing grayscale tokens — completing the Da
   4. Routine instances are grouped into light/transparent cards by fundo (up to 4 routines per card + `+N`), with "Sem fundo vinculado" always last and functional (client-side) agrupar/ordenar/status controls visible and operative (DASH-04; spec §10 Dashboard #5).
   5. The monthly heatmap renders a 7-column grid with exactly 5 fixed intensity bands (0 / 1-2 / 3-4 / 5-7 / 8+) using only the tokens specified in spec §6 (no new color), weekend cells at `bg-muted/40`, with a visible legend (DASH-04; spec §10 Dashboard #6).
 
-**Plans**: 2 plans
+**Plans**: 1/2 plans executed
 
 Plans:
 
-- [ ] 22-01-PLAN.md — ProjectStrips.svelte: fixed-width non-compressing kanban strips, measured `>` overflow indicator, localStorage collapse persistence (DASH-05)
+- [x] 22-01-PLAN.md — ProjectStrips.svelte: fixed-width non-compressing kanban strips, measured `>` overflow indicator, localStorage collapse persistence (DASH-05)
 - [ ] 22-02-PLAN.md — RoutinesByFundo.svelte + MonthHeatmap.svelte: fundo-grouped routines with functional controls, 5-band monthly workload heatmap (DASH-04)
 
 **UI hint**: yes
@@ -245,5 +245,5 @@ form without duplicating any markup, and never get lost more than one level deep
 | 19. Projetos Section (Master-Detail) | v1.3 | 4/4 | Complete    | 2026-08-11 |
 | 20. Rotinas & Tickets Sections | v1.3 | 5/5 | Complete    | 2026-08-11 |
 | 21. Dashboard Data Layer, Shell, Week Calendar & Ticket Queue | v1.3 | 3/3 | Complete    | 2026-08-11 |
-| 22. Dashboard Kanbans, Rotinas & Heatmap | v1.3 | 0/? | Not started | - |
+| 22. Dashboard Kanbans, Rotinas & Heatmap | v1.3 | 1/2 | In Progress|  |
 | 23. Focus Dialog System | v1.3 | 0/? | Not started | - |

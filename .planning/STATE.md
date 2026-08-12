@@ -5,15 +5,15 @@ milestone_name: Navegação reorganizada + Dashboard de acompanhamento
 current_phase: 22
 current_phase_name: Dashboard Kanbans, Rotinas & Heatmap
 status: planning
-stopped_at: Completed 21-03-PLAN.md — Phase 21 fully complete (all 3 plans)
-last_updated: "2026-08-12T02:05:30.968Z"
-last_activity: 2026-08-11
-last_activity_desc: 20-01-PLAN.md executed - SubtarefasPanel.svelte + TicketsSection.svelte with driven xor-parent create pre-resolution, live-verified against hosted InstantDB (NEST-05 complete)
+stopped_at: Completed 22-01-PLAN.md — ProjectStrips.svelte (fixed-width kanban strips, measured overflow, localStorage collapse)
+last_updated: "2026-08-12T03:01:01.563Z"
+last_activity: 2026-08-12
+last_activity_desc: 22-01-PLAN.md executed (ProjectStrips.svelte, measured overflow indicator, localStorage collapse, live e2e proof)
 progress:
   total_phases: 6
   completed_phases: 4
-  total_plans: 15
-  completed_plans: 15
+  total_plans: 17
+  completed_plans: 16
   percent: 67
 ---
 
@@ -29,11 +29,11 @@ See: .planning/PROJECT.md (updated 2026-08-10)
 ## Current Position
 
 Phase: 22 of 23 (Dashboard Kanbans, Rotinas & Heatmap)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-08-11 — Phase 21 complete, transitioned to Phase 22
+Plan: 2 of 2
+Status: Plan 22-01 complete
+Last activity: 2026-08-12 — 22-01-PLAN.md executed (ProjectStrips.svelte, measured overflow indicator, localStorage collapse, live e2e proof)
 
-Progress: [██████████] 100%
+Progress: [█████████░] 94%
 
 ## Performance Metrics
 
@@ -75,6 +75,7 @@ Progress: [██████████] 100%
 | Phase 21 P02 | 35min | 2 tasks | 5 files |
 | Phase 21 P01 | 40min | 3 tasks | 3 files |
 | Phase 21 P03 | 45min | 2 tasks | 3 files |
+| Phase 22 P01 | 16min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -120,6 +121,9 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase ?]: 21-03: hojeIso computed once (never reassigned), semanaBase the only $state week navigation touches -- agendaPorDia always receives hojeIso, so paging weeks can never change vencido/today-highlight math (T-21-06)
 - [Phase ?]: 21-03: dadosNormalizados bridges DashboardData's optional link fields to agendaPorDia's required-but-nullable *Like shapes via an explicit per-row .map(), not a boundary cast -- the two shapes are genuinely incompatible under strict null checks
 - [Phase ?]: 21-03: fixed Plan 21-02's InstanciaRotinaRow missing tipoPrazo (was substituting status in its place for agendaPorDia's rotina items) -- Rule 1 bug caught before commit
+- [Phase ?]: 22-01: 'projeto em andamento' = has >=1 etapa, no projeto.status read/compared, mirroring REQUIREMENTS.md 5.3's ticket-queue precedent
+- [Phase ?]: 22-01: DASHBOARD_QUERY's projetos.etapas.tarefas branch omits subtarefas (only the flat tarefas branch fetches it), so tarefaConcluida() on a nested strip card always evaluates false -- documented, not patched, since this plan's own fixtures never expose it and Plan 22-02 makes an identical decision for template.nome
+- [Phase ?]: 22-01: verified InstantDB preserves creation order for linked rows with no explicit sort; e2e fixture creates the vencida tarefa first so it lands inside ProjectStrips.svelte's first-3 visible slice rather than the +1 overflow row
 
 ### Pending Todos
 
@@ -151,8 +155,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-12T01:48:41.009Z
-Stopped at: Completed 21-03-PLAN.md — Phase 21 fully complete (all 3 plans)
+Last session: 2026-08-12T03:01:01.552Z
+Stopped at: Completed 22-01-PLAN.md — ProjectStrips.svelte (fixed-width kanban strips, measured overflow, localStorage collapse)
 Resume file: None
 
 ## Operator Next Steps
