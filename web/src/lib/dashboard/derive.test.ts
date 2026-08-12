@@ -5,6 +5,7 @@ import {
   cargaDoMes,
   faixaHeatmap,
   progressoEtapa,
+  rotinasDoFundo,
   rotinasPorFundo,
   semanaUtil,
   tarefaConcluida,
@@ -498,5 +499,89 @@ describe("rotinasPorFundo", () => {
     const groups = rotinasPorFundo(instancias, SEMANA);
     const allIds = groups.flatMap((g) => g.instancias.map((i) => i.id));
     expect(allIds).toEqual(["in-window"]);
+  });
+});
+
+describe("rotinasDoFundo", () => {
+  test("returns exactly the instancias whose template.fundo.id matches, in original relative order (stable, no re-sort)", () => {
+    const instancias = [
+      {
+        id: "r-a1",
+        dataPrevista: "2026-08-12",
+        tipoPrazo: "soft",
+        template: { fundo: { id: "a", nome: "Alfa" } },
+      },
+      {
+        id: "r-b",
+        dataPrevista: "2026-08-10",
+        tipoPrazo: "soft",
+        template: { fundo: { id: "b", nome: "Bravo" } },
+      },
+      {
+        id: "r-a2",
+        dataPrevista: "2026-08-11",
+        tipoPrazo: "soft",
+        template: { fundo: { id: "a", nome: "Alfa" } },
+      },
+      {
+        id: "r-no-template",
+        dataPrevista: "2026-08-13",
+        tipoPrazo: "soft",
+        template: null,
+      },
+    ];
+
+    const result = rotinasDoFundo(instancias, "a");
+
+    // Exactly the 2 matching "a" instancias, in original relative order
+    // (r-a1 before r-a2, unlike rotinasPorFundo's own date-then-id re-sort).
+    expect(result.map((i) => i.id)).toEqual(["r-a1", "r-a2"]);
+  });
+
+  test("is week-unbounded: matches an instancia whose dataPrevista falls many weeks outside rotinasPorFundo's own 7-day window", () => {
+    const instancias = [
+      {
+        id: "r-far-future",
+        dataPrevista: "2026-11-30", // many weeks outside SEMANA's 7-day window
+        tipoPrazo: "soft",
+        template: { fundo: { id: "a", nome: "Alfa" } },
+      },
+    ];
+
+    // Confirm this date really is outside rotinasPorFundo's window: it
+    // groups by the same 7-day SEMANA window used elsewhere in this file.
+    const viaRotinasPorFundo = rotinasPorFundo(instancias, SEMANA);
+    expect(viaRotinasPorFundo.flatMap((g) => g.instancias.map((i) => i.id))).toEqual([]);
+
+    const result = rotinasDoFundo(instancias, "a");
+    expect(result.map((i) => i.id)).toEqual(["r-far-future"]);
+  });
+
+  test("nonexistent fundoId -> empty array, never throws", () => {
+    const instancias = [
+      {
+        id: "r-a",
+        dataPrevista: "2026-08-12",
+        tipoPrazo: "soft",
+        template: { fundo: { id: "a", nome: "Alfa" } },
+      },
+    ];
+
+    expect(rotinasDoFundo(instancias, "nonexistent-id")).toEqual([]);
+  });
+
+  test("instancia with template: null is never matched by any concrete fundoId string", () => {
+    const instancias = [
+      {
+        id: "r-no-template",
+        dataPrevista: "2026-08-12",
+        tipoPrazo: "soft",
+        template: null,
+      },
+    ];
+
+    expect(rotinasDoFundo(instancias, "a")).toEqual([]);
+    expect(rotinasDoFundo(instancias, "null")).toEqual([]);
+    expect(rotinasDoFundo(instancias, "undefined")).toEqual([]);
   });
 });
