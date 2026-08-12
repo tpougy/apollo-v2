@@ -85,27 +85,36 @@ Full detail archived at `.planning/milestones/v1.3-ROADMAP.md`; closing audit at
 ## Phase Details
 
 ### Phase 24: Packaging & Installability
+
 **Goal**: Anyone can `uv tool install` `cli/` from a clean checkout and run `apollo` from any directory outside the `apollo-v2` monorepo — the ANBIMA calendar and the InstantDB `app_id` both resolve from inside the installed package, with no runtime dependency on `shared/` or a present `.env.instantdb`.
 **Depends on**: Nothing (first phase of v1.4; builds on the existing `cli/` package from v1.0-v1.3)
 **Requirements**: PKG-01, PKG-02, PKG-03, PKG-04, PKG-05
 **Success Criteria** (what must be TRUE):
+
   1. `uv build` produces a wheel for `cli/` from a clean checkout, and `uv tool install` of that wheel succeeds in an isolated environment with no `apollo-v2` monorepo present (PKG-05).
   2. Running `apollo --version`, `apollo doctor`, and a read-only listing subcommand from a directory outside `apollo-v2`, with no `shared/` directory and no `.env.instantdb` file present, succeeds using the embedded default `app_id` (PKG-03, PKG-05).
   3. Business-day calculations inside the isolated install (e.g. `apollo rotina gerar-instancias` or an equivalent bizdays-backed read path) return correct ANBIMA results, proving `cli/apollo_cli/bizdays.py` now reads its vendored copy via `importlib.resources` rather than `find_repo_root()` (PKG-01).
   4. A real `pytest` run includes a test asserting byte-identical content between `shared/anbima-calendar.json` and `cli/apollo_cli/data/anbima-calendar.json`, and that test fails when the two files are deliberately made to differ (PKG-02).
   5. With `.env.instantdb`/`APOLLO_ENV_FILE` present and pointing at a different `app_id`, the CLI resolves to that overriding value instead of the embedded default, preserving the existing resolution order (explicit argument > `APOLLO_ENV_FILE` > `.env.instantdb` via `find_repo_root()` > embedded default) (PKG-04).
-**Plans**: TBD
+
+**Plans**: 0/2 plans executed
+
+- [ ] 24-01-PLAN.md
+- [ ] 24-02-PLAN.md
 
 ### Phase 25: Public Auth Login
+
 **Goal**: `apollo auth login` authenticates a real user via InstantDB's public `/runtime/auth/*` endpoints, and no CLI command — including login — reads or requires `INSTANT_APP_ADMIN_TOKEN` to operate normally, while `apollo doctor`/`admin_token_present` keep working unchanged for project-development support.
 **Depends on**: Phase 24 (AUTH-04's `apollo doctor`/`admin_token_present` behavior must reflect PKG-03/PKG-04's new `app_id` resolution order)
 **Requirements**: AUTH-01, AUTH-02, AUTH-03, AUTH-04, AUTH-05
 **Success Criteria** (what must be TRUE):
+
   1. `apollo auth login` completes a real magic-code send+verify round trip by calling `POST {api_uri}/runtime/auth/send_magic_code` and `POST {api_uri}/runtime/auth/verify_magic_code` directly via `httpx`, with no `INSTANT_APP_ADMIN_TOKEN` set anywhere in the environment (AUTH-01, AUTH-03).
   2. `apollo auth login`'s observable output (JSON on stdout/stderr, exit codes, and error messages for invalid code, expired code, and network failure) is unchanged from its pre-change behavior for every one of those cases (AUTH-02).
   3. The full CLI test suite plus a live login-and-CRUD round trip pass with `INSTANT_APP_ADMIN_TOKEN` absent from the environment, proving `session_client()` and every other command still never read or require it (AUTH-03).
   4. `apollo doctor` and `InstantConfig.admin_token_present` still correctly detect and report an admin token when one is present in `.env.instantdb`, updated only as needed for Phase 24's new `app_id` resolution order — not removed, not behaviorally altered otherwise (AUTH-04).
   5. Updated `tests/test_auth_rejection.py` and `tests/test_instant_client.py` pass under a real `pytest` run and assert the stronger guarantee ("CLI never uses admin token anywhere, including login"), with `ruff` and `ty` both clean on the full `cli/` tree (AUTH-05).
+
 **Plans**: TBD
 
 ## Progress
@@ -135,7 +144,7 @@ Full detail archived at `.planning/milestones/v1.3-ROADMAP.md`; closing audit at
 | 21. Dashboard Data Layer, Shell, Week Calendar & Ticket Queue | v1.3 | 3/3 | Complete | 2026-08-11 |
 | 22. Dashboard Kanbans, Rotinas & Heatmap | v1.3 | 2/2 | Complete | 2026-08-12 |
 | 23. Focus Dialog System | v1.3 | 7/7 | Complete | 2026-08-12 |
-| 24. Packaging & Installability | v1.4 | 0/TBD | Not started | - |
+| 24. Packaging & Installability | v1.4 | 0/2 | Planned    |  |
 | 25. Public Auth Login | v1.4 | 0/TBD | Not started | - |
 
 | Milestone | Phases | Plans | Status | Shipped |

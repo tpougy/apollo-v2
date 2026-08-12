@@ -519,17 +519,19 @@ grep -oE '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}' \
 |---|-------|---------|---------------|
 | A1 | The embedded default `app_id` value is `7936ca82-5cb4-43c2-811d-788a6ec0d2a8`, extracted as the sole non-placeholder UUID-shaped string in the locally built `web/dist/assets/index-*.js` bundle. This research could not read `.env.instantdb` directly (hard-denied by sandbox permissions — see Pitfall 4) and could not independently cross-check this value against the authoritative source. | PKG-03, `config.py` Code Example | If wrong, the embedded default would point the CLI at a nonexistent or wrong InstantDB app for any user relying on the fallback — silent-ish failure (auth/queries would fail against the wrong `app_id`, or the app just wouldn't exist). **Before shipping, the executor must reconfirm this value** — ideally by rebuilding `web/` fresh (`cd web && bun run build`) immediately before re-extracting, per the recipe in `## Code Examples`, to rule out any staleness in the currently-committed `web/dist` build artifact. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Exact shape of `InstantConfig`'s new field(s) for provenance tracking**
+1. **Exact shape of `InstantConfig`'s new field(s) for provenance tracking** — RESOLVED (24-01-PLAN.md Task 1)
    - What we know: CONTEXT.md decision 6 requires `doctor` to "correctly reflect whether the resolved app_id came from a file or from the embedded default." `env_file` must become optional (Pitfall 3).
    - What's unclear: Whether to add a single `app_id_source: str` field (as sketched in the Code Example), a `Literal["file", "embedded_default"]`, or compute the distinction ad hoc inside `doctor` itself from `env_file is None`. All are workable; this is a naming/typing choice, not a behavioral one.
    - Recommendation: Use the `app_id_source` field approach shown in the Code Example — it's the most testable (a unit test can assert on it directly without parsing `doctor`'s printed text) and matches this codebase's existing preference for structured `InstantConfig` fields over ad hoc `doctor`-only logic.
+   - **Resolution:** Planner adopted the recommendation verbatim — `InstantConfig` gains a plain `app_id_source: str` field (values `"file"`/`"embedded_default"`), and `env_file` becomes `Path | None`. See 24-01-PLAN.md Task 1.
 
-2. **Whether to reuse the `live` pytest marker or introduce a new `packaging` marker for the PKG-05 automated test**
+2. **Whether to reuse the `live` pytest marker or introduce a new `packaging` marker for the PKG-05 automated test** — RESOLVED (24-02-PLAN.md Task 1)
    - What we know: The existing `live` marker's documented meaning is "exercises the real InstantDB app over the network using the persisted session" (`cli/pyproject.toml`) — the PKG-05 test exercises real `uv build`/`uv venv`/filesystem operations, not the InstantDB network API.
    - What's unclear: Whether the project wants a second marker category or is fine stretching `live`'s definition.
    - Recommendation: Add a new `packaging` marker (one new line in `cli/pyproject.toml`'s `[tool.pytest.ini_options] markers`) — keeps `live`'s meaning precise and lets `uv run pytest -m "not live and not packaging"` remain a fast, fully-offline inner loop.
+   - **Resolution:** Planner adopted the recommendation verbatim — a new `packaging` marker is registered in `cli/pyproject.toml` and applied to `test_packaging_live.py`. See 24-02-PLAN.md Task 1.
 
 ## Environment Availability
 
