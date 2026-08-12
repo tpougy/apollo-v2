@@ -413,3 +413,27 @@ export function rotinasPorFundo(
 
   return result;
 }
+
+/**
+ * spec-ui.md §4 row 5 ("Fundo" dialog): "conteúdo mínimo" requires "todas as
+ * rotinas do fundo (não só as da semana)" -- every rotina instance belonging
+ * to a fundo, regardless of which calendar week it falls in.
+ *
+ * Deliberate contrast with `rotinasPorFundo` above: this export takes NO
+ * `semana` parameter and applies no date-window filter at all -- it is the
+ * week-unbounded counterpart `rotinasPorFundo` cannot provide (that function
+ * always filters to a single 7-day window first). Reuses the exact same
+ * `InstanciaAgendaLike` shape, so any caller that already has the array
+ * `rotinasPorFundo` accepts (e.g. Dashboard.svelte's already-fetched
+ * `instanciasRotina`) can pass it here unchanged -- zero new query.
+ *
+ * A `null`/`undefined` `template` or `template.fundo` never matches any
+ * concrete `fundoId` string (optional chaining short-circuits to
+ * `undefined`, which is never `===` to a string).
+ */
+export function rotinasDoFundo(
+  instancias: InstanciaAgendaLike[],
+  fundoId: string,
+): InstanciaAgendaLike[] {
+  return instancias.filter((i) => i.template?.fundo?.id === fundoId);
+}
