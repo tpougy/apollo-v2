@@ -2,11 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Navegação reorganizada + Dashboard de acompanhamento
-current_phase: 23
-current_phase_name: Focus Dialog System
-status: completed
+status: Awaiting next milestone
 stopped_at: Completed 23-07-PLAN.md -- Phase 23 (final functional phase of v1.3) complete
-last_updated: "2026-08-12T07:58:35.948Z"
+last_updated: "2026-08-12T08:09:26.798Z"
 last_activity: 2026-08-12
 last_activity_desc: 23-07-PLAN.md executed (consolidated 16/16 DLG-02 button-inventory + keyboard-accessibility + depth-cap-2 sweep, live re-verification of 23-03's nested-button no-SSR reasoning, bun run lint debt closed, 3 full Playwright suite runs green)
 progress:
@@ -15,6 +13,8 @@ progress:
   total_plans: 24
   completed_plans: 24
   percent: 100
+current_phase: 23
+current_phase_name: Focus Dialog System
 ---
 
 # Project State
@@ -28,12 +28,10 @@ See: .planning/PROJECT.md (updated 2026-08-10)
 
 ## Current Position
 
-Phase: 23 of 23 (Focus Dialog System)
-Plan: Not started
-Status: All phases complete
-Last activity: 2026-08-12 — Phase 23 complete
-
-Progress: [██████████] 100%
+Phase: Milestone v1.3 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-08-12 — Milestone v1.3 completed and archived
 
 ## Performance Metrics
 
@@ -183,4 +181,4 @@ Resume file: None
 
 ## Operator Next Steps
 
-- Phase 23 (and v1.3's entire functional scope, Phases 18-23) is complete. Next: run the milestone-level audit/close sequence (e.g. `/gsd-audit-milestone` then `/gsd-complete-milestone`) to archive v1.3 and tag the release, per `23-CONTEXT.md`'s own deferred-ideas note.
+- Start the next milestone with /gsd-new-milestone
