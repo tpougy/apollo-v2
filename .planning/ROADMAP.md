@@ -169,7 +169,14 @@ ticket queue — the first visible slice of the new landing experience.
   4. The central band shows exactly 5 weekday cards (Monday-Friday, up to 3 items + `+N`, left border by item type, today highlighted via `bg-muted`); Saturday/Sunday items appear only through a chip rendered only when there are items, opening a popover (DASH-03; spec §10 Dashboard #1).
   5. The left column lists pending tickets ordered hard-deadline-first then by date, each card clickable, with an empty state and a "ver todos" link to the Tickets section (DASH-02).
 
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+
+- [ ] 21-01-PLAN.md — Canonical dashboard/derive.ts: consolidate Phase 19's projetosDerive.ts + add semanaUtil/agendaPorDia/rotinasPorFundo/cargaDoMes/faixaHeatmap, unit-tested (DASH-06)
+- [ ] 21-02-PLAN.md — dashboardQuery.ts (single query) + Dashboard.svelte grid shell + TicketQueue.svelte, live two-hop query proof (DASH-07, DASH-01, DASH-02)
+- [ ] 21-03-PLAN.md — WeekCalendar.svelte (5-day band, type borders, weekend Popover chip) + Dashboard header/week-nav, live UI rendering proof (DASH-03, DASH-01)
+
 **UI hint**: yes
 
 ### Phase 22: Dashboard Kanbans, Rotinas & Heatmap
