@@ -1,7 +1,8 @@
 <script lang="ts">
   import { db } from "../db";
   import { useDashboardQuery } from "./dashboardQuery";
-  import { agendaPorDia, rotinasPorFundo, semanaUtil } from "./derive";
+  import { agendaPorDia, cargaDoMes, rotinasPorFundo, semanaUtil } from "./derive";
+  import MonthHeatmap from "./MonthHeatmap.svelte";
   import ProjectStrips from "./ProjectStrips.svelte";
   import RoutinesByFundo from "./RoutinesByFundo.svelte";
   import TicketQueue from "./TicketQueue.svelte";
@@ -196,6 +197,15 @@
     }
     return map;
   });
+
+  // The heatmap always shows the real current month, independent of
+  // semanaBase's week navigation -- spec-ui.md gives the heatmap no
+  // navigation of its own.
+  const anoMes = $derived.by(() => {
+    const d = new Date(`${hojeIso}T00:00:00.000Z`);
+    return { ano: d.getUTCFullYear(), mes: d.getUTCMonth() + 1 };
+  });
+  const carga = $derived(cargaDoMes(dadosNormalizados, anoMes.ano, anoMes.mes));
 </script>
 
 <h2 class="text-xl font-semibold tracking-tight">Dashboard</h2>
@@ -266,6 +276,7 @@
     >
       <div class="space-y-6">
         <RoutinesByFundo grupos={rotinaGrupos} nomeById={rotinaNomeById} {hojeIso} />
+        <MonthHeatmap carga={carga} ano={anoMes.ano} mes={anoMes.mes} />
       </div>
     </div>
     <div

@@ -1051,3 +1051,162 @@ test.describe("DASH-04: rotinas by fundo", () => {
     await expect(page.getByTestId("rotinas-status")).toContainText("status: todas");
   });
 });
+
+// Placed LAST in the file, deliberately -- every other describe block's own
+// cleanup has already run by the time this one's beforeAll fires, so this
+// block's day-specific fixtures cannot collide with any other describe's
+// "this week" fixtures still being alive.
+test.describe("DASH-04: month heatmap", () => {
+  function daysInMonthOf(ano: number, mes: number): number {
+    return new Date(Date.UTC(ano, mes, 0)).getUTCDate();
+  }
+
+  function isoOf(ano: number, mes: number, day: number): string {
+    return `${ano}-${String(mes).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+  }
+
+  function weekdayOf(iso: string): number {
+    return new Date(`${iso}T00:00:00.000Z`).getUTCDay();
+  }
+
+  const hoje = hojeIso();
+  const ano = Number(hoje.slice(0, 4));
+  const mes = Number(hoje.slice(5, 7));
+  const semanaKeySet = new Set(
+    (() => {
+      const s = computeSemana();
+      return [...s.dias, s.sabado, s.domingo];
+    })(),
+  );
+
+  // 5 distinct weekdays (never a weekend -- a weekend day always overrides
+  // its band regardless of carga, per the component's own locked rule) and
+  // 1 distinct weekend day, all inside the current month, all OUTSIDE
+  // computeSemana()'s own 7 date keys.
+  const weekdayCandidates: string[] = [];
+  const weekendCandidates: string[] = [];
+  for (let day = 1; day <= daysInMonthOf(ano, mes); day++) {
+    const iso = isoOf(ano, mes, day);
+    if (semanaKeySet.has(iso)) continue;
+    const dow = weekdayOf(iso);
+    if (dow === 0 || dow === 6) weekendCandidates.push(iso);
+    else weekdayCandidates.push(iso);
+  }
+
+  const diaA = weekdayCandidates[0]; // band 0 -- 0 tarefas
+  const diaB = weekdayCandidates[1]; // band 1 -- 2 tarefas
+  const diaC = weekdayCandidates[2]; // band 2 -- 4 tarefas
+  const diaD = weekdayCandidates[3]; // band 3 -- 6 tarefas
+  const diaE = weekdayCandidates[4]; // band 4 -- 8 tarefas
+  const diaWeekend = weekendCandidates[0]; // 3 tarefas, weekend override
+
+  const tarefaIds: string[] = [];
+
+  async function seedTarefas(dia: string, count: number): Promise<void> {
+    for (let i = 0; i < count; i++) {
+      const id = (
+        JSON.parse(
+          apolloCli([
+            "tarefa",
+            "criar",
+            "--titulo",
+            uniqueName(`heatmap-${dia}-${i}`),
+            "--tipo-prazo",
+            "soft",
+            "--status",
+            "pendente",
+            "--data-prevista",
+            dia,
+          ]),
+        ) as { id: string }
+      ).id;
+      tarefaIds.push(id);
+    }
+  }
+
+  test.beforeAll(async () => {
+    await seedTarefas(diaB, 2);
+    await seedTarefas(diaC, 4);
+    await seedTarefas(diaD, 6);
+    await seedTarefas(diaE, 8);
+    await seedTarefas(diaWeekend, 3);
+  });
+
+  test.afterAll(() => {
+    for (const id of tarefaIds) tryDelete("tarefa", id);
+  });
+
+  test("each of days A-E's dash-heatmap-cell carries its exact expected FAIXA_CLASSES string", async ({
+    page,
+  }) => {
+    test.setTimeout(60_000);
+
+    await page.goto("/");
+    await expect(page.getByTestId("dash-heatmap-grid")).toBeVisible({ timeout: RESYNC_TIMEOUT });
+
+    const cellA = page.locator(`[data-testid="dash-heatmap-cell"][data-eid="${diaA}"]`);
+    await expect(cellA).toHaveClass(/bg-muted(?!\/)/, { timeout: RESYNC_TIMEOUT });
+    await expect(cellA).not.toHaveClass(/bg-chart/);
+    await expect(cellA).not.toHaveClass(/bg-destructive/);
+
+    const cellB = page.locator(`[data-testid="dash-heatmap-cell"][data-eid="${diaB}"]`);
+    await expect(cellB).toHaveClass(/bg-chart-1\/40/);
+    await expect(cellB).toHaveClass(/dark:bg-chart-5\/40/);
+
+    const cellC = page.locator(`[data-testid="dash-heatmap-cell"][data-eid="${diaC}"]`);
+    await expect(cellC).toHaveClass(/bg-chart-2\/70/);
+    await expect(cellC).toHaveClass(/dark:bg-chart-4\/70/);
+
+    const cellD = page.locator(`[data-testid="dash-heatmap-cell"][data-eid="${diaD}"]`);
+    await expect(cellD).toHaveClass(/bg-chart-4\b/);
+    await expect(cellD).toHaveClass(/text-background/);
+    await expect(cellD).toHaveClass(/dark:bg-chart-2\b/);
+    await expect(cellD).toHaveClass(/dark:text-foreground/);
+
+    const cellE = page.locator(`[data-testid="dash-heatmap-cell"][data-eid="${diaE}"]`);
+    await expect(cellE).toHaveClass(/bg-destructive/);
+    await expect(cellE).toHaveClass(/text-background/);
+  });
+
+  test("the identified weekend day's cell always carries bg-muted/40 with no visible text, despite its 3 seeded tarefas", async ({
+    page,
+  }) => {
+    test.setTimeout(60_000);
+
+    await page.goto("/");
+    const weekendCell = page.locator(`[data-testid="dash-heatmap-cell"][data-eid="${diaWeekend}"]`);
+    await expect(weekendCell).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    await expect(weekendCell).toHaveClass(/bg-muted\/40/);
+    await expect(weekendCell).not.toHaveClass(/bg-chart/);
+    await expect(weekendCell).not.toHaveClass(/bg-destructive/);
+    await expect(weekendCell).toHaveText("");
+  });
+
+  test("dash-heatmap-legend is always visible and mentions both tranquilo and carregado", async ({
+    page,
+  }) => {
+    test.setTimeout(60_000);
+
+    await page.goto("/");
+    const legend = page.getByTestId("dash-heatmap-legend");
+    await expect(legend).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    await expect(legend).toContainText("tranquilo");
+    await expect(legend).toContainText("carregado");
+  });
+
+  test("every dash-heatmap-cell resolves to a real <button> tagName", async ({ page }) => {
+    test.setTimeout(60_000);
+
+    await page.goto("/");
+    await expect(page.getByTestId("dash-heatmap-cell").first()).toBeVisible({
+      timeout: RESYNC_TIMEOUT,
+    });
+    const tagNames = await page
+      .getByTestId("dash-heatmap-cell")
+      .evaluateAll((els) => els.map((el) => el.tagName.toLowerCase()));
+    expect(tagNames.length).toBeGreaterThan(0);
+    for (const tag of tagNames) {
+      expect(tag).toBe("button");
+    }
+  });
+});
