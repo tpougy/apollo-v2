@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Navegação reorganizada + Dashboard de acompanhamento
-current_phase: 21
-current_phase_name: Dashboard Data Layer, Shell, Week Calendar & Ticket Queue
+current_phase: 22
+current_phase_name: Dashboard Kanbans, Rotinas & Heatmap
 status: planning
 stopped_at: Completed 21-03-PLAN.md — Phase 21 fully complete (all 3 plans)
-last_updated: "2026-08-12T01:48:41.020Z"
+last_updated: "2026-08-12T02:05:30.968Z"
 last_activity: 2026-08-11
 last_activity_desc: 20-01-PLAN.md executed - SubtarefasPanel.svelte + TicketsSection.svelte with driven xor-parent create pre-resolution, live-verified against hosted InstantDB (NEST-05 complete)
 progress:
@@ -28,10 +28,10 @@ See: .planning/PROJECT.md (updated 2026-08-10)
 
 ## Current Position
 
-Phase: 21 of 23 (Dashboard Data Layer, Shell, Week Calendar & Ticket Queue)
-Plan: 3 of 3
-Status: Plan 21-02 complete (wave 1, parallel with 21-01)
-Last activity: 2026-08-11 — 21-02-PLAN.md executed (dashboardQuery.ts, Dashboard.svelte grid shell, TicketQueue.svelte, live e2e proof)
+Phase: 22 of 23 (Dashboard Kanbans, Rotinas & Heatmap)
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-08-11 — Phase 21 complete, transitioned to Phase 22
 
 Progress: [██████████] 100%
 
@@ -47,8 +47,8 @@ Progress: [██████████] 100%
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 19 | 4 | - | - |
 | 20 | 5 | - | - |
+| 21 | 3 | - | - |
 
 **Recent Trend:**
 
