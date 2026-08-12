@@ -5,16 +5,16 @@ milestone_name: Navegação reorganizada + Dashboard de acompanhamento
 current_phase: 21
 current_phase_name: Dashboard Data Layer, Shell, Week Calendar & Ticket Queue
 status: planning
-stopped_at: Completed 21-01-PLAN.md
-last_updated: "2026-08-12T01:13:50.591Z"
+stopped_at: Completed 21-03-PLAN.md — Phase 21 fully complete (all 3 plans)
+last_updated: "2026-08-12T01:48:41.020Z"
 last_activity: 2026-08-11
 last_activity_desc: 20-01-PLAN.md executed - SubtarefasPanel.svelte + TicketsSection.svelte with driven xor-parent create pre-resolution, live-verified against hosted InstantDB (NEST-05 complete)
 progress:
   total_phases: 6
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 15
-  completed_plans: 14
-  percent: 50
+  completed_plans: 15
+  percent: 67
 ---
 
 # Project State
@@ -33,7 +33,7 @@ Plan: 3 of 3
 Status: Plan 21-02 complete (wave 1, parallel with 21-01)
 Last activity: 2026-08-11 — 21-02-PLAN.md executed (dashboardQuery.ts, Dashboard.svelte grid shell, TicketQueue.svelte, live e2e proof)
 
-Progress: [█████████░] 93%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -74,6 +74,7 @@ Progress: [█████████░] 93%
 | Phase 20 P05 | 45min | 3 tasks | 5 files |
 | Phase 21 P02 | 35min | 2 tasks | 5 files |
 | Phase 21 P01 | 40min | 3 tasks | 3 files |
+| Phase 21 P03 | 45min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -116,6 +117,9 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase ?]: derive.ts: migrated projetosDerive.ts verbatim, tarefaConcluida stays exported (ProjetosSection.svelte calls it directly)
 - [Phase ?]: semanaUtil uses plain UTC calendar-day arithmetic, never bizdays.ts's business-day steppers, so ANBIMA holidays inside the week never shift Friday
 - [Phase ?]: agendaPorDia adds explicit hoje: Date parameter (purity rule forbids internal clock read); rotina/ticket vencido hard-codes concluido=false
+- [Phase ?]: 21-03: hojeIso computed once (never reassigned), semanaBase the only $state week navigation touches -- agendaPorDia always receives hojeIso, so paging weeks can never change vencido/today-highlight math (T-21-06)
+- [Phase ?]: 21-03: dadosNormalizados bridges DashboardData's optional link fields to agendaPorDia's required-but-nullable *Like shapes via an explicit per-row .map(), not a boundary cast -- the two shapes are genuinely incompatible under strict null checks
+- [Phase ?]: 21-03: fixed Plan 21-02's InstanciaRotinaRow missing tipoPrazo (was substituting status in its place for agendaPorDia's rotina items) -- Rule 1 bug caught before commit
 
 ### Pending Todos
 
@@ -147,8 +151,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-12T01:13:50.578Z
-Stopped at: Completed 21-01-PLAN.md
+Last session: 2026-08-12T01:48:41.009Z
+Stopped at: Completed 21-03-PLAN.md — Phase 21 fully complete (all 3 plans)
 Resume file: None
 
 ## Operator Next Steps
