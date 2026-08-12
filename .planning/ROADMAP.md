@@ -97,9 +97,9 @@ Full detail archived at `.planning/milestones/v1.3-ROADMAP.md`; closing audit at
   4. A real `pytest` run includes a test asserting byte-identical content between `shared/anbima-calendar.json` and `cli/apollo_cli/data/anbima-calendar.json`, and that test fails when the two files are deliberately made to differ (PKG-02).
   5. With `.env.instantdb`/`APOLLO_ENV_FILE` present and pointing at a different `app_id`, the CLI resolves to that overriding value instead of the embedded default, preserving the existing resolution order (explicit argument > `APOLLO_ENV_FILE` > `.env.instantdb` via `find_repo_root()` > embedded default) (PKG-04).
 
-**Plans**: 0/2 plans executed
+**Plans**: 1/2 plans executed
 
-- [ ] 24-01-PLAN.md
+- [x] 24-01-PLAN.md
 - [ ] 24-02-PLAN.md
 
 ### Phase 25: Public Auth Login
@@ -144,7 +144,7 @@ Full detail archived at `.planning/milestones/v1.3-ROADMAP.md`; closing audit at
 | 21. Dashboard Data Layer, Shell, Week Calendar & Ticket Queue | v1.3 | 3/3 | Complete | 2026-08-11 |
 | 22. Dashboard Kanbans, Rotinas & Heatmap | v1.3 | 2/2 | Complete | 2026-08-12 |
 | 23. Focus Dialog System | v1.3 | 7/7 | Complete | 2026-08-12 |
-| 24. Packaging & Installability | v1.4 | 0/2 | Planned    |  |
+| 24. Packaging & Installability | v1.4 | 1/2 | In Progress|  |
 | 25. Public Auth Login | v1.4 | 0/TBD | Not started | - |
 
 | Milestone | Phases | Plans | Status | Shipped |

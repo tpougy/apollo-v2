@@ -2,15 +2,19 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: CLI instalável via uv tool, login sem admin token
-status: planning
-last_updated: "2026-08-12T19:05:00.000Z"
+current_phase: 24
+current_phase_name: Packaging & Installability
+status: in_progress
+stopped_at: Completed 24-01-PLAN.md
+last_updated: "2026-08-12T19:42:06.316Z"
 last_activity: 2026-08-12
+last_activity_desc: "Completed 24-01-PLAN.md: vendored ANBIMA calendar + embedded default app_id, live-verified outside the repo"
 progress:
   total_phases: 2
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_plans: 2
+  completed_plans: 1
+  percent: 50
 ---
 
 # Project State
@@ -20,16 +24,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-12)
 
 **Core value:** The user can execute every piece of controladoria data-entry work from either the Svelte SPA or the Python CLI, both authenticated as the same real user under the same InstantDB permission rules. Validated in v1.0. v1.1 made the SPA visually coherent on shadcn-svelte defaults; v1.2 refined composition/spacing/hierarchy on the same four screens; v1.3 reorganized navigation into a 6-section topbar and shipped the Dashboard landing screen; v1.4 makes the CLI itself installable outside the monorepo and drops its login flow's admin-token dependency — `cli/`-only, no schema/perms/web change.
-**Current focus:** Roadmap complete for v1.4 (Phases 24-25). Ready to plan Phase 24.
+**Current focus:** v1.4 Phase 24 in progress — Plan 24-01 complete (calendar vendoring + embedded default app_id, live-verified). Plan 24-02 (packaging live-test suite + real `uv tool install` acceptance round trip) remains.
 
 ## Current Position
 
 Phase: 24 of 25 (Packaging & Installability)
-Plan: — (not yet planned)
-Status: Ready to plan
-Last activity: 2026-08-12 — Roadmap created for v1.4 (Phases 24-25), REQUIREMENTS.md traceability updated
+Plan: 24-01 complete (1/2 plans done this phase so far)
+Status: In progress
+Last activity: 2026-08-12 — Completed 24-01-PLAN.md (vendored ANBIMA calendar + embedded default app_id, live-verified outside the repo)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█████░░░░░] 50%
 
 ## Performance Metrics
 
@@ -52,6 +56,11 @@ Progress: [░░░░░░░░░░] 0%
 - Trend: N/A — v1.4 has not started execution
 
 *Updated after each plan completion*
+**Per-Plan Metrics:**
+
+| Plan | Duration | Tasks | Files |
+|------|----------|-------|-------|
+| Phase 24 P01 | 25min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -63,6 +72,8 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - v1.4 roadmap derivation: 10 requirements grouped into 2 phases (24-25) along the natural PKG/AUTH category boundary — no further split, per this milestone's explicit small/surgical scope (`cli/`-only, 3 related fixes). Phase 24 (packaging: vendored calendar + embedded default `app_id` + real `uv build`/`uv tool install` proof) sequenced before Phase 25 (auth: public `/runtime/auth/*` login) because AUTH-04 explicitly requires `apollo doctor`/`admin_token_present` to reflect PKG-03/PKG-04's new `app_id` resolution order — Phase 25 cannot be verified as "unaltered beyond what PKG-03/04 required" until Phase 24 lands.
 - v1.4 explicit non-goal, reaffirmed in REQUIREMENTS.md Context: `admin_token_present`/`apollo doctor` are kept exactly as-is (dev/ops support only), not removed even though the real login path no longer needs an admin token after this milestone.
 - v1.4 verification approach unchanged from v1.0-v1.3: no human UAT — every phase proven via real `uv build`/`uv tool install` runs in an isolated environment, real `pytest`/`ruff`/`ty` runs, and (for AUTH-01) a real magic-code email round trip against the live InstantDB app.
+- [Phase 24, Plan 01]: Reconfirmed the embedded `_DEFAULT_APP_ID` value live by rebuilding `web/` fresh and re-extracting from the bundle, rather than trusting RESEARCH.md's `[ASSUMED]` tag blindly.
+- [Phase 24, Plan 01]: Ran a live RED reproduction of the pre-fix `find_repo_root()` crash (real `uv build`/`venv`/install from outside the repo) before implementing, then reran the identical round trip post-fix for GREEN.
 
 ### Pending Todos
 
@@ -98,10 +109,10 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-12T19:05:00.000Z
-Stopped at: ROADMAP.md created for v1.4 (Phases 24-25, 10/10 requirements mapped), REQUIREMENTS.md traceability updated
+Last session: 2026-08-12T19:41:38.210Z
+Stopped at: Completed 24-01-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
 
-- Plan Phase 24 with `/gsd-plan-phase 24`
+- Execute Plan 24-02 (`.planning/phases/24-packaging-installability/24-02-PLAN.md`) — the packaging live-test suite (`test_packaging_live.py`), `packaging` pytest marker registration, full-suite acceptance round trip, and `cli/README.md` update.

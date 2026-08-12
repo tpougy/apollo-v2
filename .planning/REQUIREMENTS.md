@@ -17,10 +17,10 @@ Esta milestone nasceu de uma discussão (não de research) sobre por que `cli/` 
 
 ### Empacotamento (PKG)
 
-- [ ] **PKG-01**: O calendário ANBIMA vendorizado (`shared/anbima-calendar.json`) tem uma cópia dentro do pacote Python (`cli/apollo_cli/data/anbima-calendar.json`), incluída no wheel via package-data do `uv_build`, e `cli/apollo_cli/bizdays.py` lê essa cópia via `importlib.resources` — nunca mais via `find_repo_root()`.
-- [ ] **PKG-02**: Existe um teste automatizado que garante paridade byte-a-byte entre `shared/anbima-calendar.json` (fonte original, também usada pelo `web/`) e `cli/apollo_cli/data/anbima-calendar.json` (cópia vendorizada), falhando se alguém editar um e esquecer o outro.
-- [ ] **PKG-03**: `cli/apollo_cli/config.py` tem um `app_id` default embutido no pacote (extraído do `.env.instantdb` atual da raiz do repo), usado quando nenhum `.env.instantdb`/`APOLLO_ENV_FILE`/argumento explícito resolve um app_id — eliminando a obrigatoriedade de `.env.instantdb` para o caso comum de uso pós-instalação.
-- [ ] **PKG-04**: `.env.instantdb`/`APOLLO_ENV_FILE` continuam funcionando como override válido do `app_id` embutido (para apontar a outro app InstantDB, ex. staging), sem quebrar a ordem de resolução hoje existente (argumento explícito > `APOLLO_ENV_FILE` > `.env.instantdb` via `find_repo_root()` > default embutido).
+- [x] **PKG-01**: O calendário ANBIMA vendorizado (`shared/anbima-calendar.json`) tem uma cópia dentro do pacote Python (`cli/apollo_cli/data/anbima-calendar.json`), incluída no wheel via package-data do `uv_build`, e `cli/apollo_cli/bizdays.py` lê essa cópia via `importlib.resources` — nunca mais via `find_repo_root()`.
+- [x] **PKG-02**: Existe um teste automatizado que garante paridade byte-a-byte entre `shared/anbima-calendar.json` (fonte original, também usada pelo `web/`) e `cli/apollo_cli/data/anbima-calendar.json` (cópia vendorizada), falhando se alguém editar um e esquecer o outro.
+- [x] **PKG-03**: `cli/apollo_cli/config.py` tem um `app_id` default embutido no pacote (extraído do `.env.instantdb` atual da raiz do repo), usado quando nenhum `.env.instantdb`/`APOLLO_ENV_FILE`/argumento explícito resolve um app_id — eliminando a obrigatoriedade de `.env.instantdb` para o caso comum de uso pós-instalação.
+- [x] **PKG-04**: `.env.instantdb`/`APOLLO_ENV_FILE` continuam funcionando como override válido do `app_id` embutido (para apontar a outro app InstantDB, ex. staging), sem quebrar a ordem de resolução hoje existente (argumento explícito > `APOLLO_ENV_FILE` > `.env.instantdb` via `find_repo_root()` > default embutido).
 - [ ] **PKG-05**: O pacote `cli/` builda e instala com sucesso via `uv build`/`uv tool install` a partir de um checkout limpo, e `apollo --version`/`apollo doctor`/qualquer subcomando de leitura funciona rodando de um diretório fora do repo `apollo-v2` (comprovado via instalação real em ambiente isolado, não apenas inspeção estática).
 
 ### Autenticação (AUTH)
