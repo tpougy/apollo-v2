@@ -44,6 +44,82 @@
   // Task 1: in-memory-only collapse toggle. Task 2 seeds this from
   // localStorage via the $effect below.
   let collapsedByProjeto = $state<Record<string, boolean>>({});
+
+  // ---------------------------------------------------------------------
+  // Task 2: localStorage collapse persistence (spec-ui.md section 3.5,
+  // CONTEXT.md's locked key). Two phase-local helpers, not a shared utility
+  // module -- exactly one key shape, no other key touched.
+  // ---------------------------------------------------------------------
+  function collapsedKey(projetoId: string): string {
+    return `apollo.dash.collapsed.${projetoId}`;
+  }
+
+  function readCollapsed(projetoId: string): boolean {
+    if (typeof localStorage === "undefined") return false;
+    return localStorage.getItem(collapsedKey(projetoId)) === "true";
+  }
+
+  function writeCollapsed(projetoId: string, value: boolean): void {
+    if (typeof localStorage === "undefined") return;
+    localStorage.setItem(collapsedKey(projetoId), String(value));
+  }
+
+  function toggleCollapse(projetoId: string): void {
+    const next = !collapsedByProjeto[projetoId];
+    collapsedByProjeto[projetoId] = next;
+    writeCollapsed(projetoId, next);
+  }
+
+  // Seed each newly-seen projeto id from localStorage exactly once -- guard
+  // so a later re-render never clobbers a value the user has since toggled
+  // in-memory.
+  $effect(() => {
+    for (const projeto of emAndamento) {
+      if (!(projeto.id in collapsedByProjeto)) {
+        collapsedByProjeto[projeto.id] = readCollapsed(projeto.id);
+      }
+    }
+  });
+
+  // ---------------------------------------------------------------------
+  // Task 2: measured (not inferred) overflow indicator (spec-ui.md section
+  // 3.5, CONTEXT.md's locked "measured, never inferred" rule; Pattern 2/
+  // Pitfall 3 in 22-RESEARCH.md).
+  // ---------------------------------------------------------------------
+  let rootEl: HTMLDivElement | undefined = $state();
+  let overflowingByProjeto = $state<Record<string, boolean>>({});
+
+  $effect(() => {
+    // Read emAndamento/collapsedByProjeto to establish reactive dependencies
+    // -- collapsing a strip unmounts its project-strip-body, so this effect
+    // must re-run and re-observe whenever either changes.
+    void emAndamento;
+    void collapsedByProjeto;
+
+    if (!rootEl) return;
+
+    const observers: ResizeObserver[] = [];
+    const stripEls = rootEl.querySelectorAll<HTMLElement>('[data-testid="project-strip-body"]');
+    for (const stripEl of stripEls) {
+      const rowEl = stripEl.querySelector<HTMLElement>('[data-testid="project-strip-row"]');
+      const id = stripEl.closest('[data-testid="project-strip"]')?.getAttribute("data-eid");
+      if (!rowEl || !id) continue;
+
+      const ro = new ResizeObserver(() => {
+        overflowingByProjeto = {
+          ...overflowingByProjeto,
+          [id]: stripEl.scrollWidth > stripEl.clientWidth,
+        };
+      });
+      ro.observe(stripEl);
+      ro.observe(rowEl);
+      observers.push(ro);
+    }
+
+    return () => {
+      for (const ro of observers) ro.disconnect();
+    };
+  });
 </script>
 
 {#if emAndamento.length === 0}
@@ -62,7 +138,7 @@
     ver projetos →
   </button>
 {:else}
-  <div data-testid="dash-projetos" class="space-y-4">
+  <div data-testid="dash-projetos" class="space-y-4" bind:this={rootEl}>
     {#each emAndamento as projeto (projeto.id)}
       {@const etapasOrdenadas = [...(projeto.etapas ?? [])].sort((a, b) => a.ordem - b.ordem)}
       {@const totalTarefas = etapasOrdenadas.reduce(
@@ -74,7 +150,7 @@
           <button
             type="button"
             data-testid="project-strip-collapse"
-            onclick={() => (collapsedByProjeto[projeto.id] = !collapsedByProjeto[projeto.id])}
+            onclick={() => toggleCollapse(projeto.id)}
           >
             {collapsedByProjeto[projeto.id] ? "▸" : "▾"}
           </button>
@@ -145,6 +221,15 @@
                 </div>
               {/each}
             </div>
+            {#if overflowingByProjeto[projeto.id]}
+              <span
+                data-testid="project-strip-overflow"
+                data-eid={projeto.id}
+                class="pointer-events-none absolute right-0 top-0 bottom-0 flex items-center bg-gradient-to-l from-background px-2"
+              >
+                &gt;
+              </span>
+            {/if}
           </div>
         {/if}
       </div>

@@ -419,3 +419,185 @@ test.describe("DASH-05: project strip rendering", () => {
     await expect(futuraCard.locator("p").nth(1)).not.toHaveClass(/text-destructive/);
   });
 });
+
+test.describe("DASH-05: overflow indicator", () => {
+  let projetoMuitasEtapasId = "";
+  let projetoMuitasEtapasNome = "";
+  let projetoPoucaEtapaId = "";
+  let projetoPoucaEtapaNome = "";
+  const etapaIds: string[] = [];
+  let etapaUnicaId = "";
+
+  test.beforeAll(() => {
+    sweepLeftovers();
+
+    projetoMuitasEtapasNome = uniqueName("projeto-muitas-etapas");
+    const muitasCreated = JSON.parse(
+      apolloCli([
+        "projeto",
+        "criar",
+        "--nome",
+        projetoMuitasEtapasNome,
+        "--status",
+        "em andamento",
+      ]),
+    ) as { id: string };
+    projetoMuitasEtapasId = muitasCreated.id;
+
+    for (let ordem = 1; ordem <= 6; ordem++) {
+      const etapaNome = uniqueName(`etapa-overflow-${ordem}`);
+      const created = JSON.parse(
+        apolloCli([
+          "etapa",
+          "criar",
+          "--nome",
+          etapaNome,
+          "--ordem",
+          String(ordem),
+          "--status",
+          "em andamento",
+          "--projeto-id",
+          projetoMuitasEtapasId,
+        ]),
+      ) as { id: string };
+      etapaIds.push(created.id);
+    }
+
+    projetoPoucaEtapaNome = uniqueName("projeto-pouca-etapa");
+    const poucaCreated = JSON.parse(
+      apolloCli(["projeto", "criar", "--nome", projetoPoucaEtapaNome, "--status", "em andamento"]),
+    ) as { id: string };
+    projetoPoucaEtapaId = poucaCreated.id;
+
+    const etapaUnicaNome = uniqueName("etapa-unica");
+    const etapaUnicaCreated = JSON.parse(
+      apolloCli([
+        "etapa",
+        "criar",
+        "--nome",
+        etapaUnicaNome,
+        "--ordem",
+        "1",
+        "--status",
+        "em andamento",
+        "--projeto-id",
+        projetoPoucaEtapaId,
+      ]),
+    ) as { id: string };
+    etapaUnicaId = etapaUnicaCreated.id;
+  });
+
+  test.afterAll(() => {
+    for (const id of etapaIds) tryDelete("etapa", id);
+    tryDelete("etapa", etapaUnicaId);
+    tryDelete("projeto", projetoMuitasEtapasId);
+    tryDelete("projeto", projetoPoucaEtapaId);
+    sweepLeftovers();
+  });
+
+  test("the 6-etapa strip's overflow indicator becomes visible; the 1-etapa strip's never does", async ({
+    page,
+  }) => {
+    test.setTimeout(60_000);
+
+    // Narrow enough that 6 columns at w-36 plus gaps reliably exceeds
+    // clientWidth, deterministic regardless of the CI runner's own screen
+    // size.
+    await page.setViewportSize({ width: 480, height: 800 });
+    await page.goto("/");
+
+    const muitasStrip = page
+      .getByTestId("project-strip")
+      .filter({ hasText: projetoMuitasEtapasNome });
+    await expect(muitasStrip).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    // ResizeObserver's callback fires asynchronously after layout -- poll
+    // via toBeVisible with a generous timeout rather than asserting
+    // synchronously.
+    await expect(muitasStrip.getByTestId("project-strip-overflow")).toBeVisible({
+      timeout: RESYNC_TIMEOUT,
+    });
+
+    const poucaStrip = page.getByTestId("project-strip").filter({ hasText: projetoPoucaEtapaNome });
+    await expect(poucaStrip).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    await expect(poucaStrip.getByTestId("project-strip-overflow")).toHaveCount(0);
+  });
+});
+
+test.describe("DASH-05: collapse persistence", () => {
+  let projetoId = "";
+  let projetoNome = "";
+  let etapaId = "";
+
+  test.beforeAll(() => {
+    sweepLeftovers();
+
+    projetoNome = uniqueName("projeto-collapse");
+    const projetoCreated = JSON.parse(
+      apolloCli(["projeto", "criar", "--nome", projetoNome, "--status", "em andamento"]),
+    ) as { id: string };
+    projetoId = projetoCreated.id;
+
+    const etapaNome = uniqueName("etapa-collapse");
+    const etapaCreated = JSON.parse(
+      apolloCli([
+        "etapa",
+        "criar",
+        "--nome",
+        etapaNome,
+        "--ordem",
+        "1",
+        "--status",
+        "em andamento",
+        "--projeto-id",
+        projetoId,
+      ]),
+    ) as { id: string };
+    etapaId = etapaCreated.id;
+  });
+
+  test.afterAll(() => {
+    tryDelete("etapa", etapaId);
+    tryDelete("projeto", projetoId);
+    sweepLeftovers();
+  });
+
+  test("collapse toggle persists across reload via exactly one localStorage key", async ({
+    page,
+  }) => {
+    test.setTimeout(60_000);
+
+    await page.goto("/");
+    const strip = page.getByTestId("project-strip").filter({ hasText: projetoNome });
+    await expect(strip).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    await expect(strip.getByTestId("project-strip-body")).toBeVisible({ timeout: RESYNC_TIMEOUT });
+
+    const collapsedKey = `apollo.dash.collapsed.${projetoId}`;
+
+    await strip.getByTestId("project-strip-collapse").click();
+    await expect(strip.getByTestId("project-strip-body")).toHaveCount(0);
+
+    const storedAfterCollapse = await page.evaluate(
+      (key) => localStorage.getItem(key),
+      collapsedKey,
+    );
+    expect(storedAfterCollapse).toBe("true");
+
+    const collapseKeyCount = await page.evaluate(
+      () => Object.keys(localStorage).filter((k) => k.startsWith("apollo.dash.collapsed.")).length,
+    );
+    expect(collapseKeyCount).toBe(1);
+
+    await page.reload();
+    const stripAfterReload = page.getByTestId("project-strip").filter({ hasText: projetoNome });
+    await expect(stripAfterReload).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    await expect(stripAfterReload.getByTestId("project-strip-body")).toHaveCount(0);
+
+    await stripAfterReload.getByTestId("project-strip-collapse").click();
+    await expect(stripAfterReload.getByTestId("project-strip-body")).toBeVisible({
+      timeout: RESYNC_TIMEOUT,
+    });
+
+    const storedAfterExpand = await page.evaluate((key) => localStorage.getItem(key), collapsedKey);
+    expect(storedAfterExpand).toBe("false");
+  });
+});
