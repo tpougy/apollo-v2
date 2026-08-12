@@ -217,11 +217,18 @@ interface TarefaAgendaLike {
   etapa: { projeto: { id: string } | null } | null;
 }
 
+// Widened (Plan 23-05, Deviation Rule 1/2) to add an optional `nome` on
+// `template` -- `rotinasDoFundo`'s return type is this same interface, and
+// FundoDialog.svelte's read-only rotina list needs `instancia.template.nome`
+// (the template's own display name, distinct from `template.fundo.nome`)
+// to render each row's label. Optional, so every existing caller/fixture
+// that never supplied it (agendaPorDia/rotinasPorFundo's own call sites)
+// stays structurally compatible -- zero behavior change, zero new query.
 interface InstanciaAgendaLike {
   id: string;
   dataPrevista: string;
   tipoPrazo: string;
-  template: { fundo: { id: string; nome: string } | null } | null;
+  template: { nome?: string; fundo: { id: string; nome: string } | null } | null;
 }
 
 interface TicketAgendaLike {
