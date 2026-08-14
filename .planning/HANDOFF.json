@@ -1,0 +1,41 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-08-14T21:48:39.180Z",
+  "phase": "28",
+  "phase_name": "periodicidade-semanal",
+  "phase_dir": ".planning/phases/28-periodicidade-semanal",
+  "plan": null,
+  "task": null,
+  "total_tasks": null,
+  "status": "paused",
+  "completed_tasks": [],
+  "remaining_tasks": [
+    {"id": "plan", "name": "Spawn gsd-planner for Phase 28 (was killed by user mid-run before producing PLAN.md)", "status": "not_started"},
+    {"id": "plan-check", "name": "Spawn gsd-plan-checker on the resulting PLAN.md(s)", "status": "not_started"},
+    {"id": "execute", "name": "Execute Phase 28 plan(s) via gsd-executor", "status": "not_started"},
+    {"id": "code-review", "name": "Code review + fix loop for Phase 28", "status": "not_started"},
+    {"id": "verify", "name": "gsd-verifier goal-achievement check for Phase 28", "status": "not_started"},
+    {"id": "complete-28", "name": "phase.complete for 28, evolve PROJECT.md", "status": "not_started"},
+    {"id": "phase-29", "name": "Plan + execute Phase 29 (Controle de geração, RANGE-01)", "status": "not_started"},
+    {"id": "phase-30", "name": "Plan + execute Phase 30 (Ciclo de vida e higiene, LIFE-01/02/03)", "status": "not_started"},
+    {"id": "phase-31", "name": "Plan + execute Phase 31 (Cadastro em lote, BATCH-01)", "status": "not_started"},
+    {"id": "milestone-lifecycle", "name": "gsd-audit-milestone -> gsd-complete-milestone v1.5 -> gsd-cleanup", "status": "not_started"}
+  ],
+  "blockers": [],
+  "async_jobs": [],
+  "human_actions_pending": [],
+  "decisions": [
+    {"decision": "Milestone v1.5 requirements/roadmap derived from a verified real-onboarding report (18 fundos/84 templatesRotina/168 instanciasRotina cadastrados via apollo CLI para a RBR), not a spec/discussion — every finding independently confirmed in code before becoming a requirement.", "rationale": "User explicitly required code verification before accepting any reported finding.", "phase": "v1.5 milestone-level"},
+    {"decision": "Phase 26 VAL-02: propagarAtrasoSoft marked reserved (help text only), not implemented — reopening delay propagation is out of scope (C-09).", "rationale": "User/session decision recorded in REQUIREMENTS.md Context.", "phase": "26"},
+    {"decision": "Phase 26 JOB-01 (planned in 27, decided during 26 discussion): normalize status comparison instead of closing the free-text vocabulary.", "rationale": "status is free text by product decision elsewhere in the schema; the real bug is the exact-string comparison, not the freedom of text.", "phase": "27"},
+    {"decision": "Phase 27 JOB-02: extended du_fixo to accept offsetDias<=0 (last-business-day-anchored) instead of inventing a new tipoGeracao.", "rationale": "add_business_days already supports negative n; a new type would duplicate the whole CLI/test/fixture surface for what is semantically the same concept.", "phase": "27"},
+    {"decision": "Phase 27 code review found and fixed a genuine TS/Python parity bug in the new _is_concluida/isConcluida combining-mark stripping logic (two iterations of fix+re-review). A narrower residual risk (cross-runtime Unicode Character Database version drift on ~93 non-Portuguese code points) was consciously accepted and documented in .planning/phases/27-robustez-do-job/deferred-items.md rather than pursued further (3-iteration review-fix cap reached; risk is implausible for real Portuguese-language status data).", "rationale": "Diminishing returns past the documented cap; residual risk is out-of-domain for this project's real data.", "phase": "27"},
+    {"decision": "Phase 28 SEM-01: RESEARCH.md reversed CONTEXT.md's tentative recommendation. Decision is Option B — add a new `diaSemana` field to templatesRotina schema (NOT reusing offsetDias as a weekday index). Evidence: templatesRotina.offsetDias itself was added via a schema push mid-milestone in Phase 5 (git show 81155ed), so this would NOT be 'the first schema migration since v1.0' as CONTEXT.md assumed — that premise was factually wrong. A documented push playbook (bun run instant:push / instant:verify) already exists and should be reused verbatim. Also: every other choice-shaped field in this schema (tipoGeracao, regraCompetencia, status) is a plain string, never an encoded integer — reusing numeric offsetDias for a weekday enum would violate that convention.", "rationale": "Concrete git-history evidence over untested assumption in auto-generated CONTEXT.md.", "phase": "28"},
+    {"decision": "Phase 28 --dia-semana uses Portuguese weekday tokens (segunda/terca/quarta/quinta/sexta/sabado/domingo) as a click.Choice.", "rationale": "Consistent with this CLI's Portuguese-first UX throughout entities/rotina.py.", "phase": "28"},
+    {"decision": "Phase 28 will also extend web/src/lib/entities/defs/templatesRotina.ts's tipoGeracao select for SPA parity (adding 'semanal' + the diaSemana field), even though this wasn't explicitly in the auto-generated CONTEXT.md's escopo list.", "rationale": "Project's Core Value is explicit CLI<->SPA parity; Phase 5 precedent updated both channels together for offsetDias; RESEARCH.md flagged the SPA select as hard-coded to 3 options and would otherwise silently exclude 'semanal' from the UI.", "phase": "28"},
+    {"decision": "Phase 28 weekly-occurrence enumeration: closed-form 'first occurrence of the weekday on/after range_start, then step +7 days until > range_end', verified byte-identical between Python (date.weekday(), Monday=0) and TS (getUTCDay(), Sunday=0, convert via (getUTCDay()+6)%7 -- this idiom already exists unexported in web/src/lib/dashboard/derive.ts::semanaUtil, should be reused/extracted rather than reimplemented).", "rationale": "Verified via direct script execution in both runtimes during research, not just reasoning.", "phase": "28"}
+  ],
+  "uncommitted_files": [],
+  "next_action": "Re-invoke Skill(gsd-plan-phase, args='28') planning step: the planner agent for Phase 28 was killed mid-run by the user before it produced any PLAN.md (28-CONTEXT.md and 28-RESEARCH.md both exist and are already committed, so nothing was lost -- just re-spawn gsd-planner with the same prompt used before, which is fully reconstructable from 28-CONTEXT.md + 28-RESEARCH.md + this handoff's decisions list). Then continue the autonomous v1.5 milestone chain exactly as before: plan-checker -> execute -> code-review(+fix loop) -> verify -> phase.complete -> repeat for phases 29, 30, 31 -> gsd-audit-milestone -> gsd-complete-milestone v1.5 -> gsd-cleanup.",
+  "context_notes": "This is a fully autonomous /gsd-autonomous --from 26 --to 31 run for milestone v1.5, explicitly requested by the user with 'no AskUserQuestion, resolve grey areas yourself' instructions. The user's standing preference (recorded in cross-session memory as feedback_autonomous_milestone_reporting) is: stay silent between phases, report only at genuine completion or genuine blockers -- do not narrate progress on every sub-step. When the Phase 28 planner agent was killed, the user did not ask to stop the milestone -- they asked to save state and said they'll come back and ask to continue. So on resume, the correct behavior is: pick this handoff back up and continue the SAME autonomous chain silently through to milestone completion (phases 28-31 + lifecycle), not to re-ask about scope or re-derive decisions that are already fully recorded here and in the phase CONTEXT/RESEARCH files."
+}
