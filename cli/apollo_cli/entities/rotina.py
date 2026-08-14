@@ -50,7 +50,11 @@ from apollo_cli.crud_helpers import (
     update_entity,
     validate_iso_date,
 )
-from apollo_cli.routine_job import run_routine_instance_job, today_utc_iso_date
+from apollo_cli.routine_job import (
+    REGRAS_COMPETENCIA_SUPORTADAS,
+    run_routine_instance_job,
+    today_utc_iso_date,
+)
 
 _ETYPE_TEMPLATE = "templatesRotina"
 _ETYPE_INSTANCIA = "instanciasRotina"
@@ -125,10 +129,12 @@ group.add_command(instancia)
 )
 @click.option(
     "--regra-competencia",
+    type=click.Choice(REGRAS_COMPETENCIA_SUPORTADAS),
     required=True,
     help=(
-        "Free-form rule describing which competencia (reference month) each "
-        "generated instance belongs to. Not enforced/parsed by the CLI."
+        "Which competencia (reference month) rule applies to generated "
+        "instances of this template. Enforced by `apollo rotina "
+        "gerar-instancias`; see `apollo_cli.routine_job.shift_competencia`."
     ),
 )
 @click.option(
@@ -208,7 +214,12 @@ def criar(
     default=None,
     help="New generation type.",
 )
-@click.option("--regra-competencia", default=None, help="New competencia rule.")
+@click.option(
+    "--regra-competencia",
+    type=click.Choice(REGRAS_COMPETENCIA_SUPORTADAS),
+    default=None,
+    help="New competencia rule. Omit to leave unchanged.",
+)
 @click.option(
     "--propagar-atraso-soft/--nao-propagar-atraso-soft",
     default=None,

@@ -118,7 +118,7 @@ um resumo, não a fonte de verdade.
 ```
 --nome TEXT (obrigatório)
 --tipo-geracao [du_fixo|corrido_fixo|encadeado] (obrigatório)
---regra-competencia TEXT (obrigatório, livre — não parseado pela CLI)
+--regra-competencia [M0|M-1|M-2|M+1] (obrigatório)
 --propagar-atraso-soft / --nao-propagar-atraso-soft (default: off)
 --ativo / --inativo (default: --ativo)
 --fundo-id TEXT

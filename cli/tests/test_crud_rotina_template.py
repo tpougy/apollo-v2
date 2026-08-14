@@ -340,3 +340,58 @@ def test_deletar_unknown_id_is_not_found(run_cli: RunCli) -> None:
     assert result.result.exit_code != 0
     error_body = json.loads(result.result.output or result.result.stderr)
     assert error_body["error"] == "not_found"
+
+
+def test_criar_regra_competencia_invalida_e_recusada_na_hora(run_cli: RunCli) -> None:
+    suffix = unique_suffix()
+    result: CliInvocation = run_cli(
+        [
+            "rotina",
+            "template",
+            "criar",
+            "--nome",
+            f"Template Invalido {suffix}",
+            "--tipo-geracao",
+            "du_fixo",
+            "--regra-competencia",
+            "bogus",
+        ]
+    )
+    assert result.result.exit_code == 2
+    for expected in ("M0", "M-1", "M-2", "M+1"):
+        assert expected in result.result.output
+
+
+def test_editar_regra_competencia_invalida_e_recusada_na_hora(
+    run_cli: RunCli,
+    live_client: Instant,
+    cleanup_records: list[tuple[str, str]],
+) -> None:
+    suffix = unique_suffix()
+    criar_result: CliInvocation = run_cli(
+        [
+            "rotina",
+            "template",
+            "criar",
+            "--nome",
+            f"Template p/ Editar Invalido {suffix}",
+            "--tipo-geracao",
+            "du_fixo",
+            "--regra-competencia",
+            "M0",
+        ]
+    )
+    assert criar_result.result.exit_code == 0, criar_result.result.output
+    eid = cast("dict[str, Any]", criar_result.json_out())["id"]
+    cleanup_records.append(("templatesRotina", eid))
+
+    editar_result: CliInvocation = run_cli(
+        ["rotina", "template", "editar", "--id", eid, "--regra-competencia", "bogus"]
+    )
+    assert editar_result.result.exit_code == 2
+    for expected in ("M0", "M-1", "M-2", "M+1"):
+        assert expected in editar_result.result.output
+
+    record = _query_template(live_client, eid)
+    assert record is not None
+    assert record["regraCompetencia"] == "M0"
