@@ -1,109 +1,100 @@
 ---
 phase: 27-robustez-do-job
-fixed_at: 2026-08-14T21:30:00Z
+fixed_at: 2026-08-14T22:00:00Z
 review_path: .planning/phases/27-robustez-do-job/27-REVIEW.md
-iteration: 1
-findings_in_scope: 3
-fixed: 3
+iteration: 2
+findings_in_scope: 2
+fixed: 2
 skipped: 0
 status: all_fixed
 ---
 
 # Phase 27: Code Review Fix Report
 
-**Fixed at:** 2026-08-14T21:30:00Z
+**Fixed at:** 2026-08-14T22:00:00Z
 **Source review:** .planning/phases/27-robustez-do-job/27-REVIEW.md
-**Iteration:** 1
+**Iteration:** 2
 
 **Verification environment:** All fixes were applied and verified directly
 in the main checkout (`workflow.use_worktrees: false` in
 `.planning/config.json` — no isolated worktree was created for this run;
-edits and commits above land on `main` directly and are reproducible from
+edits and commits below land on `main` directly and are reproducible from
 the current working tree).
 
 **Summary:**
-- Findings in scope: 3 (fix_scope=critical_warning: 1 Critical, 2 Warning)
-- Fixed: 3
+- Findings in scope: 2 (fix_scope=critical_warning: 0 Critical, 2 Warning)
+- Fixed: 2
 - Skipped: 0
 
 ## Fixed Issues
 
-### CR-01: `isConcluida` (TS) and `_is_concluida` (Python) strip different sets of Unicode combining marks
+### WR-01: `isConcluida`/`_is_concluida` still diverge for combining marks with canonical combining class 0
 
-**Files modified:** `web/src/lib/routineJob.ts`, `shared/routine-job.testcases.json`
-**Commit:** `9e05b91`
-**Applied fix:** Replaced TS's fixed-codepoint-range strip
-(`replace(/[̀-ͯ]/g, "")`, limited to U+0300–036F) with a Unicode
-general-category strip (`replace(/\p{M}/gu, "")`), matching Python's
-`unicodedata.combining(ch) != 0` intent far more closely than a single
-32-codepoint range does. Added a new shared fixture scenario
-(`shared/routine-job.testcases.json`, `tpl-b4f`/`tpl-ext-1f`) using a status
-string `"concluida" + U+20D0 COMBINING LEFT HARPOON ABOVE` — a combining
-mark from the "Combining Diacritical Marks for Symbols" block, well outside
-the old TS regex's U+0300–036F range — and confirmed both runtimes now
-strip it and recognize the status as concluded:
-- Verified independently with a throwaway script: Python's
-  `unicodedata.combining`-based strip and TS's new `\p{M}`-based strip both
-  produce `"concluida"` for this input.
-- Both test suites already loop generically over
-  `FIXTURE["scenarios"]`/`scenarios` (`cli/tests/test_routine_job.py::test_scenario`,
-  `web/src/lib/routineJob.test.ts`'s "scenario fixture parity" describe
-  block), so the new fixture entry automatically produced a new assertion
-  in both languages with no additional test-file code required. Ran both:
-  `bun test src/lib/routineJob.test.ts` (59 pass, including the new case)
-  and `uv run pytest tests/test_routine_job.py -k test_scenario` (29 pass,
-  including `test_scenario[...U+20D0 COMBINING LEFT HARPOON ABOVE...]`).
+**Files modified:** `cli/apollo_cli/routine_job.py`, `shared/routine-job.testcases.json`
+**Commit:** `b73cad5`
+**Applied fix:** Changed Python's `_is_concluida` strip predicate from
+`unicodedata.combining(ch) != 0` (canonical combining class) to
+`unicodedata.category(ch)[0] != "M"` (Unicode general category `Mark`:
+Mn/Mc/Me) — the same category-based definition already used by TS's
+`\p{M}` regex, per the review's recommended fix. Both runtimes now use the
+identical predicate, closing the residual parity gap for marks whose
+canonical combining class is 0 (e.g. Thai/Tamil vowel signs) that CR-01's
+prior fix (range → category migration on the TS side only) left open.
 
-Note: the review's own caveat about `U+034F` COMBINING GRAPHEME JOINER
-(inside U+0300–036F but combining class 0, so Python does NOT strip it while
-`\p{M}` still would) remains a known, documented residual gap — the review
-explicitly flagged this as "won't be byte-for-byte identical" without a
-dedicated special-case, and building that special-case was not requested
-by this fix's scope (a mark outside the range, proving general-category
-agreement, was the chosen fixture case per the task instructions).
+Added a dedicated shared fixture case (`shared/routine-job.testcases.json`,
+`tpl-b4g`/`tpl-ext-1g`) using the review's exact reported divergent input —
+`"concluida" + U+0E31 THAI MAI HAN-AKAT` (category `Mn`, canonical combining
+class `0`) — asserting `dataPrevistaEstimada` is ABSENT in both runtimes
+(i.e. both now agree the status counts as "concluída"). Confirmed the fix
+directly:
+```
+$ uv run python -c "from apollo_cli.routine_job import _is_concluida; print(_is_concluida('concluida' + chr(0x0E31)))"
+True
+```
+(previously `False`, per the review's repro). Both fixture-driven test
+suites, which loop generically over `FIXTURE["scenarios"]`/`scenarios`,
+pick up the new case automatically and pass:
+- `uv run pytest cli/tests/test_routine_job.py -k "not live"` → 62 passed,
+  4 deselected (up from 61; net +1 for the new scenario).
+- `bun test web/src/lib/routineJob.test.ts` → 60 pass (up from 59), 0 fail.
 
-### WR-01: `nthBusinessDayFromMonthEnd`/`nth_business_day_from_month_end` silently mishandle `n > 0`
+Also verified the previously-passing CR-01 fixture case
+(`"concluida" + U+20D0`) still passes in both runtimes — the fix did not
+regress the earlier repro.
 
-**Files modified:** `web/src/lib/bizdays.ts`, `cli/apollo_cli/bizdays.py`
-**Commit:** `10e50ce`
-**Applied fix:** Added a defensive guard at the top of both functions per
-the review's suggested fix: TS throws `RangeError` and Python raises
-`ValueError` when `n > 0`, converting a previously silent
-walk-past-month-end into a loud, immediate failure. Updated both docstrings
-to state the invariant is now enforced (raises), not just documented as
-unsupported. Verified: `node_modules/.bin/tsc -p tsconfig.app.json --noEmit`
-reports zero errors for `bizdays.ts`; `python3 -c "import ast; ast.parse(...)"`
-confirms Python syntax validity; full non-live suites still pass —
-`bun test src/lib/bizdays.test.ts src/lib/routineJob.test.ts` (106 pass) and
-`uv run pytest tests/test_bizdays.py tests/test_routine_job.py -m "not live"`
-(256 pass) — confirming the only existing caller (`duFixoNthDay`/
-`_du_fixo_nth_day`) never triggers the new guard.
+### WR-02: New `n > 0` guard on `nthBusinessDayFromMonthEnd`/`nth_business_day_from_month_end` has zero test coverage
 
-### WR-02: Python test suite lacked the purity/conservation-law tests present in TS
+**Files modified:** `cli/tests/test_bizdays.py`, `web/src/lib/bizdays.test.ts`
+**Commit:** `33c72a2`
+**Applied fix:** Added a dedicated direct unit test in each runtime (the
+review's "more simply" alternative, chosen over extending the shared JSON
+fixture's `error` variant to a new class name, since Python's `ValueError`
+and TS's `RangeError` are different names for the same guard and the
+existing fixture mechanism assumes one shared error-class name across both
+languages — see `_ERROR_CLASSES`/`ERROR_CLASSES` maps in both test files):
+- `cli/tests/test_bizdays.py::test_nth_business_day_from_month_end_rejects_positive_n`
+  — `pytest.raises(ValueError, match="n must be <= 0")` calling
+  `nth_business_day_from_month_end(2026, 9, 1)`.
+- `web/src/lib/bizdays.test.ts` — `test("nthBusinessDayFromMonthEnd rejects
+  n > 0", ...)` — `expect(() => nthBusinessDayFromMonthEnd(2026, 9,
+  1)).toThrow(RangeError)`.
 
-**Files modified:** `cli/tests/test_routine_job.py`
-**Commit:** `2c867dd`
-**Applied fix:** Ported both TS test blocks (`web/src/lib/routineJob.test.ts:113-169`)
-to Python as `test_dropaudit_conservation_law_over_every_scenario` (matching
-the TS version's full behavior, including the "no template skipped more
-than once" duplicate-occurrence check, not just the review's simplified
-suggested snippet) and `test_compute_expected_instances_does_not_mutate_inputs`
-(using `json.loads(json.dumps(...))` for the deep-copy, matching the TS
-`JSON.parse(JSON.stringify(...))` idiom). Verified:
-`python3 -c "import ast; ast.parse(...)"` confirms syntax validity;
-`uv run pytest tests/test_routine_job.py -k "dropaudit or does_not_mutate"`
-(2 pass); full non-live suite `uv run pytest tests/test_routine_job.py -m "not live"`
-went from 59 to 61 passing tests with no regressions.
+Verified: `python3 -c "import ast; ast.parse(...)"` confirms Python syntax
+validity; `uv run pytest cli/tests/test_bizdays.py -q` → 198 passed (up
+from 197); `bun test web/src/lib/bizdays.test.ts` → 48 pass (up from 47),
+0 fail. The new tests would now catch a future regression (e.g. `if n > 0`
+silently changed to `if n > 1`) that no other existing test exercises,
+since the guard is unreachable from the function's only production caller.
 
 ## Skipped Issues
 
-None — all in-scope findings (CR-01, WR-01, WR-02) were fixed.
+None — both in-scope findings (WR-01, WR-02) were fixed.
 
-Info findings (IN-01, IN-02, IN-03) were out of scope for this fix pass
+Info findings (IN-01, IN-02, IN-03) remain out of scope for this fix pass
 (`fix_scope: critical_warning`) and were not addressed.
 
 ---
 
-_Fixed: 2026-08-14T21:30:00Z_
+_Fixed: 2026-08-14T22:00:00Z_
 _Fixer: Claude (gsd-code-fixer)_
-_Iteration: 1_
+_Iteration: 2_
