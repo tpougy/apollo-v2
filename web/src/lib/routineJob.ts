@@ -380,7 +380,7 @@ const CONCLUIDA_FORMS = new Set(["concluida", "concluido"]);
  * plural `"concluidas"` correctly does NOT match.
  */
 function isConcluida(status: string): boolean {
-  const stripped = status.trim().normalize("NFKD").replace(/[̀-ͯ]/g, "");
+  const stripped = status.trim().normalize("NFKD").replace(/\p{M}/gu, "");
   return CONCLUIDA_FORMS.has(stripped.toLowerCase());
 }
 
