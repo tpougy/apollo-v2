@@ -30,7 +30,7 @@ via `apollo` CLI), não de uma ideia de produto. Ver `.planning/REQUIREMENTS.md`
 contexto completo e a evidência de código de cada achado.
 
 - [x] **Phase 26: Validação na escrita** (completed 2026-08-14)
-- [ ] **Phase 27: Robustez do job**
+- [x] **Phase 27: Robustez do job** (completed 2026-08-14)
 - [ ] **Phase 28: Periodicidade semanal**
 - [ ] **Phase 29: Controle de geração**
 - [ ] **Phase 30: Ciclo de vida e higiene de dados**

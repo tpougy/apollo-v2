@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Correções descobertas no onboarding real do calendário de rotinas
-current_phase: 27
-current_phase_name: Robustez do job
-status: verifying
+current_phase: 28
+current_phase_name: Periodicidade semanal
+status: planning
 stopped_at: Completed 27-02-PLAN.md (JOB-01 normalized status recognition + JOB-03 nome-in-skipped, Phase 27 fully complete)
-last_updated: "2026-08-14T21:04:22.158Z"
+last_updated: "2026-08-14T21:32:27.100Z"
 last_activity: 2026-08-14
 last_activity_desc: "Completed 26-01-PLAN.md: apollo rotina template criar/editar --regra-competencia bound to click.Choice(REGRAS_COMPETENCIA_SUPORTADAS), rejecting out-of-enum values at exit 2 before any write (VAL-01); --propagar-atraso-soft help text corrected to state the value is stored but not currently read (VAL-02); instancia status docstring corrected to describe dedupeKey as plain concatenation, not a hash (VAL-03); 15 pre-existing CLI/e2e fixtures repaired to the new enum; full offline cli/ pytest suite (348 passed) and the affected live tests green."
 progress:
@@ -28,10 +28,10 @@ See: .planning/PROJECT.md (updated 2026-08-14)
 
 ## Current Position
 
-Phase: 27 of 31 (Robustez do job)
-Plan: 2 of 2
-Status: Phase complete — ready for verification
-Last activity: 2026-08-14 — Phase 26 complete, transitioned to Phase 27
+Phase: 28 of 31 (Periodicidade semanal)
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-08-14 — Phase 27 complete, transitioned to Phase 28
 
 Progress: [██████████] 100%
 
@@ -47,8 +47,8 @@ Progress: [██████████] 100%
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 25 | 2 | - | - |
 | 26 | 1 | - | - |
+| 27 | 2 | - | - |
 
 **Recent Trend:**
 
@@ -78,10 +78,6 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - v1.4 roadmap derivation: 10 requirements grouped into 2 phases (24-25) along the natural PKG/AUTH category boundary — no further split, per this milestone's explicit small/surgical scope (`cli/`-only, 3 related fixes). Phase 24 (packaging: vendored calendar + embedded default `app_id` + real `uv build`/`uv tool install` proof) sequenced before Phase 25 (auth: public `/runtime/auth/*` login) because AUTH-04 explicitly requires `apollo doctor`/`admin_token_present` to reflect PKG-03/PKG-04's new `app_id` resolution order — Phase 25 cannot be verified as "unaltered beyond what PKG-03/04 required" until Phase 24 lands.
 - v1.4 explicit non-goal, reaffirmed in REQUIREMENTS.md Context: `admin_token_present`/`apollo doctor` are kept exactly as-is (dev/ops support only), not removed even though the real login path no longer needs an admin token after this milestone.
 - v1.4 verification approach unchanged from v1.0-v1.3: no human UAT — every phase proven via real `uv build`/`uv tool install` runs in an isolated environment, real `pytest`/`ruff`/`ty` runs, and (for AUTH-01) a real magic-code email round trip against the live InstantDB app.
-- [Phase 25, Plan 01]: apollo auth login rewritten to call InstantDB's public /runtime/auth/send_magic_code and verify_magic_code endpoints directly via httpx, reusing instantdb's own api_error_from_response()/DEFAULT_API_URI/DEFAULT_TIMEOUT internals -- zero login_client()/admin-token usage remains in login(); proven live with INSTANT_APP_ADMIN_TOKEN entirely absent.
-- [Phase 25, Plan 01]: httpx package-legitimacy resolved autonomously (Task 0, no blocking human checkpoint) -- already a pinned, installed transitive dependency of instantdb; promoted to an explicit cli/pyproject.toml dependency with zero new install surface.
-- [Phase 25, Plan 02]: Ported web/e2e/helpers/magic-code.ts's readLatestMagicCode/readMagicCodeAfter into cli/tests/helpers/magic_code.py verbatim (same orules.ps1 peek command, regex, sender check, block separator) -- zero re-derivation from PROJECT.md C-10's own stale prose. Used a real subprocess.run()-based live test (not CliRunner) to prove INSTANT_APP_ADMIN_TOKEN absence in a genuinely isolated child-process environment, reusing test_packaging_live.py's env-copy-and-override idiom.
-- [Phase 25, Plan 02]: Phase 25 (Public Auth Login) is now fully complete -- AUTH-01 through AUTH-05 all live-verified; the real magic-code send+verify round trip completed end-to-end against production InstantDB with the admin token entirely absent, closing the one gap Plan 25-01 could not close on its own. This also completes v1.4 in full (Phases 24-25, PKG-01..05 + AUTH-01..05, 10/10 requirements) -- no further phases remain in this milestone.
 - v1.5 requirements originated from a real onboarding report (not a spec/discussion): an agent cadastrou o calendário de rotinas de controladoria da RBR via `apollo` CLI (18 fundos, 84 templatesRotina, 168 instanciasRotina) and hit 8 issues, each verified against `routine_job.py`/`routineJob.ts`/`bizdays.py`/`entities/rotina.py` before being accepted.
 - v1.5 roadmap derivation: 12 requirements grouped into 6 phases (26-31), P0 (falhas silenciosas) primeiro, depois P1 (lacunas de cobertura do calendário), depois P2 (atrito operacional) — Phase 26 (validação de escrita, sem tocar o job) antes de Phase 27 (robustez do job) para não colidir edições na mesma janela; Phase 28 (semanal) depende de 27 por estender o mesmo dispatch de `tipoGeracao`; Phase 29 (recorte de range) depende de 28 para cobrir o tipo semanal também; Phases 30-31 (higiene/lote) são tecnicamente independentes, sequenciadas por último por prioridade.
 - v1.5 decisões de implementação registradas em REQUIREMENTS.md Context: (1) JOB-01 normaliza a comparação de `status` em vez de fechar o vocabulário — `status` continua livre por decisão de produto já aplicada a outras entidades; (2) VAL-02 marca `propagarAtrasoSoft` como reservado em vez de implementar propagação — implementar reabriria C-09 (travado); (3) JOB-02 estende `du_fixo` para aceitar offset negativo em vez de criar um `tipoGeracao` novo — `add_business_days` já suporta contagem negativa; (4) SEM-01 (periodicidade semanal) será implementado por decisão explícita do usuário, mesmo cobrindo só 1 evento em 87 no calendário de origem.
