@@ -761,6 +761,42 @@
       "expectedSkipped": []
     },
     {
+      "nome": "encadeado (WR-01): antecessor persistido com status 'concluida' + combining mark com canonical combining class 0 (U+0E31 THAI MAI HAN-AKAT, categoria Unicode Mn) -> dataPrevistaEstimada AUSENTE (prova de paridade TS/Python para marcas com ccc=0, onde unicodedata.combining() e categoria Unicode divergem)",
+      "today": "2026-08-09",
+      "templates": [
+        {
+          "id": "tpl-b4g",
+          "nome": "Template tpl-b4g",
+          "tipoGeracao": "encadeado",
+          "regraCompetencia": "M0",
+          "offsetDias": 3,
+          "ativo": true,
+          "antecessor": {
+            "id": "tpl-ext-1g"
+          }
+        }
+      ],
+      "existing": [
+        {
+          "dedupeKey": "tpl-ext-1g:2026-09:2026-09-02",
+          "templateId": "tpl-ext-1g",
+          "competencia": "2026-09",
+          "dataPrevista": "2026-09-02",
+          "status": "concluidaั"
+        }
+      ],
+      "expectedInstances": [
+        {
+          "dedupeKey": "tpl-b4g:2026-09:2026-09-08",
+          "templateId": "tpl-b4g",
+          "competencia": "2026-09",
+          "dataPrevista": "2026-09-08",
+          "tipoPrazo": "soft"
+        }
+      ],
+      "expectedSkipped": []
+    },
+    {
       "nome": "encadeado: antecessor com instancia PERSISTIDA e status 'pendente' -> dataPrevistaEstimada presente",
       "today": "2026-08-09",
       "templates": [

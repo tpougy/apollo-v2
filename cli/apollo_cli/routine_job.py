@@ -328,9 +328,19 @@ def _is_concluida(status: str) -> bool:
     case, accent, and surrounding-whitespace variants of BOTH grammatical
     forms of the word (`concluida`/`concluido`) — never a substring/prefix
     match, so a plural `"concluidas"` correctly does NOT match.
+
+    Strips by Unicode general category (`M*`: Mn/Mc/Me — "Mark, nonspacing/
+    spacing combining/enclosing"), NOT canonical combining class
+    (`unicodedata.combining() != 0`). The two are not equivalent: some
+    combining marks (e.g. Thai/Tamil vowel signs) belong to category `Mark`
+    but carry canonical combining class 0, so `combining()`-based stripping
+    would miss them. TS's `isConcluida` strips via `\\p{M}` (the same
+    category-based definition), so this MUST stay category-based too —
+    see WR-01 in 27-REVIEW.md for the divergent-input regression this
+    guards against.
     """
     decomposed = unicodedata.normalize("NFKD", status.strip())
-    stripped = "".join(ch for ch in decomposed if not unicodedata.combining(ch))
+    stripped = "".join(ch for ch in decomposed if unicodedata.category(ch)[0] != "M")
     return stripped.casefold() in _CONCLUIDA_FORMS
 
 
