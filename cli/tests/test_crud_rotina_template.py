@@ -342,6 +342,73 @@ def test_deletar_unknown_id_is_not_found(run_cli: RunCli) -> None:
     assert error_body["error"] == "not_found"
 
 
+@pytest.mark.parametrize("regra", ["M-1", "M-2", "M+1"])
+def test_criar_aceita_regra_competencia_nao_m0(
+    regra: str,
+    run_cli: RunCli,
+    live_client: Instant,
+    cleanup_records: list[tuple[str, str]],
+) -> None:
+    """VAL-01/VAL-02/VAL-03 must-have: M-1/M-2/M+1 stay accepted and persist
+    unchanged — not just referenced inside a rejection-message assertion."""
+    suffix = unique_suffix()
+    result: CliInvocation = run_cli(
+        [
+            "rotina",
+            "template",
+            "criar",
+            "--nome",
+            f"Template Regra {regra} {suffix}",
+            "--tipo-geracao",
+            "du_fixo",
+            "--regra-competencia",
+            regra,
+        ]
+    )
+    assert result.result.exit_code == 0, result.result.output
+    eid = cast("dict[str, Any]", result.json_out())["id"]
+    cleanup_records.append(("templatesRotina", eid))
+    record = _query_template(live_client, eid)
+    assert record is not None
+    assert record["regraCompetencia"] == regra
+
+
+@pytest.mark.parametrize("regra", ["M-1", "M-2", "M+1"])
+def test_editar_aceita_regra_competencia_nao_m0(
+    regra: str,
+    run_cli: RunCli,
+    live_client: Instant,
+    cleanup_records: list[tuple[str, str]],
+) -> None:
+    """Mirrors test_criar_aceita_regra_competencia_nao_m0 but through editar:
+    an existing M0 template can be changed to M-1/M-2/M+1 and it round-trips."""
+    suffix = unique_suffix()
+    criar_result: CliInvocation = run_cli(
+        [
+            "rotina",
+            "template",
+            "criar",
+            "--nome",
+            f"Template p/ Editar Regra {regra} {suffix}",
+            "--tipo-geracao",
+            "du_fixo",
+            "--regra-competencia",
+            "M0",
+        ]
+    )
+    assert criar_result.result.exit_code == 0, criar_result.result.output
+    eid = cast("dict[str, Any]", criar_result.json_out())["id"]
+    cleanup_records.append(("templatesRotina", eid))
+
+    editar_result: CliInvocation = run_cli(
+        ["rotina", "template", "editar", "--id", eid, "--regra-competencia", regra]
+    )
+    assert editar_result.result.exit_code == 0, editar_result.result.output
+    record = _query_template(live_client, eid)
+    assert record is not None
+    assert record["regraCompetencia"] == regra
+
+
 def test_criar_regra_competencia_invalida_e_recusada_na_hora(run_cli: RunCli) -> None:
     suffix = unique_suffix()
     result: CliInvocation = run_cli(
