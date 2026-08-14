@@ -143,13 +143,18 @@ function lastDayOfMonth(year: number, month: number): number {
  * calendar day (JOB-02/D-27-B). `n=0` is the anchor itself — the last
  * business day of the month; `n<0` counts `abs(n)` business days before
  * that anchor via `addBusinessDays` (which already supports a negative step
- * count). `n>0` is not a supported input here — callers dispatch on sign.
+ * count). `n>0` is not a supported input here — callers dispatch on sign —
+ * and throws a `RangeError` rather than silently walking forward.
  *
  * The anchor is the month's last calendar day, or — when that day is not a
  * business day — the closest earlier business day (rolls BACKWARD, never
  * forward into the next month).
  */
 export function nthBusinessDayFromMonthEnd(year: number, month: number, n: number): string {
+  if (n > 0) {
+    throw new RangeError(`nthBusinessDayFromMonthEnd: n must be <= 0, got ${n}`);
+  }
+
   const lastIso = formatIso(year, month, lastDayOfMonth(year, month));
   const anchor = isBusinessDay(lastIso) ? lastIso : addBusinessDays(lastIso, -1);
   return n === 0 ? anchor : addBusinessDays(anchor, n);

@@ -130,12 +130,16 @@ def nth_business_day_from_month_end(year: int, month: int, n: int) -> str:
     business day of the month; `n<0` counts `abs(n)` business days before
     that anchor via `add_business_days` (which already supports a negative
     step count). `n>0` is not a supported input here — callers dispatch on
-    sign (see `routine_job.py`'s `_du_fixo_nth_day`).
+    sign (see `routine_job.py`'s `_du_fixo_nth_day`) — and raises
+    `ValueError` rather than silently walking forward.
 
     The anchor is the month's last calendar day, or — when that day is not a
     business day — the closest earlier business day (rolls BACKWARD, never
     forward into the next month).
     """
+    if n > 0:
+        raise ValueError(f"nth_business_day_from_month_end: n must be <= 0, got {n}")
+
     last_day = pycalendar.monthrange(year, month)[1]
     last_iso = date(year, month, last_day).isoformat()
     anchor = last_iso if is_business_day(last_iso) else add_business_days(last_iso, -1)
