@@ -357,3 +357,78 @@ def test_gerar_instancias_du_fixo_offset_le_zero_real_previa_du2_case(
 
     assert _by_competencia(offset_neg2_id) == {"2026-08": "2026-08-27", "2026-09": "2026-09-28"}
     assert _by_competencia(offset_zero_id) == {"2026-08": "2026-08-31", "2026-09": "2026-09-30"}
+
+
+@pytest.mark.live
+def test_gerar_instancias_recognizes_normalized_concluida_status(
+    run_cli: RunCli,
+    live_client: Instant,
+    live_session: Session,
+    cleanup_records: list[tuple[str, str]],
+) -> None:
+    """JOB-01/D-27-A: proves `_is_concluida` recognizes a real, accented and
+    capitalized `"Concluída"` status live against production InstantDB —
+    the antecessor's persisted instance must correctly suppress
+    `dataPrevistaEstimada` on a newly-created `encadeado` successor.
+    """
+    suffix = unique_suffix()
+
+    antecessor_id = _create_routine_template(
+        run_cli,
+        cleanup_records,
+        nome=f"phase27-cli-du-antecessor-{suffix}",
+        tipo_geracao="du_fixo",
+        regra_competencia="M0",
+        offset_dias=5,
+    )
+
+    run1_result: CliInvocation = run_cli(
+        ["rotina", "gerar-instancias", "--data-base", "2026-08-09"]
+    )
+    assert run1_result.result.exit_code == 0, run1_result.result.output
+
+    antecessor_rows = _query_instances_by_template(live_client, antecessor_id)
+    assert len(antecessor_rows) == 1
+    antecessor_row = antecessor_rows[0]
+    cleanup_records.append(("instanciasRotina", antecessor_row["id"]))
+    assert antecessor_row["competencia"] == "2026-09"
+    assert to_iso_date(antecessor_row["dataPrevista"]) == "2026-09-08"
+
+    status_result: CliInvocation = run_cli(
+        [
+            "rotina",
+            "instancia",
+            "status",
+            "--id",
+            antecessor_row["id"],
+            "--status",
+            "Concluída",
+        ]
+    )
+    assert status_result.result.exit_code == 0, status_result.result.output
+
+    successor_id = _create_routine_template(
+        run_cli,
+        cleanup_records,
+        nome=f"phase27-cli-du-successor-{suffix}",
+        tipo_geracao="encadeado",
+        regra_competencia="M0",
+        offset_dias=2,
+        antecessor_id=antecessor_id,
+    )
+
+    run2_result: CliInvocation = run_cli(
+        ["rotina", "gerar-instancias", "--data-base", "2026-08-09"]
+    )
+    assert run2_result.result.exit_code == 0, run2_result.result.output
+
+    successor_rows = _query_instances_by_template(live_client, successor_id)
+    assert len(successor_rows) == 1
+    successor_row = successor_rows[0]
+    cleanup_records.append(("instanciasRotina", successor_row["id"]))
+    assert to_iso_date(successor_row["dataPrevista"]) == "2026-09-10"
+    assert successor_row.get("dataPrevistaEstimada") is None, (
+        "a real accented/capitalized 'Concluída' antecessor status must be "
+        "recognized as concluded, omitting dataPrevistaEstimada on the "
+        "newly-created encadeado successor"
+    )

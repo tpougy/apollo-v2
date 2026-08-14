@@ -215,7 +215,12 @@
       ],
       "existing": [],
       "expectedInstances": [],
-      "expectedSkipped": [{ "templateId": "tpl-c", "reason": "offset_dias_ausente" }]
+      "expectedSkipped": [
+        {
+          "templateId": "tpl-c",
+          "reason": "offset_dias_ausente"
+        }
+      ]
     },
     {
       "nome": "du_fixo offsetDias=0 agora e valido (JOB-02): ultimo dia util do mes, nao mais um erro",
@@ -264,7 +269,12 @@
       ],
       "existing": [],
       "expectedInstances": [],
-      "expectedSkipped": [{ "templateId": "tpl-e", "reason": "regra_competencia_nao_suportada" }]
+      "expectedSkipped": [
+        {
+          "templateId": "tpl-e",
+          "reason": "regra_competencia_nao_suportada"
+        }
+      ]
     },
     {
       "nome": "corrido_fixo offsetDias=10, hoje antes do dia 10: gera os dois meses",
@@ -430,7 +440,9 @@
           "regraCompetencia": "manual",
           "offsetDias": 3,
           "ativo": true,
-          "antecessor": { "id": "tpl-a2" }
+          "antecessor": {
+            "id": "tpl-a2"
+          }
         }
       ],
       "existing": [],
@@ -471,7 +483,9 @@
           "regraCompetencia": "M0",
           "offsetDias": 3,
           "ativo": true,
-          "antecessor": { "id": "tpl-a3" }
+          "antecessor": {
+            "id": "tpl-a3"
+          }
         },
         {
           "id": "tpl-c3",
@@ -479,7 +493,9 @@
           "regraCompetencia": "M0",
           "offsetDias": 2,
           "ativo": true,
-          "antecessor": { "id": "tpl-b3" }
+          "antecessor": {
+            "id": "tpl-b3"
+          }
         }
       ],
       "existing": [],
@@ -520,7 +536,9 @@
           "regraCompetencia": "M0",
           "offsetDias": 3,
           "ativo": true,
-          "antecessor": { "id": "tpl-ext-1" }
+          "antecessor": {
+            "id": "tpl-ext-1"
+          }
         }
       ],
       "existing": [
@@ -544,6 +562,147 @@
       "expectedSkipped": []
     },
     {
+      "nome": "encadeado (JOB-01): antecessor persistido com status 'CONCLUIDA' (maiusculas) -> dataPrevistaEstimada AUSENTE (normalizado)",
+      "today": "2026-08-09",
+      "templates": [
+        {
+          "id": "tpl-b4b",
+          "tipoGeracao": "encadeado",
+          "regraCompetencia": "M0",
+          "offsetDias": 3,
+          "ativo": true,
+          "antecessor": {
+            "id": "tpl-ext-1b"
+          }
+        }
+      ],
+      "existing": [
+        {
+          "dedupeKey": "tpl-ext-1b:2026-09:2026-09-02",
+          "templateId": "tpl-ext-1b",
+          "competencia": "2026-09",
+          "dataPrevista": "2026-09-02",
+          "status": "CONCLUIDA"
+        }
+      ],
+      "expectedInstances": [
+        {
+          "dedupeKey": "tpl-b4b:2026-09:2026-09-08",
+          "templateId": "tpl-b4b",
+          "competencia": "2026-09",
+          "dataPrevista": "2026-09-08",
+          "tipoPrazo": "soft"
+        }
+      ],
+      "expectedSkipped": []
+    },
+    {
+      "nome": "encadeado (JOB-01): antecessor persistido com status 'Concluída' (acentuado, capitalizado) -> dataPrevistaEstimada AUSENTE (normalizado)",
+      "today": "2026-08-09",
+      "templates": [
+        {
+          "id": "tpl-b4c",
+          "tipoGeracao": "encadeado",
+          "regraCompetencia": "M0",
+          "offsetDias": 3,
+          "ativo": true,
+          "antecessor": {
+            "id": "tpl-ext-1c"
+          }
+        }
+      ],
+      "existing": [
+        {
+          "dedupeKey": "tpl-ext-1c:2026-09:2026-09-02",
+          "templateId": "tpl-ext-1c",
+          "competencia": "2026-09",
+          "dataPrevista": "2026-09-02",
+          "status": "Concluída"
+        }
+      ],
+      "expectedInstances": [
+        {
+          "dedupeKey": "tpl-b4c:2026-09:2026-09-08",
+          "templateId": "tpl-b4c",
+          "competencia": "2026-09",
+          "dataPrevista": "2026-09-08",
+          "tipoPrazo": "soft"
+        }
+      ],
+      "expectedSkipped": []
+    },
+    {
+      "nome": "encadeado (JOB-01): antecessor persistido com status 'concluído ' (masculino, espaco final) -> dataPrevistaEstimada AUSENTE (normalizado)",
+      "today": "2026-08-09",
+      "templates": [
+        {
+          "id": "tpl-b4d",
+          "tipoGeracao": "encadeado",
+          "regraCompetencia": "M0",
+          "offsetDias": 3,
+          "ativo": true,
+          "antecessor": {
+            "id": "tpl-ext-1d"
+          }
+        }
+      ],
+      "existing": [
+        {
+          "dedupeKey": "tpl-ext-1d:2026-09:2026-09-02",
+          "templateId": "tpl-ext-1d",
+          "competencia": "2026-09",
+          "dataPrevista": "2026-09-02",
+          "status": "concluído "
+        }
+      ],
+      "expectedInstances": [
+        {
+          "dedupeKey": "tpl-b4d:2026-09:2026-09-08",
+          "templateId": "tpl-b4d",
+          "competencia": "2026-09",
+          "dataPrevista": "2026-09-08",
+          "tipoPrazo": "soft"
+        }
+      ],
+      "expectedSkipped": []
+    },
+    {
+      "nome": "encadeado (JOB-01): antecessor persistido com status 'concluidas' (plural, NAO e uma variante valida) -> dataPrevistaEstimada presente (prova de nao-match)",
+      "today": "2026-08-09",
+      "templates": [
+        {
+          "id": "tpl-b4e",
+          "tipoGeracao": "encadeado",
+          "regraCompetencia": "M0",
+          "offsetDias": 3,
+          "ativo": true,
+          "antecessor": {
+            "id": "tpl-ext-1e"
+          }
+        }
+      ],
+      "existing": [
+        {
+          "dedupeKey": "tpl-ext-1e:2026-09:2026-09-02",
+          "templateId": "tpl-ext-1e",
+          "competencia": "2026-09",
+          "dataPrevista": "2026-09-02",
+          "status": "concluidas"
+        }
+      ],
+      "expectedInstances": [
+        {
+          "dedupeKey": "tpl-b4e:2026-09:2026-09-08",
+          "templateId": "tpl-b4e",
+          "competencia": "2026-09",
+          "dataPrevista": "2026-09-08",
+          "dataPrevistaEstimada": "2026-09-08",
+          "tipoPrazo": "soft"
+        }
+      ],
+      "expectedSkipped": []
+    },
+    {
       "nome": "encadeado: antecessor com instancia PERSISTIDA e status 'pendente' -> dataPrevistaEstimada presente",
       "today": "2026-08-09",
       "templates": [
@@ -553,7 +712,9 @@
           "regraCompetencia": "M0",
           "offsetDias": 3,
           "ativo": true,
-          "antecessor": { "id": "tpl-ext-2" }
+          "antecessor": {
+            "id": "tpl-ext-2"
+          }
         }
       ],
       "existing": [
@@ -592,7 +753,12 @@
       ],
       "existing": [],
       "expectedInstances": [],
-      "expectedSkipped": [{ "templateId": "tpl-b6", "reason": "antecessor_ausente" }]
+      "expectedSkipped": [
+        {
+          "templateId": "tpl-b6",
+          "reason": "antecessor_ausente"
+        }
+      ]
     },
     {
       "nome": "encadeado cujo antecessor nao produziu instancia (nem computada nem persistida) -> antecessor_sem_instancia; nunca uma data adivinhada",
@@ -604,12 +770,19 @@
           "regraCompetencia": "M0",
           "offsetDias": 3,
           "ativo": true,
-          "antecessor": { "id": "tpl-nonexistent" }
+          "antecessor": {
+            "id": "tpl-nonexistent"
+          }
         }
       ],
       "existing": [],
       "expectedInstances": [],
-      "expectedSkipped": [{ "templateId": "tpl-b7", "reason": "antecessor_sem_instancia" }]
+      "expectedSkipped": [
+        {
+          "templateId": "tpl-b7",
+          "reason": "antecessor_sem_instancia"
+        }
+      ]
     },
     {
       "nome": "encadeado: ciclo B<->C reportado como antecessor_ciclico para ambos; template saudavel na mesma chamada nao e afetado (blast radius)",
@@ -629,7 +802,9 @@
           "regraCompetencia": "M0",
           "offsetDias": 1,
           "ativo": true,
-          "antecessor": { "id": "tpl-cycle-c" }
+          "antecessor": {
+            "id": "tpl-cycle-c"
+          }
         },
         {
           "id": "tpl-cycle-c",
@@ -637,7 +812,9 @@
           "regraCompetencia": "M0",
           "offsetDias": 1,
           "ativo": true,
-          "antecessor": { "id": "tpl-cycle-b" }
+          "antecessor": {
+            "id": "tpl-cycle-b"
+          }
         }
       ],
       "existing": [],
@@ -658,8 +835,14 @@
         }
       ],
       "expectedSkipped": [
-        { "templateId": "tpl-cycle-b", "reason": "antecessor_ciclico" },
-        { "templateId": "tpl-cycle-c", "reason": "antecessor_ciclico" }
+        {
+          "templateId": "tpl-cycle-b",
+          "reason": "antecessor_ciclico"
+        },
+        {
+          "templateId": "tpl-cycle-c",
+          "reason": "antecessor_ciclico"
+        }
       ]
     },
     {
@@ -680,7 +863,9 @@
           "regraCompetencia": "M0",
           "offsetDias": 36,
           "ativo": true,
-          "antecessor": { "id": "tpl-wide9" }
+          "antecessor": {
+            "id": "tpl-wide9"
+          }
         }
       ],
       "existing": [],
@@ -728,7 +913,9 @@
           "regraCompetencia": "M0",
           "offsetDias": 3,
           "ativo": true,
-          "antecessor": { "id": "tpl-inactive10" }
+          "antecessor": {
+            "id": "tpl-inactive10"
+          }
         }
       ],
       "existing": [
@@ -770,7 +957,9 @@
           "regraCompetencia": "M0",
           "offsetDias": 0,
           "ativo": true,
-          "antecessor": { "id": "tpl-a11" }
+          "antecessor": {
+            "id": "tpl-a11"
+          }
         }
       ],
       "existing": [],
@@ -831,7 +1020,12 @@
           "tipoPrazo": "soft"
         }
       ],
-      "expectedSkipped": [{ "templateId": "tpl-h", "reason": "offset_dias_ausente" }]
+      "expectedSkipped": [
+        {
+          "templateId": "tpl-h",
+          "reason": "offset_dias_ausente"
+        }
+      ]
     },
     {
       "nome": "offsetDias grande o suficiente para estourar CALENDAR_END (CalendarRangeError) e reportado como skipped; template saudavel na mesma chamada nao e afetado",
@@ -871,7 +1065,12 @@
           "tipoPrazo": "soft"
         }
       ],
-      "expectedSkipped": [{ "templateId": "tpl-j", "reason": "offset_dias_invalido" }]
+      "expectedSkipped": [
+        {
+          "templateId": "tpl-j",
+          "reason": "offset_dias_invalido"
+        }
+      ]
     },
     {
       "nome": "du_fixo offsetDias=-2 (JOB-02): 2 dias uteis antes do ultimo dia util do mes, caso real Previa DU-2",

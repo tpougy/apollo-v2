@@ -43,6 +43,23 @@ here so a reader never has to reconstruct them from the plan:
   runs; a key derived from a moving date would re-create the successor on
   every run and destroy idempotency.
 
+`_is_concluida` (**JOB-01/D-27-A**): D-05-E's `status != "concluida"` comparison
+was an exact-literal match against ONE unaccented, lowercase spelling — real
+onboarding data recorded `"Concluída"`/`"CONCLUIDA"` and every one of those
+was silently missed, computing a stale `dataPrevistaEstimada` flag.
+`_is_concluida(status)` replaces the exact comparison with a normalized one:
+`unicodedata.normalize("NFKD", status.strip())` strips accents (combining
+marks removed), then `.casefold()` folds case, and the result is checked
+against `_CONCLUIDA_FORMS = frozenset({"concluida", "concluido"})` — BOTH the
+feminine (`concluida`) and masculine (`concluido`) grammatical forms are
+recognized deliberately, since real data uses both. This is strictly a
+two-literal-form set, never a substring/prefix match: a plural
+`"concluidas"` is a genuinely different word and must NOT match. `status`
+itself is never validated or constrained at write time (`apollo rotina
+instancia status --status <valor>` keeps accepting any string verbatim) —
+this normalization is read-only and internal to the job's `encadeado`
+successor resolution.
+
 `du_fixo` (**JOB-02/D-27-B**): `offsetDias >= 1` counts business days forward
 from the month's 1st, unchanged, via `nth_business_day_of_month`.
 `offsetDias <= 0` counts business days BACKWARD from the month's last
@@ -75,6 +92,7 @@ from __future__ import annotations
 
 import calendar as pycalendar
 import os
+import unicodedata
 from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
@@ -293,6 +311,20 @@ def _lookup_antecessor_instances(
     return by_competencia
 
 
+_CONCLUIDA_FORMS: Final[frozenset[str]] = frozenset({"concluida", "concluido"})
+
+
+def _is_concluida(status: str) -> bool:
+    """Normalized "concluída" recognition (JOB-01/D-27-A): tolerant of
+    case, accent, and surrounding-whitespace variants of BOTH grammatical
+    forms of the word (`concluida`/`concluido`) — never a substring/prefix
+    match, so a plural `"concluidas"` correctly does NOT match.
+    """
+    decomposed = unicodedata.normalize("NFKD", status.strip())
+    stripped = "".join(ch for ch in decomposed if not unicodedata.combining(ch))
+    return stripped.casefold() in _CONCLUIDA_FORMS
+
+
 def compute_expected_instances(
     templates: list[dict[str, Any]],
     today: str,
@@ -430,7 +462,7 @@ def compute_expected_instances(
                     # D-05-E: mark the date as provisional whenever the
                     # antecessor's instance is not yet persisted, or is
                     # persisted but not yet "concluida".
-                    estimada = (not record.persisted) or record.status != "concluida"
+                    estimada = (not record.persisted) or not _is_concluida(record.status)
 
                     instance: dict[str, Any] = {
                         "dedupeKey": build_dedupe_key(template["id"], competencia, data_prevista),

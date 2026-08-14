@@ -354,6 +354,16 @@ def status(eid: str, status: str) -> None:
     duplicate alongside it —
     breaking the one idempotency guarantee this system promises (PROJECT.md
     C-06).
+
+    `status` remains free text here — this command never validates or
+    constrains it. `gerar-instancias`'s `encadeado` successor resolution
+    (`_is_concluida`, JOB-01/D-27-A) reads it back and recognizes spellings
+    of "concluída"/"concluído" differing only by surrounding whitespace,
+    case, or accent (e.g. "Concluída", "CONCLUIDA", "concluído ") as
+    concluded; any other spelling, including a plural ("concluidas") or an
+    otherwise different word, is treated as not-yet-concluded. That
+    recognition is purely read-only and internal to the generation job — it
+    is never enforced here at write time.
     """
     update_entity(etype=_ETYPE_INSTANCIA, eid=eid, fields={"status": status})
     emit({"id": eid, "updated": True})

@@ -51,6 +51,23 @@
  *   runs; a key derived from a moving date would re-create the successor on
  *   every run and destroy idempotency.
  *
+ * `isConcluida` (**JOB-01/D-27-A**): D-05-E's `status !== "concluida"`
+ * comparison was an exact-literal match against ONE unaccented, lowercase
+ * spelling — real onboarding data recorded `"Concluída"`/`"CONCLUIDA"` and
+ * every one of those was silently missed, computing a stale
+ * `dataPrevistaEstimada` flag. `isConcluida(status)` replaces the exact
+ * comparison with a normalized one: `status.trim().normalize("NFKD")` with
+ * combining marks stripped (accent removal), then `.toLowerCase()` (case
+ * folding), checked against `CONCLUIDA_FORMS = new Set(["concluida",
+ * "concluido"])` — BOTH the feminine (`concluida`) and masculine
+ * (`concluido`) grammatical forms are recognized deliberately, since real
+ * data uses both. This is strictly a two-literal-form set, never a
+ * substring/prefix match: a plural `"concluidas"` is a genuinely different
+ * word and must NOT match. `status` itself is never validated or
+ * constrained at write time (`apollo rotina instancia status --status
+ * <valor>` keeps accepting any string verbatim) — this normalization is
+ * read-only and internal to the job's `encadeado` successor resolution.
+ *
  * `du_fixo` (**JOB-02/D-27-B**): `offsetDias >= 1` counts business days
  * forward from the month's 1st, unchanged, via `nthBusinessDayOfMonth`.
  * `offsetDias <= 0` counts business days BACKWARD from the month's last
@@ -344,6 +361,22 @@ interface PendingEncadeado {
   offsetDias: number;
 }
 
+const CONCLUIDA_FORMS = new Set(["concluida", "concluido"]);
+
+/**
+ * Normalized "concluída" recognition (JOB-01/D-27-A): tolerant of case,
+ * accent, and surrounding-whitespace variants of BOTH grammatical forms of
+ * the word (`concluida`/`concluido`) — never a substring/prefix match, so a
+ * plural `"concluidas"` correctly does NOT match.
+ */
+function isConcluida(status: string): boolean {
+  const stripped = status
+    .trim()
+    .normalize("NFKD")
+    .replace(/[̀-ͯ]/g, "");
+  return CONCLUIDA_FORMS.has(stripped.toLowerCase());
+}
+
 export function computeExpectedInstances(
   templates: readonly TemplateRow[],
   today: string,
@@ -497,7 +530,7 @@ export function computeExpectedInstances(
           // D-05-E: mark the date as provisional whenever the antecessor's
           // instance is not yet persisted, or is persisted but not yet
           // "concluida".
-          const estimada = !record.persisted || record.status !== "concluida";
+          const estimada = !record.persisted || !isConcluida(record.status);
 
           instances.push({
             dedupeKey: buildDedupeKey(template.id, competencia, dataPrevista),
