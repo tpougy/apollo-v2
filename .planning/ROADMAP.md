@@ -100,7 +100,7 @@ edições em `entities/rotina.py`/`routine_job.py` na mesma janela)
 
 Plans:
 
-- [ ] 27-01-PLAN.md — `du_fixo` aceita `offsetDias <= 0` (nova `nth_business_day_from_month_end`
+- [x] 27-01-PLAN.md — `du_fixo` aceita `offsetDias <= 0` (nova `nth_business_day_from_month_end`
   em `bizdays.py`/`.ts`, dispatch por sinal, `--help` corrigido, caso real Prévia DU-2 provado
   ao vivo) (JOB-02)
 

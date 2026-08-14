@@ -87,7 +87,7 @@ foram decididas nesta sessão, antes do roadmap):
   documenta esse acoplamento (quais grafias contam como "concluída" para
   fins de geração de sucessores).
 
-- [ ] **JOB-02**: `du_fixo` aceita `offsetDias <= 0`, com a semântica "contado
+- [x] **JOB-02**: `du_fixo` aceita `offsetDias <= 0`, com a semântica "contado
   a partir do último dia útil do mês" (`0` = último DU do mês; negativo = N
   dias úteis antes do último), implementada como uma nova função em
   `bizdays.py`/`bizdays.ts` construída sobre `add_business_days` (que já

@@ -5,15 +5,15 @@ milestone_name: Correções descobertas no onboarding real do calendário de rot
 current_phase: 27
 current_phase_name: Robustez do job
 status: executing
-stopped_at: Completed 26-01-PLAN.md (Validação na escrita, VAL-01/02/03 done)
-last_updated: "2026-08-14T20:46:14.823Z"
+stopped_at: Completed 27-01-PLAN.md (du_fixo accepts offsetDias <= 0, JOB-02 done)
+last_updated: "2026-08-14T20:53:52.639Z"
 last_activity: 2026-08-14
 last_activity_desc: "Completed 26-01-PLAN.md: apollo rotina template criar/editar --regra-competencia bound to click.Choice(REGRAS_COMPETENCIA_SUPORTADAS), rejecting out-of-enum values at exit 2 before any write (VAL-01); --propagar-atraso-soft help text corrected to state the value is stored but not currently read (VAL-02); instancia status docstring corrected to describe dedupeKey as plain concatenation, not a hash (VAL-03); 15 pre-existing CLI/e2e fixtures repaired to the new enum; full offline cli/ pytest suite (348 passed) and the affected live tests green."
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 3
-  completed_plans: 1
+  completed_plans: 2
   percent: 17
 ---
 
@@ -29,11 +29,11 @@ See: .planning/PROJECT.md (updated 2026-08-14)
 ## Current Position
 
 Phase: 27 of 31 (Robustez do job)
-Plan: Not started
+Plan: 2 of 2
 Status: Ready to execute
 Last activity: 2026-08-14 — Phase 26 complete, transitioned to Phase 27
 
-Progress: [██████████] 100%
+Progress: [███████░░░] 67%
 
 ## Performance Metrics
 
@@ -65,6 +65,7 @@ Progress: [██████████] 100%
 | Phase 25 P01 | ~12min | 3 tasks | 7 files |
 | Phase 25 P02 | 8min | 2 tasks | 3 files |
 | Phase 26 P01 | ~15min | 3 tasks | 8 files |
+| Phase 27 P01 | ~20min | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -85,6 +86,7 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - v1.5 decisões de implementação registradas em REQUIREMENTS.md Context: (1) JOB-01 normaliza a comparação de `status` em vez de fechar o vocabulário — `status` continua livre por decisão de produto já aplicada a outras entidades; (2) VAL-02 marca `propagarAtrasoSoft` como reservado em vez de implementar propagação — implementar reabriria C-09 (travado); (3) JOB-02 estende `du_fixo` para aceitar offset negativo em vez de criar um `tipoGeracao` novo — `add_business_days` já suporta contagem negativa; (4) SEM-01 (periodicidade semanal) será implementado por decisão explícita do usuário, mesmo cobrindo só 1 evento em 87 no calendário de origem.
 - v1.5 causa raiz adicional encontrada além do relatado pelo usuário (LIFE-03): o resíduo de teste E2E na base real (achado do usuário em P2-2) não é um incidente pontual — não existe hoje um `app_id` de teste separado do usado para dados reais em nenhum dos dois runtimes, então qualquer rodada futura de teste `live`/Playwright pode reintroduzir o mesmo resíduo até essa separação existir.
 - [Phase 26, Plan 01]: click.Choice enum enforcement on regra-competencia (imported from routine_job.py, never redeclared) closes VAL-01; propagar-atraso-soft help text and instancia status's dedupeKey docstring corrected for VAL-02/VAL-03. Repaired 15 pre-existing CLI/e2e fixtures broken by the new enum. Logged an unrelated, pre-existing live-DB pagination flake (test_criar_without_offset_dias_omits_key_entirely) to deferred-items.md.
+- [Phase 27, Plan 01]: du_fixo extended to accept offsetDias <= 0 via a sign-based dispatch wrapper (_du_fixo_nth_day/duFixoNthDay) passed as the pre-existing nth_day_fn parameter -- no new call site, no duplicated range/dedupeKey/competencia logic. New nth_business_day_from_month_end/nthBusinessDayFromMonthEnd lives in bizdays.py/.ts (not routine_job.py/routineJob.ts, its siblings' home) per CONTEXT.md's explicit target, requiring a small locally-duplicated lastDayOfMonth/calendar.monthrange to avoid a bizdays.ts -> routineJob.ts circular import. Live-proven against production InstantDB for the real Previa DU-2 case (2026-08-27); corrido_fixo and du_fixo offsetDias>=1 provably unaffected (zero regression, 354 offline cli/ tests + 101 web/ bun tests).
 
 ### Pending Todos
 
@@ -120,8 +122,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-14T19:57:12.758Z
-Stopped at: Completed 26-01-PLAN.md (Validação na escrita, VAL-01/02/03 done)
+Last session: 2026-08-14T20:53:52.625Z
+Stopped at: Completed 27-01-PLAN.md (du_fixo accepts offsetDias <= 0, JOB-02 done)
 Resume file: None
 
 ## Operator Next Steps
