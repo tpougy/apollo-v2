@@ -104,7 +104,7 @@ Plans:
   em `bizdays.py`/`.ts`, dispatch por sinal, `--help` corrigido, caso real Prévia DU-2 provado
   ao vivo) (JOB-02)
 
-- [ ] 27-02-PLAN.md — status "concluída" reconhecido de forma normalizada (`_is_concluida`) e
+- [x] 27-02-PLAN.md — status "concluída" reconhecido de forma normalizada (`_is_concluida`) e
   `nome` do template em todo `skipped`, nos dois runtimes, com retrofit completo do fixture
   compartilhado (JOB-01, JOB-03)
 

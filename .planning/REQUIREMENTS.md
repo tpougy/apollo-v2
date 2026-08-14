@@ -78,7 +78,7 @@ foram decididas nesta sessão, antes do roadmap):
 
 ### Robustez do job (JOB)
 
-- [ ] **JOB-01**: a resolução de sucessores `encadeado` (D-05-E) reconhece
+- [x] **JOB-01**: a resolução de sucessores `encadeado` (D-05-E) reconhece
   `status = "concluida"` de forma normalizada (trim + casefold + remoção de
   acento) em vez de comparar com a string exata, via uma função central
   (`_is_concluida`/equivalente) espelhada nos dois runtimes
@@ -94,7 +94,7 @@ foram decididas nesta sessão, antes do roadmap):
   suporta contagem negativa). `--help` de `template criar`/`editar` documenta
   a nova semântica de `--offset-dias` para `du_fixo`.
 
-- [ ] **JOB-03**: cada entrada do relatório `skipped` de `gerar-instancias`
+- [x] **JOB-03**: cada entrada do relatório `skipped` de `gerar-instancias`
   inclui o `nome` do template, além de `templateId`/`reason`, em todo ponto
   de emissão de `compute_expected_instances`/`computeExpectedInstances` — uma
   extensão aditiva do contrato JSON já documentado no `--help` de
