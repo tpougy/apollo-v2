@@ -35,7 +35,15 @@ The user can execute every piece of controladoria data-entry work — full CRUD 
 
 <!-- Current scope. Building toward these. -->
 
-(None — run `/gsd-new-milestone` para definir a próxima milestone)
+- v1.5 (Phases 26-31): correções descobertas no primeiro onboarding real em
+  volume do calendário de rotinas de controladoria (18 fundos, 84
+  `templatesRotina`, 168 `instanciasRotina` cadastrados via `apollo` CLI para
+  a RBR). Ver `.planning/REQUIREMENTS.md` para os 8 achados, cada um
+  verificado no código antes de virar requisito: 3 falhas silenciosas na
+  escrita de `templatesRotina`/`instanciasRotina` (VAL-01/02/03, JOB-01), 2
+  lacunas de cobertura do calendário real (offset `du_fixo` negativo/último
+  DU — JOB-02; periodicidade semanal — SEM-01), e atrito operacional em
+  volume (JOB-03, RANGE-01, LIFE-01/02/03, BATCH-01).
 
 ### Out of Scope
 

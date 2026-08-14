@@ -1,39 +1,39 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.4
-milestone_name: CLI instalável via uv tool, login sem admin token
-current_phase: 25
-current_phase_name: Public Auth Login
-status: completed
-stopped_at: Completed 25-02-PLAN.md -- Phase 25 (Public Auth Login) complete -- v1.4 milestone fully done
-last_updated: "2026-08-12T21:05:47.450Z"
-last_activity: 2026-08-12
-last_activity_desc: "Completed 25-02-PLAN.md: real magic-code send+verify login round trip proven live against the real InstantDB API and the real tp@rbrasset.com.br inbox, INSTANT_APP_ADMIN_TOKEN entirely absent throughout; apollo doctor re-confirmed unchanged; full cli/ pytest suite (all markers, 418 passed) plus ruff/ruff format/ty clean with the admin token genuinely unset"
+milestone: v1.5
+milestone_name: Correções descobertas no onboarding real do calendário de rotinas
+current_phase: 26
+current_phase_name: Validação na escrita
+status: roadmap_complete
+stopped_at: REQUIREMENTS.md + ROADMAP.md (Phases 26-31) written from a verified onboarding report -- ready for /gsd-plan-phase 26
+last_updated: "2026-08-14T18:48:21.034Z"
+last_activity: 2026-08-14
+last_activity_desc: 8 achados de um onboarding real (18 fundos/84 templates/168 instâncias cadastrados via apollo CLI) triados e verificados linha-a-linha no código (routine_job.py, routineJob.ts, bizdays.py, entities/rotina.py) antes de virarem requisito; 4 decisões de implementação registradas (normalizar status em vez de fechar vocabulário, reservar propagarAtrasoSoft, estender du_fixo em vez de tipoGeracao novo, implementar periodicidade semanal por decisão explícita do usuário); REQUIREMENTS.md (VAL/JOB/SEM/RANGE/LIFE/BATCH, 12 requisitos) e ROADMAP.md (Phases 26-31) escritos. Nenhum plano de fase criado ainda.
 progress:
-  total_phases: 2
-  completed_phases: 2
-  total_plans: 4
-  completed_plans: 4
-  percent: 100
+  total_phases: 6
+  completed_phases: 0
+  total_plans: 1
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-08-12)
+See: .planning/PROJECT.md (updated 2026-08-14)
 
-**Core value:** The user can execute every piece of controladoria data-entry work from either the Svelte SPA or the Python CLI, both authenticated as the same real user under the same InstantDB permission rules. Validated in v1.0. v1.1 made the SPA visually coherent on shadcn-svelte defaults; v1.2 refined composition/spacing/hierarchy on the same four screens; v1.3 reorganized navigation into a 6-section topbar and shipped the Dashboard landing screen; v1.4 makes the CLI itself installable outside the monorepo and drops its login flow's admin-token dependency — `cli/`-only, no schema/perms/web change.
-**Current focus:** v1.4 (Phases 24-25) is now fully complete — PKG-01 through PKG-05 and AUTH-01 through AUTH-05 all live-verified. `apollo auth login` authenticates via InstantDB's public `/runtime/auth/*` endpoints with zero `INSTANT_APP_ADMIN_TOKEN` dependency, proven live end-to-end with a real email round trip. No further phases remain in this milestone.
+**Core value:** The user can execute every piece of controladoria data-entry work from either the Svelte SPA or the Python CLI, both authenticated as the same real user under the same InstantDB permission rules. Validated in v1.0. v1.1 made the SPA visually coherent on shadcn-svelte defaults; v1.2 refined composition/spacing/hierarchy on the same four screens; v1.3 reorganized navigation into a 6-section topbar and shipped the Dashboard landing screen; v1.4 made the CLI itself installable outside the monorepo and dropped its login flow's admin-token dependency; v1.5 fixes 8 issues a real production-volume onboarding surfaced in the routine-generation engine (`routine_job.py`/`routineJob.ts`) and its CLI surface.
+**Current focus:** v1.5 (Phases 26-31) is planned but not yet executed. Requirements and roadmap were derived from a verified onboarding report (RBR fund-controladoria routine calendar: 18 fundos, 84 templatesRotina, 168 instanciasRotina), not from a spec or discussion — each of the 8 reported issues was confirmed against the live code before being accepted as a requirement. Next step: `/gsd-plan-phase 26`.
 
 ## Current Position
 
-Phase: 25 of 25 (Public Auth Login)
+Phase: 26 of 31 (Validação na escrita)
 Plan: Not started
-Status: All phases complete
-Last activity: 2026-08-12 — Phase 25 complete
+Status: Roadmap complete, no phase planned yet
+Last activity: 2026-08-14 — REQUIREMENTS.md/ROADMAP.md written
 
-Progress: [██████████] 100%
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
@@ -83,14 +83,18 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase 25, Plan 01]: httpx package-legitimacy resolved autonomously (Task 0, no blocking human checkpoint) -- already a pinned, installed transitive dependency of instantdb; promoted to an explicit cli/pyproject.toml dependency with zero new install surface.
 - [Phase 25, Plan 02]: Ported web/e2e/helpers/magic-code.ts's readLatestMagicCode/readMagicCodeAfter into cli/tests/helpers/magic_code.py verbatim (same orules.ps1 peek command, regex, sender check, block separator) -- zero re-derivation from PROJECT.md C-10's own stale prose. Used a real subprocess.run()-based live test (not CliRunner) to prove INSTANT_APP_ADMIN_TOKEN absence in a genuinely isolated child-process environment, reusing test_packaging_live.py's env-copy-and-override idiom.
 - [Phase 25, Plan 02]: Phase 25 (Public Auth Login) is now fully complete -- AUTH-01 through AUTH-05 all live-verified; the real magic-code send+verify round trip completed end-to-end against production InstantDB with the admin token entirely absent, closing the one gap Plan 25-01 could not close on its own. This also completes v1.4 in full (Phases 24-25, PKG-01..05 + AUTH-01..05, 10/10 requirements) -- no further phases remain in this milestone.
+- v1.5 requirements originated from a real onboarding report (not a spec/discussion): an agent cadastrou o calendário de rotinas de controladoria da RBR via `apollo` CLI (18 fundos, 84 templatesRotina, 168 instanciasRotina) and hit 8 issues, each verified against `routine_job.py`/`routineJob.ts`/`bizdays.py`/`entities/rotina.py` before being accepted.
+- v1.5 roadmap derivation: 12 requirements grouped into 6 phases (26-31), P0 (falhas silenciosas) primeiro, depois P1 (lacunas de cobertura do calendário), depois P2 (atrito operacional) — Phase 26 (validação de escrita, sem tocar o job) antes de Phase 27 (robustez do job) para não colidir edições na mesma janela; Phase 28 (semanal) depende de 27 por estender o mesmo dispatch de `tipoGeracao`; Phase 29 (recorte de range) depende de 28 para cobrir o tipo semanal também; Phases 30-31 (higiene/lote) são tecnicamente independentes, sequenciadas por último por prioridade.
+- v1.5 decisões de implementação registradas em REQUIREMENTS.md Context: (1) JOB-01 normaliza a comparação de `status` em vez de fechar o vocabulário — `status` continua livre por decisão de produto já aplicada a outras entidades; (2) VAL-02 marca `propagarAtrasoSoft` como reservado em vez de implementar propagação — implementar reabriria C-09 (travado); (3) JOB-02 estende `du_fixo` para aceitar offset negativo em vez de criar um `tipoGeracao` novo — `add_business_days` já suporta contagem negativa; (4) SEM-01 (periodicidade semanal) será implementado por decisão explícita do usuário, mesmo cobrindo só 1 evento em 87 no calendário de origem.
+- v1.5 causa raiz adicional encontrada além do relatado pelo usuário (LIFE-03): o resíduo de teste E2E na base real (achado do usuário em P2-2) não é um incidente pontual — não existe hoje um `app_id` de teste separado do usado para dados reais em nenhum dos dois runtimes, então qualquer rodada futura de teste `live`/Playwright pode reintroduzir o mesmo resíduo até essa separação existir.
 
 ### Pending Todos
 
-None yet.
+None yet — Phase 26 not planned.
 
 ### Blockers/Concerns
 
-None — v1.4 roadmap coverage is 10/10 requirements mapped with no orphans.
+None — v1.5 roadmap coverage is 12/12 requirements mapped with no orphans. No phase plans exist yet; `/gsd-plan-phase 26` has not been run.
 
 **v1.2 milestone non-blocking tech debt** (carried forward, not addressed in v1.3 or v1.4 unless it intersects — see PROJECT.md Context for full detail):
 
@@ -118,10 +122,10 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-12T20:55:35.000Z
-Stopped at: Completed 25-02-PLAN.md -- Phase 25 (Public Auth Login) complete -- v1.4 milestone fully done
+Last session: 2026-08-14T00:00:00.000Z
+Stopped at: REQUIREMENTS.md + ROADMAP.md (Phases 26-31) written for v1.5 from a verified onboarding report; no phase plan created yet
 Resume file: None
 
 ## Operator Next Steps
 
-- v1.4 (CLI instalável via uv tool, login sem admin token) is fully complete — both phases (24, 25), all 10 requirements (PKG-01..05, AUTH-01..05) live-verified. Next: run `/gsd-audit-milestone` (or `/gsd-complete-milestone`) to close out v1.4, or start scoping the next milestone.
+- v1.5 is planned (REQUIREMENTS.md + ROADMAP.md, Phases 26-31, 12 requirements) but not yet planned-in-detail or executed. Next: `/gsd-plan-phase 26` to produce the first PLAN.md (Validação na escrita — VAL-01/02/03), then proceed phase by phase.
