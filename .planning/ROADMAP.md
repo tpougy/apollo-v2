@@ -96,7 +96,16 @@ edições em `entities/rotina.py`/`routine_job.py` na mesma janela)
 
   5. `shared/routine-job.testcases.json` ganha casos novos cobrindo status normalizado e
      offset negativo, consumidos por ambos os conjuntos de teste (CLI/web).
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+
+- [ ] 27-01-PLAN.md — `du_fixo` aceita `offsetDias <= 0` (nova `nth_business_day_from_month_end`
+  em `bizdays.py`/`.ts`, dispatch por sinal, `--help` corrigido, caso real Prévia DU-2 provado
+  ao vivo) (JOB-02)
+- [ ] 27-02-PLAN.md — status "concluída" reconhecido de forma normalizada (`_is_concluida`) e
+  `nome` do template em todo `skipped`, nos dois runtimes, com retrofit completo do fixture
+  compartilhado (JOB-01, JOB-03)
 
 ### Phase 28: Periodicidade semanal
 
