@@ -6,12 +6,15 @@ import {
   InvalidDateError,
   isBusinessDay,
   nextBusinessDay,
+  nthBusinessDayFromMonthEnd,
 } from "./bizdays";
 
 interface Case {
   id: string;
-  op: "isBusinessDay" | "addBusinessDays" | "nextBusinessDay";
-  date: string;
+  op: "isBusinessDay" | "addBusinessDays" | "nextBusinessDay" | "nthBusinessDayFromMonthEnd";
+  date?: string;
+  year?: number;
+  month?: number;
   n?: number;
   expected?: boolean | string;
   error?: "InvalidDateError" | "CalendarRangeError";
@@ -37,14 +40,21 @@ describe("bizdays fixture parity", () => {
       const run = (): boolean | string => {
         switch (c.op) {
           case "isBusinessDay":
-            return isBusinessDay(c.date);
+            return isBusinessDay(c.date as string);
           case "addBusinessDays":
             if (c.n === undefined) {
               throw new Error(`Fixture case ${c.id} is addBusinessDays but has no "n"`);
             }
-            return addBusinessDays(c.date, c.n);
+            return addBusinessDays(c.date as string, c.n);
           case "nextBusinessDay":
-            return nextBusinessDay(c.date);
+            return nextBusinessDay(c.date as string);
+          case "nthBusinessDayFromMonthEnd":
+            if (c.year === undefined || c.month === undefined || c.n === undefined) {
+              throw new Error(
+                `Fixture case ${c.id} is nthBusinessDayFromMonthEnd but is missing "year"/"month"/"n"`,
+              );
+            }
+            return nthBusinessDayFromMonthEnd(c.year, c.month, c.n);
           default:
             throw new Error(`Fixture case ${c.id} has unrecognized op: ${String(c.op)}`);
         }

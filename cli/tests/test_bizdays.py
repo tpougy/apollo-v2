@@ -23,6 +23,7 @@ from apollo_cli.bizdays import (
     add_business_days,
     is_business_day,
     next_business_day,
+    nth_business_day_from_month_end,
 )
 from apollo_cli.config import find_repo_root
 
@@ -45,6 +46,8 @@ def _run(case: dict[str, Any]) -> bool | str:
         return add_business_days(case["date"], case["n"])
     if op == "nextBusinessDay":
         return next_business_day(case["date"])
+    if op == "nthBusinessDayFromMonthEnd":
+        return nth_business_day_from_month_end(case["year"], case["month"], case["n"])
     pytest.fail(f"Fixture case {case['id']} has unrecognized op: {op!r}")
     raise AssertionError  # unreachable, satisfies type checker
 

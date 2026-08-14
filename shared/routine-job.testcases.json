@@ -874,6 +874,38 @@
       "expectedSkipped": [{ "templateId": "tpl-j", "reason": "offset_dias_invalido" }]
     },
     {
+      "nome": "du_fixo offsetDias=-2 (JOB-02): 2 dias uteis antes do ultimo dia util do mes, caso real Previa DU-2",
+      "today": "2026-08-09",
+      "templates": [
+        {
+          "id": "tpl-n1",
+          "tipoGeracao": "du_fixo",
+          "regraCompetencia": "M0",
+          "offsetDias": -2,
+          "ativo": true,
+          "antecessor": null
+        }
+      ],
+      "existing": [],
+      "expectedInstances": [
+        {
+          "dedupeKey": "tpl-n1:2026-08:2026-08-27",
+          "templateId": "tpl-n1",
+          "competencia": "2026-08",
+          "dataPrevista": "2026-08-27",
+          "tipoPrazo": "soft"
+        },
+        {
+          "dedupeKey": "tpl-n1:2026-09:2026-09-28",
+          "templateId": "tpl-n1",
+          "competencia": "2026-09",
+          "dataPrevista": "2026-09-28",
+          "tipoPrazo": "soft"
+        }
+      ],
+      "expectedSkipped": []
+    },
+    {
       "nome": "template inativo (ativo=false) nunca aparece em expected nem em skipped",
       "today": "2026-08-09",
       "templates": [
