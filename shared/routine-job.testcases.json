@@ -149,6 +149,7 @@
       "templates": [
         {
           "id": "tpl-a",
+          "nome": "Template tpl-a",
           "tipoGeracao": "du_fixo",
           "regraCompetencia": "M0",
           "offsetDias": 6,
@@ -181,6 +182,7 @@
       "templates": [
         {
           "id": "tpl-b",
+          "nome": "Template tpl-b",
           "tipoGeracao": "du_fixo",
           "regraCompetencia": "M0",
           "offsetDias": 1,
@@ -206,6 +208,7 @@
       "templates": [
         {
           "id": "tpl-c",
+          "nome": "Template tpl-c",
           "tipoGeracao": "du_fixo",
           "regraCompetencia": "M0",
           "offsetDias": null,
@@ -218,6 +221,7 @@
       "expectedSkipped": [
         {
           "templateId": "tpl-c",
+          "nome": "Template tpl-c",
           "reason": "offset_dias_ausente"
         }
       ]
@@ -228,6 +232,7 @@
       "templates": [
         {
           "id": "tpl-d",
+          "nome": "Template tpl-d",
           "tipoGeracao": "du_fixo",
           "regraCompetencia": "M0",
           "offsetDias": 0,
@@ -260,6 +265,7 @@
       "templates": [
         {
           "id": "tpl-e",
+          "nome": "Template tpl-e",
           "tipoGeracao": "du_fixo",
           "regraCompetencia": "manual",
           "offsetDias": 6,
@@ -272,6 +278,7 @@
       "expectedSkipped": [
         {
           "templateId": "tpl-e",
+          "nome": "Template tpl-e",
           "reason": "regra_competencia_nao_suportada"
         }
       ]
@@ -282,6 +289,7 @@
       "templates": [
         {
           "id": "tpl-f",
+          "nome": "Template tpl-f",
           "tipoGeracao": "corrido_fixo",
           "regraCompetencia": "M0",
           "offsetDias": 10,
@@ -314,6 +322,7 @@
       "templates": [
         {
           "id": "tpl-f2",
+          "nome": "Template tpl-f2",
           "tipoGeracao": "corrido_fixo",
           "regraCompetencia": "M0",
           "offsetDias": 10,
@@ -339,6 +348,7 @@
       "templates": [
         {
           "id": "tpl-f3",
+          "nome": "Template tpl-f3",
           "tipoGeracao": "corrido_fixo",
           "regraCompetencia": "M0",
           "offsetDias": 31,
@@ -371,6 +381,7 @@
       "templates": [
         {
           "id": "tpl-f4",
+          "nome": "Template tpl-f4",
           "tipoGeracao": "corrido_fixo",
           "regraCompetencia": "M0",
           "offsetDias": 31,
@@ -403,6 +414,7 @@
       "templates": [
         {
           "id": "tpl-f5",
+          "nome": "Template tpl-f5",
           "tipoGeracao": "corrido_fixo",
           "regraCompetencia": "M0",
           "offsetDias": 7,
@@ -428,6 +440,7 @@
       "templates": [
         {
           "id": "tpl-a2",
+          "nome": "Template tpl-a2",
           "tipoGeracao": "du_fixo",
           "regraCompetencia": "M0",
           "offsetDias": 2,
@@ -436,6 +449,7 @@
         },
         {
           "id": "tpl-b2",
+          "nome": "Template tpl-b2",
           "tipoGeracao": "encadeado",
           "regraCompetencia": "manual",
           "offsetDias": 3,
@@ -471,6 +485,7 @@
       "templates": [
         {
           "id": "tpl-a3",
+          "nome": "Template tpl-a3",
           "tipoGeracao": "du_fixo",
           "regraCompetencia": "M0",
           "offsetDias": 2,
@@ -479,6 +494,7 @@
         },
         {
           "id": "tpl-b3",
+          "nome": "Template tpl-b3",
           "tipoGeracao": "encadeado",
           "regraCompetencia": "M0",
           "offsetDias": 3,
@@ -489,6 +505,7 @@
         },
         {
           "id": "tpl-c3",
+          "nome": "Template tpl-c3",
           "tipoGeracao": "encadeado",
           "regraCompetencia": "M0",
           "offsetDias": 2,
@@ -532,6 +549,7 @@
       "templates": [
         {
           "id": "tpl-b4",
+          "nome": "Template tpl-b4",
           "tipoGeracao": "encadeado",
           "regraCompetencia": "M0",
           "offsetDias": 3,
@@ -567,6 +585,7 @@
       "templates": [
         {
           "id": "tpl-b4b",
+          "nome": "Template tpl-b4b",
           "tipoGeracao": "encadeado",
           "regraCompetencia": "M0",
           "offsetDias": 3,
@@ -602,6 +621,7 @@
       "templates": [
         {
           "id": "tpl-b4c",
+          "nome": "Template tpl-b4c",
           "tipoGeracao": "encadeado",
           "regraCompetencia": "M0",
           "offsetDias": 3,
@@ -637,6 +657,7 @@
       "templates": [
         {
           "id": "tpl-b4d",
+          "nome": "Template tpl-b4d",
           "tipoGeracao": "encadeado",
           "regraCompetencia": "M0",
           "offsetDias": 3,
@@ -672,6 +693,7 @@
       "templates": [
         {
           "id": "tpl-b4e",
+          "nome": "Template tpl-b4e",
           "tipoGeracao": "encadeado",
           "regraCompetencia": "M0",
           "offsetDias": 3,
@@ -708,6 +730,7 @@
       "templates": [
         {
           "id": "tpl-b5",
+          "nome": "Template tpl-b5",
           "tipoGeracao": "encadeado",
           "regraCompetencia": "M0",
           "offsetDias": 3,
@@ -744,6 +767,7 @@
       "templates": [
         {
           "id": "tpl-b6",
+          "nome": "Template tpl-b6",
           "tipoGeracao": "encadeado",
           "regraCompetencia": "M0",
           "offsetDias": 3,
@@ -756,6 +780,7 @@
       "expectedSkipped": [
         {
           "templateId": "tpl-b6",
+          "nome": "Template tpl-b6",
           "reason": "antecessor_ausente"
         }
       ]
@@ -766,6 +791,7 @@
       "templates": [
         {
           "id": "tpl-b7",
+          "nome": "Template tpl-b7",
           "tipoGeracao": "encadeado",
           "regraCompetencia": "M0",
           "offsetDias": 3,
@@ -780,6 +806,7 @@
       "expectedSkipped": [
         {
           "templateId": "tpl-b7",
+          "nome": "Template tpl-b7",
           "reason": "antecessor_sem_instancia"
         }
       ]
@@ -790,6 +817,7 @@
       "templates": [
         {
           "id": "tpl-healthy8",
+          "nome": "Template tpl-healthy8",
           "tipoGeracao": "du_fixo",
           "regraCompetencia": "M0",
           "offsetDias": 6,
@@ -798,6 +826,7 @@
         },
         {
           "id": "tpl-cycle-b",
+          "nome": "Template tpl-cycle-b",
           "tipoGeracao": "encadeado",
           "regraCompetencia": "M0",
           "offsetDias": 1,
@@ -808,6 +837,7 @@
         },
         {
           "id": "tpl-cycle-c",
+          "nome": "Template tpl-cycle-c",
           "tipoGeracao": "encadeado",
           "regraCompetencia": "M0",
           "offsetDias": 1,
@@ -837,10 +867,12 @@
       "expectedSkipped": [
         {
           "templateId": "tpl-cycle-b",
+          "nome": "Template tpl-cycle-b",
           "reason": "antecessor_ciclico"
         },
         {
           "templateId": "tpl-cycle-c",
+          "nome": "Template tpl-cycle-c",
           "reason": "antecessor_ciclico"
         }
       ]
@@ -851,6 +883,7 @@
       "templates": [
         {
           "id": "tpl-wide9",
+          "nome": "Template tpl-wide9",
           "tipoGeracao": "du_fixo",
           "regraCompetencia": "M0",
           "offsetDias": 6,
@@ -859,6 +892,7 @@
         },
         {
           "id": "tpl-child9",
+          "nome": "Template tpl-child9",
           "tipoGeracao": "encadeado",
           "regraCompetencia": "M0",
           "offsetDias": 36,
@@ -901,6 +935,7 @@
       "templates": [
         {
           "id": "tpl-inactive10",
+          "nome": "Template tpl-inactive10",
           "tipoGeracao": "du_fixo",
           "regraCompetencia": "M0",
           "offsetDias": 6,
@@ -909,6 +944,7 @@
         },
         {
           "id": "tpl-child10",
+          "nome": "Template tpl-child10",
           "tipoGeracao": "encadeado",
           "regraCompetencia": "M0",
           "offsetDias": 3,
@@ -945,6 +981,7 @@
       "templates": [
         {
           "id": "tpl-a11",
+          "nome": "Template tpl-a11",
           "tipoGeracao": "du_fixo",
           "regraCompetencia": "M0",
           "offsetDias": 2,
@@ -953,6 +990,7 @@
         },
         {
           "id": "tpl-b11",
+          "nome": "Template tpl-b11",
           "tipoGeracao": "encadeado",
           "regraCompetencia": "M0",
           "offsetDias": 0,
@@ -988,6 +1026,7 @@
       "templates": [
         {
           "id": "tpl-h",
+          "nome": "Template tpl-h",
           "tipoGeracao": "du_fixo",
           "regraCompetencia": "M0",
           "offsetDias": null,
@@ -996,6 +1035,7 @@
         },
         {
           "id": "tpl-i",
+          "nome": "Template tpl-i",
           "tipoGeracao": "du_fixo",
           "regraCompetencia": "M0",
           "offsetDias": 6,
@@ -1023,6 +1063,7 @@
       "expectedSkipped": [
         {
           "templateId": "tpl-h",
+          "nome": "Template tpl-h",
           "reason": "offset_dias_ausente"
         }
       ]
@@ -1033,6 +1074,7 @@
       "templates": [
         {
           "id": "tpl-j",
+          "nome": "Template tpl-j",
           "tipoGeracao": "du_fixo",
           "regraCompetencia": "M0",
           "offsetDias": 50,
@@ -1041,6 +1083,7 @@
         },
         {
           "id": "tpl-k",
+          "nome": "Template tpl-k",
           "tipoGeracao": "du_fixo",
           "regraCompetencia": "M0",
           "offsetDias": 6,
@@ -1068,6 +1111,7 @@
       "expectedSkipped": [
         {
           "templateId": "tpl-j",
+          "nome": "Template tpl-j",
           "reason": "offset_dias_invalido"
         }
       ]
@@ -1078,6 +1122,7 @@
       "templates": [
         {
           "id": "tpl-n1",
+          "nome": "Template tpl-n1",
           "tipoGeracao": "du_fixo",
           "regraCompetencia": "M0",
           "offsetDias": -2,
@@ -1110,6 +1155,7 @@
       "templates": [
         {
           "id": "tpl-l",
+          "nome": "Template tpl-l",
           "tipoGeracao": "du_fixo",
           "regraCompetencia": "M0",
           "offsetDias": 6,
@@ -1118,6 +1164,7 @@
         },
         {
           "id": "tpl-m",
+          "nome": "Template tpl-m",
           "tipoGeracao": "du_fixo",
           "regraCompetencia": "M0",
           "offsetDias": 6,

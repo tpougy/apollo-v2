@@ -55,7 +55,7 @@ interface Scenario {
     dataPrevistaEstimada?: string;
     tipoPrazo: string;
   }>;
-  expectedSkipped: Array<{ templateId: string; reason: SkipReason }>;
+  expectedSkipped: Array<{ templateId: string; nome: string; reason: SkipReason }>;
 }
 
 const dayMath = fixture.dayMath as {

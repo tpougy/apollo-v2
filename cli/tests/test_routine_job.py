@@ -432,3 +432,43 @@ def test_gerar_instancias_recognizes_normalized_concluida_status(
         "recognized as concluded, omitting dataPrevistaEstimada on the "
         "newly-created encadeado successor"
     )
+
+
+@pytest.mark.live
+def test_gerar_instancias_skipped_entries_include_template_nome(
+    run_cli: RunCli,
+    cleanup_records: list[tuple[str, str]],
+) -> None:
+    """JOB-03/D-27-C: proves a real `skipped` entry's `nome` matches the
+    template's actual `nome`, against production InstantDB. Uses a `du_fixo`
+    template deliberately created WITHOUT `--offset-dias`, triggering the
+    pre-existing, unaffected `offset_dias_ausente` skip path.
+    """
+    suffix = unique_suffix()
+    nome = f"phase27-cli-skipped-nome-{suffix}"
+
+    create_result: CliInvocation = run_cli(
+        [
+            "rotina",
+            "template",
+            "criar",
+            "--nome",
+            nome,
+            "--tipo-geracao",
+            "du_fixo",
+            "--regra-competencia",
+            "M0",
+        ]
+    )
+    assert create_result.result.exit_code == 0, create_result.result.output
+    template_id = cast("dict[str, Any]", create_result.json_out())["id"]
+    cleanup_records.append(("templatesRotina", template_id))
+
+    result: CliInvocation = run_cli(["rotina", "gerar-instancias", "--data-base", "2026-08-09"])
+    assert result.result.exit_code == 0, result.result.output
+    report = cast("dict[str, Any]", result.json_out())
+
+    matching = [entry for entry in report["skipped"] if entry["templateId"] == template_id]
+    assert len(matching) == 1
+    assert matching[0]["reason"] == "offset_dias_ausente"
+    assert matching[0]["nome"] == nome

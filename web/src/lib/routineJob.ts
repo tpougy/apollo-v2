@@ -81,6 +81,14 @@
  * `propagarAtrasoSoft` is stored on the template but never read anywhere in
  * this module (C-09) — delay propagation is explicitly out of scope.
  *
+ * `nome` in `skipped` (**JOB-03/D-27-C**): every `skipped` entry now carries
+ * the template's `nome` alongside `templateId`/`reason`, so diagnosing a
+ * batch `gerar-instancias` run no longer requires a second `apollo rotina
+ * template listar` call to resolve an id to a human-readable name. `nome`
+ * is a required, non-optional field on `TemplateRow`, matching `id`'s
+ * "guaranteed present" treatment. This is a purely additive JSON contract
+ * change — no existing key is removed or renamed.
+ *
  * Chained (`encadeado`) templates are resolved via a bounded multi-pass
  * topological sweep (at most `templates.length` passes): non-chained
  * templates resolve first, then chained templates resolve once their
@@ -98,6 +106,7 @@ export const REGRAS_COMPETENCIA_SUPORTADAS = ["M0", "M-1", "M-2", "M+1"] as cons
 
 export interface TemplateRow {
   id: string;
+  nome: string;
   tipoGeracao: string;
   regraCompetencia: string;
   offsetDias?: number | null;
@@ -133,6 +142,7 @@ export type SkipReason =
 
 export interface SkippedTemplate {
   templateId: string;
+  nome: string;
   reason: SkipReason;
 }
 
@@ -370,10 +380,7 @@ const CONCLUIDA_FORMS = new Set(["concluida", "concluido"]);
  * plural `"concluidas"` correctly does NOT match.
  */
 function isConcluida(status: string): boolean {
-  const stripped = status
-    .trim()
-    .normalize("NFKD")
-    .replace(/[̀-ͯ]/g, "");
+  const stripped = status.trim().normalize("NFKD").replace(/[̀-ͯ]/g, "");
   return CONCLUIDA_FORMS.has(stripped.toLowerCase());
 }
 
@@ -420,14 +427,22 @@ export function computeExpectedInstances(
 
     if (template.tipoGeracao === "encadeado") {
       if (!template.antecessor?.id) {
-        skipped.push({ templateId: template.id, reason: "antecessor_ausente" });
+        skipped.push({
+          templateId: template.id,
+          nome: template.nome,
+          reason: "antecessor_ausente",
+        });
         continue;
       }
       // D-05-B: offsetDias counts business days after the antecessor's
       // dataPrevista and may be 0 (same day) — never negative.
       const offsetValidation = validateOffsetDias(template.offsetDias, 0);
       if (!offsetValidation.ok) {
-        skipped.push({ templateId: template.id, reason: offsetValidation.reason as SkipReason });
+        skipped.push({
+          templateId: template.id,
+          nome: template.nome,
+          reason: offsetValidation.reason as SkipReason,
+        });
         continue;
       }
       pendingEncadeado.push({ template, offsetDias: template.offsetDias as number });
@@ -455,12 +470,16 @@ export function computeExpectedInstances(
           nthCalendarDayOfMonth,
         );
       } else {
-        skipped.push({ templateId: template.id, reason: "tipo_geracao_desconhecido" });
+        skipped.push({
+          templateId: template.id,
+          nome: template.nome,
+          reason: "tipo_geracao_desconhecido",
+        });
         continue;
       }
 
       if ("skipReason" in result) {
-        skipped.push({ templateId: template.id, reason: result.skipReason });
+        skipped.push({ templateId: template.id, nome: template.nome, reason: result.skipReason });
         continue;
       }
       computedByTemplateId.set(template.id, result.instances);
@@ -473,7 +492,11 @@ export function computeExpectedInstances(
       // There is no dedicated SkipReason for this case in the locked enum;
       // it is treated as an invalid offset, since it is the offset that
       // drove the computation out of bounds.
-      skipped.push({ templateId: template.id, reason: "offset_dias_invalido" });
+      skipped.push({
+        templateId: template.id,
+        nome: template.nome,
+        reason: "offset_dias_invalido",
+      });
     }
   }
 
@@ -506,7 +529,11 @@ export function computeExpectedInstances(
       );
 
       if (antecessorInstances.size === 0) {
-        skipped.push({ templateId: template.id, reason: "antecessor_sem_instancia" });
+        skipped.push({
+          templateId: template.id,
+          nome: template.nome,
+          reason: "antecessor_sem_instancia",
+        });
         pendingIds.delete(template.id);
         continue;
       }
@@ -545,7 +572,11 @@ export function computeExpectedInstances(
         expected.push(...instances);
       } catch {
         // Same per-template isolation as the fixed-offset loop above.
-        skipped.push({ templateId: template.id, reason: "offset_dias_invalido" });
+        skipped.push({
+          templateId: template.id,
+          nome: template.nome,
+          reason: "offset_dias_invalido",
+        });
       }
 
       pendingIds.delete(template.id);
@@ -557,7 +588,7 @@ export function computeExpectedInstances(
   // Bound exhausted: whatever is left forms a cycle (or chains through a
   // dangling antecessor id that never resolves) — report, never loop.
   for (const { template } of remaining) {
-    skipped.push({ templateId: template.id, reason: "antecessor_ciclico" });
+    skipped.push({ templateId: template.id, nome: template.nome, reason: "antecessor_ciclico" });
   }
 
   expected.sort((a, b) => (a.dedupeKey < b.dedupeKey ? -1 : a.dedupeKey > b.dedupeKey ? 1 : 0));

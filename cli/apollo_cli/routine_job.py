@@ -73,6 +73,15 @@ dispatches between the two based on the sign of `offsetDias`.
 `propagarAtrasoSoft` is stored on the template but never read anywhere in
 this module (C-09) — delay propagation is explicitly out of scope.
 
+`nome` in `skipped` (**JOB-03/D-27-C**): every `skipped` entry now carries
+the template's `nome` alongside `templateId`/`reason`, so diagnosing a batch
+`gerar-instancias` run no longer requires a second `apollo rotina template
+listar` call to resolve an id to a human-readable name. `nome` is
+`required=True` on `template criar` and required by the schema, so
+`_normalize_template` indexes it directly (`row["nome"]`), the same
+"guaranteed present" treatment as `id`. This is a purely additive JSON
+contract change — no existing key is removed or renamed.
+
 Chained (`encadeado`) templates are resolved via a bounded multi-pass
 topological sweep (at most `len(templates)` passes): non-chained templates
 resolve first, then chained templates resolve once their antecessor's
@@ -364,13 +373,25 @@ def compute_expected_instances(
         if tipo_geracao == "encadeado":
             antecessor = template.get("antecessor")
             if not antecessor or not antecessor.get("id"):
-                skipped.append({"templateId": template["id"], "reason": "antecessor_ausente"})
+                skipped.append(
+                    {
+                        "templateId": template["id"],
+                        "nome": template["nome"],
+                        "reason": "antecessor_ausente",
+                    }
+                )
                 continue
             # D-05-B: offsetDias counts business days after the antecessor's
             # dataPrevista and may be 0 (same day) — never negative.
             validation = _validate_offset_dias(template.get("offsetDias"), 0)
             if not validation.ok:
-                skipped.append({"templateId": template["id"], "reason": validation.reason})
+                skipped.append(
+                    {
+                        "templateId": template["id"],
+                        "nome": template["nome"],
+                        "reason": validation.reason,
+                    }
+                )
                 continue
             pending_encadeado.append((template, template["offsetDias"]))
             continue
@@ -391,12 +412,22 @@ def compute_expected_instances(
                 )
             else:
                 skipped.append(
-                    {"templateId": template["id"], "reason": "tipo_geracao_desconhecido"}
+                    {
+                        "templateId": template["id"],
+                        "nome": template["nome"],
+                        "reason": "tipo_geracao_desconhecido",
+                    }
                 )
                 continue
 
             if skip_reason is not None:
-                skipped.append({"templateId": template["id"], "reason": skip_reason})
+                skipped.append(
+                    {
+                        "templateId": template["id"],
+                        "nome": template["nome"],
+                        "reason": skip_reason,
+                    }
+                )
                 continue
 
             computed_by_template_id[template["id"]] = instances
@@ -410,7 +441,13 @@ def compute_expected_instances(
             # case in the locked enum; it is treated as an invalid offset,
             # since it is the offset that drove the computation out of
             # bounds.
-            skipped.append({"templateId": template["id"], "reason": "offset_dias_invalido"})
+            skipped.append(
+                {
+                    "templateId": template["id"],
+                    "nome": template["nome"],
+                    "reason": "offset_dias_invalido",
+                }
+            )
 
     # Pass 2: bounded multi-pass topological sweep over encadeado templates.
     # `pending_ids` tracks which encadeado templates are still unresolved; a
@@ -440,7 +477,13 @@ def compute_expected_instances(
             )
 
             if not antecessor_instances:
-                skipped.append({"templateId": template["id"], "reason": "antecessor_sem_instancia"})
+                skipped.append(
+                    {
+                        "templateId": template["id"],
+                        "nome": template["nome"],
+                        "reason": "antecessor_sem_instancia",
+                    }
+                )
                 pending_ids.discard(template["id"])
                 continue
 
@@ -479,7 +522,13 @@ def compute_expected_instances(
                 expected.extend(instances)
             except (CalendarRangeError, InvalidDateError):
                 # Same per-template isolation as the fixed-offset loop above.
-                skipped.append({"templateId": template["id"], "reason": "offset_dias_invalido"})
+                skipped.append(
+                    {
+                        "templateId": template["id"],
+                        "nome": template["nome"],
+                        "reason": "offset_dias_invalido",
+                    }
+                )
 
             pending_ids.discard(template["id"])
 
@@ -488,7 +537,13 @@ def compute_expected_instances(
     # Bound exhausted: whatever is left forms a cycle (or chains through a
     # dangling antecessor id that never resolves) — report, never loop.
     for template, _offset_dias in remaining:
-        skipped.append({"templateId": template["id"], "reason": "antecessor_ciclico"})
+        skipped.append(
+            {
+                "templateId": template["id"],
+                "nome": template["nome"],
+                "reason": "antecessor_ciclico",
+            }
+        )
 
     expected.sort(key=lambda instance: instance["dedupeKey"])
     skipped.sort(key=lambda item: (item["templateId"], item["reason"]))
@@ -582,6 +637,7 @@ def _normalize_antecessor(value: object) -> dict[str, Any] | None:
 def _normalize_template(row: dict[str, Any]) -> dict[str, Any]:
     return {
         "id": row["id"],
+        "nome": row["nome"],
         "tipoGeracao": row.get("tipoGeracao"),
         "regraCompetencia": row.get("regraCompetencia"),
         "offsetDias": row.get("offsetDias"),
