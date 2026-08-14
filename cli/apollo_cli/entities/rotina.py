@@ -140,7 +140,11 @@ group.add_command(instancia)
 @click.option(
     "--propagar-atraso-soft/--nao-propagar-atraso-soft",
     default=False,
-    help="Whether a soft delay on this template propagates to its sucessores. Defaults to off.",
+    help=(
+        "Not currently read anywhere: stored on the template only; "
+        "gerar-instancias does not propagate soft delays with it (C-09, "
+        "out of scope for this milestone). Defaults to off."
+    ),
 )
 @click.option(
     "--ativo/--inativo",
@@ -223,7 +227,11 @@ def criar(
 @click.option(
     "--propagar-atraso-soft/--nao-propagar-atraso-soft",
     default=None,
-    help="New soft-delay-propagation flag. Omit to leave unchanged.",
+    help=(
+        "Not currently read anywhere: stored on the template only; "
+        "gerar-instancias does not propagate soft delays with it (C-09, "
+        "out of scope for this milestone). Omit to leave unchanged."
+    ),
 )
 @click.option(
     "--ativo/--inativo",
@@ -332,8 +340,10 @@ def status(eid: str, status: str) -> None:
 
     Deliberately narrow: this command must never grow a `--data-prevista` or
     `--competencia` flag. Either would desynchronize the record from its
-    `dedupeKey` (hash of templateId + competencia + dataPrevista), and the
-    next generation job run would then create a duplicate alongside it —
+    `dedupeKey` (the plain `templateId:competencia:dataPrevista`
+    concatenation — deliberately not a hash, see `apollo_cli.routine_job`'s
+    module docstring), and the next generation job run would then create a
+    duplicate alongside it —
     breaking the one idempotency guarantee this system promises (PROJECT.md
     C-06).
     """
