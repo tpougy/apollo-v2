@@ -104,6 +104,65 @@ def test_compute_expected_instances_empty() -> None:
     assert result.skipped == []
 
 
+# --- dropAudit conservation law + purity (not live; WR-02) ------------------
+#
+# Mirrors `web/src/lib/routineJob.test.ts`'s "routineJob dropAudit —
+# conservation law over every scenario" and "routineJob purity" blocks
+# (lines 113-169) — this module is explicitly a "twin" implementation whose
+# whole value proposition is behavioral parity, so a defensive property
+# proven on the TS side must be proven here too.
+
+
+def test_dropaudit_conservation_law_over_every_scenario() -> None:
+    """Every `ativo` template appears in exactly one of expected/skipped;
+    every inactive template appears in neither; no template is skipped more
+    than once — over every scenario in the shared fixture.
+    """
+    scenarios = FIXTURE["scenarios"]
+    assert len(scenarios) > 0
+
+    for scenario in scenarios:
+        result = compute_expected_instances(
+            scenario["templates"], scenario["today"], scenario["existing"]
+        )
+        template_ids_with_instances = {e["templateId"] for e in result.expected}
+        template_ids_skipped = {s["templateId"] for s in result.skipped}
+
+        for skipped_entry in result.skipped:
+            occurrences = sum(
+                1 for s in result.skipped if s["templateId"] == skipped_entry["templateId"]
+            )
+            assert occurrences == 1
+
+        for tpl in scenario["templates"]:
+            is_inactive = tpl.get("ativo") is False
+            has_instances = tpl["id"] in template_ids_with_instances
+            is_skipped = tpl["id"] in template_ids_skipped
+
+            if is_inactive:
+                assert not has_instances
+                assert not is_skipped
+            else:
+                # Never both, never neither.
+                assert has_instances != is_skipped
+
+
+def test_compute_expected_instances_does_not_mutate_inputs() -> None:
+    """`compute_expected_instances` is pure: identical inputs produce
+    deeply-equal results without mutating `templates`/`existing`.
+    """
+    scenario = FIXTURE["scenarios"][0]
+    templates_copy = json.loads(json.dumps(scenario["templates"]))
+    existing_copy = json.loads(json.dumps(scenario["existing"]))
+
+    result_a = compute_expected_instances(templates_copy, scenario["today"], existing_copy)
+    result_b = compute_expected_instances(templates_copy, scenario["today"], existing_copy)
+
+    assert result_a == result_b
+    assert templates_copy == scenario["templates"]
+    assert existing_copy == scenario["existing"]
+
+
 # --- structural: gerar-instancias exists at the group level (not live) -----
 
 
