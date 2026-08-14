@@ -82,3 +82,12 @@ describe("bizdays fixture parity", () => {
     });
   }
 });
+
+// WR-02 (27-REVIEW.md): the `n > 0` guard on `nthBusinessDayFromMonthEnd` is
+// unreachable from the function's only production caller (which already
+// dispatches `n > 0` elsewhere), so it must be exercised by a direct unit
+// test — otherwise a future refactor could silently break/remove it without
+// any test catching the regression.
+test("nthBusinessDayFromMonthEnd rejects n > 0", () => {
+  expect(() => nthBusinessDayFromMonthEnd(2026, 9, 1)).toThrow(RangeError);
+});

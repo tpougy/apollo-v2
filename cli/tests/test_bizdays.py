@@ -75,6 +75,17 @@ def test_fixture_case(case: dict[str, Any]) -> None:
         assert _run(case) == case["expected"]
 
 
+def test_nth_business_day_from_month_end_rejects_positive_n() -> None:
+    """WR-02 (27-REVIEW.md): the `n > 0` guard on `nth_business_day_from_month_end`
+    is unreachable from the function's only production caller (which already
+    dispatches `n > 0` elsewhere), so it must be exercised by a direct unit
+    test — otherwise a future refactor could silently break/remove it without
+    any test catching the regression.
+    """
+    with pytest.raises(ValueError, match="n must be <= 0"):
+        nth_business_day_from_month_end(2026, 9, 1)
+
+
 def _sample_business_days(count: int, seed: int) -> list[str]:
     """Deterministically sample `count` distinct business-day ISO strings
     spread across the vendored calendar range.
