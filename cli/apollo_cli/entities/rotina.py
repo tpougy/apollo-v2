@@ -133,8 +133,10 @@ group.add_command(instancia)
     required=True,
     help=(
         "Which competencia (reference month) rule applies to generated "
-        "instances of this template. Enforced by `apollo rotina "
-        "gerar-instancias`; see `apollo_cli.routine_job.shift_competencia`."
+        "instances of this template. Rejected immediately (exit 2) if not "
+        "one of the choices above; the accepted value is later consumed by "
+        "`apollo rotina gerar-instancias` via "
+        "`apollo_cli.routine_job.shift_competencia`."
     ),
 )
 @click.option(
