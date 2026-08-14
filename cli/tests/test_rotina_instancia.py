@@ -90,7 +90,7 @@ def _create_template(run_cli: RunCli, cleanup_records: list[tuple[str, str]], su
             "--tipo-geracao",
             "du_fixo",
             "--regra-competencia",
-            "mes_corrente",
+            "M0",
         ]
     )
     assert result.result.exit_code == 0, result.result.output

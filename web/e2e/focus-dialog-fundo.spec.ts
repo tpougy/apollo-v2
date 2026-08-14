@@ -230,7 +230,7 @@ test.describe("Phase 23 Plan 05: Fundo dialog + fundo-badge/rotinas-fundo-titulo
           "--tipo-geracao",
           "du_fixo",
           "--regra-competencia",
-          "mes-corrente",
+          "M0",
           "--fundo-id",
           fundoId,
         ]),
@@ -280,7 +280,7 @@ test.describe("Phase 23 Plan 05: Fundo dialog + fundo-badge/rotinas-fundo-titulo
           "--tipo-geracao",
           "du_fixo",
           "--regra-competencia",
-          "mes-corrente",
+          "M0",
         ]),
       ) as { id: string }
     ).id;

@@ -67,7 +67,7 @@ def test_full_crud_round_trip(
             "--tipo-geracao",
             "du_fixo",
             "--regra-competencia",
-            "mes_corrente",
+            "M0",
             "--propagar-atraso-soft",
             "--ativo",
         ]
@@ -84,7 +84,7 @@ def test_full_crud_round_trip(
     assert record["donoId"] == live_session.user_id
     assert record["nome"] == nome
     assert record["tipoGeracao"] == "du_fixo"
-    assert record["regraCompetencia"] == "mes_corrente"
+    assert record["regraCompetencia"] == "M0"
     assert record["propagarAtrasoSoft"] is True
     assert record["ativo"] is True
 
@@ -100,7 +100,7 @@ def test_full_crud_round_trip(
             "--tipo-geracao",
             "corrido_fixo",
             "--regra-competencia",
-            "mes_seguinte",
+            "M0",
             "--fundo-id",
             fundo_id,
         ]
@@ -125,7 +125,7 @@ def test_full_crud_round_trip(
             "--tipo-geracao",
             "encadeado",
             "--regra-competencia",
-            "encadeada",
+            "M0",
             "--antecessor-id",
             eid,
         ]
@@ -150,7 +150,7 @@ def test_full_crud_round_trip(
             "--tipo-geracao",
             "semanal",
             "--regra-competencia",
-            "R",
+            "M0",
         ]
     )
     assert invalid_result.result.exit_code == 2

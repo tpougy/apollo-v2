@@ -151,7 +151,7 @@ test.describe("Phase 23 Plan 04: Dia/Rotina dialogs + full calendar-family wirin
           "--tipo-geracao",
           "du_fixo",
           "--regra-competencia",
-          "mes-corrente",
+          "M0",
           "--fundo-id",
           fundoId,
         ]),

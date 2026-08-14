@@ -348,7 +348,7 @@ test.describe("Phase 23 Plan 07: Consolidated button-inventory + keyboard-access
           "--tipo-geracao",
           "du_fixo",
           "--regra-competencia",
-          "mes-corrente",
+          "M0",
           "--fundo-id",
           fundoId,
         ]),
