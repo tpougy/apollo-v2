@@ -29,7 +29,7 @@ Nascida de um relatório de uso real (onboarding de 18 fundos/84 templates/168 i
 via `apollo` CLI), não de uma ideia de produto. Ver `.planning/REQUIREMENTS.md` para o
 contexto completo e a evidência de código de cada achado.
 
-- [ ] **Phase 26: Validação na escrita**
+- [x] **Phase 26: Validação na escrita** (completed 2026-08-14)
 - [ ] **Phase 27: Robustez do job**
 - [ ] **Phase 28: Periodicidade semanal**
 - [ ] **Phase 29: Controle de geração**

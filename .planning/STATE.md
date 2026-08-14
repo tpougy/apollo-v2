@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Correções descobertas no onboarding real do calendário de rotinas
-current_phase: 26
-current_phase_name: Validação na escrita
-status: complete
-stopped_at: Completed 26-01-PLAN.md -- Phase 26 (Validação na escrita) complete
-last_updated: "2026-08-14T19:57:12.773Z"
+current_phase: 27
+current_phase_name: Robustez do job
+status: planning
+stopped_at: Completed 26-01-PLAN.md (Validação na escrita, VAL-01/02/03 done)
+last_updated: "2026-08-14T20:15:37.381Z"
 last_activity: 2026-08-14
 last_activity_desc: "Completed 26-01-PLAN.md: apollo rotina template criar/editar --regra-competencia bound to click.Choice(REGRAS_COMPETENCIA_SUPORTADAS), rejecting out-of-enum values at exit 2 before any write (VAL-01); --propagar-atraso-soft help text corrected to state the value is stored but not currently read (VAL-02); instancia status docstring corrected to describe dedupeKey as plain concatenation, not a hash (VAL-03); 15 pre-existing CLI/e2e fixtures repaired to the new enum; full offline cli/ pytest suite (348 passed) and the affected live tests green."
 progress:
@@ -28,10 +28,10 @@ See: .planning/PROJECT.md (updated 2026-08-14)
 
 ## Current Position
 
-Phase: 26 of 31 (Validação na escrita) — COMPLETE
-Plan: 26-01 complete (1/1 plan done this phase)
-Status: Phase complete — VAL-01/02/03 all live-verified; ready for `/gsd-plan-phase 27`
-Last activity: 2026-08-14 — Completed 26-01-PLAN.md (regra-competencia enum enforcement, fixture repair, propagar-atraso-soft/dedupeKey doc corrections)
+Phase: 27 of 31 (Robustez do job)
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-08-14 — Phase 26 complete, transitioned to Phase 27
 
 Progress: [██████████] 100%
 
@@ -39,7 +39,7 @@ Progress: [██████████] 100%
 
 **Velocity:**
 
-- Total plans completed: 4 (v1.4, both phases fully done; 44 lifetime across v1.0+v1.1+v1.2+v1.3+v1.4)
+- Total plans completed: 5 (v1.4, both phases fully done; 44 lifetime across v1.0+v1.1+v1.2+v1.3+v1.4)
 - Average duration: ~19min (v1.4 plans: 24-01 25min, 24-02 ~30min, 25-01 ~12min, 25-02 8min)
 - Total execution time: ~75 min (v1.4)
 
@@ -47,8 +47,8 @@ Progress: [██████████] 100%
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 24 | 2 | ~55min | ~27min |
 | 25 | 2 | - | - |
+| 26 | 1 | - | - |
 
 **Recent Trend:**
 
@@ -76,10 +76,6 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - v1.4 roadmap derivation: 10 requirements grouped into 2 phases (24-25) along the natural PKG/AUTH category boundary — no further split, per this milestone's explicit small/surgical scope (`cli/`-only, 3 related fixes). Phase 24 (packaging: vendored calendar + embedded default `app_id` + real `uv build`/`uv tool install` proof) sequenced before Phase 25 (auth: public `/runtime/auth/*` login) because AUTH-04 explicitly requires `apollo doctor`/`admin_token_present` to reflect PKG-03/PKG-04's new `app_id` resolution order — Phase 25 cannot be verified as "unaltered beyond what PKG-03/04 required" until Phase 24 lands.
 - v1.4 explicit non-goal, reaffirmed in REQUIREMENTS.md Context: `admin_token_present`/`apollo doctor` are kept exactly as-is (dev/ops support only), not removed even though the real login path no longer needs an admin token after this milestone.
 - v1.4 verification approach unchanged from v1.0-v1.3: no human UAT — every phase proven via real `uv build`/`uv tool install` runs in an isolated environment, real `pytest`/`ruff`/`ty` runs, and (for AUTH-01) a real magic-code email round trip against the live InstantDB app.
-- [Phase 24, Plan 01]: Reconfirmed the embedded `_DEFAULT_APP_ID` value live by rebuilding `web/` fresh and re-extracting from the bundle, rather than trusting RESEARCH.md's `[ASSUMED]` tag blindly.
-- [Phase 24, Plan 01]: Ran a live RED reproduction of the pre-fix `find_repo_root()` crash (real `uv build`/`venv`/install from outside the repo) before implementing, then reran the identical round trip post-fix for GREEN.
-- [Phase 24, Plan 02]: Isolated `APOLLO_SESSION_FILE` (nonexistent path) for every `fundo listar` invocation in both the new `test_packaging_live.py` and the manual acceptance round trip — this dev machine's real persisted session would otherwise mask the `no_session`/exit-1 contract being proven.
-- [Phase 24, Plan 02]: Phase 24 (Packaging & Installability) is now fully complete — PKG-01 through PKG-05 all live-verified; `test_packaging_live.py` is the permanent standing regression gate for PKG-05, and the real `uv tool install --force`/`uv tool uninstall apollo-cli` round trip was executed once, live, with output captured verbatim in `24-02-SUMMARY.md`.
 - [Phase 25, Plan 01]: apollo auth login rewritten to call InstantDB's public /runtime/auth/send_magic_code and verify_magic_code endpoints directly via httpx, reusing instantdb's own api_error_from_response()/DEFAULT_API_URI/DEFAULT_TIMEOUT internals -- zero login_client()/admin-token usage remains in login(); proven live with INSTANT_APP_ADMIN_TOKEN entirely absent.
 - [Phase 25, Plan 01]: httpx package-legitimacy resolved autonomously (Task 0, no blocking human checkpoint) -- already a pinned, installed transitive dependency of instantdb; promoted to an explicit cli/pyproject.toml dependency with zero new install surface.
 - [Phase 25, Plan 02]: Ported web/e2e/helpers/magic-code.ts's readLatestMagicCode/readMagicCodeAfter into cli/tests/helpers/magic_code.py verbatim (same orules.ps1 peek command, regex, sender check, block separator) -- zero re-derivation from PROJECT.md C-10's own stale prose. Used a real subprocess.run()-based live test (not CliRunner) to prove INSTANT_APP_ADMIN_TOKEN absence in a genuinely isolated child-process environment, reusing test_packaging_live.py's env-copy-and-override idiom.
