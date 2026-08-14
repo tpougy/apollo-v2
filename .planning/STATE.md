@@ -4,15 +4,15 @@ milestone: v1.5
 milestone_name: Correções descobertas no onboarding real do calendário de rotinas
 current_phase: 27
 current_phase_name: Robustez do job
-status: planning
+status: executing
 stopped_at: Completed 26-01-PLAN.md (Validação na escrita, VAL-01/02/03 done)
-last_updated: "2026-08-14T20:15:37.381Z"
+last_updated: "2026-08-14T20:46:14.823Z"
 last_activity: 2026-08-14
 last_activity_desc: "Completed 26-01-PLAN.md: apollo rotina template criar/editar --regra-competencia bound to click.Choice(REGRAS_COMPETENCIA_SUPORTADAS), rejecting out-of-enum values at exit 2 before any write (VAL-01); --propagar-atraso-soft help text corrected to state the value is stored but not currently read (VAL-02); instancia status docstring corrected to describe dedupeKey as plain concatenation, not a hash (VAL-03); 15 pre-existing CLI/e2e fixtures repaired to the new enum; full offline cli/ pytest suite (348 passed) and the affected live tests green."
 progress:
   total_phases: 6
   completed_phases: 1
-  total_plans: 1
+  total_plans: 3
   completed_plans: 1
   percent: 17
 ---
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-08-14)
 
 Phase: 27 of 31 (Robustez do job)
 Plan: Not started
-Status: Ready to plan
+Status: Ready to execute
 Last activity: 2026-08-14 — Phase 26 complete, transitioned to Phase 27
 
 Progress: [██████████] 100%
