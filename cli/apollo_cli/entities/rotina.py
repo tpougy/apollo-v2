@@ -173,7 +173,10 @@ group.add_command(instancia)
     default=None,
     help=(
         "Meaning depends on --tipo-geracao (PROJECT.md/05-01-PLAN.md D-05-A): "
-        "'du_fixo' = Nth BUSINESS day of the month (integer >= 1); "
+        "'du_fixo' = Nth BUSINESS day of the month when >= 1 (counted forward "
+        "from the 1st, unchanged); when <= 0, counted BACKWARD from the "
+        "month's last business day instead — 0 = the last business day of "
+        "the month, negative N = N business days before it (JOB-02/D-27-B); "
         "'corrido_fixo' = Nth CALENDAR day of the month, clamped to the "
         "month's last day (integer >= 1); 'encadeado' = number of BUSINESS "
         "days after the antecessor instance's dataPrevista (integer >= 0, "
@@ -257,8 +260,11 @@ def criar(
     help=(
         "New offset value. Meaning depends on --tipo-geracao "
         "(PROJECT.md/05-01-PLAN.md D-05-A): 'du_fixo' = Nth BUSINESS day of "
-        "the month (integer >= 1); 'corrido_fixo' = Nth CALENDAR day of the "
-        "month, clamped to the month's last day (integer >= 1); "
+        "the month when >= 1 (counted forward from the 1st, unchanged); when "
+        "<= 0, counted BACKWARD from the month's last business day instead "
+        "— 0 = the last business day of the month, negative N = N business "
+        "days before it (JOB-02/D-27-B); 'corrido_fixo' = Nth CALENDAR day of "
+        "the month, clamped to the month's last day (integer >= 1); "
         "'encadeado' = number of BUSINESS days after the antecessor "
         "instance's dataPrevista (integer >= 0, D-05-B). Omit to leave the "
         "stored value unchanged — never resets it to 0."

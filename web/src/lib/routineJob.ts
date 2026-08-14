@@ -51,6 +51,16 @@
  *   runs; a key derived from a moving date would re-create the successor on
  *   every run and destroy idempotency.
  *
+ * `du_fixo` (**JOB-02/D-27-B**): `offsetDias >= 1` counts business days
+ * forward from the month's 1st, unchanged, via `nthBusinessDayOfMonth`.
+ * `offsetDias <= 0` counts business days BACKWARD from the month's last
+ * business day instead, via the new `./bizdays`'s `nthBusinessDayFromMonthEnd`:
+ * `0` is the last business day of the month itself, negative `N` is `N`
+ * business days before it. `duFixoNthDay` dispatches between the two based
+ * on the sign of `offsetDias`. `corrido_fixo` is entirely untouched by this
+ * — it keeps requiring `offsetDias >= 1` and its own `nthCalendarDayOfMonth`
+ * date rule.
+ *
  * `propagarAtrasoSoft` is stored on the template but never read anywhere in
  * this module (C-09) — delay propagation is explicitly out of scope.
  *
@@ -62,7 +72,7 @@
  * as `antecessor_ciclico` rather than looping forever.
  */
 
-import { addBusinessDays, isBusinessDay } from "./bizdays";
+import { addBusinessDays, isBusinessDay, nthBusinessDayFromMonthEnd } from "./bizdays";
 import { db, lookup } from "./db";
 
 export const TIPO_PRAZO_GERADO = "soft"; // D-05-C
@@ -273,6 +283,20 @@ function computeFixedInstances(
   return { instances };
 }
 
+const DU_FIXO_MIN_OFFSET_DIAS = -1_000_000;
+
+/**
+ * Sign-based dispatch for `du_fixo`'s date rule: forward-counting
+ * (`nthBusinessDayOfMonth`, unchanged) for `n >= 1`; backward-counting from
+ * the month's last business day (`nthBusinessDayFromMonthEnd`, new) for
+ * `n <= 0` (JOB-02/D-27-B).
+ */
+function duFixoNthDay(year: number, month: number, n: number): string {
+  return n >= 1
+    ? nthBusinessDayOfMonth(year, month, n)
+    : nthBusinessDayFromMonthEnd(year, month, n);
+}
+
 interface AntecessorRecord {
   competencia: string;
   dataPrevista: string;
@@ -385,8 +409,8 @@ export function computeExpectedInstances(
           today,
           rangeStart,
           rangeEnd,
-          1,
-          nthBusinessDayOfMonth,
+          DU_FIXO_MIN_OFFSET_DIAS,
+          duFixoNthDay,
         );
       } else if (template.tipoGeracao === "corrido_fixo") {
         result = computeFixedInstances(

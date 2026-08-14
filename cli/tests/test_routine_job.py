@@ -311,3 +311,49 @@ def test_gerar_instancias_double_run_idempotent_and_preserves_status(
     assert to_iso_date(updated_target["dataPrevista"]) == to_iso_date(target["dataPrevista"])
     assert updated_target["competencia"] == target["competencia"]
     assert updated_target["dedupeKey"] == target["dedupeKey"]
+
+
+@pytest.mark.live
+def test_gerar_instancias_du_fixo_offset_le_zero_real_previa_du2_case(
+    run_cli: RunCli,
+    live_client: Instant,
+    live_session: Session,
+    cleanup_records: list[tuple[str, str]],
+) -> None:
+    """JOB-02/D-27-B: proves the exact real onboarding "Previa DU-2" case
+    live against production InstantDB — offsetDias=-2 (2 business days
+    before the month's last business day) and offsetDias=0 (the last
+    business day of the month itself), for August and September 2026.
+    """
+    suffix = unique_suffix()
+
+    offset_neg2_id = _create_routine_template(
+        run_cli,
+        cleanup_records,
+        nome=f"phase27-cli-du-neg2-{suffix}",
+        tipo_geracao="du_fixo",
+        regra_competencia="M0",
+        offset_dias=-2,
+    )
+    offset_zero_id = _create_routine_template(
+        run_cli,
+        cleanup_records,
+        nome=f"phase27-cli-du-zero-{suffix}",
+        tipo_geracao="du_fixo",
+        regra_competencia="M0",
+        offset_dias=0,
+    )
+
+    result: CliInvocation = run_cli(["rotina", "gerar-instancias", "--data-base", "2026-08-09"])
+    assert result.result.exit_code == 0, result.result.output
+
+    def _by_competencia(template_id: str) -> dict[str, str]:
+        rows = _query_instances_by_template(live_client, template_id)
+        by_competencia: dict[str, str] = {}
+        for row in rows:
+            cleanup_records.append(("instanciasRotina", row["id"]))
+            by_competencia[row["competencia"]] = to_iso_date(row["dataPrevista"])
+        return by_competencia
+
+    assert _by_competencia(offset_neg2_id) == {"2026-08": "2026-08-27", "2026-09": "2026-09-28"}
+    assert _by_competencia(offset_zero_id) == {"2026-08": "2026-08-31", "2026-09": "2026-09-30"}

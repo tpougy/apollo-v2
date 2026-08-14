@@ -26,6 +26,7 @@ proving they don't.
 
 from __future__ import annotations
 
+import calendar as pycalendar
 import json
 import re
 from datetime import date, timedelta
@@ -121,6 +122,24 @@ def add_business_days(value: str, n: int) -> str:
             remaining -= 1
 
     return cursor.isoformat()
+
+
+def nth_business_day_from_month_end(year: int, month: int, n: int) -> str:
+    """Returns the Nth business day counting BACKWARD from the month's last
+    calendar day (JOB-02/D-27-B). `n=0` is the anchor itself — the last
+    business day of the month; `n<0` counts `abs(n)` business days before
+    that anchor via `add_business_days` (which already supports a negative
+    step count). `n>0` is not a supported input here — callers dispatch on
+    sign (see `routine_job.py`'s `_du_fixo_nth_day`).
+
+    The anchor is the month's last calendar day, or — when that day is not a
+    business day — the closest earlier business day (rolls BACKWARD, never
+    forward into the next month).
+    """
+    last_day = pycalendar.monthrange(year, month)[1]
+    last_iso = date(year, month, last_day).isoformat()
+    anchor = last_iso if is_business_day(last_iso) else add_business_days(last_iso, -1)
+    return anchor if n == 0 else add_business_days(anchor, n)
 
 
 def next_business_day(value: str) -> str:

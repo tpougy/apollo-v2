@@ -129,6 +129,33 @@ export function addBusinessDays(date: string, n: number): string {
 }
 
 /**
+ * Last calendar day of `(year, month)`, 1-based month. Private to this
+ * module — deliberately duplicated rather than imported from
+ * `routineJob.ts`'s own copy, to avoid a `bizdays.ts` -> `routineJob.ts`
+ * circular import (`routineJob.ts` already imports FROM `bizdays.ts`).
+ */
+function lastDayOfMonth(year: number, month: number): number {
+  return new Date(Date.UTC(year, month, 0)).getUTCDate();
+}
+
+/**
+ * Returns the Nth business day counting BACKWARD from the month's last
+ * calendar day (JOB-02/D-27-B). `n=0` is the anchor itself — the last
+ * business day of the month; `n<0` counts `abs(n)` business days before
+ * that anchor via `addBusinessDays` (which already supports a negative step
+ * count). `n>0` is not a supported input here — callers dispatch on sign.
+ *
+ * The anchor is the month's last calendar day, or — when that day is not a
+ * business day — the closest earlier business day (rolls BACKWARD, never
+ * forward into the next month).
+ */
+export function nthBusinessDayFromMonthEnd(year: number, month: number, n: number): string {
+  const lastIso = formatIso(year, month, lastDayOfMonth(year, month));
+  const anchor = isBusinessDay(lastIso) ? lastIso : addBusinessDays(lastIso, -1);
+  return n === 0 ? anchor : addBusinessDays(anchor, n);
+}
+
+/**
  * Strictly-after semantics: a date that is already a business day still
  * advances. Deliberately NOT `bizdays`' `Calendar.following()`
  * same-day-passthrough behavior — see plan 02-02's backstop truth.

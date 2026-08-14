@@ -43,6 +43,16 @@ here so a reader never has to reconstruct them from the plan:
   runs; a key derived from a moving date would re-create the successor on
   every run and destroy idempotency.
 
+`du_fixo` (**JOB-02/D-27-B**): `offsetDias >= 1` counts business days forward
+from the month's 1st, unchanged, via `nth_business_day_of_month`.
+`offsetDias <= 0` counts business days BACKWARD from the month's last
+business day instead, via the new `apollo_cli.bizdays.
+nth_business_day_from_month_end`: `0` is the last business day of the month
+itself, negative `N` is `N` business days before it. `_du_fixo_nth_day`
+dispatches between the two based on the sign of `offsetDias`.
+`corrido_fixo` is entirely untouched by this — it keeps requiring
+`offsetDias >= 1` and its own `nth_calendar_day_of_month` date rule.
+
 `propagarAtrasoSoft` is stored on the template but never read anywhere in
 this module (C-09) — delay propagation is explicitly out of scope.
 
@@ -78,6 +88,7 @@ from apollo_cli.bizdays import (
     InvalidDateError,
     add_business_days,
     is_business_day,
+    nth_business_day_from_month_end,
 )
 from apollo_cli.crud_helpers import instant_errors
 
@@ -232,6 +243,25 @@ def _compute_fixed_instances(
     return instances, None
 
 
+_DU_FIXO_MIN_OFFSET_DIAS: Final[int] = -1_000_000
+"""No real floor beyond "is an int" — `CalendarRangeError` (pre-existing,
+already caught per-template in the fixed-offset loop's
+`except (CalendarRangeError, InvalidDateError):` block) enforces the real
+floor via the vendored calendar's own `[CALENDAR_START, CALENDAR_END]`
+bounds once the computed date falls outside it (JOB-02/D-27-B)."""
+
+
+def _du_fixo_nth_day(year: int, month: int, n: int) -> str:
+    """Sign-based dispatch for `du_fixo`'s date rule: forward-counting
+    (`nth_business_day_of_month`, unchanged) for `n >= 1`; backward-counting
+    from the month's last business day (`nth_business_day_from_month_end`,
+    new) for `n <= 0` (JOB-02/D-27-B).
+    """
+    if n >= 1:
+        return nth_business_day_of_month(year, month, n)
+    return nth_business_day_from_month_end(year, month, n)
+
+
 def _lookup_antecessor_instances(
     antecessor_id: str,
     computed_by_template_id: dict[str, list[dict[str, Any]]],
@@ -316,7 +346,12 @@ def compute_expected_instances(
         try:
             if tipo_geracao == "du_fixo":
                 instances, skip_reason = _compute_fixed_instances(
-                    template, today, range_start, range_end, 1, nth_business_day_of_month
+                    template,
+                    today,
+                    range_start,
+                    range_end,
+                    _DU_FIXO_MIN_OFFSET_DIAS,
+                    _du_fixo_nth_day,
                 )
             elif tipo_geracao == "corrido_fixo":
                 instances, skip_reason = _compute_fixed_instances(

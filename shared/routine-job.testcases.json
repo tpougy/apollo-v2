@@ -218,7 +218,7 @@
       "expectedSkipped": [{ "templateId": "tpl-c", "reason": "offset_dias_ausente" }]
     },
     {
-      "nome": "offsetDias=0 e invalido para du_fixo (precisa ser >=1)",
+      "nome": "du_fixo offsetDias=0 agora e valido (JOB-02): ultimo dia util do mes, nao mais um erro",
       "today": "2026-08-09",
       "templates": [
         {
@@ -231,8 +231,23 @@
         }
       ],
       "existing": [],
-      "expectedInstances": [],
-      "expectedSkipped": [{ "templateId": "tpl-d", "reason": "offset_dias_invalido" }]
+      "expectedInstances": [
+        {
+          "dedupeKey": "tpl-d:2026-08:2026-08-31",
+          "templateId": "tpl-d",
+          "competencia": "2026-08",
+          "dataPrevista": "2026-08-31",
+          "tipoPrazo": "soft"
+        },
+        {
+          "dedupeKey": "tpl-d:2026-09:2026-09-30",
+          "templateId": "tpl-d",
+          "competencia": "2026-09",
+          "dataPrevista": "2026-09-30",
+          "tipoPrazo": "soft"
+        }
+      ],
+      "expectedSkipped": []
     },
     {
       "nome": "regraCompetencia 'manual' significa 'sem geracao automatica', nunca um default adivinhado",
