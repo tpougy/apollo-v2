@@ -33,16 +33,19 @@ foram decididas nesta sessão, antes do roadmap):
   `instanciasRotina` criaria uma exceção inconsistente. O problema real não é
   a liberdade de texto, é a comparação com uma única grafia exata dentro do
   job.
+
 - **VAL-02** (implementar vs. reservar `propagarAtrasoSoft`): marcar como
   reservado, não implementar a propagação. Implementar reabriria C-09
   (decisão travada, fora de escopo desta migração) e é uma feature de produto
   nova, não uma correção do que já existe.
+
 - **JOB-02** (offset negativo vs. `tipoGeracao` novo para `du_fixo`): estender
   `du_fixo` para aceitar `offsetDias <= 0`, não criar um tipo novo.
   `add_business_days` (`bizdays.py`/`.ts`) já aceita `n` negativo — só falta
   liberar a validação e uma função de cálculo "a partir do fim do mês". Um
   tipo novo duplicaria toda a superfície de CLI/testes/fixtures para expressar
   o que continua sendo semanticamente "o N-ésimo dia útil do mês".
+
 - **SEM-01** (fazer vs. não fazer periodicidade semanal): fazer. Confirmado
   com o usuário que o custo de um `tipoGeracao` novo se justifica mesmo para 1
   evento em 87 (`Atualiz Calc RF`, toda sexta-feira) — decisão explícita do
@@ -52,7 +55,7 @@ foram decididas nesta sessão, antes do roadmap):
 
 ### Validação na escrita (VAL)
 
-- [ ] **VAL-01**: `apollo rotina template criar`/`editar --regra-competencia`
+- [x] **VAL-01**: `apollo rotina template criar`/`editar --regra-competencia`
   usa `click.Choice` (ou validação equivalente) sobre
   `REGRAS_COMPETENCIA_SUPORTADAS` (`M0`, `M-1`, `M-2`, `M+1`), recusando na
   hora qualquer outro valor com uma mensagem que lista os valores aceitos.
@@ -61,12 +64,14 @@ foram decididas nesta sessão, antes do roadmap):
   `gerar-instancias` (`skipped: regra_competencia_nao_suportada`). `--help` e
   `docs/ai-usage/CLAUDE.md` deixam de descrever o campo como
   "free-form/não parseado".
-- [ ] **VAL-02**: `--propagar-atraso-soft/--nao-propagar-atraso-soft` (em
+
+- [x] **VAL-02**: `--propagar-atraso-soft/--nao-propagar-atraso-soft` (em
   `criar`/`editar`) tem seu `--help` reescrito para deixar explícito que o
   valor é armazenado mas **não lido** por `gerar-instancias` — reservado para
   uma futura propagação de atraso soft, hoje fora de escopo (C-09). Nenhuma
   mudança de comportamento; só elimina a impressão de que a flag já faz algo.
-- [ ] **VAL-03**: corrigir o docstring de `apollo rotina instancia status`
+
+- [x] **VAL-03**: corrigir o docstring de `apollo rotina instancia status`
   (`entities/rotina.py`), que hoje descreve `dedupeKey` como um "hash" —
   contradiz o docstring canônico de `routine_job.py`, que é explícito sobre
   ser concatenação simples, não hash.
@@ -81,12 +86,14 @@ foram decididas nesta sessão, antes do roadmap):
   escrita — nenhum enum novo. `apollo rotina instancia status --help`
   documenta esse acoplamento (quais grafias contam como "concluída" para
   fins de geração de sucessores).
+
 - [ ] **JOB-02**: `du_fixo` aceita `offsetDias <= 0`, com a semântica "contado
   a partir do último dia útil do mês" (`0` = último DU do mês; negativo = N
   dias úteis antes do último), implementada como uma nova função em
   `bizdays.py`/`bizdays.ts` construída sobre `add_business_days` (que já
   suporta contagem negativa). `--help` de `template criar`/`editar` documenta
   a nova semântica de `--offset-dias` para `du_fixo`.
+
 - [ ] **JOB-03**: cada entrada do relatório `skipped` de `gerar-instancias`
   inclui o `nome` do template, além de `templateId`/`reason`, em todo ponto
   de emissão de `compute_expected_instances`/`computeExpectedInstances` — uma
@@ -120,11 +127,13 @@ foram decididas nesta sessão, antes do roadmap):
   contagem de instâncias afetadas, com uma flag explícita para prosseguir.
   Nunca mais deleta um template deixando instâncias órfãs sem qualquer
   sinalização.
+
 - [ ] **LIFE-02**: existe um comando dedicado para localizar e remover
   instâncias órfãs (cujo `template` vinculado não resolve mais) — escopo
   estritamente de limpeza de resíduo já existente, não uma via alternativa de
   criação/edição de `instanciasRotina` (a restrição "sem `criar`/`deletar`
   manual" de C-06 continua valendo para o fluxo normal).
+
 - [ ] **LIFE-03**: os testes marcados `live` (pytest) e a suíte Playwright de
   `web/e2e` passam a rodar contra um `app_id` de teste dedicado, distinto do
   usado para dados reais — elimina o vetor que produziu o resíduo
@@ -146,6 +155,7 @@ foram decididas nesta sessão, antes do roadmap):
 
 - Propagação real de atraso soft entre templates encadeados (reabriria C-09
   — fora de escopo aqui; VAL-02 apenas documenta o campo como reservado)
+
 - Suporte a múltiplos `app_id`/multi-app simultâneo além do par
   produção/teste introduzido por LIFE-03
 
@@ -156,12 +166,15 @@ foram decididas nesta sessão, antes do roadmap):
 - Qualquer mudança de comportamento observável de comandos fora de `rotina`
   (`fundo`, `projeto`, `etapa`, `tarefa`, `ticket`, `subtarefa`,
   `log-inferencia`) — escopo é o motor de rotinas e seu entorno de CLI
+
 - Cálculo algorítmico de feriados ou qualquer segunda fonte de calendário
   (C-03, travado) — todas as novas funções de data continuam lendo
   exclusivamente `anbima-calendar.json` via `bizdays.py`/`.ts`
+
 - Qualquer mudança em `routine_job.py`/`routineJob.ts` que faça o job
   deletar ou sobrescrever `status` de uma instância existente — LIFE-01/
   LIFE-02 vivem fora do job de geração (job continua só criando via upsert)
+
 - Migração de dados já cadastrados no onboarding real (os 18
   fundos/84 templates/168 instâncias já existentes não são tocados
   retroativamente por nenhuma fase — as correções valem para cadastro daqui

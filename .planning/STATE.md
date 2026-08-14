@@ -4,17 +4,17 @@ milestone: v1.5
 milestone_name: Correções descobertas no onboarding real do calendário de rotinas
 current_phase: 26
 current_phase_name: Validação na escrita
-status: roadmap_complete
-stopped_at: REQUIREMENTS.md + ROADMAP.md (Phases 26-31) written from a verified onboarding report -- ready for /gsd-plan-phase 26
-last_updated: "2026-08-14T18:48:21.034Z"
+status: complete
+stopped_at: Completed 26-01-PLAN.md -- Phase 26 (Validação na escrita) complete
+last_updated: "2026-08-14T19:57:12.773Z"
 last_activity: 2026-08-14
-last_activity_desc: 8 achados de um onboarding real (18 fundos/84 templates/168 instâncias cadastrados via apollo CLI) triados e verificados linha-a-linha no código (routine_job.py, routineJob.ts, bizdays.py, entities/rotina.py) antes de virarem requisito; 4 decisões de implementação registradas (normalizar status em vez de fechar vocabulário, reservar propagarAtrasoSoft, estender du_fixo em vez de tipoGeracao novo, implementar periodicidade semanal por decisão explícita do usuário); REQUIREMENTS.md (VAL/JOB/SEM/RANGE/LIFE/BATCH, 12 requisitos) e ROADMAP.md (Phases 26-31) escritos. Nenhum plano de fase criado ainda.
+last_activity_desc: "Completed 26-01-PLAN.md: apollo rotina template criar/editar --regra-competencia bound to click.Choice(REGRAS_COMPETENCIA_SUPORTADAS), rejecting out-of-enum values at exit 2 before any write (VAL-01); --propagar-atraso-soft help text corrected to state the value is stored but not currently read (VAL-02); instancia status docstring corrected to describe dedupeKey as plain concatenation, not a hash (VAL-03); 15 pre-existing CLI/e2e fixtures repaired to the new enum; full offline cli/ pytest suite (348 passed) and the affected live tests green."
 progress:
   total_phases: 6
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 1
-  completed_plans: 0
-  percent: 0
+  completed_plans: 1
+  percent: 17
 ---
 
 # Project State
@@ -24,16 +24,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-14)
 
 **Core value:** The user can execute every piece of controladoria data-entry work from either the Svelte SPA or the Python CLI, both authenticated as the same real user under the same InstantDB permission rules. Validated in v1.0. v1.1 made the SPA visually coherent on shadcn-svelte defaults; v1.2 refined composition/spacing/hierarchy on the same four screens; v1.3 reorganized navigation into a 6-section topbar and shipped the Dashboard landing screen; v1.4 made the CLI itself installable outside the monorepo and dropped its login flow's admin-token dependency; v1.5 fixes 8 issues a real production-volume onboarding surfaced in the routine-generation engine (`routine_job.py`/`routineJob.ts`) and its CLI surface.
-**Current focus:** v1.5 (Phases 26-31) is planned but not yet executed. Requirements and roadmap were derived from a verified onboarding report (RBR fund-controladoria routine calendar: 18 fundos, 84 templatesRotina, 168 instanciasRotina), not from a spec or discussion — each of the 8 reported issues was confirmed against the live code before being accepted as a requirement. Next step: `/gsd-plan-phase 26`.
+**Current focus:** v1.5 (Phases 26-31) is in progress — Phase 26 (Validação na escrita, VAL-01/02/03) is complete. Requirements and roadmap were derived from a verified onboarding report (RBR fund-controladoria routine calendar: 18 fundos, 84 templatesRotina, 168 instanciasRotina), not from a spec or discussion — each of the 8 reported issues was confirmed against the live code before being accepted as a requirement. Next step: `/gsd-plan-phase 27`.
 
 ## Current Position
 
-Phase: 26 of 31 (Validação na escrita)
-Plan: Not started
-Status: Roadmap complete, no phase planned yet
-Last activity: 2026-08-14 — REQUIREMENTS.md/ROADMAP.md written
+Phase: 26 of 31 (Validação na escrita) — COMPLETE
+Plan: 26-01 complete (1/1 plan done this phase)
+Status: Phase complete — VAL-01/02/03 all live-verified; ready for `/gsd-plan-phase 27`
+Last activity: 2026-08-14 — Completed 26-01-PLAN.md (regra-competencia enum enforcement, fixture repair, propagar-atraso-soft/dedupeKey doc corrections)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -64,6 +64,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 24 P02 | ~30min | 2 tasks | 3 files |
 | Phase 25 P01 | ~12min | 3 tasks | 7 files |
 | Phase 25 P02 | 8min | 2 tasks | 3 files |
+| Phase 26 P01 | ~15min | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -87,6 +88,7 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - v1.5 roadmap derivation: 12 requirements grouped into 6 phases (26-31), P0 (falhas silenciosas) primeiro, depois P1 (lacunas de cobertura do calendário), depois P2 (atrito operacional) — Phase 26 (validação de escrita, sem tocar o job) antes de Phase 27 (robustez do job) para não colidir edições na mesma janela; Phase 28 (semanal) depende de 27 por estender o mesmo dispatch de `tipoGeracao`; Phase 29 (recorte de range) depende de 28 para cobrir o tipo semanal também; Phases 30-31 (higiene/lote) são tecnicamente independentes, sequenciadas por último por prioridade.
 - v1.5 decisões de implementação registradas em REQUIREMENTS.md Context: (1) JOB-01 normaliza a comparação de `status` em vez de fechar o vocabulário — `status` continua livre por decisão de produto já aplicada a outras entidades; (2) VAL-02 marca `propagarAtrasoSoft` como reservado em vez de implementar propagação — implementar reabriria C-09 (travado); (3) JOB-02 estende `du_fixo` para aceitar offset negativo em vez de criar um `tipoGeracao` novo — `add_business_days` já suporta contagem negativa; (4) SEM-01 (periodicidade semanal) será implementado por decisão explícita do usuário, mesmo cobrindo só 1 evento em 87 no calendário de origem.
 - v1.5 causa raiz adicional encontrada além do relatado pelo usuário (LIFE-03): o resíduo de teste E2E na base real (achado do usuário em P2-2) não é um incidente pontual — não existe hoje um `app_id` de teste separado do usado para dados reais em nenhum dos dois runtimes, então qualquer rodada futura de teste `live`/Playwright pode reintroduzir o mesmo resíduo até essa separação existir.
+- [Phase 26, Plan 01]: click.Choice enum enforcement on regra-competencia (imported from routine_job.py, never redeclared) closes VAL-01; propagar-atraso-soft help text and instancia status's dedupeKey docstring corrected for VAL-02/VAL-03. Repaired 15 pre-existing CLI/e2e fixtures broken by the new enum. Logged an unrelated, pre-existing live-DB pagination flake (test_criar_without_offset_dias_omits_key_entirely) to deferred-items.md.
 
 ### Pending Todos
 
@@ -122,10 +124,10 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-14T00:00:00.000Z
-Stopped at: REQUIREMENTS.md + ROADMAP.md (Phases 26-31) written for v1.5 from a verified onboarding report; no phase plan created yet
+Last session: 2026-08-14T19:57:12.758Z
+Stopped at: Completed 26-01-PLAN.md (Validação na escrita, VAL-01/02/03 done)
 Resume file: None
 
 ## Operator Next Steps
 
-- v1.5 is planned (REQUIREMENTS.md + ROADMAP.md, Phases 26-31, 12 requirements) but not yet planned-in-detail or executed. Next: `/gsd-plan-phase 26` to produce the first PLAN.md (Validação na escrita — VAL-01/02/03), then proceed phase by phase.
+- Phase 26 (Validação na escrita — VAL-01/02/03) is complete, live-verified. Next: `/gsd-plan-phase 27` (Robustez do job — JOB-01/02/03), then proceed phase by phase through 31.

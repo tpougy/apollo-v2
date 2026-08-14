@@ -50,18 +50,23 @@ v1.0/Phase 5)
   1. `apollo rotina template criar --regra-competencia <valor-invalido>` falha
      imediatamente (exit não-zero, sem gravar registro), com mensagem listando `M0`,
      `M-1`, `M-2`, `M+1` (VAL-01).
+
   2. `apollo rotina template editar --regra-competencia <valor-invalido>` tem o mesmo
      comportamento (VAL-01).
+
   3. `apollo rotina template criar/editar --help` e `docs/ai-usage/CLAUDE.md` não
      descrevem mais `--regra-competencia` como livre/não parseado (VAL-01).
+
   4. `apollo rotina template criar/editar --help` deixa explícito que
      `--propagar-atraso-soft` é armazenado mas não lido por `gerar-instancias` (VAL-02).
+
   5. `apollo rotina instancia status --help` não descreve mais `dedupeKey` como hash
      (VAL-03).
 **Plans**: 1 plan
 
 Plans:
-- [ ] 26-01-PLAN.md — `--regra-competencia` click.Choice enforcement (criar/editar), fixture
+
+- [x] 26-01-PLAN.md — `--regra-competencia` click.Choice enforcement (criar/editar), fixture
   repair for existing CLI/e2e tests, and `--propagar-atraso-soft`/`dedupeKey` doc corrections
 
 ### Phase 27: Robustez do job
@@ -78,13 +83,17 @@ edições em `entities/rotina.py`/`routine_job.py` na mesma janela)
      `"Concluída"`, `"CONCLUIDA"` ou `"concluído"` é tratado como concluída para fins de
      `dataPrevistaEstimada` — não só a grafia exata `"concluida"` (JOB-01), com o mesmo
      resultado nos dois runtimes (fixture compartilhada).
+
   2. `apollo rotina template criar --tipo-geracao du_fixo --offset-dias -2` é aceito e
      `gerar-instancias` produz a data 2 dias úteis antes do último dia útil do mês —
      verificado contra o caso real da Prévia DU-2 de agosto/26 (27/08) (JOB-02).
+
   3. `apollo rotina template criar --tipo-geracao du_fixo --offset-dias 0` produz o
      último dia útil do mês (JOB-02).
+
   4. `apollo rotina gerar-instancias`'s relatório `skipped` inclui `nome` do template em
      toda entrada, nos dois runtimes (JOB-03).
+
   5. `shared/routine-job.testcases.json` ganha casos novos cobrindo status normalizado e
      offset negativo, consumidos por ambos os conjuntos de teste (CLI/web).
 **Plans**: TBD
@@ -101,8 +110,10 @@ representado no Apollo sem aproximação artificial.
   1. `apollo rotina template criar --tipo-geracao semanal --dia-semana sexta` é aceito e
      `gerar-instancias` produz uma instância em cada sexta-feira dentro do range de
      geração.
+
   2. O caso real "Atualiz Calc RF" (toda sexta) é representável e gera as datas
      corretas para agosto/setembro de 2026.
+
   3. `shared/routine-job.testcases.json` ganha casos novos para o tipo semanal,
      idênticos nos dois runtimes.
 **Plans**: TBD
@@ -117,10 +128,13 @@ perder instâncias do início do mês corrente por engano.
 
   1. É possível gerar instâncias de exatamente uma competência (ex. `2026-08`) sem
      arrastar o mês seguinte junto.
+
   2. Rodando no meio do mês corrente, é possível recuperar as instâncias já passadas
      desse mês sem precisar calcular manualmente uma `--data-base` retroativa.
+
   3. Rodar `gerar-instancias` com e sem o novo recorte, cobrindo o mesmo intervalo
      final, produz o mesmo conjunto de instâncias (idempotência/C-06 preservada).
+
   4. Nenhuma instância gerada com o recorte tem uma `dataPrevista`/`dedupeKey`
      diferente da que teria sem o recorte.
 **Plans**: TBD
@@ -138,10 +152,13 @@ por prioridade, não por dependência técnica)
   1. `apollo rotina template deletar` de um template com instâncias vinculadas informa a
      contagem de instâncias afetadas e não deleta por padrão; uma flag explícita permite
      prosseguir.
+
   2. Existe um comando que lista/remove instâncias cujo `template` vinculado não resolve
      mais, sem introduzir `criar`/`deletar` livre para `instanciasRotina` no fluxo normal.
+
   3. As 3 instâncias órfãs e a instância residual de teste (`phase23-e2e-dedupe-...`)
      encontradas no onboarding real são removíveis por esse comando.
+
   4. Os testes `live` (pytest) e a suíte `web/e2e` rodam contra um `app_id` de teste
      distinto do usado para dados reais — nenhuma escrita de teste aparece mais na
      listagem de dados de produção.
@@ -159,8 +176,10 @@ urgência relativa entre as seis)
   1. É possível descrever um lote de registros (com referências entre si, ex. um `fundo`
      e os `templates` que o citam) em um único arquivo e validá-lo por completo antes de
      qualquer escrita.
+
   2. Uma falha no meio de um lote não deixa o cadastro num estado que duplique registros
      ao ser retomado.
+
   3. Um lote equivalente ao onboarding real (18 fundos + 84 templates) completa em uma
      única invocação, não 102.
 **Plans**: TBD
