@@ -118,11 +118,11 @@ test("WEB-06: templatesRotina full CRUD, including the self-referential antecess
 
   await gotoNested(page, "templatesRotina");
 
-  // tipoGeracao offers exactly du_fixo, corrido_fixo, encadeado — matching
-  // the CLI's click.Choice(_TIPO_GERACAO_CHOICES), no free text.
+  // tipoGeracao offers exactly du_fixo, corrido_fixo, encadeado, semanal —
+  // matching the CLI's click.Choice(_TIPO_GERACAO_CHOICES), no free text.
   await page.getByTestId("entity-create-start").click();
   const optionValues = await openAndReadSelectOptions(page, "field-tipoGeracao");
-  expect(optionValues.sort()).toEqual(["corrido_fixo", "du_fixo", "encadeado"]);
+  expect(optionValues.sort()).toEqual(["corrido_fixo", "du_fixo", "encadeado", "semanal"]);
 
   // Create A with neither fundo nor antecessor.
   await page.getByTestId("field-nome").fill(nomeA);
@@ -136,10 +136,10 @@ test("WEB-06: templatesRotina full CRUD, including the self-referential antecess
   expect(eidA).toBeTruthy();
 
   // Both link columns blank (listColumns: nome, tipoGeracao, offsetDias,
-  // ativo, fundo, antecessor).
+  // diaSemana, ativo, fundo, antecessor).
   const cellsA = rowA.locator("td");
-  await expect(cellsA.nth(4)).toHaveText("");
   await expect(cellsA.nth(5)).toHaveText("");
+  await expect(cellsA.nth(6)).toHaveText("");
 
   // Create B with antecessor = A.
   await page.getByTestId("entity-create-start").click();
@@ -154,7 +154,7 @@ test("WEB-06: templatesRotina full CRUD, including the self-referential antecess
   const eidB = await rowB.getAttribute("data-eid");
   expect(eidB).toBeTruthy();
   const cellsB = rowB.locator("td");
-  await expect(cellsB.nth(5)).toHaveText(nomeA);
+  await expect(cellsB.nth(6)).toHaveText(nomeA);
 
   // Open B's edit form: the antecessor select must NOT contain B itself.
   await waitForSettle(page);
@@ -170,7 +170,7 @@ test("WEB-06: templatesRotina full CRUD, including the self-referential antecess
   await waitForSettle(page);
   await gotoNested(page, "templatesRotina");
   const reloadedRowB = page.getByTestId("row").filter({ hasText: nomeB });
-  await expect(reloadedRowB.locator("td").nth(3)).toHaveText("não", {
+  await expect(reloadedRowB.locator("td").nth(4)).toHaveText("não", {
     timeout: RESYNC_TIMEOUT,
   });
 

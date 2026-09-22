@@ -271,6 +271,27 @@ describe("registry structural integrity", () => {
     ).toBe(true);
   });
 
+  test('templatesRotina: has a non-required "select" field named diaSemana (7 weekday tokens), listed in listColumns, and tipoGeracao offers "semanal"', () => {
+    const config = configByEtype("templatesRotina") as EntityConfig;
+    const field = config.fields.find((f) => f.name === "diaSemana");
+    expect(field, "templatesRotina: no field named diaSemana").toBeDefined();
+    expect(field?.kind, "templatesRotina.diaSemana: expected kind 'select'").toBe("select");
+    expect(field?.required, "templatesRotina.diaSemana: expected required === false").toBe(false);
+    expect(
+      field?.kind === "select" ? field.options : undefined,
+      "templatesRotina.diaSemana: expected all 7 weekday tokens",
+    ).toEqual(["segunda", "terca", "quarta", "quinta", "sexta", "sabado", "domingo"]);
+    expect(
+      config.listColumns.includes("diaSemana"),
+      "templatesRotina.listColumns: expected to include 'diaSemana'",
+    ).toBe(true);
+    const tipoGeracaoField = config.fields.find((f) => f.name === "tipoGeracao");
+    expect(
+      tipoGeracaoField?.kind === "select" ? tipoGeracaoField.options.includes("semanal") : false,
+      'templatesRotina.tipoGeracao: expected options to include "semanal"',
+    ).toBe(true);
+  });
+
   test("every LinkDef.targetEtype and every XorLinkDef choice target resolves to a real schema entity", () => {
     const schemaSet = new Set(SCHEMA_ENTITY_NAMES);
     function checkLink(etype: string, link: LinkDef) {

@@ -297,9 +297,9 @@ test.describe("templatesRotina — Select field conversion", () => {
     await page.getByTestId("entity-create-start").click();
     await expect(page.getByRole("dialog")).toBeVisible();
 
-    // Assert tipoGeracao's Select offers exactly the three static options.
+    // Assert tipoGeracao's Select offers exactly the four static options.
     const tipoGeracaoOptions = await openAndReadSelectOptions(page, "field-tipoGeracao");
-    expect(tipoGeracaoOptions.sort()).toEqual(["corrido_fixo", "du_fixo", "encadeado"]);
+    expect(tipoGeracaoOptions.sort()).toEqual(["corrido_fixo", "du_fixo", "encadeado", "semanal"]);
 
     await page.getByTestId("field-nome").fill(nome);
     await page.getByTestId("field-regraCompetencia").fill("regra teste");

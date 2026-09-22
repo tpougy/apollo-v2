@@ -24,6 +24,16 @@ import type { EntityConfig } from "../types";
 // instance's dataPrevista (05-01-PLAN.md D-05-B). `required: false` matches
 // the schema's `.optional()` — Phase 3/4 templates have no value and must
 // remain editable through this screen.
+//
+// `diaSemana` (Phase 28/SEM-01 addition) applies only when
+// `tipoGeracao === "semanal"` — the weekday anchoring that generation type's
+// weekly occurrences. Mirrors the CLI's `--dia-semana` `click.Choice` token
+// set exactly (`cli/apollo_cli/entities/rotina.py`'s `_DIA_SEMANA_CHOICES`),
+// so a value round-trips unchanged between the SPA and the CLI.
+// `required: false` matches the schema's `.optional()` and the fact that
+// `diaSemana` is meaningless for `du_fixo`/`corrido_fixo`/`encadeado`
+// templates — a required field would make those un-editable through this
+// screen.
 const templatesRotinaConfig: EntityConfig = {
   etype: "templatesRotina",
   titulo: "Templates de rotina",
@@ -38,13 +48,20 @@ const templatesRotinaConfig: EntityConfig = {
       label: "Tipo de geração",
       required: true,
       kind: "select",
-      options: ["du_fixo", "corrido_fixo", "encadeado"],
+      options: ["du_fixo", "corrido_fixo", "encadeado", "semanal"],
     },
     {
       name: "offsetDias",
       label: "Offset (dias)",
       required: false,
       kind: "number",
+    },
+    {
+      name: "diaSemana",
+      label: "Dia da semana",
+      required: false,
+      kind: "select",
+      options: ["segunda", "terca", "quarta", "quinta", "sexta", "sabado", "domingo"],
     },
     {
       name: "regraCompetencia",
@@ -70,7 +87,7 @@ const templatesRotinaConfig: EntityConfig = {
       excludeSelf: true,
     },
   ],
-  listColumns: ["nome", "tipoGeracao", "offsetDias", "ativo", "fundo", "antecessor"],
+  listColumns: ["nome", "tipoGeracao", "offsetDias", "diaSemana", "ativo", "fundo", "antecessor"],
 };
 
 export default templatesRotinaConfig;
