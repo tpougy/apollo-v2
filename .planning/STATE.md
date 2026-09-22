@@ -5,17 +5,17 @@ milestone_name: Correções descobertas no onboarding real do calendário de rot
 current_phase: 28
 current_phase_name: Periodicidade semanal
 current_plan: 3
-status: executing
-stopped_at: Completed 28-02-PLAN.md
-last_updated: "2026-09-22T18:46:32.458Z"
+status: verifying
+stopped_at: Completed 28-03-PLAN.md
+last_updated: "2026-09-22T18:52:02.065Z"
 last_activity: 2026-09-22
 last_activity_desc: "Completed 26-01-PLAN.md: apollo rotina template criar/editar --regra-competencia bound to click.Choice(REGRAS_COMPETENCIA_SUPORTADAS), rejecting out-of-enum values at exit 2 before any write (VAL-01); --propagar-atraso-soft help text corrected to state the value is stored but not currently read (VAL-02); instancia status docstring corrected to describe dedupeKey as plain concatenation, not a hash (VAL-03); 15 pre-existing CLI/e2e fixtures repaired to the new enum; full offline cli/ pytest suite (348 passed) and the affected live tests green."
-state_head: c8f68447e93c47f0ae595d44904bda8a6b10d682
+state_head: 962b9815b1d4aa9b74743940e9d0501bd8b2cb30
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 6
-  completed_plans: 5
+  completed_plans: 6
   percent: 33
 ---
 
@@ -33,7 +33,7 @@ See: .planning/PROJECT.md (updated 2026-08-14)
 Phase: 28 (Periodicidade semanal) — EXECUTING
 Current Plan: 3
 Total Plans in Phase: 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-09-22 — Completed 28-01-PLAN.md (diaSemana schema field pushed live)
 
 Progress: [███░░░░░░░] 33%
@@ -72,6 +72,7 @@ Progress: [███░░░░░░░] 33%
 | Phase 27 P02 | ~25min | 2 tasks | 6 files |
 | Phase 28 P01 | 25min | 1 tasks | 1 files |
 | Phase 28 P02 | 10min | 2 tasks | 8 files |
+| Phase 28-periodicidade-semanal P03 | 4min | 1 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -93,6 +94,7 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase 28]: diaSemana stored as i.string().optional() (Option B), not a reuse of offsetDias — matches plain-string convention of tipoGeracao/regraCompetencia/status
 - [Phase 28]: git.allow_default_branch_commits:true added to align executor safety check with the project's already-established direct-to-main workflow (branching_strategy: none)
 - [Phase 28]: shared/routine-job.testcases.json semanal fixture kept to exactly the plan's specified scope (1 dayMath case + 1 scenario)
+- [Phase 28]: [Phase 28, Plan 03]: SPA templatesRotina form extended for semanal/diaSemana parity with the CLI (05-01 Task 3 precedent); WEB-06's listColumns column-index assertions repaired alongside the plan-named sort() assertions (Rule 1 fix, index shift was a direct consequence of inserting diaSemana into listColumns).
 
 ### Pending Todos
 
@@ -128,8 +130,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-09-22T18:46:32.384Z
-Stopped at: Completed 28-02-PLAN.md
+Last session: 2026-09-22T18:52:01.986Z
+Stopped at: Completed 28-03-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

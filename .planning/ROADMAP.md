@@ -31,7 +31,7 @@ contexto completo e a evidência de código de cada achado.
 
 - [x] **Phase 26: Validação na escrita** (completed 2026-08-14)
 - [x] **Phase 27: Robustez do job** (completed 2026-08-14)
-- [ ] **Phase 28: Periodicidade semanal**
+- [x] **Phase 28: Periodicidade semanal** (completed 2026-09-22)
 - [ ] **Phase 29: Controle de geração**
 - [ ] **Phase 30: Ciclo de vida e higiene de dados**
 - [ ] **Phase 31: Cadastro em lote**
@@ -130,12 +130,12 @@ representado no Apollo sem aproximação artificial.
 
 Plans:
 
-- [ ] 28-01-PLAN.md — `[BLOCKING]` adiciona `templatesRotina.diaSemana` (schema) e faz o push
+- [x] 28-01-PLAN.md — `[BLOCKING]` adiciona `templatesRotina.diaSemana` (schema) e faz o push
   ao vivo contra a InstantDB real, antes de qualquer código de CLI/compute tocar o campo
-- [ ] 28-02-PLAN.md — `--dia-semana` na CLI, `_compute_semanal_instances`/`computeSemanalInstances`
+- [x] 28-02-PLAN.md — `--dia-semana` na CLI, `_compute_semanal_instances`/`computeSemanalInstances`
   em ambos os runtimes, prova ao vivo do caso real "Atualiz Calc RF" (7 sextas, ago/set 2026) e
   fixture cross-runtime compartilhada (SEM-01)
-- [ ] 28-03-PLAN.md — paridade SPA: `tipoGeracao=semanal` e `diaSemana` no formulário de
+- [x] 28-03-PLAN.md — paridade SPA: `tipoGeracao=semanal` e `diaSemana` no formulário de
   templatesRotina, reparo dos dois specs e2e que travavam o conjunto antigo de 3 opções
 
 ### Phase 29: Controle de geração
