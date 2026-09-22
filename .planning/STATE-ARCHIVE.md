@@ -164,3 +164,13 @@ Pruned entries from STATE.md. Recoverable but no longer loaded into agent contex
 ### Performance Metrics
 
 | 25 | 2 | - | - |
+
+## Pruned 2026-09-22 (phases 1-26, kept recent 3)
+
+### Decisions
+
+- [Phase 26, Plan 01]: click.Choice enum enforcement on regra-competencia (imported from routine_job.py, never redeclared) closes VAL-01; propagar-atraso-soft help text and instancia status's dedupeKey docstring corrected for VAL-02/VAL-03. Repaired 15 pre-existing CLI/e2e fixtures broken by the new enum. Logged an unrelated, pre-existing live-DB pagination flake (test_criar_without_offset_dias_omits_key_entirely) to deferred-items.md.
+
+### Performance Metrics
+
+| 26 | 1 | - | - |

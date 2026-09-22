@@ -2,21 +2,21 @@
 gsd_state_version: "1.0"
 milestone: v1.5
 milestone_name: Correções descobertas no onboarding real do calendário de rotinas (RBR)
-current_phase: 28
-current_phase_name: Periodicidade semanal
-current_plan: 3
-status: verifying
-stopped_at: Completed 28-03-PLAN.md
-last_updated: "2026-09-22T18:52:02.065Z"
+current_phase: 29
+current_phase_name: Controle de geração
+current_plan: Not started
+status: planning
+stopped_at: Phase 28 complete, ready to plan Phase 29
+last_updated: "2026-09-22T19:12:32.950Z"
 last_activity: 2026-09-22
-last_activity_desc: "Completed 26-01-PLAN.md: apollo rotina template criar/editar --regra-competencia bound to click.Choice(REGRAS_COMPETENCIA_SUPORTADAS), rejecting out-of-enum values at exit 2 before any write (VAL-01); --propagar-atraso-soft help text corrected to state the value is stored but not currently read (VAL-02); instancia status docstring corrected to describe dedupeKey as plain concatenation, not a hash (VAL-03); 15 pre-existing CLI/e2e fixtures repaired to the new enum; full offline cli/ pytest suite (348 passed) and the affected live tests green."
-state_head: 962b9815b1d4aa9b74743940e9d0501bd8b2cb30
+last_activity_desc: Phase 28 complete, transitioned to Phase 29
+state_head: d6e775ef4f9d947b39f3db80bdb00dae25cf0362
 progress:
   total_phases: 6
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 6
   completed_plans: 6
-  percent: 33
+  percent: 50
 ---
 
 # Project State
@@ -30,19 +30,19 @@ See: .planning/PROJECT.md (updated 2026-08-14)
 
 ## Current Position
 
-Phase: 28 (Periodicidade semanal) — EXECUTING
-Current Plan: 3
+Phase: 29 — Controle de geração
+Current Plan: Not started
 Total Plans in Phase: 3
-Status: Phase complete — ready for verification
-Last activity: 2026-09-22 — Completed 28-01-PLAN.md (diaSemana schema field pushed live)
+Status: Ready to plan
+Last activity: 2026-09-22 — Phase 28 complete, transitioned to Phase 29
 
-Progress: [███░░░░░░░] 33%
+Progress: [█████░░░░░] 50%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 5 (v1.4, both phases fully done; 44 lifetime across v1.0+v1.1+v1.2+v1.3+v1.4)
+- Total plans completed: 6 (v1.4, both phases fully done; 44 lifetime across v1.0+v1.1+v1.2+v1.3+v1.4)
 - Average duration: ~19min (v1.4 plans: 24-01 25min, 24-02 ~30min, 25-01 ~12min, 25-02 8min)
 - Total execution time: ~75 min (v1.4)
 
@@ -50,8 +50,8 @@ Progress: [███░░░░░░░] 33%
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 26 | 1 | - | - |
 | 27 | 2 | - | - |
+| 28 | 3 | - | - |
 
 **Recent Trend:**
 
@@ -88,7 +88,6 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - v1.5 roadmap derivation: 12 requirements grouped into 6 phases (26-31), P0 (falhas silenciosas) primeiro, depois P1 (lacunas de cobertura do calendário), depois P2 (atrito operacional) — Phase 26 (validação de escrita, sem tocar o job) antes de Phase 27 (robustez do job) para não colidir edições na mesma janela; Phase 28 (semanal) depende de 27 por estender o mesmo dispatch de `tipoGeracao`; Phase 29 (recorte de range) depende de 28 para cobrir o tipo semanal também; Phases 30-31 (higiene/lote) são tecnicamente independentes, sequenciadas por último por prioridade.
 - v1.5 decisões de implementação registradas em REQUIREMENTS.md Context: (1) JOB-01 normaliza a comparação de `status` em vez de fechar o vocabulário — `status` continua livre por decisão de produto já aplicada a outras entidades; (2) VAL-02 marca `propagarAtrasoSoft` como reservado em vez de implementar propagação — implementar reabriria C-09 (travado); (3) JOB-02 estende `du_fixo` para aceitar offset negativo em vez de criar um `tipoGeracao` novo — `add_business_days` já suporta contagem negativa; (4) SEM-01 (periodicidade semanal) será implementado por decisão explícita do usuário, mesmo cobrindo só 1 evento em 87 no calendário de origem.
 - v1.5 causa raiz adicional encontrada além do relatado pelo usuário (LIFE-03): o resíduo de teste E2E na base real (achado do usuário em P2-2) não é um incidente pontual — não existe hoje um `app_id` de teste separado do usado para dados reais em nenhum dos dois runtimes, então qualquer rodada futura de teste `live`/Playwright pode reintroduzir o mesmo resíduo até essa separação existir.
-- [Phase 26, Plan 01]: click.Choice enum enforcement on regra-competencia (imported from routine_job.py, never redeclared) closes VAL-01; propagar-atraso-soft help text and instancia status's dedupeKey docstring corrected for VAL-02/VAL-03. Repaired 15 pre-existing CLI/e2e fixtures broken by the new enum. Logged an unrelated, pre-existing live-DB pagination flake (test_criar_without_offset_dias_omits_key_entirely) to deferred-items.md.
 - [Phase 27, Plan 01]: du_fixo extended to accept offsetDias <= 0 via a sign-based dispatch wrapper (_du_fixo_nth_day/duFixoNthDay) passed as the pre-existing nth_day_fn parameter -- no new call site, no duplicated range/dedupeKey/competencia logic. New nth_business_day_from_month_end/nthBusinessDayFromMonthEnd lives in bizdays.py/.ts (not routine_job.py/routineJob.ts, its siblings' home) per CONTEXT.md's explicit target, requiring a small locally-duplicated lastDayOfMonth/calendar.monthrange to avoid a bizdays.ts -> routineJob.ts circular import. Live-proven against production InstantDB for the real Previa DU-2 case (2026-08-27); corrido_fixo and du_fixo offsetDias>=1 provably unaffected (zero regression, 354 offline cli/ tests + 101 web/ bun tests).
 - [Phase ?]: [Phase 27, Plan 02]: _is_concluida/isConcluida normalize the encadeado dataPrevistaEstimada status comparison (NFKD decompose + strip combining marks + casefold, recognizing both concluida/concluido grammatical forms) without closing status's free-text vocabulary at write time; nome threaded through every skipped entry in both runtimes with no InstantDB query change needed (already unrestricted); shared/routine-job.testcases.json mechanically retrofitted across all 28 scenarios. Phase 27 (Robustez do job) now fully complete: JOB-01/02/03.
 - [Phase 28]: diaSemana stored as i.string().optional() (Option B), not a reuse of offsetDias — matches plain-string convention of tipoGeracao/regraCompetencia/status
@@ -131,7 +130,7 @@ Items acknowledged and carried forward from previous milestone close:
 ## Session Continuity
 
 Last session: 2026-09-22T18:52:01.986Z
-Stopped at: Completed 28-03-PLAN.md
+Stopped at: Phase 28 complete, ready to plan Phase 29
 Resume file: None
 
 ## Operator Next Steps
