@@ -24,6 +24,7 @@ from apollo_cli.config import find_repo_root
 from apollo_cli.entities import rotina
 from apollo_cli.routine_job import (
     _DIA_SEMANA_INDEX,
+    _compute_semanal_instances,
     build_dedupe_key,
     compute_expected_instances,
     end_of_next_month,
@@ -114,6 +115,35 @@ def test_compute_expected_instances_empty() -> None:
     result = compute_expected_instances([], "2026-08-09", [])
     assert result.expected == []
     assert result.skipped == []
+
+
+# --- SEM-01 type-guard direct coverage (not live; WR-01 iteration 2) -------
+#
+# `_compute_semanal_instances`'s `isinstance(dia_semana, str)` guard (CR-01's
+# fix) had no direct unit test — only exercised incidentally by the
+# `dia_semana_ausente` @pytest.mark.live test. Drive the private function
+# directly with malformed `diaSemana` types, mirroring the fixture template
+# shape (`shared/routine-job.testcases.json`'s `tpl-sem-a`).
+
+
+@pytest.mark.parametrize(
+    "dia_semana",
+    [["sexta"], {"dia": "sexta"}, 4, True],
+    ids=["list", "dict", "int", "bool"],
+)
+def test_compute_semanal_instances_dia_semana_tipo_invalido(dia_semana: object) -> None:
+    template = {
+        "id": "tpl-sem-a",
+        "nome": "Atualiz Calc RF",
+        "tipoGeracao": "semanal",
+        "regraCompetencia": "M0",
+        "diaSemana": dia_semana,
+        "ativo": True,
+        "antecessor": None,
+    }
+    instances, skip_reason = _compute_semanal_instances(template, "2026-08-09", "2026-08-15")
+    assert instances == []
+    assert skip_reason == "dia_semana_invalido"
 
 
 # --- dropAudit conservation law + purity (not live; WR-02) ------------------

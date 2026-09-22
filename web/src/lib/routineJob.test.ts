@@ -189,6 +189,47 @@ describe("routineJob purity", () => {
   });
 });
 
+// --- SEM-01 type-guard direct coverage (not live; WR-01 iteration 2) -------
+//
+// `computeSemanalInstances`'s `typeof diaSemana !== "string"` guard (CR-01's
+// fix) had no direct unit test. `computeSemanalInstances` itself is not
+// exported, so drive it through the public `computeExpectedInstances` entry
+// point (mirroring the Python side, which exercises the private function
+// directly since it is importable there) with malformed `diaSemana` types on
+// a `semanal` template, mirroring the fixture template shape
+// (`shared/routine-job.testcases.json`'s `tpl-sem-a`).
+
+describe("computeExpectedInstances SEM-01 dia_semana type guard", () => {
+  const malformedDiaSemanaCases: Array<[string, unknown]> = [
+    ["list", ["sexta"]],
+    ["object", { dia: "sexta" }],
+    ["number", 4],
+    ["boolean", true],
+  ];
+
+  for (const [label, diaSemana] of malformedDiaSemanaCases) {
+    test(`diaSemana as ${label} is reported as dia_semana_invalido, never crashes`, () => {
+      const template = {
+        id: "tpl-sem-a",
+        nome: "Atualiz Calc RF",
+        tipoGeracao: "semanal",
+        regraCompetencia: "M0",
+        diaSemana: diaSemana as unknown as string,
+        ativo: true,
+        antecessor: null,
+      } satisfies TemplateRow;
+
+      const run = () => computeExpectedInstances([template], "2026-08-09", []);
+      expect(run).not.toThrow();
+      const result = run();
+      expect(result.expected).toEqual([]);
+      expect(result.skipped).toEqual([
+        { templateId: "tpl-sem-a", nome: "Atualiz Calc RF", reason: "dia_semana_invalido" },
+      ]);
+    });
+  }
+});
+
 describe("buildDedupeKey", () => {
   test("is plain concatenation of templateId, competencia, and dataPrevista", () => {
     expect(buildDedupeKey("tpl-a", "2026-08", "2026-08-10")).toBe("tpl-a:2026-08:2026-08-10");
