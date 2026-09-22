@@ -34,7 +34,7 @@ contexto completo e a evidência de código de cada achado.
 - [x] **Phase 28: Periodicidade semanal** (completed 2026-09-22)
 - [x] **Phase 29: Controle de geração** (completed 2026-09-22)
 - [x] **Phase 30: Ciclo de vida e higiene de dados** (completed 2026-09-22)
-- [ ] **Phase 31: Cadastro em lote**
+- [x] **Phase 31: Cadastro em lote** (completed 2026-09-22)
 
 ### Phase 26: Validação na escrita
 
