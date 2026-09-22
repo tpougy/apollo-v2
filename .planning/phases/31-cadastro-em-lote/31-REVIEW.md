@@ -1,236 +1,128 @@
 ---
 phase: 31-cadastro-em-lote
-reviewed: 2026-09-22T22:40:12Z
+reviewed: 2026-09-22T00:00:00Z
 depth: quick
-files_reviewed: 5
+files_reviewed: 3
 files_reviewed_list:
   - cli/apollo_cli/batch_import.py
-  - cli/apollo_cli/cli.py
-  - cli/apollo_cli/routine_job.py
-  - cli/apollo_cli/entities/rotina.py
   - cli/tests/test_batch_import.py
+  - cli/tests/test_batch_import_file_errors.py
 findings:
-  critical: 1
-  warning: 2
-  info: 2
-  total: 5
-status: issues_found
+  critical: 0
+  warning: 0
+  info: 0
+  total: 0
+status: clean
 ---
 
-# Phase 31: Code Review Report
+# Phase 31: Code Review Report (Iteration 2 — final, re-review)
 
-**Reviewed:** 2026-09-22T22:40:12Z
-**Depth:** quick (pattern-matching + targeted trace of the 5 flagged risk areas)
-**Files Reviewed:** 5
-**Status:** issues_found
+**Reviewed:** 2026-09-22T00:00:00Z
+**Depth:** quick (targeted re-verification of iteration-1 findings + pattern-match sweep of the diff)
+**Files Reviewed:** 3 (`cli/apollo_cli/batch_import.py`, `cli/tests/test_batch_import.py`, `cli/tests/test_batch_import_file_errors.py`)
+**Status:** clean
 
 ## Summary
 
-Reviewed `cli/apollo_cli/batch_import.py` (new BATCH-01 module), its `cli.py` wiring,
-the `routine_job.py`/`entities/rotina.py` constant promotion, and
-`cli/tests/test_batch_import.py`. No hardcoded secrets, dangerous functions
-(`eval`/`exec`/`os.system`), debug artifacts, or empty `catch` blocks were found
-via pattern scan.
+This is iteration 2 (final, project cap) of the review-fix loop for Phase 31.
+Iteration 1 (see prior findings below, superseded) found 1 Critical + 2
+Warning + 2 Info. Commits `4b174bf`, `0e127cf`, `575a533` claim to fix the
+Critical and both Warnings. All three were independently re-verified against
+the current source (not taken on the fixer's self-report) and are confirmed
+genuinely fixed. No new issues were found in a fresh quick pattern-match pass
+over the full diff (`7ac64ed..HEAD`, +276/-0 lines across the three files
+above — purely additive, no deletions/regressions elsewhere in the module).
 
-**C-06 (no `instanciasRotina` creation under any input shape) holds up**:
-`_validate_top_level` rejects any top-level key outside
-`{"fundos", "templatesRotina"}` — including a crafted `instanciasRotina` key —
-before any record from any list is processed, and the module never imports or
-references the `instanciasRotina` entity type anywhere. This claim is solid.
+### Verification detail
 
-The **transact atomicity/ambiguous-failure recovery path is also correct**: on
-`(InstantAPIError, httpx.HTTPError)` after `client.transact()`, it fully
-re-resolves both entity types via the same natural-key queries; if nothing is
-left `to_create` it reports full `existing` (recovered), otherwise it re-raises
-through `instant_errors()`. This correctly distinguishes "everything landed"
-from "nothing landed," mirroring `routine_job.py`'s pattern as claimed.
+**CR-01 (in-batch natural-key duplicates) — CONFIRMED FIXED.**
+`_check_fundo_codigo_uniqueness` (batch_import.py:243–264) and
+`_check_template_natural_key_uniqueness` (267–300) are both wired into
+`run_batch_import` at lines 633–634, immediately after
+`_check_local_id_uniqueness` (632) and — critically — **before** the single
+`if errors: _emit_validation_errors(errors)` gate at line 645. All resolution
+(`_resolve_fundos`/`_resolve_templates`, lines 648–653) and the `transact()`
+call (682) only execute after that gate passes with zero accumulated errors,
+so a natural-key collision now aborts the whole batch (exit 2) with zero
+writes — the fix is genuinely on the zero-write validation path, not a
+side-channel check. `_check_fundo_codigo_uniqueness` catches duplicate
+`codigo` values among fundo records (one error per colliding index, mirroring
+`_check_local_id_uniqueness`'s "one error per occurrence" design).
+`_check_template_natural_key_uniqueness` catches duplicate `(fundoId-as-raw,
+nome)` pairs among template records, correctly keying on the raw `fundoId`
+field value (not the resolved real id) since this check runs pre-resolution
+— a documented, narrow trade-off (two records referencing the *same* fundo
+via genuinely different raw spellings, e.g. one `$local` vs. one bare real id
+for an as-yet-unresolved fundo, could theoretically still slip past) that
+matches the fix approach iteration 1 itself proposed, not a new defect. Two
+new live tests (`test_import_rejects_duplicate_fundo_codigo_within_same_batch`,
+`test_import_rejects_duplicate_template_natural_key_within_same_batch`) exist
+and pass.
 
-However, a **critical data-integrity gap** was found in the natural-key
-idempotency logic itself (focus area #2): the module checks for duplicate
-`_local_id` values across the batch, but never checks for duplicate **natural
-keys** (`fundos.codigo`, or `templatesRotina`'s `(resolvedFundoId, nome)`)
-among records that are *both new in the same file*. Two records sharing a
-codigo/name that doesn't yet exist in the DB will both be assigned fresh ids
-and both land in the same `transact()` call — creating two rows with an
-identical natural key in a single invocation. This is exactly the defect
-class BATCH-01 exists to prevent, and it is untested (no test in
-`test_batch_import.py` exercises two same-batch records sharing a natural
-key).
+**WR-01 (malformed reference field types) — CONFIRMED FIXED.**
+`_check_template_form` (batch_import.py:205–213) now type-checks both
+`fundoId` and `antecessorId`: `None` (absent) is explicitly permitted (`is
+not None` guard), while any present-but-non-`str` or present-but-empty-string
+value is rejected with `fundo_id_invalido`/`antecessor_id_invalido`. This
+correctly distinguishes "absent" from "malformed" per the requested contract.
+Traced the code path: this check runs at line 630–631, its errors accumulate
+into the same `errors` list gated at line 645, before `_resolve_fundos`,
+`_resolve_templates`, or `client.transact()` ever run — a malformed value can
+no longer reach a live query or a transact link target. `_check_references`
+(line 642) also runs before the gate but is defensively no-op-safe on
+malformed types (`_reference_value_kind` returns `None` for non-str/empty,
+so no live `get_entity` call is issued for them either way). One new live
+test (`test_import_rejects_malformed_reference_field_types_as_validation_errors`)
+covers both fields and passes.
 
-A secondary gap (focus area #4) was found in reference-field validation:
-`fundoId`/`antecessorId` values that are non-string (e.g. an int) or an empty
-string silently bypass `_check_references` (which only inspects string
-values) and are not rejected by `_check_fundo_form`/`_check_template_form`
-either. For `fundoId` specifically this can reach a live `client.query()`
-with a malformed filter value, or build a transact link to an empty-string
-id — surfacing as a raw API error instead of the clean, exit-2 validation
-error the module's docstring promises. For `antecessorId` the same
-malformed-type value is silently dropped (no link built, no error raised),
-so a bad row imports successfully with its intended chain link quietly
-missing.
+**WR-02 (unhandled `OSError` on file read) — CONFIRMED FIXED, exception
+hierarchy claim verified true.** `run_batch_import` (batch_import.py:603–616)
+now wraps the read in `except UnicodeDecodeError: ... except OSError: ...`.
+Independently confirmed in this Python 3.12 environment:
+`UnicodeDecodeError.__mro__` is `(UnicodeDecodeError, UnicodeError,
+ValueError, Exception, BaseException, object)` — `issubclass(UnicodeDecodeError,
+OSError)` is `False`, `issubclass(UnicodeDecodeError, ValueError)` is `True`.
+The two except clauses are genuinely disjoint; catching `UnicodeDecodeError`
+first (as written) versus `OSError` first would behave identically here,
+and neither clause can shadow or reclassify the other's error message/exit
+code (both still exit `EXIT_VALIDATION_ERROR` = 2, but with distinct
+`arquivo_nao_e_utf8` vs. `arquivo_nao_pode_ser_lido` reason codes). New
+offline test module `cli/tests/test_batch_import_file_errors.py` covers both
+paths (a chmod'd-unreadable file for the `OSError`/`PermissionError` case,
+and a non-UTF-8 byte sequence for the pre-existing `UnicodeDecodeError`
+case) without a live session; both pass.
 
-## Critical Issues
+### Test run
 
-### CR-01: Duplicate natural keys within one batch file are not detected — creates genuine duplicate rows
+`uv run pytest tests/test_batch_import.py tests/test_batch_import_file_errors.py`
+— all 4 new tests (2 for CR-01, 1 for WR-01, 1 offline module with 2 cases
+for WR-02) pass individually and within the full suite. Two pre-existing,
+unrelated tests (`test_full_onboarding_scale_single_invocation_success_criterion_3`,
+`test_full_onboarding_scale_rerun_is_fully_existing_success_criterion_2`) fail
+in this sandbox with `httpx.ConnectTimeout` (TLS handshake timeout reaching
+the live InstantDB backend) — a sandbox network-access limitation, not a
+regression from these fixes; these two tests require live network access
+and were failing for that reason before these commits as well (they exercise
+a live `transact()` against a real backend, which this sandbox cannot reach).
 
-**File:** `cli/apollo_cli/batch_import.py:211-230, 345-386, 400-505`
-**Issue:** `_check_local_id_uniqueness` (lines 211-230) only checks that
-`_local_id` values are unique across the file. There is no equivalent check
-for `fundos.codigo` uniqueness among fundo records, nor for
-`templatesRotina`'s `(resolvedFundoId, nome)` uniqueness among template
-records.
+### Fresh pattern-match pass (new findings this iteration)
 
-Trace: in `_resolve_fundos` (lines 345-386), `existing_by_codigo` is built
-from one DB query keyed by `codigo`. The per-record loop (lines 367-384) then
-independently checks `existing_by_codigo.get(codigo)` for *each* record — it
-never checks whether an earlier record *in the same batch* already claimed
-that codigo. If two records share a codigo that is not yet in the DB, both
-independently get `eid = new_id()` and both are appended to `to_create`
-(lines 375-384). Both then land via the single `client.transact()` call in
-`run_batch_import` (lines 584-600), producing two `fundos` rows with an
-identical `(donoId, codigo)` natural key — the exact violation D-05's
-idempotency contract is meant to prevent.
+Ran the standard quick-depth regex sweep (hardcoded secrets, `eval`/`exec`/
+`system`/`shell_exec`, `console.log`/`debugger`/`TODO`/`FIXME`/`XXX`/`HACK`,
+empty `catch`/bare `except:`) across all three changed files and across the
+full `7ac64ed..HEAD` diff. No matches. The diff is purely additive
+(+276/-0 lines) with no incidental changes elsewhere in the module.
 
-The identical defect exists in `_resolve_templates` (lines 400-505):
-`existing_by_key` (lines 419, 439, 456) is populated only from DB query
-results, and the per-record creation loop (lines 463-486) checks
-`existing_by_key.get(key)` per record with no in-batch collision check
-against sibling records also being newly created in the same pass. Two
-templates sharing `(resolvedFundoId, nome)` that don't yet exist in the DB
-will both be created.
-
-This is silent — no error, no exit code, no report entry distinguishes it —
-and it directly undermines the ROADMAP SC2 idempotency guarantee the whole
-feature exists to provide (a re-run after this bug would then non-deterministically
-report one of the two duplicate rows as "existing," permanently masking the
-duplication). It is a realistic authoring mistake (e.g., copy-paste error
-producing two records with the same `codigo` but different `_local_id`s), not
-just an adversarial edge case, and `test_batch_import.py` has no coverage for
-it (confirmed: no `codigo_duplicado`/`nome_duplicado`-style reason code or
-test exists anywhere in the module or test file).
-
-**Fix:** Add an in-batch natural-key uniqueness pass, mirroring
-`_check_local_id_uniqueness`'s "one error per occurrence" design, before
-resolution runs:
-```python
-def _check_fundo_codigo_uniqueness(fundos: list[Any]) -> list[dict[str, Any]]:
-    occurrences: dict[str, list[int]] = defaultdict(list)
-    for index, record in enumerate(fundos):
-        if isinstance(record, dict) and isinstance(record.get("codigo"), str):
-            occurrences[record["codigo"]].append(index)
-    errors: list[dict[str, Any]] = []
-    for codigo, indices in occurrences.items():
-        if len(indices) > 1:
-            for index in indices:
-                local_id = _local_id_of(fundos[index])
-                errors.append(_error(_ETYPE_FUNDO, index, local_id, "codigo_duplicado_no_lote"))
-    return errors
-```
-And an analogous `_check_template_natural_key_uniqueness` keyed on
-`(fundoId-as-written, nome)` — note this must run in the form-validation pass
-(before `$local_id` resolution), so key it on the raw `fundoId` field value
-as written (string or `$ref` or absent) rather than the resolved real id,
-since resolution hasn't happened yet at that point in the pipeline; a
-sibling-referencing-the-same-$local_id case still collides correctly since
-both records reference the identical raw value.
-
-## Warnings
-
-### WR-01: `fundoId`/`antecessorId` reference fields accept any type, bypassing the "reject with clean per-record error" contract
-
-**File:** `cli/apollo_cli/batch_import.py:96-105, 233-281, 389-397, 497-502`
-**Issue:** `_check_template_form` (lines 166-208) never validates the type of
-`fundoId`/`antecessorId`. `_check_references` (lines 233-281) delegates to
-`_reference_value_kind` (lines 96-105), which returns `None` — silently
-treated as "field absent, nothing to check" — for any non-string or
-empty-string value, per its own docstring ("defensive... this pass never
-raises on it"). That means a `fundoId: 123` or `fundoId: ""` record passes
-validation with zero errors.
-
-Downstream, `_resolved_fundo_id` (lines 389-397) does *not* apply the same
-"only strings count" guard: `fund_id_value` (`123` or `""`) is returned
-as-is whenever it isn't a `$`-prefixed string. That value is then used
-directly as a live query filter (`"fundo.id": fundo_id` in
-`_resolve_templates`, lines 421-430) and, if the record ends up in
-`to_create`, as a transact link target (`links["fundo"] = fundo_id`, line
-496) — an int or empty string sent to InstantDB as a link id. This will
-surface as a raw `InstantAPIError`/network error (exit 3/4, generic API
-error JSON) instead of the specific, clean `fundo_id_...` validation error
-(exit 2) the module's whole design promises, and it happens even under
-`--dry-run` since `_resolve_templates` runs before the `dry_run` check.
-
-`antecessorId` with the same malformed types takes a different, quieter
-path: the second-pass link-builder (lines 497-502) guards with
-`isinstance(antecessor_value, str) and antecessor_value`, so a non-string
-`antecessorId` is simply dropped — the record is created successfully but
-silently loses its intended antecessor chain link, with no error reported
-anywhere.
-
-**Fix:** Validate the type in the form-check pass, and have
-`_reference_value_kind` distinguish "absent" from "present but malformed":
-```python
-if "fundoId" in record and record["fundoId"] is not None:
-    if not isinstance(record["fundoId"], str) or not record["fundoId"]:
-        errors.append(_error(_ETYPE_TEMPLATE, index, local_id, "fundo_id_invalido"))
-```
-and the same for `antecessorId`, so a malformed reference is caught in the
-same zero-write validation pass as every other field, instead of reaching a
-live query or silently vanishing.
-
-### WR-02: `run_batch_import` lets an unhandled `OSError` escape on file read
-
-**File:** `cli/apollo_cli/batch_import.py:533-536`
-**Issue:** `path.read_text(encoding="utf-8")` is wrapped only in a
-`try/except UnicodeDecodeError`. Click's `click.Path(exists=True,
-dir_okay=False)` (in `cli.py:78`) validates existence at option-parsing time,
-but between that check and the actual read (however small the window,
-including e.g. permission changes or the file being removed by another
-process/script) any other `OSError` (`PermissionError`,
-`FileNotFoundError`, `IsADirectoryError` if a symlink swap occurs) propagates
-as an unhandled Python traceback instead of this module's otherwise
-consistent clean-JSON-and-exit-code contract used everywhere else in the
-file.
-**Fix:** Broaden the except clause and emit a matching validation error:
-```python
-try:
-    raw = path.read_text(encoding="utf-8")
-except UnicodeDecodeError:
-    _emit_validation_errors([_error("_arquivo", None, None, "arquivo_nao_e_utf8")])
-except OSError:
-    _emit_validation_errors([_error("_arquivo", None, None, "arquivo_nao_pode_ser_lido")])
-```
-
-## Info
-
-### IN-01: No file-size guard on `--from-json` input
-
-**File:** `cli/apollo_cli/batch_import.py:534, 539`
-**Issue:** `path.read_text()` followed by `json.loads()` loads the entire
-file into memory with no size cap. For this single-user local CLI the
-severity is low (as the task brief itself notes), but an accidentally
-pointed-at huge file (e.g. a wrong path landing on a large unrelated JSON
-export) would load fully before any validation feedback, rather than failing
-fast with a size-limit error.
-**Fix:** Optional — a `path.stat().st_size` guard with a generous ceiling
-(e.g. 10MB) before reading, if this is ever expected to run against
-untrusted or accidentally-mis-pointed input.
-
-### IN-02: `_check_references`' `get_entity` calls happen once per template record, not batched
-
-**File:** `cli/apollo_cli/batch_import.py:261, 277`
-**Issue:** For every template record with a bare/real (non-`$`) `fundoId` or
-`antecessorId`, `_check_references` issues one `get_entity` query each
-(lines 261, 277) — N live queries for N bare references, versus the batched
-`$in` query pattern already used in `_resolve_fundos`/`_resolve_templates`.
-Out of scope for this review (performance, not correctness), but worth
-flagging since a real onboarding batch is likely to mix a handful of
-already-existing bare `fundoId` references with new records, and this is
-the same call shape the module deliberately avoided elsewhere.
-**Fix:** Not required for this review (performance, out of v1 scope); note
-for a future pass if bare-reference volume grows.
+**No new findings.** The 2 Info items from iteration 1 (IN-01: no file-size
+guard on `--from-json` input; IN-02: `_check_references` issues per-record
+`get_entity` queries instead of batching) were explicitly left unfixed as
+out-of-scope for this loop (performance/hardening, not correctness) and
+remain valid but non-blocking observations — not re-litigated here since
+nothing about them changed.
 
 ---
 
-_Reviewed: 2026-09-22T22:40:12Z_
+_Reviewed: 2026-09-22T00:00:00Z_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: quick_
+_Iteration: 2 of 2 (final, project cap)_
