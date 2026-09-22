@@ -5,17 +5,17 @@ milestone_name: Correções descobertas no onboarding real do calendário de rot
 current_phase: 29
 current_phase_name: Controle de geração
 current_plan: Not started
-status: planning
-stopped_at: Phase 28 complete, ready to plan Phase 29
-last_updated: "2026-09-22T19:12:32.950Z"
+status: verifying
+stopped_at: Completed 29-01-PLAN.md
+last_updated: "2026-09-22T19:56:24.104Z"
 last_activity: 2026-09-22
 last_activity_desc: Phase 28 complete, transitioned to Phase 29
-state_head: d6e775ef4f9d947b39f3db80bdb00dae25cf0362
+state_head: c7a44e158fafabb06f434d7706d8b5fd42550994
 progress:
   total_phases: 6
   completed_phases: 3
-  total_plans: 6
-  completed_plans: 6
+  total_plans: 7
+  completed_plans: 7
   percent: 50
 ---
 
@@ -31,9 +31,9 @@ See: .planning/PROJECT.md (updated 2026-08-14)
 ## Current Position
 
 Phase: 29 — Controle de geração
-Current Plan: Not started
-Total Plans in Phase: 3
-Status: Ready to plan
+Current Plan: 1
+Total Plans in Phase: 1
+Status: Phase complete — ready for verification
 Last activity: 2026-09-22 — Phase 28 complete, transitioned to Phase 29
 
 Progress: [█████░░░░░] 50%
@@ -73,6 +73,7 @@ Progress: [█████░░░░░] 50%
 | Phase 28 P01 | 25min | 1 tasks | 1 files |
 | Phase 28 P02 | 10min | 2 tasks | 8 files |
 | Phase 28-periodicidade-semanal P03 | 4min | 1 tasks | 4 files |
+| Phase 29 P01 | ~25min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -94,6 +95,7 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase 28]: git.allow_default_branch_commits:true added to align executor safety check with the project's already-established direct-to-main workflow (branching_strategy: none)
 - [Phase 28]: shared/routine-job.testcases.json semanal fixture kept to exactly the plan's specified scope (1 dayMath case + 1 scenario)
 - [Phase 28]: [Phase 28, Plan 03]: SPA templatesRotina form extended for semanal/diaSemana parity with the CLI (05-01 Task 3 precedent); WEB-06's listColumns column-index assertions repaired alongside the plan-named sort() assertions (Rule 1 fix, index shift was a direct consequence of inserting diaSemana into listColumns).
+- [Phase 29]: [Phase 29, Plan 01]: range_override/rangeOverride fully REPLACES (never intersects) the default [today, end_of_next_month(today)] window via months_in_range/monthsInRange's generalization of the old today-derived candidate_months. Live-proven against production InstantDB for all 4 ROADMAP success criteria (single-competencia generation, mid-month recovery of a passed date, and row-id-identical idempotency across recorte and default-range runs).
 
 ### Pending Todos
 
@@ -129,8 +131,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-09-22T18:52:01.986Z
-Stopped at: Phase 28 complete, ready to plan Phase 29
+Last session: 2026-09-22T19:56:24.020Z
+Stopped at: Completed 29-01-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

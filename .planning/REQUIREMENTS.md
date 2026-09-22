@@ -111,7 +111,7 @@ foram decididas nesta sessão, antes do roadmap):
 
 ### Controle de geração (RANGE)
 
-- [ ] **RANGE-01**: `apollo rotina gerar-instancias` aceita um recorte
+- [x] **RANGE-01**: `apollo rotina gerar-instancias` aceita um recorte
   explícito do range de geração (ex. `--competencia AAAA-MM` e/ou
   `--de`/`--ate`) sem alterar como uma instância é datada nem como o
   `dedupeKey` é derivado — o recorte filtra quais candidatas, dentre as
