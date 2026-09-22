@@ -187,10 +187,26 @@ por prioridade, não por dependência técnica)
   3. As 3 instâncias órfãs e a instância residual de teste (`phase23-e2e-dedupe-...`)
      encontradas no onboarding real são removíveis por esse comando.
 
-  4. Os testes `live` (pytest) e a suíte `web/e2e` rodam contra um `app_id` de teste
-     distinto do usado para dados reais — nenhuma escrita de teste aparece mais na
-     listagem de dados de produção.
-**Plans**: TBD
+  4. Os testes `live` (pytest) e a suíte `web/e2e` continuam rodando contra o MESMO `app_id`
+     de produção (escopo revisado nesta fase — decisão explícita do usuário registrada em
+     `.planning/REQUIREMENTS.md`/`30-CONTEXT.md` decisão 4 — não um `app_id` de teste
+     distinto), mas nenhuma escrita de teste aparece mais na listagem de dados de produção:
+     todo `sweepLeftovers`/`tryDelete` que chama `rotina template deletar` passa a nova flag
+     `--force` (LIFE-01) e passa a varrer `instanciasRotina` diretamente por prefixo de
+     `dedupeKey`, eliminando o vetor que produziu o resíduo `phase23-e2e-dedupe-weekday-...`.
+**Plans**: 2 plans
+
+Plans:
+
+- [ ] 30-01-PLAN.md — `apollo rotina template deletar` bloqueia por padrão com contagem
+  exata de instâncias vinculadas e passa a aceitar `--force`; novo comando
+  `apollo rotina instancia limpar-orfas` (lista por padrão, `--confirmar` remove) limpa
+  órfãs sem reabrir `criar`/`deletar` livre; inclui a limpeza ao vivo das órfãs/resíduo
+  reais já existentes na conta de produção (LIFE-01, LIFE-02)
+- [ ] 30-02-PLAN.md — todo `web/e2e/*.spec.ts` que chama `rotina template deletar` passa a
+  usar `--force`; os specs que semeiam `instanciasRotina` com `dedupeKey` prefixado por
+  `PREFIX` passam a varrê-las diretamente (novo `sweepInstancesByDedupeKeyPrefix` no
+  fixture admin de testes), fechando o mecanismo que produziu o resíduo real (LIFE-03)
 
 ### Phase 31: Cadastro em lote
 
