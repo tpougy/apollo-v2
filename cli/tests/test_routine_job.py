@@ -17,6 +17,7 @@ from __future__ import annotations
 import json
 from typing import Any, cast
 
+import click
 import pytest
 from instantdb import Instant
 
@@ -28,6 +29,7 @@ from apollo_cli.routine_job import (
     build_dedupe_key,
     compute_expected_instances,
     end_of_next_month,
+    months_in_range,
     nth_business_day_of_month,
     nth_calendar_day_of_month,
     shift_competencia,
@@ -79,13 +81,24 @@ def test_weekly_occurrences(case: dict[str, Any]) -> None:
     )
 
 
+@pytest.mark.parametrize("case", FIXTURE["dayMath"]["monthsInRange"], ids=lambda c: c["nome"])
+def test_months_in_range(case: dict[str, Any]) -> None:
+    assert months_in_range(case["rangeStart"], case["rangeEnd"]) == [
+        tuple(pair) for pair in case["expected"]
+    ]
+
+
 # --- scenarios fixture parity (not live) ------------------------------------
 
 
 @pytest.mark.parametrize("scenario", FIXTURE["scenarios"], ids=lambda s: s["nome"])
 def test_scenario(scenario: dict[str, Any]) -> None:
+    range_override = scenario.get("rangeOverride")
     result = compute_expected_instances(
-        scenario["templates"], scenario["today"], scenario["existing"]
+        scenario["templates"],
+        scenario["today"],
+        scenario["existing"],
+        tuple(range_override) if range_override else None,
     )
     assert result.expected == scenario["expectedInstances"]
     assert result.skipped == scenario["expectedSkipped"]
@@ -234,7 +247,85 @@ def test_gerar_instancias_help_documents_options_and_idempotency(run_cli: RunCli
     normalized = " ".join(output.split())
     assert "--data-base" in output
     assert "--dry-run" in output
+    assert "--competencia" in output
+    assert "--de" in output
+    assert "--ate" in output
     assert "nunca duplica" in normalized
+    assert "substitui" in normalized
+
+
+# --- RANGE-01: --competencia/--de/--ate validation (not live) ---------------
+
+
+@pytest.mark.parametrize(
+    ("competencia", "expected"),
+    [
+        ("2026-08", ("2026-08-01", "2026-08-31")),
+        ("2026-02", ("2026-02-01", "2026-02-28")),
+        ("2028-02", ("2028-02-01", "2028-02-29")),
+        ("2026-12", ("2026-12-01", "2026-12-31")),
+    ],
+)
+def test_resolve_range_override_competencia_resolves_to_first_and_last_day_of_month(
+    competencia: str, expected: tuple[str, str]
+) -> None:
+    assert rotina._resolve_range_override(competencia, None, None) == expected
+
+
+def test_resolve_range_override_de_ate_passthrough_unchanged() -> None:
+    assert rotina._resolve_range_override(None, "2026-08-05", "2026-08-20") == (
+        "2026-08-05",
+        "2026-08-20",
+    )
+
+
+def test_resolve_range_override_all_omitted_returns_none() -> None:
+    assert rotina._resolve_range_override(None, None, None) is None
+
+
+@pytest.mark.parametrize(
+    ("competencia", "de", "ate"),
+    [
+        ("2026-08", "2026-08-01", None),
+        ("2026-08", None, "2026-08-31"),
+        (None, "2026-08-01", None),
+        (None, None, "2026-08-31"),
+        (None, "2026-08-31", "2026-08-01"),
+    ],
+)
+def test_resolve_range_override_invalid_combinations_raise_usage_error(
+    competencia: str | None, de: str | None, ate: str | None
+) -> None:
+    with pytest.raises(click.UsageError):
+        rotina._resolve_range_override(competencia, de, ate)
+
+
+@pytest.mark.parametrize(
+    "args",
+    [
+        ["--competencia", "2026-08", "--de", "2026-08-01"],
+        ["--competencia", "2026-08", "--ate", "2026-08-31"],
+        ["--de", "2026-08-01"],
+        ["--ate", "2026-08-31"],
+        ["--de", "2026-08-31", "--ate", "2026-08-01"],
+    ],
+)
+def test_gerar_instancias_invalid_range_flags_cli_exit_code_2(
+    run_cli: RunCli, args: list[str]
+) -> None:
+    result: CliInvocation = run_cli(["rotina", "gerar-instancias", *args])
+    assert result.result.exit_code == 2, result.result.output
+
+
+@pytest.mark.parametrize(
+    "competencia",
+    ["2026-13", "2026-00", "2026-8", "abcd-08", "2026-08-01"],
+)
+def test_gerar_instancias_competencia_malformed_format_exit_code_2(
+    run_cli: RunCli, competencia: str
+) -> None:
+    result: CliInvocation = run_cli(["rotina", "gerar-instancias", "--competencia", competencia])
+    assert result.result.exit_code == 2, result.result.output
 
 
 # --- live: double-run idempotency + status preservation ---------------------
@@ -663,3 +754,174 @@ def test_gerar_instancias_semanal_sem_dia_semana_e_skipped(
     assert len(matching) == 1
     assert matching[0]["reason"] == "dia_semana_ausente"
     assert matching[0]["nome"] == nome
+
+
+# --- RANGE-01: live proof of Success Criteria 1/2/3 --------------------------
+
+
+@pytest.mark.live
+def test_gerar_instancias_range_competencia_narrows_to_single_month_no_drag(
+    run_cli: RunCli,
+    live_client: Instant,
+    cleanup_records: list[tuple[str, str]],
+) -> None:
+    """Success Criterion 1: `--competencia 2026-08` generates instances only
+    within August 2026 for a real `semanal`+`sexta` template — no September
+    date, even though the default range would include it.
+    """
+    suffix = unique_suffix()
+
+    template_id = _create_routine_template(
+        run_cli,
+        cleanup_records,
+        nome=f"phase29-cli-competencia-{suffix}",
+        tipo_geracao="semanal",
+        regra_competencia="M0",
+        dia_semana="sexta",
+    )
+
+    result: CliInvocation = run_cli(["rotina", "gerar-instancias", "--competencia", "2026-08"])
+    assert result.result.exit_code == 0, result.result.output
+
+    rows = _query_instances_by_template(live_client, template_id)
+    for row in rows:
+        cleanup_records.append(("instanciasRotina", row["id"]))
+
+    dates = sorted(to_iso_date(row["dataPrevista"]) for row in rows)
+    assert dates == ["2026-08-07", "2026-08-14", "2026-08-21", "2026-08-28"]
+
+
+@pytest.mark.live
+def test_gerar_instancias_range_de_ate_recovers_past_date_of_current_month(
+    run_cli: RunCli,
+    live_client: Instant,
+    cleanup_records: list[tuple[str, str]],
+) -> None:
+    """Success Criterion 2: `--de`/`--ate` recovers an already-passed
+    `dataPrevista` of the current month when run mid-month via
+    `--data-base`, without disturbing an already-created September
+    instance.
+    """
+    suffix = unique_suffix()
+
+    template_id = _create_routine_template(
+        run_cli,
+        cleanup_records,
+        nome=f"phase29-cli-recorte-{suffix}",
+        tipo_geracao="corrido_fixo",
+        regra_competencia="M0",
+        offset_dias=3,
+    )
+
+    run1_result: CliInvocation = run_cli(
+        ["rotina", "gerar-instancias", "--data-base", "2026-08-15"]
+    )
+    assert run1_result.result.exit_code == 0, run1_result.result.output
+
+    rows_after_run1 = _query_instances_by_template(live_client, template_id)
+    assert len(rows_after_run1) == 1
+    assert to_iso_date(rows_after_run1[0]["dataPrevista"]) == "2026-09-03"
+    cleanup_records.append(("instanciasRotina", rows_after_run1[0]["id"]))
+
+    run2_result: CliInvocation = run_cli(
+        [
+            "rotina",
+            "gerar-instancias",
+            "--data-base",
+            "2026-08-15",
+            "--de",
+            "2026-08-01",
+            "--ate",
+            "2026-08-31",
+        ]
+    )
+    assert run2_result.result.exit_code == 0, run2_result.result.output
+    report2 = cast("dict[str, Any]", run2_result.json_out())
+    created_for_template = [
+        key for key in report2["created"] if key.endswith(":2026-08:2026-08-03")
+    ]
+    assert created_for_template == [f"{template_id}:2026-08:2026-08-03"]
+
+    all_rows = _query_instances_by_template(live_client, template_id)
+    for row in all_rows:
+        cleanup_records.append(("instanciasRotina", row["id"]))
+
+    assert len(all_rows) == 2
+    dates = sorted(to_iso_date(row["dataPrevista"]) for row in all_rows)
+    assert dates == ["2026-08-03", "2026-09-03"]
+
+
+@pytest.mark.live
+def test_gerar_instancias_range_idempotent_across_recorte_and_default_range(
+    run_cli: RunCli,
+    live_client: Instant,
+    cleanup_records: list[tuple[str, str]],
+) -> None:
+    """Success Criteria 3/4 (D-06): a recorte run followed by a wider
+    default-range run produces byte-identical dedupeKeys AND row ids for
+    the overlapping instances — no duplication, no re-creation.
+    """
+    suffix = unique_suffix()
+
+    template_id = _create_routine_template(
+        run_cli,
+        cleanup_records,
+        nome=f"phase29-cli-idempotencia-{suffix}",
+        tipo_geracao="semanal",
+        regra_competencia="M0",
+        dia_semana="sexta",
+    )
+
+    run1_result: CliInvocation = run_cli(["rotina", "gerar-instancias", "--competencia", "2026-08"])
+    assert run1_result.result.exit_code == 0, run1_result.result.output
+    report1 = cast("dict[str, Any]", run1_result.json_out())
+    expected_august_keys = sorted(
+        f"{template_id}:2026-08:{date}"
+        for date in ("2026-08-07", "2026-08-14", "2026-08-21", "2026-08-28")
+    )
+    # The live app is production and carries other active templates from
+    # earlier phases' tests — filter every report list to this test's own
+    # template_id prefix so unrelated concurrent template state never makes
+    # this assertion flaky.
+    created1_for_template = sorted(
+        key for key in report1["created"] if key.startswith(f"{template_id}:")
+    )
+    assert created1_for_template == expected_august_keys
+
+    rows_after_run1 = _query_instances_by_template(live_client, template_id)
+    assert len(rows_after_run1) == 4
+    ids_after_run1 = {row["dedupeKey"]: row["id"] for row in rows_after_run1}
+
+    run2_result: CliInvocation = run_cli(
+        ["rotina", "gerar-instancias", "--data-base", "2026-08-01"]
+    )
+    assert run2_result.result.exit_code == 0, run2_result.result.output
+    report2 = cast("dict[str, Any]", run2_result.json_out())
+    existing2_for_template = sorted(
+        key for key in report2["existing"] if key.startswith(f"{template_id}:")
+    )
+    assert existing2_for_template == expected_august_keys
+
+    expected_september_keys = sorted(
+        f"{template_id}:2026-09:{date}"
+        for date in ("2026-09-04", "2026-09-11", "2026-09-18", "2026-09-25")
+    )
+    created2_for_template = sorted(
+        key for key in report2["created"] if key.startswith(f"{template_id}:")
+    )
+    assert created2_for_template == expected_september_keys
+
+    all_rows = _query_instances_by_template(live_client, template_id)
+    for row in all_rows:
+        cleanup_records.append(("instanciasRotina", row["id"]))
+
+    assert len(all_rows) == 8
+    dedupe_keys = [row["dedupeKey"] for row in all_rows]
+    assert len(dedupe_keys) == len(set(dedupe_keys)), "no duplicate dedupeKeys"
+
+    for row in all_rows:
+        if row["dedupeKey"] in ids_after_run1:
+            assert row["id"] == ids_after_run1[row["dedupeKey"]], (
+                "the August rows must retain their exact row id across runs "
+                "(row-level idempotency, not merely dedupeKey-level)"
+            )

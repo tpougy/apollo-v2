@@ -177,6 +177,38 @@
         "diaSemana": "domingo",
         "expected": ["2026-08-09", "2026-08-16", "2026-08-23", "2026-08-30", "2026-09-06", "2026-09-13", "2026-09-20", "2026-09-27"]
       }
+    ],
+    "monthsInRange": [
+      {
+        "nome": "mesmo mes: rangeStart e rangeEnd dentro de agosto/2026",
+        "rangeStart": "2026-08-05",
+        "rangeEnd": "2026-08-20",
+        "expected": [[2026, 8]]
+      },
+      {
+        "nome": "cruza fronteira de ano: dezembro/2026 a janeiro/2027",
+        "rangeStart": "2026-12-15",
+        "rangeEnd": "2027-01-10",
+        "expected": [[2026, 12], [2027, 1]]
+      },
+      {
+        "nome": "equivalencia com o range default (today=2026-08-09, end_of_next_month=2026-09-30) prova compatibilidade retroativa (D-02)",
+        "rangeStart": "2026-08-09",
+        "rangeEnd": "2026-09-30",
+        "expected": [[2026, 8], [2026, 9]]
+      },
+      {
+        "nome": "range invertido (rangeStart > rangeEnd) nunca gera meses",
+        "rangeStart": "2026-09-30",
+        "rangeEnd": "2026-08-09",
+        "expected": []
+      },
+      {
+        "nome": "range de 4 meses, alem do antigo maximo hardcoded de 2 — prova a generalizacao",
+        "rangeStart": "2026-07-01",
+        "rangeEnd": "2026-10-15",
+        "expected": [[2026, 7], [2026, 8], [2026, 9], [2026, 10]]
+      }
     ]
   },
   "scenarios": [
@@ -1323,6 +1355,71 @@
         { "dedupeKey": "tpl-sem-a:2026-09:2026-09-11", "templateId": "tpl-sem-a", "competencia": "2026-09", "dataPrevista": "2026-09-11", "tipoPrazo": "soft" },
         { "dedupeKey": "tpl-sem-a:2026-09:2026-09-18", "templateId": "tpl-sem-a", "competencia": "2026-09", "dataPrevista": "2026-09-18", "tipoPrazo": "soft" },
         { "dedupeKey": "tpl-sem-a:2026-09:2026-09-25", "templateId": "tpl-sem-a", "competencia": "2026-09", "dataPrevista": "2026-09-25", "tipoPrazo": "soft" }
+      ],
+      "expectedSkipped": []
+    },
+    {
+      "nome": "recorte de competencia substitui o range default e nao arrasta o mes seguinte (RANGE-01 SC1, D-01)",
+      "today": "2026-08-09",
+      "templates": [
+        {
+          "id": "tpl-range-sem-a",
+          "nome": "Atualiz Calc RF (recorte)",
+          "tipoGeracao": "semanal",
+          "regraCompetencia": "M0",
+          "diaSemana": "sexta",
+          "ativo": true,
+          "antecessor": null
+        }
+      ],
+      "existing": [],
+      "rangeOverride": ["2026-08-01", "2026-08-31"],
+      "expectedInstances": [
+        { "dedupeKey": "tpl-range-sem-a:2026-08:2026-08-07", "templateId": "tpl-range-sem-a", "competencia": "2026-08", "dataPrevista": "2026-08-07", "tipoPrazo": "soft" },
+        { "dedupeKey": "tpl-range-sem-a:2026-08:2026-08-14", "templateId": "tpl-range-sem-a", "competencia": "2026-08", "dataPrevista": "2026-08-14", "tipoPrazo": "soft" },
+        { "dedupeKey": "tpl-range-sem-a:2026-08:2026-08-21", "templateId": "tpl-range-sem-a", "competencia": "2026-08", "dataPrevista": "2026-08-21", "tipoPrazo": "soft" },
+        { "dedupeKey": "tpl-range-sem-a:2026-08:2026-08-28", "templateId": "tpl-range-sem-a", "competencia": "2026-08", "dataPrevista": "2026-08-28", "tipoPrazo": "soft" }
+      ],
+      "expectedSkipped": []
+    },
+    {
+      "nome": "recorte de-ate recupera data ja passada do mes corrente mesmo com today no meio do mes (RANGE-01 SC2, D-01)",
+      "today": "2026-08-15",
+      "templates": [
+        {
+          "id": "tpl-range-corrido-a",
+          "nome": "Corrido early (recorte)",
+          "tipoGeracao": "corrido_fixo",
+          "regraCompetencia": "M0",
+          "offsetDias": 3,
+          "ativo": true,
+          "antecessor": null
+        }
+      ],
+      "existing": [],
+      "rangeOverride": ["2026-08-01", "2026-08-31"],
+      "expectedInstances": [
+        { "dedupeKey": "tpl-range-corrido-a:2026-08:2026-08-03", "templateId": "tpl-range-corrido-a", "competencia": "2026-08", "dataPrevista": "2026-08-03", "tipoPrazo": "soft" }
+      ],
+      "expectedSkipped": []
+    },
+    {
+      "nome": "mesmo template SEM recorte: data ja passada do mes corrente fica de fora quando today esta no meio do mes (contraste com o caso anterior)",
+      "today": "2026-08-15",
+      "templates": [
+        {
+          "id": "tpl-range-corrido-a",
+          "nome": "Corrido early (recorte)",
+          "tipoGeracao": "corrido_fixo",
+          "regraCompetencia": "M0",
+          "offsetDias": 3,
+          "ativo": true,
+          "antecessor": null
+        }
+      ],
+      "existing": [],
+      "expectedInstances": [
+        { "dedupeKey": "tpl-range-corrido-a:2026-09:2026-09-03", "templateId": "tpl-range-corrido-a", "competencia": "2026-09", "dataPrevista": "2026-09-03", "tipoPrazo": "soft" }
       ],
       "expectedSkipped": []
     }

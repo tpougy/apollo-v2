@@ -32,7 +32,7 @@ contexto completo e a evidência de código de cada achado.
 - [x] **Phase 26: Validação na escrita** (completed 2026-08-14)
 - [x] **Phase 27: Robustez do job** (completed 2026-08-14)
 - [x] **Phase 28: Periodicidade semanal** (completed 2026-09-22)
-- [ ] **Phase 29: Controle de geração**
+- [x] **Phase 29: Controle de geração** (completed 2026-09-22)
 - [ ] **Phase 30: Ciclo de vida e higiene de dados**
 - [ ] **Phase 31: Cadastro em lote**
 
@@ -161,7 +161,7 @@ perder instâncias do início do mês corrente por engano.
 
 Plans:
 
-- [ ] 29-01-PLAN.md — `--competencia`/`--de`/`--ate` em `gerar-instancias`,
+- [x] 29-01-PLAN.md — `--competencia`/`--de`/`--ate` em `gerar-instancias`,
   `months_in_range`/`monthsInRange` como generalização compatível de `candidate_months`,
   prova ao vivo dos 3 critérios de sucesso (recorte substitui o range default, recupera
   datas já passadas do mês corrente, idempotência com/sem recorte) e paridade cross-runtime

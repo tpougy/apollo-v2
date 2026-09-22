@@ -34,7 +34,10 @@ predecessor, used by the `encadeado` generation type).
 
 from __future__ import annotations
 
+import calendar
 import json
+import re
+from typing import Final
 
 import click
 
@@ -61,6 +64,7 @@ _ETYPE_INSTANCIA = "instanciasRotina"
 _ETYPE_FUNDO = "fundos"
 _TIPO_GERACAO_CHOICES = ("du_fixo", "corrido_fixo", "encadeado", "semanal")
 _DIA_SEMANA_CHOICES = ("segunda", "terca", "quarta", "quinta", "sexta", "sabado", "domingo")
+_COMPETENCIA_RE: Final[re.Pattern[str]] = re.compile(r"^\d{4}-\d{2}$")
 
 
 def _resolve_ref(*, etype: str, eid: str | None, link_label: str) -> dict[str, str] | None:
@@ -87,6 +91,61 @@ def _merge_links(*links: dict[str, str] | None) -> dict[str, str] | None:
         if link:
             merged.update(link)
     return merged or None
+
+
+def _validate_competencia_format(
+    ctx: click.Context, param: click.Parameter, value: str | None
+) -> str | None:
+    """Click callback: enforce `YYYY-MM` with a month component in `1..12`.
+
+    Mirrors `crud_helpers.validate_iso_date`'s exact shape, deliberately NOT
+    `date.fromisoformat` (which requires a day component this flag lacks,
+    D-05).
+    """
+    if value is None:
+        return None
+    if not _COMPETENCIA_RE.match(value):
+        msg = f"{value!r} nao esta no formato AAAA-MM"
+        raise click.BadParameter(msg, ctx=ctx, param=param)
+    month = int(value.split("-")[1])
+    if not (1 <= month <= 12):
+        msg = f"{value!r} tem mes invalido (deve ser 01..12)"
+        raise click.BadParameter(msg, ctx=ctx, param=param)
+    return value
+
+
+def _resolve_range_override(
+    competencia: str | None, de: str | None, ate: str | None
+) -> tuple[str, str] | None:
+    """Validate and resolve `--competencia`/`--de`/`--ate` into a
+    `(range_start, range_end)` recorte, or `None` when all three are
+    omitted (preserving the exact default range, D-04).
+
+    Mirrors `subtarefa.py`'s `_resolve_parent` XOR-validation shape exactly:
+    raises `click.UsageError` (exit 2) before any network call whenever the
+    combination is invalid.
+    """
+    if competencia is not None and (de is not None or ate is not None):
+        msg = "--competencia nao pode ser combinado com --de/--ate"
+        raise click.UsageError(msg)
+
+    if (de is None) != (ate is None):
+        msg = "--de e --ate devem ser informados juntos"
+        raise click.UsageError(msg)
+
+    if de is not None and ate is not None:
+        if de > ate:
+            msg = "--de deve ser <= --ate"
+            raise click.UsageError(msg)
+        return (de, ate)
+
+    if competencia is not None:
+        year = int(competencia.split("-")[0])
+        month = int(competencia.split("-")[1])
+        last_day = calendar.monthrange(year, month)[1]
+        return (f"{year:04d}-{month:02d}-01", f"{year:04d}-{month:02d}-{last_day:02d}")
+
+    return None
 
 
 group = click.Group(
@@ -403,7 +462,9 @@ def status(eid: str, status: str) -> None:
     callback=validate_iso_date,
     help=(
         "Data base (YYYY-MM-DD) usada como 'hoje' para o range de geracao "
-        "[data-base, fim do proximo mes]. Omitir usa a data UTC atual."
+        "[data-base, fim do proximo mes]. Omitir usa a data UTC atual. "
+        "Ignorado quando --competencia/--de+--ate for informado (o recorte "
+        "substitui o range default inteiro)."
     ),
 )
 @click.option(
@@ -414,15 +475,58 @@ def status(eid: str, status: str) -> None:
         "— apenas reporta o que seria criado. Default: --no-dry-run (escreve)."
     ),
 )
-def gerar_instancias(data_base: str | None, dry_run: bool) -> None:
+@click.option(
+    "--competencia",
+    default=None,
+    callback=_validate_competencia_format,
+    help=(
+        "Recorta o range de geracao para exatamente o mes informado "
+        "(AAAA-MM): --de = primeiro dia do mes, --ate = ultimo dia do mes. "
+        "Opera sobre o range de dataPrevista candidatas, NAO sobre a "
+        "competencia resultante gravada em cada instancia (que pode "
+        "divergir por causa de regraCompetencia M-1/M-2/M+1). Mutuamente "
+        "exclusivo com --de/--ate."
+    ),
+)
+@click.option(
+    "--de",
+    default=None,
+    callback=validate_iso_date,
+    help=(
+        "Inicio (YYYY-MM-DD, inclusive) do recorte do range de geracao. "
+        "Requer --ate. Mutuamente exclusivo com --competencia."
+    ),
+)
+@click.option(
+    "--ate",
+    default=None,
+    callback=validate_iso_date,
+    help=(
+        "Fim (YYYY-MM-DD, inclusive) do recorte do range de geracao. Requer "
+        "--de, que deve ser <= --ate. Mutuamente exclusivo com --competencia."
+    ),
+)
+def gerar_instancias(
+    data_base: str | None,
+    dry_run: bool,
+    competencia: str | None,
+    de: str | None,
+    ate: str | None,
+) -> None:
     """Executa o job idempotente de geracao de `instanciasRotina`.
 
     Consulta os templates ativos e as instancias ja existentes para o dono
     autenticado, calcula o conjunto esperado de instancias para o range
-    [hoje (ou --data-base), fim do proximo mes] e grava — via upsert
-    lookup-keyed por `dedupeKey` — apenas as instancias que ainda nao
-    existem. Este comando nunca duplica e nunca deleta uma instanciaRotina
-    existente; rodar duas vezes seguidas produz o mesmo resultado.
+    [hoje (ou --data-base), fim do proximo mes] por padrao — OU exatamente
+    o recorte informado quando --competencia/--de+--ate for usado, caso em
+    que o recorte SUBSTITUI o range default inteiro, nunca o intersecta
+    (D-01) — e grava — via upsert lookup-keyed por `dedupeKey` — apenas as
+    instancias que ainda nao existem. Este comando nunca duplica e nunca
+    deleta uma instanciaRotina existente; rodar duas vezes seguidas produz
+    o mesmo resultado, com ou sem recorte (D-06/D-09).
+
+    --competencia opera sobre o range de dataPrevista candidatas, nao sobre
+    a competencia gravada (ver `--competencia --help` para detalhe).
 
     Templates com `regraCompetencia` 'manual' ou desconhecida nunca geram
     instancia automaticamente (aparecem em `skipped`, com o motivo). Um
@@ -434,7 +538,10 @@ def gerar_instancias(data_base: str | None, dry_run: bool) -> None:
     Emite exatamente um documento JSON: `{"created": [...], "existing": [...],
     "skipped": [...]}`, todas as listas de dedupeKey ordenadas.
     """
+    range_override = _resolve_range_override(competencia, de, ate)
     client, session = client_for_session()
     today = data_base or today_utc_iso_date()
-    report = run_routine_instance_job(client, session.user_id, today, dry_run=dry_run)
+    report = run_routine_instance_job(
+        client, session.user_id, today, dry_run=dry_run, range_override=range_override
+    )
     emit(report)
