@@ -23,6 +23,7 @@ from instantdb import Instant
 from apollo_cli.config import find_repo_root
 from apollo_cli.entities import rotina
 from apollo_cli.routine_job import (
+    _DIA_SEMANA_INDEX,
     build_dedupe_key,
     compute_expected_instances,
     end_of_next_month,
@@ -31,6 +32,7 @@ from apollo_cli.routine_job import (
     shift_competencia,
     to_iso_date,
     today_utc_iso_date,
+    weekly_occurrences,
 )
 from apollo_cli.session import Session
 from tests.conftest import CliInvocation, RunCli, unique_suffix
@@ -64,6 +66,16 @@ def test_end_of_next_month(case: dict[str, Any]) -> None:
 @pytest.mark.parametrize("case", FIXTURE["dayMath"]["shiftCompetencia"], ids=lambda c: c["nome"])
 def test_shift_competencia(case: dict[str, Any]) -> None:
     assert shift_competencia(case["dataPrevista"], case["regraCompetencia"]) == case["expected"]
+
+
+@pytest.mark.parametrize("case", FIXTURE["dayMath"]["weeklyOccurrences"], ids=lambda c: c["nome"])
+def test_weekly_occurrences(case: dict[str, Any]) -> None:
+    assert (
+        weekly_occurrences(
+            case["rangeStart"], case["rangeEnd"], _DIA_SEMANA_INDEX[case["diaSemana"]]
+        )
+        == case["expected"]
+    )
 
 
 # --- scenarios fixture parity (not live) ------------------------------------

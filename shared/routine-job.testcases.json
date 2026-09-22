@@ -140,6 +140,15 @@
         "regraCompetencia": "M-1 ",
         "expected": null
       }
+    ],
+    "weeklyOccurrences": [
+      {
+        "nome": "sexta-feira, range agosto-setembro 2026 (caso real Atualiz Calc RF)",
+        "rangeStart": "2026-08-09",
+        "rangeEnd": "2026-09-30",
+        "diaSemana": "sexta",
+        "expected": ["2026-08-14", "2026-08-21", "2026-08-28", "2026-09-04", "2026-09-11", "2026-09-18", "2026-09-25"]
+      }
     ]
   },
   "scenarios": [
@@ -1260,6 +1269,32 @@
           "dataPrevista": "2026-09-09",
           "tipoPrazo": "soft"
         }
+      ],
+      "expectedSkipped": []
+    },
+    {
+      "nome": "semanal (sexta) gera uma instancia por ocorrencia no range, nao uma por mes",
+      "today": "2026-08-09",
+      "templates": [
+        {
+          "id": "tpl-sem-a",
+          "nome": "Atualiz Calc RF",
+          "tipoGeracao": "semanal",
+          "regraCompetencia": "M0",
+          "diaSemana": "sexta",
+          "ativo": true,
+          "antecessor": null
+        }
+      ],
+      "existing": [],
+      "expectedInstances": [
+        { "dedupeKey": "tpl-sem-a:2026-08:2026-08-14", "templateId": "tpl-sem-a", "competencia": "2026-08", "dataPrevista": "2026-08-14", "tipoPrazo": "soft" },
+        { "dedupeKey": "tpl-sem-a:2026-08:2026-08-21", "templateId": "tpl-sem-a", "competencia": "2026-08", "dataPrevista": "2026-08-21", "tipoPrazo": "soft" },
+        { "dedupeKey": "tpl-sem-a:2026-08:2026-08-28", "templateId": "tpl-sem-a", "competencia": "2026-08", "dataPrevista": "2026-08-28", "tipoPrazo": "soft" },
+        { "dedupeKey": "tpl-sem-a:2026-09:2026-09-04", "templateId": "tpl-sem-a", "competencia": "2026-09", "dataPrevista": "2026-09-04", "tipoPrazo": "soft" },
+        { "dedupeKey": "tpl-sem-a:2026-09:2026-09-11", "templateId": "tpl-sem-a", "competencia": "2026-09", "dataPrevista": "2026-09-11", "tipoPrazo": "soft" },
+        { "dedupeKey": "tpl-sem-a:2026-09:2026-09-18", "templateId": "tpl-sem-a", "competencia": "2026-09", "dataPrevista": "2026-09-18", "tipoPrazo": "soft" },
+        { "dedupeKey": "tpl-sem-a:2026-09:2026-09-25", "templateId": "tpl-sem-a", "competencia": "2026-09", "dataPrevista": "2026-09-25", "tipoPrazo": "soft" }
       ],
       "expectedSkipped": []
     }

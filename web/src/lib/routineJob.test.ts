@@ -3,6 +3,7 @@ import fixture from "../../../shared/routine-job.testcases.json";
 import {
   buildDedupeKey,
   computeExpectedInstances,
+  DIA_SEMANA_INDEX,
   type ExistingInstance,
   endOfNextMonth,
   nthBusinessDayOfMonth,
@@ -11,6 +12,7 @@ import {
   shiftCompetencia,
   type TemplateRow,
   toIsoDate,
+  weeklyOccurrences,
 } from "./routineJob";
 
 interface NthBusinessDayCase {
@@ -42,6 +44,14 @@ interface ShiftCompetenciaCase {
   expected: string | null;
 }
 
+interface WeeklyOccurrencesCase {
+  nome: string;
+  rangeStart: string;
+  rangeEnd: string;
+  diaSemana: string;
+  expected: string[];
+}
+
 interface Scenario {
   nome: string;
   today: string;
@@ -63,6 +73,7 @@ const dayMath = fixture.dayMath as {
   nthCalendarDayOfMonth: NthCalendarDayCase[];
   endOfNextMonth: EndOfNextMonthCase[];
   shiftCompetencia: ShiftCompetenciaCase[];
+  weeklyOccurrences: WeeklyOccurrencesCase[];
 };
 const scenarios = fixture.scenarios as Scenario[];
 
@@ -95,6 +106,16 @@ describe("routineJob dayMath fixture parity", () => {
     for (const c of dayMath.shiftCompetencia) {
       test(c.nome, () => {
         expect(shiftCompetencia(c.dataPrevista, c.regraCompetencia)).toBe(c.expected);
+      });
+    }
+  });
+
+  describe("weeklyOccurrences", () => {
+    for (const c of dayMath.weeklyOccurrences) {
+      test(c.nome, () => {
+        expect(weeklyOccurrences(c.rangeStart, c.rangeEnd, DIA_SEMANA_INDEX[c.diaSemana])).toEqual(
+          c.expected,
+        );
       });
     }
   });

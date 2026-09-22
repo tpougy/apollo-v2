@@ -95,6 +95,28 @@
  * antecessor's instance set is known. Anything still unresolved after the
  * bound has a cycle or a dangling antecessor and is reported in `skipped`
  * as `antecessor_ciclico` rather than looping forever.
+ *
+ * `semanal` (**SEM-01**): a fourth `tipoGeracao`, anchored to a named
+ * weekday (`diaSemana`) instead of a monthly offset — covers the real
+ * "Atualiz Calc RF" case (toda sexta-feira), which no month-anchored type
+ * can represent without an artificial approximation. `weeklyOccurrences(
+ * rangeStart, rangeEnd, diaSemanaIdx)` is a closed-form enumeration: find
+ * the first date `>= rangeStart` whose Monday-indexed weekday matches
+ * `diaSemanaIdx`, then step +7 calendar days until `> rangeEnd`.
+ * Deliberately PURE calendar-day arithmetic — never calls
+ * `isBusinessDay`/`addBusinessDays` (mirrors `corrido_fixo`'s calendar-pure
+ * precedent). `diaSemana` is stored as one of the seven lowercase,
+ * unaccented Portuguese tokens (`segunda`..`domingo`), whose index in
+ * `DIAS_SEMANA_SUPORTADOS` matches Python's native `date.weekday()`
+ * convention (Monday=0..Sunday=6) — native `getUTCDay()` is Sunday=0..
+ * Saturday=6, so `mondayIndexedWeekday` converts via `(getUTCDay() + 6) %
+ * 7` (duplicated locally from `dashboard/derive.ts::semanaUtil`'s own
+ * idiom, never imported — wrong dependency direction). `computeSemanalInstances`
+ * is a new sibling of `computeFixedInstances` (not an extension of it):
+ * that helper is structurally month-candidate-based and cannot express
+ * "every matching weekday across the whole range" without a rewrite.
+ * `offsetDias` is never read for `semanal` templates (document-only,
+ * mirrors `encadeado` never consulting its own unused `regraCompetencia`).
  */
 
 import { addBusinessDays, isBusinessDay, nthBusinessDayFromMonthEnd } from "./bizdays";
@@ -110,6 +132,7 @@ export interface TemplateRow {
   tipoGeracao: string;
   regraCompetencia: string;
   offsetDias?: number | null;
+  diaSemana?: string | null;
   ativo?: boolean;
   antecessor?: { id: string } | null; // templateAntecessor self-link, used by 05-04
 }
@@ -138,7 +161,9 @@ export type SkipReason =
   | "regra_competencia_nao_suportada"
   | "antecessor_ausente" // encadeado template has no antecessor link
   | "antecessor_sem_instancia" // antecessor produced no instance, persisted or computed
-  | "antecessor_ciclico"; // unresolved after the bounded sweep: cycle or dangling antecessor
+  | "antecessor_ciclico" // unresolved after the bounded sweep: cycle or dangling antecessor
+  | "dia_semana_ausente" // semanal template has no diaSemana value (SEM-01)
+  | "dia_semana_invalido"; // semanal template's diaSemana is not a recognized weekday token (SEM-01)
 
 export interface SkippedTemplate {
   templateId: string;
@@ -310,6 +335,104 @@ function computeFixedInstances(
   return { instances };
 }
 
+const DIAS_SEMANA_SUPORTADOS = [
+  "segunda",
+  "terca",
+  "quarta",
+  "quinta",
+  "sexta",
+  "sabado",
+  "domingo",
+] as const; // index matches Python's native date.weekday() convention (Monday=0..Sunday=6)
+
+/** Exported so `routineJob.test.ts` can resolve `dayMath.weeklyOccurrences`
+ * fixture cases' `diaSemana` token to an index without hand-writing a
+ * second, duplicate weekday-index table in the test file. */
+export const DIA_SEMANA_INDEX: Record<string, number> = Object.fromEntries(
+  DIAS_SEMANA_SUPORTADOS.map((nome, idx) => [nome, idx]),
+);
+
+function parseUtcDateJob(iso: string): Date {
+  return new Date(`${iso}T00:00:00.000Z`);
+}
+
+/**
+ * Sunday=0..Saturday=6 (native `getUTCDay()`) -> Monday=0..Sunday=6, to match
+ * Python's `date.weekday()` convention exactly — the one parity-critical
+ * conversion in this whole feature (SEM-01). Duplicated locally from
+ * `dashboard/derive.ts::semanaUtil`'s own `(dow + 6) % 7` idiom — do not
+ * import it (wrong dependency direction: the pure compute core must not
+ * depend on dashboard-presentation code).
+ */
+function mondayIndexedWeekday(d: Date): number {
+  return (d.getUTCDay() + 6) % 7;
+}
+
+/**
+ * Every ISO date in `[rangeStart, rangeEnd]` (inclusive both ends) whose
+ * Monday-indexed weekday equals `diaSemanaIdx`. Pure calendar-day arithmetic
+ * only — never calls `isBusinessDay`/`addBusinessDays` (SEM-01, mirrors
+ * `corrido_fixo`'s calendar-pure precedent). Exported (no local-only
+ * visibility): this is the pure date-math primitive, directly
+ * fixture-tested like `nthBusinessDayOfMonth`/`nthCalendarDayOfMonth`.
+ */
+export function weeklyOccurrences(
+  rangeStart: string,
+  rangeEnd: string,
+  diaSemanaIdx: number,
+): string[] {
+  const start = parseUtcDateJob(rangeStart);
+  const end = parseUtcDateJob(rangeEnd);
+  const lead = (diaSemanaIdx - mondayIndexedWeekday(start) + 7) % 7;
+  const cursor = new Date(start);
+  cursor.setUTCDate(cursor.getUTCDate() + lead);
+  const occurrences: string[] = [];
+  while (cursor <= end) {
+    occurrences.push(
+      formatIso(cursor.getUTCFullYear(), cursor.getUTCMonth() + 1, cursor.getUTCDate()),
+    );
+    cursor.setUTCDate(cursor.getUTCDate() + 7);
+  }
+  return occurrences;
+}
+
+/**
+ * Mirrors `_compute_semanal_instances` exactly — a sibling of
+ * `computeFixedInstances`, not an extension of it (that helper is
+ * month-candidate-based and cannot express "every matching weekday across
+ * the whole range" without a rewrite).
+ */
+function computeSemanalInstances(
+  template: TemplateRow,
+  rangeStart: string,
+  rangeEnd: string,
+): { instances: ExpectedInstance[] } | { skipReason: SkipReason } {
+  const diaSemana = template.diaSemana;
+  if (diaSemana === undefined || diaSemana === null) {
+    return { skipReason: "dia_semana_ausente" };
+  }
+  const idx = DIA_SEMANA_INDEX[diaSemana];
+  if (idx === undefined) {
+    return { skipReason: "dia_semana_invalido" };
+  }
+
+  const instances: ExpectedInstance[] = [];
+  for (const dataPrevista of weeklyOccurrences(rangeStart, rangeEnd, idx)) {
+    const competencia = shiftCompetencia(dataPrevista, template.regraCompetencia);
+    if (competencia === null) {
+      return { skipReason: "regra_competencia_nao_suportada" };
+    }
+    instances.push({
+      dedupeKey: buildDedupeKey(template.id, competencia, dataPrevista),
+      templateId: template.id,
+      competencia,
+      dataPrevista,
+      tipoPrazo: TIPO_PRAZO_GERADO,
+    });
+  }
+  return { instances };
+}
+
 const DU_FIXO_MIN_OFFSET_DIAS = -1_000_000;
 
 /**
@@ -469,6 +592,8 @@ export function computeExpectedInstances(
           1,
           nthCalendarDayOfMonth,
         );
+      } else if (template.tipoGeracao === "semanal") {
+        result = computeSemanalInstances(template, rangeStart, rangeEnd);
       } else {
         skipped.push({
           templateId: template.id,
