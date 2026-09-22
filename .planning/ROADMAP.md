@@ -234,7 +234,7 @@ Plans:
   validation (collect-all-errors), natural-key existence check, id pre-assignment, one atomic
   heterogeneous transact + ambiguous-failure recovery, live-proven at meaningful scale
   (encadeado chain + both reference forms) (BATCH-01)
-- [ ] 31-02-PLAN.md — full 18-fundo/84-template onboarding-scale proof in one invocation
+- [x] 31-02-PLAN.md — full 18-fundo/84-template onboarding-scale proof in one invocation
   (Success Criterion 3), same-scale re-run + partial-batch-already-landed resume proofs
   (Success Criterion 2), whole-cli/-package gate sweep (BATCH-01)
 

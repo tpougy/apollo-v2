@@ -5,17 +5,17 @@ milestone_name: Correções descobertas no onboarding real do calendário de rot
 current_phase: 31
 current_phase_name: Cadastro em lote
 current_plan: 2
-status: in_progress
-stopped_at: Completed 31-01-PLAN.md (apollo import tracer)
-last_updated: "2026-09-22T22:17:49.691Z"
+status: verifying
+stopped_at: Completed 31-02-PLAN.md
+last_updated: "2026-09-22T22:36:37.027Z"
 last_activity: 2026-09-22
 last_activity_desc: Phase 30 complete, transitioned to Phase 31
-state_head: 9a6a1c86c2bc9af585bfed06d8e742ba506c9fcc
+state_head: e801a970096ba182654457306595580a73575bde
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 11
-  completed_plans: 10
+  completed_plans: 11
   percent: 50
 ---
 
@@ -33,7 +33,7 @@ See: .planning/PROJECT.md (updated 2026-08-14)
 Phase: 31 — Cadastro em lote
 Current Plan: 2
 Total Plans in Phase: 2
-Status: In progress
+Status: Phase complete — ready for verification
 Last activity: 2026-09-22 — Plan 31-01 (apollo import tracer) complete
 
 Progress: [█████░░░░░] 50%
@@ -76,6 +76,7 @@ Progress: [█████░░░░░] 50%
 | Phase 29 P01 | ~25min | 2 tasks | 6 files |
 | Phase 30 P01 | ~50min | 2 tasks | 6 files |
 | Phase 31 P01 | 20min | 2 tasks | 5 files |
+| Phase 31 P02 | ~35min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -95,6 +96,8 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase 29]: [Phase 29, Plan 01]: range_override/rangeOverride fully REPLACES (never intersects) the default [today, end_of_next_month(today)] window via months_in_range/monthsInRange's generalization of the old today-derived candidate_months. Live-proven against production InstantDB for all 4 ROADMAP success criteria (single-competencia generation, mid-month recovery of a passed date, and row-id-identical idempotency across recorte and default-range runs).
 - [Phase 30]: D-01/D-02 (LIFE-01/LIFE-02) implemented exactly as locked: deletar blocks by default with exact linked-instance count (exit 2, zero writes), --force bypasses without cascading; limpar-orfas lists by default, --confirmar deletes exactly the falsy-or-absent-template-link orphans.
 - [Phase 30]: D-03 (Success Criterion 3): real production account had 22 orphaned instanciasRotina at execution time (not the originally documented 4) — all removed live via limpar-orfas --confirmar as part of this plan's own verification; production now holds 0 orphans.
+- [Phase 31]: The 2 encadeado chains in the 18/84-scale fixture are carved out of the templates the cyclic tipoGeracao assignment already typed 'encadeado', keeping 'cycles through all 4 tipoGeracao values' literally true for every template
+- [Phase 31]: Partial-resume test pre-seeds the associated fundo first (fixing its real id) before seeding dependent templates, so the natural-key match against apollo import's own resolution is guaranteed
 
 ### Pending Todos
 
@@ -130,8 +133,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-09-22T22:17:49.580Z
-Stopped at: Completed 31-01-PLAN.md (apollo import tracer)
+Last session: 2026-09-22T22:36:36.899Z
+Stopped at: Completed 31-02-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
