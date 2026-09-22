@@ -59,7 +59,8 @@ from apollo_cli.routine_job import (
 _ETYPE_TEMPLATE = "templatesRotina"
 _ETYPE_INSTANCIA = "instanciasRotina"
 _ETYPE_FUNDO = "fundos"
-_TIPO_GERACAO_CHOICES = ("du_fixo", "corrido_fixo", "encadeado")
+_TIPO_GERACAO_CHOICES = ("du_fixo", "corrido_fixo", "encadeado", "semanal")
+_DIA_SEMANA_CHOICES = ("segunda", "terca", "quarta", "quinta", "sexta", "sabado", "domingo")
 
 
 def _resolve_ref(*, etype: str, eid: str | None, link_label: str) -> dict[str, str] | None:
@@ -124,7 +125,8 @@ group.add_command(instancia)
     help=(
         "How instances are dated: 'du_fixo' = fixed business-day offset, "
         "'corrido_fixo' = fixed calendar-day offset, 'encadeado' = chained "
-        "off the `--antecessor-id` template's instance."
+        "off the `--antecessor-id` template's instance, 'semanal' = anchored "
+        "to a chosen dia da semana (see the weekday-anchor option below)."
     ),
 )
 @click.option(
@@ -183,6 +185,17 @@ group.add_command(instancia)
         "D-05-B). Omit to leave the field unset entirely (never writes 0)."
     ),
 )
+@click.option(
+    "--dia-semana",
+    type=click.Choice(_DIA_SEMANA_CHOICES),
+    default=None,
+    help=(
+        "Dia da semana ancorando a geracao quando --tipo-geracao=semanal "
+        "(ignorado pelos outros tipos). Omitir gera "
+        "'dia_semana_ausente' em `skipped` quando o template for do tipo "
+        "semanal (JOB-02-style: rejeitado na geracao, nao na escrita)."
+    ),
+)
 def criar(
     nome: str,
     tipo_geracao: str,
@@ -192,6 +205,7 @@ def criar(
     fundo_id: str | None,
     antecessor_id: str | None,
     offset_dias: int | None,
+    dia_semana: str | None,
 ) -> None:
     """Create a routine template. The owner comes from the authenticated
     session — it cannot be supplied as a flag."""
@@ -208,6 +222,7 @@ def criar(
             "propagarAtrasoSoft": propagar_atraso_soft,
             "ativo": ativo,
             "offsetDias": offset_dias,
+            "diaSemana": dia_semana,
         },
         links=links,
     )
@@ -270,6 +285,16 @@ def criar(
         "stored value unchanged — never resets it to 0."
     ),
 )
+@click.option(
+    "--dia-semana",
+    type=click.Choice(_DIA_SEMANA_CHOICES),
+    default=None,
+    help=(
+        "New dia da semana anchoring generation when --tipo-geracao=semanal "
+        "(ignored by the other types). Omit to leave the stored value "
+        "unchanged."
+    ),
+)
 def editar(
     eid: str,
     nome: str | None,
@@ -280,6 +305,7 @@ def editar(
     fundo_id: str | None,
     antecessor_id: str | None,
     offset_dias: int | None,
+    dia_semana: str | None,
 ) -> None:
     """Update a routine template. Ownership is immutable and never accepted
     here. Boolean flags default to unset (`None`) so omitting a flag never
@@ -299,6 +325,7 @@ def editar(
                 "propagarAtrasoSoft": propagar_atraso_soft,
                 "ativo": ativo,
                 "offsetDias": offset_dias,
+                "diaSemana": dia_semana,
             }
         ),
         links=links,

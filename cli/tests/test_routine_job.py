@@ -207,8 +207,9 @@ def _create_routine_template(
     nome: str,
     tipo_geracao: str,
     regra_competencia: str,
-    offset_dias: int,
+    offset_dias: int | None = None,
     antecessor_id: str | None = None,
+    dia_semana: str | None = None,
 ) -> str:
     args = [
         "rotina",
@@ -220,11 +221,13 @@ def _create_routine_template(
         tipo_geracao,
         "--regra-competencia",
         regra_competencia,
-        "--offset-dias",
-        str(offset_dias),
     ]
+    if offset_dias is not None:
+        args += ["--offset-dias", str(offset_dias)]
     if antecessor_id is not None:
         args += ["--antecessor-id", antecessor_id]
+    if dia_semana is not None:
+        args += ["--dia-semana", dia_semana]
     result: CliInvocation = run_cli(args)
     assert result.result.exit_code == 0, result.result.output
     template_id = cast("dict[str, Any]", result.json_out())["id"]
@@ -530,4 +533,91 @@ def test_gerar_instancias_skipped_entries_include_template_nome(
     matching = [entry for entry in report["skipped"] if entry["templateId"] == template_id]
     assert len(matching) == 1
     assert matching[0]["reason"] == "offset_dias_ausente"
+    assert matching[0]["nome"] == nome
+
+
+@pytest.mark.live
+def test_gerar_instancias_semanal_sexta_real_atualiz_calc_rf_case(
+    run_cli: RunCli,
+    live_client: Instant,
+    cleanup_records: list[tuple[str, str]],
+) -> None:
+    """SEM-01: proves the real "Atualiz Calc RF" case (toda sexta-feira) live
+    against production InstantDB — for `--data-base 2026-08-09`, a `semanal`
+    template anchored on `sexta` must produce exactly the 7 real Fridays in
+    August/September 2026, RESEARCH.md-verified.
+    """
+    suffix = unique_suffix()
+
+    template_id = _create_routine_template(
+        run_cli,
+        cleanup_records,
+        nome=f"phase28-cli-semanal-{suffix}",
+        tipo_geracao="semanal",
+        regra_competencia="M0",
+        dia_semana="sexta",
+    )
+
+    result: CliInvocation = run_cli(["rotina", "gerar-instancias", "--data-base", "2026-08-09"])
+    assert result.result.exit_code == 0, result.result.output
+
+    rows = _query_instances_by_template(live_client, template_id)
+    for row in rows:
+        cleanup_records.append(("instanciasRotina", row["id"]))
+
+    dates = sorted(to_iso_date(row["dataPrevista"]) for row in rows)
+    assert dates == [
+        "2026-08-14",
+        "2026-08-21",
+        "2026-08-28",
+        "2026-09-04",
+        "2026-09-11",
+        "2026-09-18",
+        "2026-09-25",
+    ]
+
+    for row in rows:
+        normalized_date = to_iso_date(row["dataPrevista"])
+        assert row["competencia"] == normalized_date[:7], (
+            "M0 has zero shift; competencia must match dataPrevista's own year-month"
+        )
+
+
+@pytest.mark.live
+def test_gerar_instancias_semanal_sem_dia_semana_e_skipped(
+    run_cli: RunCli,
+    cleanup_records: list[tuple[str, str]],
+) -> None:
+    """SEM-01: a `semanal` template created WITHOUT `--dia-semana` must
+    surface `dia_semana_ausente` in `skipped`, never crash or silently
+    generate nothing unexplained — mirrors
+    `test_gerar_instancias_skipped_entries_include_template_nome`.
+    """
+    suffix = unique_suffix()
+    nome = f"phase28-cli-semanal-sem-dia-{suffix}"
+
+    create_result: CliInvocation = run_cli(
+        [
+            "rotina",
+            "template",
+            "criar",
+            "--nome",
+            nome,
+            "--tipo-geracao",
+            "semanal",
+            "--regra-competencia",
+            "M0",
+        ]
+    )
+    assert create_result.result.exit_code == 0, create_result.result.output
+    template_id = cast("dict[str, Any]", create_result.json_out())["id"]
+    cleanup_records.append(("templatesRotina", template_id))
+
+    result: CliInvocation = run_cli(["rotina", "gerar-instancias", "--data-base", "2026-08-09"])
+    assert result.result.exit_code == 0, result.result.output
+    report = cast("dict[str, Any]", result.json_out())
+
+    matching = [entry for entry in report["skipped"] if entry["templateId"] == template_id]
+    assert len(matching) == 1
+    assert matching[0]["reason"] == "dia_semana_ausente"
     assert matching[0]["nome"] == nome

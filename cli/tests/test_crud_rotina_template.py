@@ -139,7 +139,9 @@ def test_full_crud_round_trip(
     assert linked_antecessor is not None
     assert linked_antecessor["id"] == eid
 
-    # 5. criar --tipo-geracao <invalid> -> exit 2, names all three valid values
+    # 5. criar --tipo-geracao <invalid> -> exit 2, names all four valid values
+    # (SEM-01: "semanal" is now a valid tipoGeracao, so the invalid-value
+    # probe must use a genuinely still-invalid token instead.)
     invalid_result: CliInvocation = run_cli(
         [
             "rotina",
@@ -148,13 +150,13 @@ def test_full_crud_round_trip(
             "--nome",
             "N",
             "--tipo-geracao",
-            "semanal",
+            "invalido",
             "--regra-competencia",
             "M0",
         ]
     )
     assert invalid_result.result.exit_code == 2
-    for expected in ("du_fixo", "corrido_fixo", "encadeado"):
+    for expected in ("du_fixo", "corrido_fixo", "encadeado", "semanal"):
         assert expected in invalid_result.result.output
 
     # 6. listar --ativo filters
@@ -315,6 +317,142 @@ def test_editar_without_offset_dias_leaves_previous_value_unchanged(
     assert record is not None
     assert record["nome"] == novo_nome
     assert record["offsetDias"] == 9
+
+
+def test_criar_with_dia_semana_persists_value(
+    run_cli: RunCli,
+    live_client: Instant,
+    cleanup_records: list[tuple[str, str]],
+) -> None:
+    """SEM-01: `--dia-semana` persists on a `semanal` template, mirroring
+    `test_criar_with_offset_dias_persists_value`."""
+    suffix = unique_suffix()
+    result: CliInvocation = run_cli(
+        [
+            "rotina",
+            "template",
+            "criar",
+            "--nome",
+            f"Template Dia Semana {suffix}",
+            "--tipo-geracao",
+            "semanal",
+            "--regra-competencia",
+            "M0",
+            "--dia-semana",
+            "sexta",
+        ]
+    )
+    assert result.result.exit_code == 0, result.result.output
+    eid = cast("dict[str, Any]", result.json_out())["id"]
+    cleanup_records.append(("templatesRotina", eid))
+    record = _query_template(live_client, eid)
+    assert record is not None
+    assert record["diaSemana"] == "sexta"
+
+
+def test_criar_without_dia_semana_omits_key_entirely(
+    run_cli: RunCli,
+    live_client: Instant,
+    cleanup_records: list[tuple[str, str]],
+) -> None:
+    """SEM-01: omitting `--dia-semana` never writes the key, mirroring
+    `test_criar_without_offset_dias_omits_key_entirely`."""
+    suffix = unique_suffix()
+    result: CliInvocation = run_cli(
+        [
+            "rotina",
+            "template",
+            "criar",
+            "--nome",
+            f"Template Sem Dia Semana {suffix}",
+            "--tipo-geracao",
+            "semanal",
+            "--regra-competencia",
+            "M0",
+        ]
+    )
+    assert result.result.exit_code == 0, result.result.output
+    eid = cast("dict[str, Any]", result.json_out())["id"]
+    cleanup_records.append(("templatesRotina", eid))
+    record = _query_template(live_client, eid)
+    assert record is not None
+    assert "diaSemana" not in record
+
+
+def test_editar_dia_semana_changes_only_that_field(
+    run_cli: RunCli,
+    live_client: Instant,
+    cleanup_records: list[tuple[str, str]],
+) -> None:
+    """SEM-01: `--dia-semana` on `editar` changes only that field, mirroring
+    `test_editar_offset_dias_changes_only_that_field`."""
+    suffix = unique_suffix()
+    nome = f"Template Editar Dia Semana {suffix}"
+    criar_result: CliInvocation = run_cli(
+        [
+            "rotina",
+            "template",
+            "criar",
+            "--nome",
+            nome,
+            "--tipo-geracao",
+            "semanal",
+            "--regra-competencia",
+            "M0",
+            "--dia-semana",
+            "sexta",
+        ]
+    )
+    assert criar_result.result.exit_code == 0, criar_result.result.output
+    eid = cast("dict[str, Any]", criar_result.json_out())["id"]
+    cleanup_records.append(("templatesRotina", eid))
+
+    editar_result: CliInvocation = run_cli(
+        ["rotina", "template", "editar", "--id", eid, "--dia-semana", "quarta"]
+    )
+    assert editar_result.result.exit_code == 0, editar_result.result.output
+    record = _query_template(live_client, eid)
+    assert record is not None
+    assert record["diaSemana"] == "quarta"
+    assert record["nome"] == nome
+
+
+def test_editar_without_dia_semana_leaves_previous_value_unchanged(
+    run_cli: RunCli,
+    live_client: Instant,
+    cleanup_records: list[tuple[str, str]],
+) -> None:
+    """SEM-01: omitting `--dia-semana` on `editar` never resets a previously
+    set value, mirroring `test_editar_without_offset_dias_leaves_previous_value_unchanged`."""
+    suffix = unique_suffix()
+    criar_result: CliInvocation = run_cli(
+        [
+            "rotina",
+            "template",
+            "criar",
+            "--nome",
+            f"Template Dia Semana Preservado {suffix}",
+            "--tipo-geracao",
+            "semanal",
+            "--regra-competencia",
+            "M0",
+            "--dia-semana",
+            "sexta",
+        ]
+    )
+    assert criar_result.result.exit_code == 0, criar_result.result.output
+    eid = cast("dict[str, Any]", criar_result.json_out())["id"]
+    cleanup_records.append(("templatesRotina", eid))
+
+    novo_nome = f"Renomeado Dia Semana {suffix}"
+    editar_result: CliInvocation = run_cli(
+        ["rotina", "template", "editar", "--id", eid, "--nome", novo_nome]
+    )
+    assert editar_result.result.exit_code == 0, editar_result.result.output
+    record = _query_template(live_client, eid)
+    assert record is not None
+    assert record["nome"] == novo_nome
+    assert record["diaSemana"] == "sexta"
 
 
 def test_listar_legacy_templates_without_offset_dias_do_not_raise(run_cli: RunCli) -> None:

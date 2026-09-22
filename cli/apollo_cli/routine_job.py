@@ -95,6 +95,26 @@ Calendar math is imported exclusively from `apollo_cli.bizdays`
 computed via `calendar.monthrange` (stdlib), aliased as `pycalendar` to keep
 it visually distinct from the vendored-ANBIMA "calendar" concept
 `bizdays.py` owns.
+
+`semanal` (**SEM-01**): a fourth `tipoGeracao`, anchored to a named weekday
+(`diaSemana`) instead of a monthly offset — covers the real "Atualiz Calc RF"
+case (toda sexta-feira), which no month-anchored type can represent without
+an artificial approximation. `weekly_occurrences(range_start, range_end,
+dia_semana_idx)` is a closed-form enumeration: find the first date `>=
+range_start` whose `date.weekday()` matches `dia_semana_idx`, then step +7
+calendar days until `> range_end`. Deliberately PURE calendar-day arithmetic
+— never calls `is_business_day`/`add_business_days` (mirrors `corrido_fixo`'s
+calendar-pure precedent; a weekday choice already excludes the other six
+days, so no holiday/weekend awareness is layered on top). `diaSemana` is
+stored as one of the seven lowercase, unaccented Portuguese tokens
+(`segunda`..`domingo`), whose tuple index in `_DIAS_SEMANA_SUPORTADOS`
+equals Python's native `date.weekday()` convention (Monday=0..Sunday=6) —
+zero-cost mapping, no translation table. `_compute_semanal_instances` is a
+new sibling of `_compute_fixed_instances` (not an extension of it): that
+helper is structurally month-candidate-based (one date per candidate month)
+and cannot express "every matching weekday across the whole range" without a
+rewrite. `offsetDias` is never read for `semanal` templates (document-only,
+mirrors `encadeado` never consulting its own unused `regraCompetencia`).
 """
 
 from __future__ import annotations
@@ -103,7 +123,7 @@ import calendar as pycalendar
 import os
 import unicodedata
 from collections.abc import Callable
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any, Final, NamedTuple
 
@@ -278,6 +298,72 @@ floor via the vendored calendar's own `[CALENDAR_START, CALENDAR_END]`
 bounds once the computed date falls outside it (JOB-02/D-27-B)."""
 
 
+_DIAS_SEMANA_SUPORTADOS: Final[tuple[str, ...]] = (
+    "segunda",
+    "terca",
+    "quarta",
+    "quinta",
+    "sexta",
+    "sabado",
+    "domingo",
+)  # index == date.weekday()'s own Monday=0..Sunday=6 convention — zero-cost mapping
+_DIA_SEMANA_INDEX: Final[dict[str, int]] = {
+    nome: idx for idx, nome in enumerate(_DIAS_SEMANA_SUPORTADOS)
+}
+
+
+def weekly_occurrences(range_start: str, range_end: str, dia_semana_idx: int) -> list[str]:
+    """Every ISO date in `[range_start, range_end]` (inclusive both ends)
+    whose `date.weekday() == dia_semana_idx`. Pure calendar-day arithmetic
+    only — never calls `is_business_day`/`add_business_days` (SEM-01,
+    mirrors `corrido_fixo`'s calendar-pure precedent). Public (no leading
+    underscore): this is the pure date-math primitive, directly
+    fixture-tested like `nth_business_day_of_month`/`nth_calendar_day_of_month`.
+    """
+    start = date.fromisoformat(range_start)
+    end = date.fromisoformat(range_end)
+    lead = (dia_semana_idx - start.weekday()) % 7
+    cursor = start + timedelta(days=lead)
+    occurrences: list[str] = []
+    while cursor <= end:
+        occurrences.append(cursor.isoformat())
+        cursor += timedelta(days=7)
+    return occurrences
+
+
+def _compute_semanal_instances(
+    template: dict[str, Any],
+    range_start: str,
+    range_end: str,
+) -> tuple[list[dict[str, Any]], str | None]:
+    """Returns `(instances, skip_reason)`, mirroring `_compute_fixed_instances`'s
+    two-value return shape — a sibling function, not an extension of it (that
+    helper is month-candidate-based and cannot express "every matching
+    weekday across the whole range" without a rewrite)."""
+    dia_semana = template.get("diaSemana")
+    if dia_semana is None:
+        return [], "dia_semana_ausente"
+    idx = _DIA_SEMANA_INDEX.get(dia_semana)
+    if idx is None:
+        return [], "dia_semana_invalido"
+
+    instances: list[dict[str, Any]] = []
+    for data_prevista in weekly_occurrences(range_start, range_end, idx):
+        competencia = shift_competencia(data_prevista, template["regraCompetencia"])
+        if competencia is None:
+            return [], "regra_competencia_nao_suportada"
+        instances.append(
+            {
+                "dedupeKey": build_dedupe_key(template["id"], competencia, data_prevista),
+                "templateId": template["id"],
+                "competencia": competencia,
+                "dataPrevista": data_prevista,
+                "tipoPrazo": TIPO_PRAZO_GERADO,
+            }
+        )
+    return instances, None
+
+
 def _du_fixo_nth_day(year: int, month: int, n: int) -> str:
     """Sign-based dispatch for `du_fixo`'s date rule: forward-counting
     (`nth_business_day_of_month`, unchanged) for `n >= 1`; backward-counting
@@ -419,6 +505,10 @@ def compute_expected_instances(
             elif tipo_geracao == "corrido_fixo":
                 instances, skip_reason = _compute_fixed_instances(
                     template, today, range_start, range_end, 1, nth_calendar_day_of_month
+                )
+            elif tipo_geracao == "semanal":
+                instances, skip_reason = _compute_semanal_instances(
+                    template, range_start, range_end
                 )
             else:
                 skipped.append(
@@ -651,6 +741,7 @@ def _normalize_template(row: dict[str, Any]) -> dict[str, Any]:
         "tipoGeracao": row.get("tipoGeracao"),
         "regraCompetencia": row.get("regraCompetencia"),
         "offsetDias": row.get("offsetDias"),
+        "diaSemana": row.get("diaSemana"),
         "ativo": row.get("ativo"),
         "antecessor": _normalize_antecessor(row.get("antecessor")),
     }
