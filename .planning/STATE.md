@@ -10,21 +10,21 @@ last_activity_desc: Milestone v1.5 completed and archived
 state_head: 65c383e4ef4331f42d2d77ce598e2cb9d614bfd6
 progress:
   total_phases: 6
-  completed_phases: 3
+  completed_phases: 6
   total_plans: 11
   completed_plans: 11
-  percent: 50
-current_phase: 31
+  percent: 100
+current_phase: null
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-08-14)
+See: .planning/PROJECT.md (updated 2026-09-22)
 
-**Core value:** The user can execute every piece of controladoria data-entry work from either the Svelte SPA or the Python CLI, both authenticated as the same real user under the same InstantDB permission rules. Validated in v1.0. v1.1 made the SPA visually coherent on shadcn-svelte defaults; v1.2 refined composition/spacing/hierarchy on the same four screens; v1.3 reorganized navigation into a 6-section topbar and shipped the Dashboard landing screen; v1.4 made the CLI itself installable outside the monorepo and dropped its login flow's admin-token dependency; v1.5 fixes 8 issues a real production-volume onboarding surfaced in the routine-generation engine (`routine_job.py`/`routineJob.ts`) and its CLI surface.
-**Current focus:** v1.5 (Phases 26-31) is in progress — Phase 26 (Validação na escrita, VAL-01/02/03) is complete. Requirements and roadmap were derived from a verified onboarding report (RBR fund-controladoria routine calendar: 18 fundos, 84 templatesRotina, 168 instanciasRotina), not from a spec or discussion — each of the 8 reported issues was confirmed against the live code before being accepted as a requirement. Next step: `/gsd-plan-phase 27`.
+**Core value:** The user can execute every piece of controladoria data-entry work from either the Svelte SPA or the Python CLI, both authenticated as the same real user under the same InstantDB permission rules. Validated in v1.0. v1.1 made the SPA visually coherent on shadcn-svelte defaults; v1.2 refined composition/spacing/hierarchy on the same four screens; v1.3 reorganized navigation into a 6-section topbar and shipped the Dashboard landing screen; v1.4 made the CLI itself installable outside the monorepo and dropped its login flow's admin-token dependency; v1.5 fixed 8 issues a real production-volume onboarding surfaced in the routine-generation engine (`routine_job.py`/`routineJob.ts`) and its CLI surface, including a new bulk `apollo import` command.
+**Current focus:** v1.5 (Phases 26-31) shipped 2026-09-22 — 12/12 requirements satisfied, milestone audit passed, no open gaps. Planning next milestone via `/gsd-new-milestone`.
 
 ## Current Position
 
