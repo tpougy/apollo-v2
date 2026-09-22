@@ -169,8 +169,9 @@ foram decididas nesta sessão, antes do roadmap):
 - Propagação real de atraso soft entre templates encadeados (reabriria C-09
   — fora de escopo aqui; VAL-02 apenas documenta o campo como reservado)
 
-- Suporte a múltiplos `app_id`/multi-app simultâneo além do par
-  produção/teste introduzido por LIFE-03
+- Suporte a múltiplos `app_id`/multi-app InstantDB simultâneo (LIFE-03 não
+  introduziu um segundo app — escopo revisado para reutilizar o mesmo app de
+  produção com limpeza pós-teste, ver nota de decisão no Context acima)
 
 ## Out of Scope
 
