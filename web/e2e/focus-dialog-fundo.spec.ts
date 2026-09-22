@@ -8,9 +8,20 @@ import {
 } from "./fixtures/instancia-admin-fixture.ts";
 
 // This spec runs in the `authed` project (restores the storageState persisted
-// by auth.setup.ts). Every generated record uses the `phase23-e2e-` prefix so
-// leftovers are greppable/removable, mirroring every other Phase 23 spec's
-// established CLI-fixture/sweep-leftovers pattern.
+// by auth.setup.ts). Every generated record uses the `phase23-e2e-fundo-`
+// prefix so leftovers are greppable/removable, mirroring every other Phase 23
+// spec's established CLI-fixture/sweep-leftovers pattern.
+//
+// WR-02 (Phase 30 code review): this file's own PREFIX is deliberately
+// file-unique, NOT the bare `phase23-e2e-` shared by focus-dialog-projeto.spec.ts
+// et al. This file calls `sweepInstancesByDedupeKeyPrefix`, which matches
+// purely on dedupeKey-prefix + owner with no other discriminator -- a shared
+// literal prefix across files that all call it would let one file's sweep
+// delete another file's in-flight instanciasRotina rows if the suite's
+// `workers: 1`/`fullyParallel: false` (playwright.config.ts) were ever
+// relaxed. Keep this suffix unique among focus-dialog-fundo.spec.ts,
+// focus-dialog-dia-rotina.spec.ts, and focus-dialog-button-inventory.spec.ts
+// (the three files that call the sweep) if you ever rename it.
 //
 // This file is Plan 23-05's own complete proof of the Fundo dialog (dialog #5
 // of 7) plus the two remaining fundo-targeting click surfaces --
@@ -20,7 +31,7 @@ import {
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const RESYNC_TIMEOUT = 15_000;
-const PREFIX = "phase23-e2e-";
+const PREFIX = "phase23-e2e-fundo-";
 const OWNER_EMAIL = "tp@rbrasset.com.br";
 
 function apolloCli(args: string[]): string {
