@@ -198,7 +198,7 @@ por prioridade, não por dependência técnica)
 
 Plans:
 
-- [ ] 30-01-PLAN.md — `apollo rotina template deletar` bloqueia por padrão com contagem
+- [x] 30-01-PLAN.md — `apollo rotina template deletar` bloqueia por padrão com contagem
   exata de instâncias vinculadas e passa a aceitar `--force`; novo comando
   `apollo rotina instancia limpar-orfas` (lista por padrão, `--confirmar` remove) limpa
   órfãs sem reabrir `criar`/`deletar` livre; inclui a limpeza ao vivo das órfãs/resíduo

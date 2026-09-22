@@ -131,14 +131,14 @@ foram decididas nesta sessão, antes do roadmap):
 
 ### Ciclo de vida e higiene de dados (LIFE)
 
-- [ ] **LIFE-01**: `apollo rotina template deletar` passa a ter um
+- [x] **LIFE-01**: `apollo rotina template deletar` passa a ter um
   comportamento explícito e documentado quando existem `instanciasRotina`
   vinculadas ao template — no mínimo, bloquear por padrão informando a
   contagem de instâncias afetadas, com uma flag explícita para prosseguir.
   Nunca mais deleta um template deixando instâncias órfãs sem qualquer
   sinalização.
 
-- [ ] **LIFE-02**: existe um comando dedicado para localizar e remover
+- [x] **LIFE-02**: existe um comando dedicado para localizar e remover
   instâncias órfãs (cujo `template` vinculado não resolve mais) — escopo
   estritamente de limpeza de resíduo já existente, não uma via alternativa de
   criação/edição de `instanciasRotina` (a restrição "sem `criar`/`deletar`

@@ -4,18 +4,18 @@ milestone: v1.5
 milestone_name: Correções descobertas no onboarding real do calendário de rotinas (RBR)
 current_phase: 30
 current_phase_name: Ciclo de vida e higiene de dados
-current_plan: Not started
-status: planning
-stopped_at: Phase 29 complete, ready to plan Phase 30
-last_updated: "2026-09-22T20:11:14.844Z"
+current_plan: 2
+status: executing
+stopped_at: Completed 30-01-PLAN.md
+last_updated: "2026-09-22T20:57:56.585Z"
 last_activity: 2026-09-22
 last_activity_desc: Phase 29 complete, transitioned to Phase 30
-state_head: 9c54c1ac286d9542cf03ff0896b4c09ace01e3c7
+state_head: 8bc5e620a043c4ab705fc8ffdbb8158d4a34d502
 progress:
   total_phases: 6
   completed_phases: 3
-  total_plans: 7
-  completed_plans: 7
+  total_plans: 9
+  completed_plans: 8
   percent: 50
 ---
 
@@ -31,9 +31,9 @@ See: .planning/PROJECT.md (updated 2026-08-14)
 ## Current Position
 
 Phase: 30 — Ciclo de vida e higiene de dados
-Current Plan: Not started
-Total Plans in Phase: 1
-Status: Ready to plan
+Current Plan: 2
+Total Plans in Phase: 2
+Status: Ready to execute
 Last activity: 2026-09-22 — Phase 29 complete, transitioned to Phase 30
 
 Progress: [█████░░░░░] 50%
@@ -74,6 +74,7 @@ Progress: [█████░░░░░] 50%
 | Phase 28 P02 | 10min | 2 tasks | 8 files |
 | Phase 28-periodicidade-semanal P03 | 4min | 1 tasks | 4 files |
 | Phase 29 P01 | ~25min | 2 tasks | 6 files |
+| Phase 30 P01 | ~50min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -95,6 +96,8 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase 28]: shared/routine-job.testcases.json semanal fixture kept to exactly the plan's specified scope (1 dayMath case + 1 scenario)
 - [Phase 28]: [Phase 28, Plan 03]: SPA templatesRotina form extended for semanal/diaSemana parity with the CLI (05-01 Task 3 precedent); WEB-06's listColumns column-index assertions repaired alongside the plan-named sort() assertions (Rule 1 fix, index shift was a direct consequence of inserting diaSemana into listColumns).
 - [Phase 29]: [Phase 29, Plan 01]: range_override/rangeOverride fully REPLACES (never intersects) the default [today, end_of_next_month(today)] window via months_in_range/monthsInRange's generalization of the old today-derived candidate_months. Live-proven against production InstantDB for all 4 ROADMAP success criteria (single-competencia generation, mid-month recovery of a passed date, and row-id-identical idempotency across recorte and default-range runs).
+- [Phase 30]: D-01/D-02 (LIFE-01/LIFE-02) implemented exactly as locked: deletar blocks by default with exact linked-instance count (exit 2, zero writes), --force bypasses without cascading; limpar-orfas lists by default, --confirmar deletes exactly the falsy-or-absent-template-link orphans.
+- [Phase 30]: D-03 (Success Criterion 3): real production account had 22 orphaned instanciasRotina at execution time (not the originally documented 4) — all removed live via limpar-orfas --confirmar as part of this plan's own verification; production now holds 0 orphans.
 
 ### Pending Todos
 
@@ -130,8 +133,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-09-22T19:56:24.020Z
-Stopped at: Phase 29 complete, ready to plan Phase 30
+Last session: 2026-09-22T20:57:56.435Z
+Stopped at: Completed 30-01-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
