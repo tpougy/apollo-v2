@@ -82,6 +82,47 @@
 
 ---
 
+## Milestone: v1.5 — Correções descobertas no onboarding real do calendário de rotinas (RBR)
+
+**Shipped:** 2026-09-22
+**Phases:** 6 | **Plans:** 11 | **Sessions:** 2 (paused/resumed twice across a multi-day span; second session ran the bulk of execution plus the reconfiguration and milestone close)
+
+### What Was Built
+- Write-time validation for `templatesRotina` (`--regra-competencia` `click.Choice`, corrected `--propagar-atraso-soft`/`dedupeKey` docs) closing a silent-failure class that previously only surfaced deep inside `gerar-instancias`
+- `du_fixo` accepting `offsetDias <= 0` (last-business-day-of-month semantics), `_is_concluida`/`isConcluida` status normalization for `encadeado` chains, and `nome` threaded through every `skipped` entry — all mirrored byte-identically across `routine_job.py`/`routineJob.ts`
+- A fourth `tipoGeracao`, `"semanal"` (weekday-anchored via `diaSemana`), live-proven against the real "Atualiz Calc RF" case (7 real Fridays) plus full SPA form parity
+- `gerar-instancias --competencia`/`--de`/`--ate`, generalizing month-candidate derivation (`months_in_range`) to accept an explicit range override instead of the hardcoded `[today, end_of_next_month]` window
+- `apollo rotina template deletar --force` (blocks by default on linked instances) and `apollo rotina instancia limpar-orfas` (found and removed 22 real orphaned rows in production), plus a root-cause fix to the e2e test suite's own leftover-sweep mechanism
+- `apollo import --from-json` — a new bulk-cadastro command with cross-entity `$local_id` references, two-pass collect-all-errors validation, natural-key idempotency, and one atomic heterogeneous `transact()`, live-proven at the literal 18-fundo/84-template onboarding scale in a single invocation
+
+### What Worked
+- Verifying every one of the report's 8 original findings against the live code BEFORE writing a requirement — this caught that LIFE-03's originally-proposed mechanism (a second InstantDB test app) wasn't actually needed once the real root cause (`sweepLeftovers()` never touching `instanciasRotina`) was traced
+- The review→fix→re-review loop (capped at 2 iterations after a mid-milestone speed reconfiguration) found a genuine, non-cosmetic Critical or Warning in 5 of 6 phases — a real TS/Python parity bug (Phase 27), a type-guard crash + cross-runtime divergence (Phase 28), a missing year-bounds check that could crash the whole job (Phase 29), and a missing in-batch natural-key duplicate check that could create real duplicate rows (Phase 31) — none were false positives
+- Requesting a targeted research pass before planning Phase 31 (the milestone's largest, most novel surface) to resolve 3 concrete InstaQL/transact questions live against production, rather than guessing or discovering them mid-execution
+- The milestone integration checker, run independently at the very end, re-read the actual current source for every cross-phase join point rather than trusting phase-level self-reports — it found one genuine gap (no automated test chaining `apollo import` into `gerar-instancias`) that no single phase's own verification would have caught, since each phase's tests were scoped to its own diff
+
+### What Was Inefficient
+- Enabling `workflow.use_worktrees`/`parallelization` mid-milestone (to address a user complaint about slow phase turnaround) delivered zero realized speedup — every wave in the remaining 3 phases was either single-plan or a strict dependency chain, never independent same-wave plans — while introducing real friction: every worktree spawned stale (many commits behind `main`, requiring a manual fast-forward merge before work could start) and Phase 30's e2e tests hit a hard, correct block when the secret-read guard refused to copy the real InstantDB admin token into the isolated worktree. Disabled again one phase later.
+- The account-wide-accumulation test-fragility class (unscoped assertions against a shared, growing production account) surfaced 4 separate times across Phases 26, 29, and 30 as the same root cause — each time correctly diagnosed as pre-existing/unrelated via `git diff`, but re-documenting the same finding 4 times across 3 separate `deferred-items.md` files is real overhead a single cross-cutting fix (in a future milestone) would eliminate
+- `phase.complete`'s staleness check flagged Phases 28-31 as `stale`/`phase_complete: false` at milestone-close time, because later phases in the same milestone kept editing the same shared file (`routine_job.py`) after each phase's own `VERIFICATION.md` was written — a false-positive requiring manual investigation (confirming the full offline suite was still green at HEAD) rather than blind trust in either direction
+
+### Patterns Established
+- Reading the live INSTAQL query shape/edge cases (empty `$in`, link dot-path filters, heterogeneous `transact()` chunks) via a targeted, narrowly-scoped research pass — rather than a full open-ended research phase — is the right size when only 2-3 concrete technical questions block planning, not the phase's entire design
+- A code-review finding that's genuinely a design gap (not just a missing test) should trigger a plan revision that adds BOTH the missing behavior AND its test in the same fix cycle — Phase 31's blocker (no negative test for a top-level `instanciasRotina` key) turned out to need only the test, since the rejection logic already existed; verifying which case applies before assuming a design change is needed saved a redundant edit
+- When a milestone's own root-cause investigation finds that its ORIGINAL proposed mechanism (LIFE-03's second test app) isn't actually what's needed, surface the mid-course correction to the user explicitly and get their decision, rather than silently substituting the agent's own judgment for a requirement the user hadn't yet revisited
+
+### Key Lessons
+1. Worktree isolation is a tool for realized parallelism, not a default-on speed lever — enable it only when a wave genuinely has independent same-wave plans; otherwise it adds merge/staleness overhead with no offsetting benefit, and disabling it again mid-milestone is the correct response once that's confirmed, not a mistake to avoid repeating.
+2. A milestone-closing integration check that independently re-reads source (not phase self-reports) is worth running even when every phase individually passed — it is the only mechanism that catches a missing END-TO-END test across phase boundaries, since each phase's own test suite is, by construction, scoped to its own diff.
+3. When the same test-fragility root cause recurs across multiple phases in one milestone, flag it as a candidate for its own dedicated future milestone/phase rather than re-fixing pieces of it inline each time it resurfaces — recognizing the pattern early (after occurrence 2, not occurrence 4) would have saved real documentation overhead.
+
+### Cost Observations
+- Model mix: not tracked this milestone
+- Sessions: 2 (a first session planned Phase 28 and paused twice — once on an external interrupt, once proactively at 65% context usage; a second session resumed and drove Phases 28-31 plus the full audit/complete/archive cycle to completion)
+- Notable: the mid-milestone speed reconfiguration (worktrees on, code-review depth lowered to `quick`, review-iteration cap lowered from 3 to 2) was itself explicitly requested by the user mid-session, not a unilateral agent optimization — worth normalizing as a checkpoint to offer proactively on any milestone running long, rather than waiting for the user to notice and ask
+
+---
+
 ## Cross-Milestone Trends
 
 ### Process Evolution
@@ -90,6 +131,7 @@
 |-----------|----------|--------|------------|
 | v1.0 | 1 | 6 | First milestone — established the orchestrator-performs-auth pattern and live-proof-only verification discipline |
 | v1.3 | 1 | 6 | First milestone built entirely from a standalone pre-written spec file (no interactive discuss-phase); established the hidden-EntityScreen-instance + driven-DOM-click idiom as the standard way to extend the generic engine from the outside |
+| v1.5 | 2 | 6 | First milestone born from a real production onboarding report rather than a spec/discussion; first to try (and then deliberately roll back) worktree-based parallel execution; milestone-closing integration check independently re-verified cross-phase wiring by re-reading source, catching a gap no single phase's own tests could have caught |
 
 ### Cumulative Quality
 
@@ -97,6 +139,7 @@
 |-----------|-------|----------|-------------------|
 | v1.0 | live pytest + bun test suites across cli/ and web/ | ruff+ty clean on cli/, Biome+svelte-check clean on web/ | InstantDB SDKs, click, bizdays, Playwright |
 | v1.3 | 174 unit tests (`bun test src`) + full 3-project Playwright e2e suite, all live against the hosted InstantDB app | `bun run check`/`bun run lint` clean, zero human UAT | `tabs`/`scroll-area`/`accordion` shadcn-svelte registry components only — no new npm dependency |
+| v1.5 | 406 offline pytest + full live suite across `cli/`, `bun run check`/`lint` clean on `web/`, all live against the real production InstantDB app (including a literal 18-fundo/84-template scale proof) | `ruff`/`ty`/`ruff format` clean on `cli/`, zero human UAT, code review found a genuine defect in 5/6 phases | Zero new dependencies — every fix built on already-present `instantdb`/`click`/`pytest`/Playwright |
 
 ### Top Lessons (Verified Across Milestones)
 
