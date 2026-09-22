@@ -230,7 +230,7 @@ urgência relativa entre as seis)
 
 Plans:
 
-- [ ] 31-01-PLAN.md — `apollo import --from-json <arquivo> [--dry-run]`: parse, two-pass
+- [x] 31-01-PLAN.md — `apollo import --from-json <arquivo> [--dry-run]`: parse, two-pass
   validation (collect-all-errors), natural-key existence check, id pre-assignment, one atomic
   heterogeneous transact + ambiguous-failure recovery, live-proven at meaningful scale
   (encadeado chain + both reference forms) (BATCH-01)

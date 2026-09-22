@@ -155,7 +155,7 @@ foram decididas nesta sessão, antes do roadmap):
 
 ### Cadastro em lote (BATCH)
 
-- [ ] **BATCH-01**: existe um caminho de entrada em lote (ex. um comando
+- [x] **BATCH-01**: existe um caminho de entrada em lote (ex. um comando
   `importar --from-json <arquivo>` por entidade, ou um `apollo import`
   cross-entity) que valida o lote inteiro antes de escrever, resolve ids de
   pai referenciados dentro do próprio lote (ex. um `fundo` e os `templates`

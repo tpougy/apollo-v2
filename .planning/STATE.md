@@ -4,18 +4,18 @@ milestone: v1.5
 milestone_name: Correções descobertas no onboarding real do calendário de rotinas (RBR)
 current_phase: 31
 current_phase_name: Cadastro em lote
-current_plan: Not started
-status: planning
-stopped_at: Phase 30 complete, ready to plan Phase 31
-last_updated: "2026-09-22T21:31:51.452Z"
+current_plan: 2
+status: in_progress
+stopped_at: Completed 31-01-PLAN.md (apollo import tracer)
+last_updated: "2026-09-22T22:17:49.691Z"
 last_activity: 2026-09-22
 last_activity_desc: Phase 30 complete, transitioned to Phase 31
-state_head: 70454030c72485750e22ce3de4b9210e735f7722
+state_head: 9a6a1c86c2bc9af585bfed06d8e742ba506c9fcc
 progress:
   total_phases: 6
   completed_phases: 3
-  total_plans: 9
-  completed_plans: 9
+  total_plans: 11
+  completed_plans: 10
   percent: 50
 ---
 
@@ -31,10 +31,10 @@ See: .planning/PROJECT.md (updated 2026-08-14)
 ## Current Position
 
 Phase: 31 — Cadastro em lote
-Current Plan: Not started
+Current Plan: 2
 Total Plans in Phase: 2
-Status: Ready to plan
-Last activity: 2026-09-22 — Phase 30 complete, transitioned to Phase 31
+Status: In progress
+Last activity: 2026-09-22 — Plan 31-01 (apollo import tracer) complete
 
 Progress: [█████░░░░░] 50%
 
@@ -75,6 +75,7 @@ Progress: [█████░░░░░] 50%
 | Phase 28-periodicidade-semanal P03 | 4min | 1 tasks | 4 files |
 | Phase 29 P01 | ~25min | 2 tasks | 6 files |
 | Phase 30 P01 | ~50min | 2 tasks | 6 files |
+| Phase 31 P01 | 20min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -129,8 +130,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-09-22T20:57:56.435Z
-Stopped at: Phase 30 complete, ready to plan Phase 31
+Last session: 2026-09-22T22:17:49.580Z
+Stopped at: Completed 31-01-PLAN.md (apollo import tracer)
 Resume file: None
 
 ## Operator Next Steps
