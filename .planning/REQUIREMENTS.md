@@ -51,6 +51,16 @@ foram decididas nesta sessão, antes do roadmap):
   evento em 87 (`Atualiz Calc RF`, toda sexta-feira) — decisão explícita do
   usuário, não do agente.
 
+- **LIFE-03** (app de teste dedicado vs. fluxo de limpeza no mesmo app):
+  revisado com o usuário durante a Fase 30 — **não criar um segundo app
+  InstantDB**. Decisão explícita do usuário: "Quero que você use o mesmo app
+  de prod para testar, não temos dados importantes lá ainda. Basta montar um
+  fluxo de limpeza após rodar os testes." O texto original de LIFE-03 (abaixo)
+  é substituído em espírito por essa decisão — o objetivo ("nenhuma escrita de
+  teste aparece na listagem de dados de produção") permanece, mas o mecanismo
+  muda de "app distinto" para "limpeza confiável pós-teste no mesmo app",
+  detalhado em `.planning/phases/30-ciclo-de-vida-e-higiene-de-dados/30-CONTEXT.md`.
+
 ## v1 Requirements
 
 ### Validação na escrita (VAL)
