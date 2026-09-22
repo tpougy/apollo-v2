@@ -30,6 +30,15 @@ link targets exist, so an unchecked link would happily write a dangling
 reference. `--antecessor-id` writes the `templateAntecessor` self-link
 (a `templatesRotina` may declare another `templatesRotina` as its
 predecessor, used by the `encadeado` generation type).
+
+Phase 30 (LIFE-01/LIFE-02) adds exactly two narrow exceptions to the "no
+`criar`/`deletar` for instances" rule above. `deletar` now blocks by default
+when the target template has linked `instanciasRotina` (exact count, zero
+writes) unless `--force` is passed, which proceeds without ever cascading
+onto those instances. `limpar-orfas` (under `instancia`) is the ONLY command
+that may ever delete an `instanciasRotina` row, and only when its `template`
+link is confirmed absent. Neither exception reopens general instance
+`criar`/`deletar` in the normal flow.
 """
 
 from __future__ import annotations
@@ -66,6 +75,11 @@ _ETYPE_FUNDO = "fundos"
 _TIPO_GERACAO_CHOICES = ("du_fixo", "corrido_fixo", "encadeado", "semanal")
 _DIA_SEMANA_CHOICES = ("segunda", "terca", "quarta", "quinta", "sexta", "sabado", "domingo")
 _COMPETENCIA_RE: Final[re.Pattern[str]] = re.compile(r"^\d{4}-\d{2}$")
+# D-01: exit code 2 for the "template has linked instancias, --force not
+# passed" guard — deliberately distinct from crud_helpers.EXIT_API_ERROR = 3,
+# since this is a business-rule/state guard discovered only after a query,
+# not a Click argument-parsing failure.
+_EXIT_INSTANCES_LINKED: Final[int] = 2
 
 
 def _resolve_ref(*, etype: str, eid: str | None, link_label: str) -> dict[str, str] | None:
@@ -405,12 +419,81 @@ def editar(
     emit({"id": eid, "updated": True})
 
 
+def _count_linked_instances(template_id: str) -> int:
+    """Count `instanciasRotina` reverse-linked to `template_id` via the
+    schema's `instancias` link (`shared/instant.schema.ts`'s
+    `templateInstancias` relation, reverse side).
+
+    No `session.user_id` filter — this query filters by `id`, mirroring
+    `get_entity`'s own no-donoId-filter convention, relying on InstantDB's
+    server-side perms for ownership scoping exactly like every other
+    single-record lookup in this module.
+
+    Returns `0` when the template id does not resolve at all (the guard
+    must never fire for a nonexistent template, preserving
+    `test_deletar_unknown_id_is_not_found`'s existing behavior unchanged),
+    and applies the same falsy-or-absent normalization as
+    `routine_job._normalize_antecessor` to the `instancias` reverse link —
+    an empty/absent reverse link counts as zero, never raises.
+    """
+    client, _ = client_for_session()
+    result = client.query(
+        {"templatesRotina": {"instancias": {}, "$": {"where": {"id": template_id}}}}
+    )
+    rows = result.get("templatesRotina", [])
+    if not rows:
+        return 0
+    instancias = rows[0].get("instancias")
+    return len(instancias) if isinstance(instancias, list) else 0
+
+
 @template.command()
 @click.option("--id", "eid", required=True, help="Id of the template to delete.")
-def deletar(eid: str) -> None:
-    """Delete a routine template."""
+@click.option(
+    "--force/--no-force",
+    default=False,
+    help=(
+        "Bypass the linked-instances block (D-01). NEVER cascades onto "
+        "linked instances — they become orphans, cleanable via "
+        "`apollo rotina instancia limpar-orfas`. With zero linked instances, "
+        "this flag is a silent no-op (not an error to pass it anyway)."
+    ),
+)
+def deletar(eid: str, force: bool) -> None:
+    """Delete a routine template.
+
+    Blocks by default (exit 2, exact linked-instance count, zero writes)
+    when the template has linked `instanciasRotina`. `--force` bypasses the
+    block WITHOUT ever cascading the delete onto those instances — they
+    become orphans, cleanable via `apollo rotina instancia limpar-orfas`
+    (D-01). The pre-existing `not_found` behavior for an unknown id is
+    unchanged.
+    """
+    linked_count = _count_linked_instances(eid)
+    if linked_count > 0 and not force:
+        click.echo(
+            json.dumps(
+                {
+                    "error": "instances_linked",
+                    "template_id": eid,
+                    "instance_count": linked_count,
+                    "hint": "pass --force to delete anyway (instances become orphans, "
+                    "cleanable via `apollo rotina instancia limpar-orfas`)",
+                },
+                sort_keys=True,
+            ),
+            err=True,
+        )
+        raise SystemExit(_EXIT_INSTANCES_LINKED)
     delete_entity(etype=_ETYPE_TEMPLATE, eid=eid)
-    emit({"id": eid, "deleted": True})
+    emit(
+        {
+            "id": eid,
+            "deleted": True,
+            "force": force,
+            "instances_linked_at_delete": linked_count,
+        }
+    )
 
 
 @template.command()

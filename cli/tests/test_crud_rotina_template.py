@@ -13,6 +13,7 @@ from typing import Any, cast
 
 import pytest
 from instantdb import Instant
+from instantdb import id as new_id
 
 from apollo_cli.session import Session
 from tests.conftest import CliInvocation, RunCli, unique_suffix
@@ -45,6 +46,33 @@ def _create_fundo(run_cli: RunCli, cleanup_records: list[tuple[str, str]], suffi
     fundo_id = cast("dict[str, Any]", fundo_result.json_out())["id"]
     cleanup_records.append(("fundos", fundo_id))
     return fundo_id
+
+
+def _seed_linked_instancia(
+    live_client: Instant,
+    live_session: Session,
+    template_id: str,
+    suffix: str,
+    n: int,
+) -> str:
+    """Seed one `instanciasRotina` row linked to `template_id`, mirroring
+    `test_rotina_instancia.py`'s own `_seed_instancia` shape (same field set,
+    same `.create(fields).link({"template": ...})` chain), returning only the
+    new instance id.
+    """
+    eid = new_id()
+    fields = {
+        "dedupeKey": f"phase30-life01-{suffix}-{n}",
+        "dataPrevista": "2026-09-10",
+        "competencia": "2026-09",
+        "tipoPrazo": "hard",
+        "status": "pendente",
+        "donoId": live_session.user_id,
+    }
+    live_client.transact(
+        live_client.tx["instanciasRotina"][eid].create(fields).link({"template": template_id})
+    )
+    return eid
 
 
 def test_full_crud_round_trip(
@@ -478,6 +506,147 @@ def test_deletar_unknown_id_is_not_found(run_cli: RunCli) -> None:
     assert result.result.exit_code != 0
     error_body = json.loads(result.result.output or result.result.stderr)
     assert error_body["error"] == "not_found"
+
+
+def test_deletar_with_linked_instances_blocks_by_default_with_exact_count(
+    run_cli: RunCli,
+    live_client: Instant,
+    live_session: Session,
+    cleanup_records: list[tuple[str, str]],
+) -> None:
+    """D-01/LIFE-01 must-have: a template with linked instances blocks by
+    default, exit 2, exact count in the error, zero writes."""
+    suffix = unique_suffix()
+    criar_result: CliInvocation = run_cli(
+        [
+            "rotina",
+            "template",
+            "criar",
+            "--nome",
+            f"Template Bloqueio {suffix}",
+            "--tipo-geracao",
+            "du_fixo",
+            "--regra-competencia",
+            "M0",
+        ]
+    )
+    assert criar_result.result.exit_code == 0, criar_result.result.output
+    template_id = cast("dict[str, Any]", criar_result.json_out())["id"]
+    cleanup_records.append(("templatesRotina", template_id))
+
+    instance_id_1 = _seed_linked_instancia(live_client, live_session, template_id, suffix, 1)
+    instance_id_2 = _seed_linked_instancia(live_client, live_session, template_id, suffix, 2)
+    cleanup_records.append(("instanciasRotina", instance_id_1))
+    cleanup_records.append(("instanciasRotina", instance_id_2))
+
+    deletar_result: CliInvocation = run_cli(["rotina", "template", "deletar", "--id", template_id])
+    assert deletar_result.result.exit_code == 2, deletar_result.result.output
+
+    error_body = json.loads(deletar_result.result.output or deletar_result.result.stderr)
+    assert error_body["error"] == "instances_linked"
+    assert error_body["template_id"] == template_id
+    assert error_body["instance_count"] == 2
+
+    # Zero writes: template and both instances still exist.
+    assert _query_template(live_client, template_id) is not None
+    for instance_id in (instance_id_1, instance_id_2):
+        record = live_client.query({"instanciasRotina": {"$": {"where": {"id": instance_id}}}}).get(
+            "instanciasRotina", []
+        )
+        assert record, f"instance {instance_id} must still exist after a blocked delete"
+
+
+def test_deletar_with_force_deletes_template_and_orphans_linked_instance(
+    run_cli: RunCli,
+    live_client: Instant,
+    live_session: Session,
+    cleanup_records: list[tuple[str, str]],
+) -> None:
+    """D-01/LIFE-01 must-have: `--force` deletes the template without ever
+    cascading, and the live-verified 30-PATTERNS.md orphan shape (the
+    `template` key entirely absent under link expansion, not `[]`/`null`)
+    becomes a permanent regression test."""
+    suffix = unique_suffix()
+    criar_result: CliInvocation = run_cli(
+        [
+            "rotina",
+            "template",
+            "criar",
+            "--nome",
+            f"Template Force {suffix}",
+            "--tipo-geracao",
+            "du_fixo",
+            "--regra-competencia",
+            "M0",
+        ]
+    )
+    assert criar_result.result.exit_code == 0, criar_result.result.output
+    template_id = cast("dict[str, Any]", criar_result.json_out())["id"]
+
+    instance_id = _seed_linked_instancia(live_client, live_session, template_id, suffix, 1)
+    cleanup_records.append(("instanciasRotina", instance_id))
+
+    deletar_result: CliInvocation = run_cli(
+        ["rotina", "template", "deletar", "--id", template_id, "--force"]
+    )
+    assert deletar_result.result.exit_code == 0, deletar_result.result.output
+    body = cast("dict[str, Any]", deletar_result.json_out())
+    assert body["deleted"] is True
+    assert body["force"] is True
+    assert body["instances_linked_at_delete"] == 1
+
+    assert _query_template(live_client, template_id) is None
+
+    # Live-verified exact key-absence proof from 30-PATTERNS.md's experiment.
+    expanded = live_client.query(
+        {"instanciasRotina": {"template": {}, "$": {"where": {"id": instance_id}}}}
+    )
+    rows = expanded.get("instanciasRotina", [])
+    assert rows, "orphaned instance row must still exist"
+    assert "template" not in rows[0], (
+        f"orphaned instance's expanded 'template' key must be entirely absent, got: {rows[0]}"
+    )
+
+
+def test_deletar_force_with_zero_linked_instances_is_noop_and_still_succeeds(
+    run_cli: RunCli,
+    live_client: Instant,
+    cleanup_records: list[tuple[str, str]],
+) -> None:
+    """D-01/LIFE-01 must-have: `--force` with zero linked instances is a
+    documented no-op, not an error to pass the flag."""
+    suffix = unique_suffix()
+    criar_result: CliInvocation = run_cli(
+        [
+            "rotina",
+            "template",
+            "criar",
+            "--nome",
+            f"Template Force Noop {suffix}",
+            "--tipo-geracao",
+            "du_fixo",
+            "--regra-competencia",
+            "M0",
+        ]
+    )
+    assert criar_result.result.exit_code == 0, criar_result.result.output
+    template_id = cast("dict[str, Any]", criar_result.json_out())["id"]
+
+    deletar_result: CliInvocation = run_cli(
+        ["rotina", "template", "deletar", "--id", template_id, "--force"]
+    )
+    assert deletar_result.result.exit_code == 0, deletar_result.result.output
+    body = cast("dict[str, Any]", deletar_result.json_out())
+    assert body["instances_linked_at_delete"] == 0
+    assert body["force"] is True
+    assert _query_template(live_client, template_id) is None
+
+
+def test_deletar_help_documents_force_and_orphan_consequence(run_cli: RunCli) -> None:
+    result: CliInvocation = run_cli(["rotina", "template", "deletar", "--help"])
+    assert result.result.exit_code == 0, result.result.output
+    assert "--force" in result.result.output
+    assert "orf" in result.result.output.lower()
 
 
 @pytest.mark.parametrize("regra", ["M-1", "M-2", "M+1"])
