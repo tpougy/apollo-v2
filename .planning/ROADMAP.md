@@ -126,7 +126,17 @@ representado no Apollo sem aproximação artificial.
 
   3. `shared/routine-job.testcases.json` ganha casos novos para o tipo semanal,
      idênticos nos dois runtimes.
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+
+- [ ] 28-01-PLAN.md — `[BLOCKING]` adiciona `templatesRotina.diaSemana` (schema) e faz o push
+  ao vivo contra a InstantDB real, antes de qualquer código de CLI/compute tocar o campo
+- [ ] 28-02-PLAN.md — `--dia-semana` na CLI, `_compute_semanal_instances`/`computeSemanalInstances`
+  em ambos os runtimes, prova ao vivo do caso real "Atualiz Calc RF" (7 sextas, ago/set 2026) e
+  fixture cross-runtime compartilhada (SEM-01)
+- [ ] 28-03-PLAN.md — paridade SPA: `tipoGeracao=semanal` e `diaSemana` no formulário de
+  templatesRotina, reparo dos dois specs e2e que travavam o conjunto antigo de 3 opções
 
 ### Phase 29: Controle de geração
 
