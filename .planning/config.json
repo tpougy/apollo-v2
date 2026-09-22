@@ -1,7 +1,7 @@
 {
   "model_profile": "inherit",
   "commit_docs": true,
-  "parallelization": true,
+  "parallelization": false,
   "search_gitignored": false,
   "brave_search": false,
   "firecrawl": false,
@@ -48,7 +48,7 @@
     "security_enforcement": true,
     "security_asvs_level": 1,
     "security_block_on": "high",
-    "use_worktrees": true,
+    "use_worktrees": false,
     "_auto_chain_active": true,
     "plan_chunked": false
   },
