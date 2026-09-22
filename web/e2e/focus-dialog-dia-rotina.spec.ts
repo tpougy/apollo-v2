@@ -1,7 +1,11 @@
 import { execFileSync } from "node:child_process";
 import { expect, test } from "@playwright/test";
 import { semanaUtil } from "../src/lib/dashboard/derive.ts";
-import { deleteInstance, seedInstance } from "./fixtures/instancia-admin-fixture.ts";
+import {
+  deleteInstance,
+  seedInstance,
+  sweepInstancesByDedupeKeyPrefix,
+} from "./fixtures/instancia-admin-fixture.ts";
 
 // This spec runs in the `authed` project (restores the storageState persisted
 // by auth.setup.ts). Every generated record uses the `phase23-e2e-` prefix so
@@ -36,13 +40,15 @@ function uniqueCodigo(prefix: string): string {
 function tryDelete(group: string, eid: string | null | undefined): void {
   if (!eid) return;
   try {
-    apolloCli([...group.split(" "), "deletar", "--id", eid]);
+    const args = [...group.split(" "), "deletar", "--id", eid];
+    if (group === "rotina template") args.push("--force");
+    apolloCli(args);
   } catch {
     // Already gone -- fine.
   }
 }
 
-function sweepLeftovers(): void {
+async function sweepLeftovers(): Promise<void> {
   const tarefas = JSON.parse(apolloCli(["tarefa", "listar"])) as { id: string; titulo: string }[];
   for (const record of tarefas) {
     if (record.titulo.startsWith(PREFIX)) tryDelete("tarefa", record.id);
@@ -62,6 +68,7 @@ function sweepLeftovers(): void {
   for (const record of fundos) {
     if (record.nome.startsWith(PREFIX)) tryDelete("fundo", record.id);
   }
+  await sweepInstancesByDedupeKeyPrefix(PREFIX, OWNER_EMAIL);
 }
 
 function hojeIso(): string {
@@ -97,12 +104,12 @@ function otherWeekDayThisMonth(): string {
   throw new Error("No day outside the current week exists in this month (should never happen)");
 }
 
-test.beforeAll(() => {
-  sweepLeftovers();
+test.beforeAll(async () => {
+  await sweepLeftovers();
 });
 
-test.afterAll(() => {
-  sweepLeftovers();
+test.afterAll(async () => {
+  await sweepLeftovers();
 });
 
 test.describe("Phase 23 Plan 04: Dia/Rotina dialogs + full calendar-family wiring", () => {

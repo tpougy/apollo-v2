@@ -153,3 +153,34 @@ export async function deleteInstancesByTemplate(templateId: string): Promise<voi
     await deleteAdminRecord("instanciasRotina", record.id as string);
   }
 }
+
+/**
+ * TEST-CLEANUP-ONLY escape hatch (Phase 30, LIFE-03/D-05b): deletes every
+ * `instanciasRotina` record owned by `ownerEmail` whose `dedupeKey` starts
+ * with `prefix`, via the admin API. Added specifically because
+ * `instanciasRotina` has no `nome` field, so the existing name-prefix sweeps
+ * (`sweepLeftovers`/`sweepTemplateLeftovers`/`sweepFundoLeftovers` across the
+ * e2e specs) can never find a stray instance directly. `apollo rotina
+ * instancia limpar-orfas` (Phase 30, LIFE-02) is insufficient here because a
+ * spec's own sweep may run while the instance's `template` link is STILL
+ * VALID (sweep order varies per spec — orphan-only detection cannot be relied
+ * on mid-run). Resolves `ownerEmail` to `owner.id` exactly like `seedInstance`
+ * does, scoping the query to this one owner only. Returns the number of rows
+ * deleted (optional debug visibility — never asserted on directly).
+ */
+export async function sweepInstancesByDedupeKeyPrefix(
+  prefix: string,
+  ownerEmail: string,
+): Promise<number> {
+  const owner = await adminDb.auth.getUser({ email: ownerEmail });
+  const result = (await adminDb.query({
+    instanciasRotina: { $: { where: { donoId: owner.id } } },
+  } as never)) as { instanciasRotina: Record<string, unknown>[] };
+  const matches = result.instanciasRotina.filter((record) =>
+    String(record.dedupeKey).startsWith(prefix),
+  );
+  for (const record of matches) {
+    await deleteAdminRecord("instanciasRotina", record.id as string);
+  }
+  return matches.length;
+}
