@@ -75,11 +75,16 @@ _ETYPE_FUNDO = "fundos"
 _TIPO_GERACAO_CHOICES = ("du_fixo", "corrido_fixo", "encadeado", "semanal")
 _DIA_SEMANA_CHOICES = ("segunda", "terca", "quarta", "quinta", "sexta", "sabado", "domingo")
 _COMPETENCIA_RE: Final[re.Pattern[str]] = re.compile(r"^\d{4}-\d{2}$")
-# D-01: exit code 2 for the "template has linked instancias, --force not
-# passed" guard — deliberately distinct from crud_helpers.EXIT_API_ERROR = 3,
-# since this is a business-rule/state guard discovered only after a query,
-# not a Click argument-parsing failure.
-_EXIT_INSTANCES_LINKED: Final[int] = 2
+# D-01/WR-01: exit code 5 for the "template has linked instancias, --force
+# not passed" guard — deliberately distinct from crud_helpers.EXIT_API_ERROR
+# = 3 (and the sibling EXIT_NO_SESSION = 1 / EXIT_NETWORK_ERROR = 4 constants
+# there), since this is a business-rule/state guard discovered only after a
+# query, not a Click argument-parsing failure. Must NOT be 2: Click's own
+# UsageError/BadParameter (bad flags, missing required options, this same
+# module's own `_resolve_range_override` XOR-validation) already exits 2 by
+# default, and reusing that value here would make the two failure classes
+# indistinguishable to a caller branching on exit code alone.
+_EXIT_INSTANCES_LINKED: Final[int] = 5
 
 
 def _resolve_ref(*, etype: str, eid: str | None, link_label: str) -> dict[str, str] | None:
@@ -464,7 +469,7 @@ def _count_linked_instances(template_id: str) -> int:
 def deletar(eid: str, force: bool) -> None:
     """Delete a routine template.
 
-    Blocks by default (exit 2, exact linked-instance count, zero writes)
+    Blocks by default (exit 5, exact linked-instance count, zero writes)
     when the template has linked `instanciasRotina`. `--force` bypasses the
     block WITHOUT ever cascading the delete onto those instances — they
     become orphans, cleanable via `apollo rotina instancia limpar-orfas`

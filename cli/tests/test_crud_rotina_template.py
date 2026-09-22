@@ -515,7 +515,7 @@ def test_deletar_with_linked_instances_blocks_by_default_with_exact_count(
     cleanup_records: list[tuple[str, str]],
 ) -> None:
     """D-01/LIFE-01 must-have: a template with linked instances blocks by
-    default, exit 2, exact count in the error, zero writes."""
+    default, exit 5, exact count in the error, zero writes."""
     suffix = unique_suffix()
     criar_result: CliInvocation = run_cli(
         [
@@ -540,7 +540,7 @@ def test_deletar_with_linked_instances_blocks_by_default_with_exact_count(
     cleanup_records.append(("instanciasRotina", instance_id_2))
 
     deletar_result: CliInvocation = run_cli(["rotina", "template", "deletar", "--id", template_id])
-    assert deletar_result.result.exit_code == 2, deletar_result.result.output
+    assert deletar_result.result.exit_code == 5, deletar_result.result.output
 
     error_body = json.loads(deletar_result.result.output or deletar_result.result.stderr)
     assert error_body["error"] == "instances_linked"
