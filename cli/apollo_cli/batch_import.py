@@ -604,6 +604,16 @@ def run_batch_import(
         raw = path.read_text(encoding="utf-8")
     except UnicodeDecodeError:
         _emit_validation_errors([_error("_arquivo", None, None, "arquivo_nao_e_utf8")])
+    except OSError:
+        # WR-02: Click's `click.Path(exists=True, dir_okay=False)` only
+        # validates existence at option-parsing time; any other `OSError`
+        # (a permission error, or a TOCTOU race — the file removed/swapped
+        # between that check and this read) must still surface through this
+        # module's clean-JSON/exit-code contract, never as a raw traceback.
+        # Not a subclass of `UnicodeDecodeError`'s `ValueError` (confirmed:
+        # `UnicodeDecodeError.__mro__` is `(..., ValueError, Exception,
+        # ...)`), so this clause never shadows the one above.
+        _emit_validation_errors([_error("_arquivo", None, None, "arquivo_nao_pode_ser_lido")])
 
     try:
         data = json.loads(raw)
