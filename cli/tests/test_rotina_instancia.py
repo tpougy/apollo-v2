@@ -1,10 +1,13 @@
 """Live `instanciasRotina` list/status round trip + structural no-create proof (CLI-07).
 
-`instanciasRotina` has no `criar` and no `deletar` command in this CLI by
-design (PROJECT.md C-06): creation is exclusively the Phase 5 dedupeKey-based
-upsert job. Since the CLI cannot create instances, the live tests here seed
-one directly through `live_client.tx` (per the plan's `<interfaces>` note),
-then exercise `listar`/`status` through the CLI.
+`instanciasRotina` has no `criar` and no general `deletar` command in this
+CLI by design (PROJECT.md C-06): creation is exclusively the Phase 5
+dedupeKey-based upsert job. Since the CLI cannot create instances, the live
+tests here seed one directly through `live_client.tx` (per the plan's
+`<interfaces>` note), then exercise `listar`/`status` through the CLI.
+
+`limpar-orfas` (Phase 30, LIFE-02) is the sole, narrow exception — it may
+delete an instance, but only when its `template` link is confirmed absent.
 """
 
 from __future__ import annotations
@@ -27,15 +30,19 @@ pytestmark = pytest.mark.live
 # --- Structural (no session needed) -----------------------------------------
 
 
-def test_instancia_command_set_is_exactly_listar_and_status() -> None:
+def test_instancia_command_set_is_exactly_listar_status_and_limpar_orfas() -> None:
     commands = set(rotina.instancia.commands)
-    assert commands == {"listar", "status"}, (
-        "apollo rotina instancia must expose only {listar, status} — PROJECT.md C-06: "
-        "instanciasRotina creation/deletion is exclusively Phase 5's dedupeKey-based "
-        f"upsert job, never a hand-run CLI command. Found: {commands}"
+    assert commands == {"listar", "status", "limpar-orfas"}, (
+        "apollo rotina instancia must expose only {listar, status, limpar-orfas} — "
+        "PROJECT.md C-06: instanciasRotina creation is exclusively Phase 5's "
+        "dedupeKey-based upsert job, and deletion is exclusively Phase 30's "
+        f"orphan-only limpar-orfas, never a hand-run criar/deletar. Found: {commands}"
     )
     assert "criar" not in commands, "C-06: no hand-created instanciasRotina — see module docstring"
-    assert "deletar" not in commands, "C-06: instances are never hand-deleted from the CLI"
+    assert "deletar" not in commands, (
+        "C-06: instances are never hand-deleted from the CLI — only limpar-orfas may "
+        "delete, and only orphans"
+    )
 
 
 def test_gerar_instancias_exists_at_group_level() -> None:
@@ -166,3 +173,141 @@ def test_status_unknown_id_is_not_found_and_creates_no_phantom(
         {"instanciasRotina": {"$": {"where": {"id": phantom_id}}}}
     ).get("instanciasRotina", [])
     assert phantom_record == []
+
+
+# --- limpar-orfas (LIFE-02, D-02) --------------------------------------------
+
+
+def test_limpar_orfas_lists_orphan_without_confirmar_writes_nothing(
+    run_cli: RunCli,
+    live_client: Instant,
+    live_session: Session,
+    cleanup_records: list[tuple[str, str]],
+) -> None:
+    suffix = unique_suffix()
+    template_id = _create_template(run_cli, cleanup_records, suffix)
+    seeded = _seed_instancia(live_client, live_session, template_id, suffix)
+    instance_id = seeded["id"]
+
+    force_delete_result: CliInvocation = run_cli(
+        ["rotina", "template", "deletar", "--id", template_id, "--force"]
+    )
+    assert force_delete_result.result.exit_code == 0, force_delete_result.result.output
+
+    listar_orfas_result: CliInvocation = run_cli(["rotina", "instancia", "limpar-orfas"])
+    assert listar_orfas_result.result.exit_code == 0, listar_orfas_result.result.output
+    body = cast("dict[str, Any]", listar_orfas_result.json_out())
+    assert body["confirmado"] is False
+    assert body["count"] >= 1
+    assert any(o["id"] == instance_id for o in body["orphans"])
+
+    # Zero writes: the seeded instance still exists.
+    assert _query_instancia(live_client, instance_id) is not None
+    cleanup_records.append(("instanciasRotina", instance_id))
+
+
+def test_limpar_orfas_confirmar_deletes_only_orphans_leaves_valid_linked_instance_untouched(
+    run_cli: RunCli,
+    live_client: Instant,
+    live_session: Session,
+    cleanup_records: list[tuple[str, str]],
+) -> None:
+    suffix = unique_suffix()
+    template_a_id = _create_template(run_cli, cleanup_records, f"{suffix}-a")
+    template_b_id = _create_template(run_cli, cleanup_records, f"{suffix}-b")
+    cleanup_records.append(("templatesRotina", template_b_id))
+
+    orphan_seed = _seed_instancia(live_client, live_session, template_a_id, f"{suffix}-orphan")
+    valid_seed = _seed_instancia(live_client, live_session, template_b_id, f"{suffix}-valid")
+    instance_orphan_id = orphan_seed["id"]
+    instance_valid_id = valid_seed["id"]
+    cleanup_records.append(("instanciasRotina", instance_valid_id))
+
+    force_delete_result: CliInvocation = run_cli(
+        ["rotina", "template", "deletar", "--id", template_a_id, "--force"]
+    )
+    assert force_delete_result.result.exit_code == 0, force_delete_result.result.output
+
+    confirmar_result: CliInvocation = run_cli(
+        ["rotina", "instancia", "limpar-orfas", "--confirmar"]
+    )
+    assert confirmar_result.result.exit_code == 0, confirmar_result.result.output
+    body = cast("dict[str, Any]", confirmar_result.json_out())
+    assert body["confirmado"] is True
+    assert any(o["id"] == instance_orphan_id for o in body["orphans"])
+
+    assert _query_instancia(live_client, instance_orphan_id) is None
+
+    valid_expanded = live_client.query(
+        {"instanciasRotina": {"template": {}, "$": {"where": {"id": instance_valid_id}}}}
+    ).get("instanciasRotina", [])
+    assert valid_expanded, "validly-linked instance must still exist"
+    assert valid_expanded[0].get("template"), (
+        "validly-linked instance's template link must still resolve (truthy/non-empty)"
+    )
+
+
+def test_limpar_orfas_help_documents_confirmar_and_orphan_definition(run_cli: RunCli) -> None:
+    result: CliInvocation = run_cli(["rotina", "instancia", "limpar-orfas", "--help"])
+    assert result.result.exit_code == 0, result.result.output
+    assert "--confirmar" in result.result.output
+    assert "orf" in result.result.output.lower()
+
+
+def test_limpar_orfas_confirmar_removes_real_production_residue_success_criterion_3(
+    run_cli: RunCli,
+) -> None:
+    """ROADMAP Success Criterion 3 / D-03: running `limpar-orfas --confirmar`
+    against the real production account removes every currently-orphaned
+    row, including the named `phase23-e2e-dedupe-weekday`/`-weekend`
+    residue, with an exact-delta proof that no other row was affected.
+
+    This is the ONE test in this entire phase permitted to touch
+    pre-existing (non-test-prefixed) production rows — safe by construction,
+    since `limpar-orfas` can only ever act on a row whose `template` link is
+    already confirmed absent (already-broken, unusable production data,
+    never a row with a valid link).
+    """
+    total_before = len(
+        cast("list[dict[str, Any]]", run_cli(["rotina", "instancia", "listar"]).json_out())
+    )
+
+    list_result: CliInvocation = run_cli(["rotina", "instancia", "limpar-orfas"])
+    assert list_result.result.exit_code == 0, list_result.result.output
+    before_body = cast("dict[str, Any]", list_result.json_out())
+    orphan_count = before_body["count"]
+
+    # Informational only — a prior run of this same idempotent test may have
+    # already cleaned the named residue, so this is a soft note, not an assertion.
+    weekday_weekend_dedupe_keys = [
+        key
+        for key in (o.get("dedupeKey") for o in before_body["orphans"])
+        if key and str(key).startswith("phase23-e2e-dedupe-week")
+    ]
+    if weekday_weekend_dedupe_keys:
+        print(f"Found named residue dedupeKeys pre-cleanup: {weekday_weekend_dedupe_keys}")
+
+    confirm_result: CliInvocation = run_cli(["rotina", "instancia", "limpar-orfas", "--confirmar"])
+    assert confirm_result.result.exit_code == 0, confirm_result.result.output
+    confirm_body = cast("dict[str, Any]", confirm_result.json_out())
+    assert confirm_body["count"] == orphan_count
+    assert confirm_body["confirmado"] is True
+
+    after_list_result: CliInvocation = run_cli(["rotina", "instancia", "limpar-orfas"])
+    assert after_list_result.result.exit_code == 0, after_list_result.result.output
+    after_body = cast("dict[str, Any]", after_list_result.json_out())
+    assert after_body["count"] == 0
+    after_dedupe_keys = [o.get("dedupeKey") for o in after_body["orphans"]]
+    assert not any(
+        key and str(key).startswith("phase23-e2e-dedupe-weekday") for key in after_dedupe_keys
+    )
+    assert not any(
+        key and str(key).startswith("phase23-e2e-dedupe-weekend") for key in after_dedupe_keys
+    )
+
+    total_after = len(
+        cast("list[dict[str, Any]]", run_cli(["rotina", "instancia", "listar"]).json_out())
+    )
+    assert total_before - total_after == orphan_count, (
+        "the exact-delta invariant: only the listed orphans were removed, no other row"
+    )

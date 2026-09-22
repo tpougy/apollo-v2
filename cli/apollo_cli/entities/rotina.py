@@ -194,7 +194,9 @@ instancia = click.Group(
     "instancia",
     help=(
         "List and update the status of generated `instanciasRotina` "
-        "records. No `criar`, no `deletar` — see `rotina --help`."
+        "records. `limpar-orfas` is a narrow exception that deletes only "
+        "instances whose `template` link no longer resolves — otherwise, "
+        "no `criar`, no general `deletar` — see `rotina --help`."
     ),
 )
 
@@ -549,6 +551,46 @@ def status(eid: str, status: str) -> None:
     """
     update_entity(etype=_ETYPE_INSTANCIA, eid=eid, fields={"status": status})
     emit({"id": eid, "updated": True})
+
+
+@instancia.command(name="limpar-orfas")
+@click.option(
+    "--confirmar/--no-confirmar",
+    default=False,
+    help=(
+        "Without --confirmar (default), only LISTS the orphaned instances "
+        "found (zero writes). With --confirmar, actually deletes exactly "
+        "those listed orphans."
+    ),
+)
+def limpar_orfas(confirmar: bool) -> None:
+    """List (default) or delete (`--confirmar`) `instanciasRotina` orphans.
+
+    Strictly orphan-only scope (D-02, PROJECT.md C-06 still governs the
+    normal flow) — this command never creates, edits, or deletes an
+    instance with a valid `template` link. An instance is orphan when its
+    `template` link, expanded, comes back falsy/absent (live-verified this
+    phase: the key is entirely ABSENT, never `[]`/`null`, never a dangling
+    reference or an error) — this happens when the linked template was
+    deleted via `rotina template deletar --force`. Default lists only;
+    `--confirmar` actually removes the listed rows.
+    """
+    client, session = client_for_session()
+    result = client.query(
+        {"instanciasRotina": {"template": {}, "$": {"where": {"donoId": session.user_id}}}}
+    )
+    rows = result.get("instanciasRotina", [])
+    orphans = [row for row in rows if not row.get("template")]
+    if confirmar:
+        for row in orphans:
+            delete_entity(etype=_ETYPE_INSTANCIA, eid=row["id"])
+    emit(
+        {
+            "orphans": [{"id": row["id"], "dedupeKey": row.get("dedupeKey")} for row in orphans],
+            "count": len(orphans),
+            "confirmado": confirmar,
+        }
+    )
 
 
 @group.command(name="gerar-instancias")

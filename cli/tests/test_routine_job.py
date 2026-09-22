@@ -232,11 +232,11 @@ def test_gerar_instancias_exists_at_group_level() -> None:
     )
 
 
-def test_instancia_command_set_is_exactly_listar_and_status() -> None:
+def test_instancia_command_set_is_exactly_listar_status_and_limpar_orfas() -> None:
     commands = set(rotina.instancia.commands)
-    assert commands == {"listar", "status"}, (
-        "apollo rotina instancia must still expose only {listar, status} after "
-        "gerar-instancias lands at the group level — PROJECT.md C-06"
+    assert commands == {"listar", "status", "limpar-orfas"}, (
+        "apollo rotina instancia must still expose only {listar, status, limpar-orfas} "
+        "after gerar-instancias lands at the group level — PROJECT.md C-06"
     )
 
 

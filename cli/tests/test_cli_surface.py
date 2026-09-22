@@ -46,7 +46,7 @@ EXPECTED_SURFACE: dict[str, tuple[list[str], set[str], bool]] = {
         {"criar", "editar", "deletar", "listar"},
         False,
     ),
-    "instanciasRotina": (["rotina", "instancia"], {"listar", "status"}, True),
+    "instanciasRotina": (["rotina", "instancia"], {"listar", "status", "limpar-orfas"}, True),
     "tickets": (["ticket"], {"criar", "editar", "deletar", "listar"}, False),
     "subtarefas": (["subtarefa"], {"criar", "editar", "deletar", "listar"}, False),
     "logInferenciaClaude": (["log-inferencia"], {"registrar", "listar"}, True),
