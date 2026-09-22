@@ -2,20 +2,20 @@
 gsd_state_version: "1.0"
 milestone: v1.5
 milestone_name: Correções descobertas no onboarding real do calendário de rotinas (RBR)
-current_phase: 30
-current_phase_name: Ciclo de vida e higiene de dados
-current_plan: 2
-status: executing
-stopped_at: Completed 30-01-PLAN.md
-last_updated: "2026-09-22T20:57:56.585Z"
+current_phase: 31
+current_phase_name: Cadastro em lote
+current_plan: Not started
+status: planning
+stopped_at: Phase 30 complete, ready to plan Phase 31
+last_updated: "2026-09-22T21:31:51.452Z"
 last_activity: 2026-09-22
-last_activity_desc: Phase 29 complete, transitioned to Phase 30
-state_head: 8bc5e620a043c4ab705fc8ffdbb8158d4a34d502
+last_activity_desc: Phase 30 complete, transitioned to Phase 31
+state_head: 70454030c72485750e22ce3de4b9210e735f7722
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 9
-  completed_plans: 8
+  completed_plans: 9
   percent: 50
 ---
 
@@ -30,11 +30,11 @@ See: .planning/PROJECT.md (updated 2026-08-14)
 
 ## Current Position
 
-Phase: 30 — Ciclo de vida e higiene de dados
-Current Plan: 2
+Phase: 31 — Cadastro em lote
+Current Plan: Not started
 Total Plans in Phase: 2
-Status: Ready to execute
-Last activity: 2026-09-22 — Phase 29 complete, transitioned to Phase 30
+Status: Ready to plan
+Last activity: 2026-09-22 — Phase 30 complete, transitioned to Phase 31
 
 Progress: [█████░░░░░] 50%
 
@@ -50,8 +50,8 @@ Progress: [█████░░░░░] 50%
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 28 | 3 | - | - |
 | 29 | 1 | - | - |
+| 30 | 2 | - | - |
 
 **Recent Trend:**
 
@@ -91,10 +91,6 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - v1.5 decisões de implementação registradas em REQUIREMENTS.md Context: (1) JOB-01 normaliza a comparação de `status` em vez de fechar o vocabulário — `status` continua livre por decisão de produto já aplicada a outras entidades; (2) VAL-02 marca `propagarAtrasoSoft` como reservado em vez de implementar propagação — implementar reabriria C-09 (travado); (3) JOB-02 estende `du_fixo` para aceitar offset negativo em vez de criar um `tipoGeracao` novo — `add_business_days` já suporta contagem negativa; (4) SEM-01 (periodicidade semanal) será implementado por decisão explícita do usuário, mesmo cobrindo só 1 evento em 87 no calendário de origem.
 - v1.5 causa raiz adicional encontrada além do relatado pelo usuário (LIFE-03): o resíduo de teste E2E na base real (achado do usuário em P2-2) não é um incidente pontual — não existe hoje um `app_id` de teste separado do usado para dados reais em nenhum dos dois runtimes, então qualquer rodada futura de teste `live`/Playwright pode reintroduzir o mesmo resíduo até essa separação existir.
 - [Phase ?]: [Phase 27, Plan 02]: _is_concluida/isConcluida normalize the encadeado dataPrevistaEstimada status comparison (NFKD decompose + strip combining marks + casefold, recognizing both concluida/concluido grammatical forms) without closing status's free-text vocabulary at write time; nome threaded through every skipped entry in both runtimes with no InstantDB query change needed (already unrestricted); shared/routine-job.testcases.json mechanically retrofitted across all 28 scenarios. Phase 27 (Robustez do job) now fully complete: JOB-01/02/03.
-- [Phase 28]: diaSemana stored as i.string().optional() (Option B), not a reuse of offsetDias — matches plain-string convention of tipoGeracao/regraCompetencia/status
-- [Phase 28]: git.allow_default_branch_commits:true added to align executor safety check with the project's already-established direct-to-main workflow (branching_strategy: none)
-- [Phase 28]: shared/routine-job.testcases.json semanal fixture kept to exactly the plan's specified scope (1 dayMath case + 1 scenario)
-- [Phase 28]: [Phase 28, Plan 03]: SPA templatesRotina form extended for semanal/diaSemana parity with the CLI (05-01 Task 3 precedent); WEB-06's listColumns column-index assertions repaired alongside the plan-named sort() assertions (Rule 1 fix, index shift was a direct consequence of inserting diaSemana into listColumns).
 - [Phase 29]: [Phase 29, Plan 01]: range_override/rangeOverride fully REPLACES (never intersects) the default [today, end_of_next_month(today)] window via months_in_range/monthsInRange's generalization of the old today-derived candidate_months. Live-proven against production InstantDB for all 4 ROADMAP success criteria (single-competencia generation, mid-month recovery of a passed date, and row-id-identical idempotency across recorte and default-range runs).
 - [Phase 30]: D-01/D-02 (LIFE-01/LIFE-02) implemented exactly as locked: deletar blocks by default with exact linked-instance count (exit 2, zero writes), --force bypasses without cascading; limpar-orfas lists by default, --confirmar deletes exactly the falsy-or-absent-template-link orphans.
 - [Phase 30]: D-03 (Success Criterion 3): real production account had 22 orphaned instanciasRotina at execution time (not the originally documented 4) — all removed live via limpar-orfas --confirmar as part of this plan's own verification; production now holds 0 orphans.
@@ -134,7 +130,7 @@ Items acknowledged and carried forward from previous milestone close:
 ## Session Continuity
 
 Last session: 2026-09-22T20:57:56.435Z
-Stopped at: Completed 30-01-PLAN.md
+Stopped at: Phase 30 complete, ready to plan Phase 31
 Resume file: None
 
 ## Operator Next Steps

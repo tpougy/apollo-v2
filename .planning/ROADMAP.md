@@ -33,7 +33,7 @@ contexto completo e a evidência de código de cada achado.
 - [x] **Phase 27: Robustez do job** (completed 2026-08-14)
 - [x] **Phase 28: Periodicidade semanal** (completed 2026-09-22)
 - [x] **Phase 29: Controle de geração** (completed 2026-09-22)
-- [ ] **Phase 30: Ciclo de vida e higiene de dados**
+- [x] **Phase 30: Ciclo de vida e higiene de dados** (completed 2026-09-22)
 - [ ] **Phase 31: Cadastro em lote**
 
 ### Phase 26: Validação na escrita
@@ -203,7 +203,7 @@ Plans:
   `apollo rotina instancia limpar-orfas` (lista por padrão, `--confirmar` remove) limpa
   órfãs sem reabrir `criar`/`deletar` livre; inclui a limpeza ao vivo das órfãs/resíduo
   reais já existentes na conta de produção (LIFE-01, LIFE-02)
-- [ ] 30-02-PLAN.md — todo `web/e2e/*.spec.ts` que chama `rotina template deletar` passa a
+- [x] 30-02-PLAN.md — todo `web/e2e/*.spec.ts` que chama `rotina template deletar` passa a
   usar `--force`; os specs que semeiam `instanciasRotina` com `dedupeKey` prefixado por
   `PREFIX` passam a varrê-las diretamente (novo `sweepInstancesByDedupeKeyPrefix` no
   fixture admin de testes), fechando o mecanismo que produziu o resíduo real (LIFE-03)

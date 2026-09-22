@@ -144,11 +144,14 @@ foram decididas nesta sessão, antes do roadmap):
   criação/edição de `instanciasRotina` (a restrição "sem `criar`/`deletar`
   manual" de C-06 continua valendo para o fluxo normal).
 
-- [ ] **LIFE-03**: os testes marcados `live` (pytest) e a suíte Playwright de
-  `web/e2e` passam a rodar contra um `app_id` de teste dedicado, distinto do
-  usado para dados reais — elimina o vetor que produziu o resíduo
+- [x] **LIFE-03** (escopo revisado — ver nota de decisão no Context acima): os
+  testes marcados `live` (pytest) e a suíte Playwright de `web/e2e` continuam
+  rodando contra o MESMO app de produção, mas todo sweep que chama `rotina
+  template deletar` agora passa `--force`, e os 5 arquivos que semeiam
+  `instanciasRotina` com `dedupeKey` prefixado ganharam uma varredura direta
+  (`sweepInstancesByDedupeKeyPrefix`) — elimina o vetor que produziu o resíduo
   `phase23-e2e-dedupe-weekday-...` encontrado na base real durante o
-  onboarding.
+  onboarding (confirmado removido; produção com 0 órfãs).
 
 ### Cadastro em lote (BATCH)
 

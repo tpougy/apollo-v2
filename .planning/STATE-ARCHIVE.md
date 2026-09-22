@@ -184,3 +184,16 @@ Pruned entries from STATE.md. Recoverable but no longer loaded into agent contex
 ### Performance Metrics
 
 | 27 | 2 | - | - |
+
+## Pruned 2026-09-22 (phases 1-28, kept recent 3)
+
+### Decisions
+
+- [Phase 28]: diaSemana stored as i.string().optional() (Option B), not a reuse of offsetDias — matches plain-string convention of tipoGeracao/regraCompetencia/status
+- [Phase 28]: git.allow_default_branch_commits:true added to align executor safety check with the project's already-established direct-to-main workflow (branching_strategy: none)
+- [Phase 28]: shared/routine-job.testcases.json semanal fixture kept to exactly the plan's specified scope (1 dayMath case + 1 scenario)
+- [Phase 28]: [Phase 28, Plan 03]: SPA templatesRotina form extended for semanal/diaSemana parity with the CLI (05-01 Task 3 precedent); WEB-06's listColumns column-index assertions repaired alongside the plan-named sort() assertions (Rule 1 fix, index shift was a direct consequence of inserting diaSemana into listColumns).
+
+### Performance Metrics
+
+| 28 | 3 | - | - |
