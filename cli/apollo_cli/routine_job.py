@@ -115,6 +115,27 @@ helper is structurally month-candidate-based (one date per candidate month)
 and cannot express "every matching weekday across the whole range" without a
 rewrite. `offsetDias` is never read for `semanal` templates (document-only,
 mirrors `encadeado` never consulting its own unused `regraCompetencia`).
+
+`range_override` (**RANGE-01**): `compute_expected_instances`/
+`run_routine_instance_job` accept an optional `range_override: tuple[str,
+str] | None` that, when provided, fully REPLACES (never intersects) the
+default `[today, end_of_next_month(today)]` window — a narrower-or-
+differently-positioned recorte can therefore reach a date before `today` or
+exclude the following month entirely, neither of which a mere filter over
+the default range could ever do (D-01). `months_in_range(range_start,
+range_end)` generalizes `_compute_fixed_instances`'s old `today`-derived,
+always-exactly-two-months `candidate_months` into every `(year, month)` pair
+whose calendar month intersects an arbitrary `[range_start, range_end]`
+window, strictly backward compatible by construction:
+`months_in_range(today, end_of_next_month(today))` always equals exactly
+`[(today_year, today_month), (next_month_year, next_month)]`, since `today`'s
+own month always intersects trivially and `end_of_next_month` is by
+definition that following month's last day (D-02). `weekly_occurrences`/
+`_compute_semanal_instances` and the `encadeado` sweep's range filter needed
+zero change since they already consume `range_start`/`range_end` directly,
+never `today` (D-03). `apollo rotina gerar-instancias`'s
+`--competencia`/`--de`+`--ate` are the only callers that ever supply a
+non-`None` override.
 """
 
 from __future__ import annotations
@@ -240,9 +261,46 @@ def _validate_offset_dias(offset_dias: object, min_value: int) -> _OffsetValidat
     return _OffsetValidation(True, None)
 
 
+def months_in_range(range_start: str, range_end: str) -> list[tuple[int, int]]:
+    """Every `(year, month)` pair whose calendar month has non-empty
+    intersection with `[range_start, range_end]`, in chronological order.
+    Returns `[]` immediately when `range_start > range_end` (inverted range,
+    mirrors `weekly_occurrences`'s own inverted-range behavior).
+
+    This is the generalization of `_compute_fixed_instances`'s old
+    `today`-derived, always-exactly-two-months `candidate_months` block —
+    strictly backward compatible by construction (D-02):
+    `months_in_range(today, end_of_next_month(today))` always equals exactly
+    `[(today_year, today_month), (next_month_year, next_month)]`, since
+    `today`'s own month always intersects `[today, end_of_next_month(today)]`
+    trivially, and the following month also intersects (`end_of_next_month`
+    is by definition that following month's last day). Public (no leading
+    underscore): this is the pure date-math primitive, directly
+    fixture-tested like `end_of_next_month`/`weekly_occurrences`.
+    """
+    if range_start > range_end:
+        return []
+
+    start_year_str, start_month_str = range_start.split("-")[:2]
+    year = int(start_year_str)
+    month = int(start_month_str)
+
+    end_year_str, end_month_str = range_end.split("-")[:2]
+    end_year = int(end_year_str)
+    end_month = int(end_month_str)
+
+    months: list[tuple[int, int]] = []
+    while (year, month) <= (end_year, end_month):
+        months.append((year, month))
+        month = 1 if month == 12 else month + 1
+        if month == 1:
+            year += 1
+
+    return months
+
+
 def _compute_fixed_instances(
     template: dict[str, Any],
-    today: str,
     range_start: str,
     range_end: str,
     min_offset_dias: int,
@@ -252,20 +310,16 @@ def _compute_fixed_instances(
     a non-empty `skip_reason` means `instances` must be ignored. Raises on
     any underlying business-day computation error (e.g. `CalendarRangeError`)
     so the caller's per-template try/except can convert it to a skip — this
-    function itself never catches.
+    function itself never catches. `candidate_months` is every month
+    intersecting the (possibly overridden) window, not a hardcoded
+    two-month list keyed off `today`.
     """
     validation = _validate_offset_dias(template.get("offsetDias"), min_offset_dias)
     if not validation.ok:
         return [], validation.reason
     offset_dias = template["offsetDias"]
 
-    today_year_str, today_month_str = today.split("-")[:2]
-    today_year = int(today_year_str)
-    today_month = int(today_month_str)
-    next_month = 1 if today_month == 12 else today_month + 1
-    next_month_year = today_year + 1 if today_month == 12 else today_year
-
-    candidate_months = [(today_year, today_month), (next_month_year, next_month)]
+    candidate_months = months_in_range(range_start, range_end)
 
     instances: list[dict[str, Any]] = []
     for year, month in candidate_months:
@@ -436,9 +490,13 @@ def compute_expected_instances(
     templates: list[dict[str, Any]],
     today: str,
     existing: list[dict[str, Any]],
+    range_override: tuple[str, str] | None = None,
 ) -> ComputeResult:
-    range_start = today
-    range_end = end_of_next_month(today)
+    if range_override is not None:
+        range_start, range_end = range_override
+    else:
+        range_start = today
+        range_end = end_of_next_month(today)
 
     expected: list[dict[str, Any]] = []
     skipped: list[dict[str, Any]] = []
@@ -498,7 +556,6 @@ def compute_expected_instances(
             if tipo_geracao == "du_fixo":
                 instances, skip_reason = _compute_fixed_instances(
                     template,
-                    today,
                     range_start,
                     range_end,
                     _DU_FIXO_MIN_OFFSET_DIAS,
@@ -506,7 +563,7 @@ def compute_expected_instances(
                 )
             elif tipo_geracao == "corrido_fixo":
                 instances, skip_reason = _compute_fixed_instances(
-                    template, today, range_start, range_end, 1, nth_calendar_day_of_month
+                    template, range_start, range_end, 1, nth_calendar_day_of_month
                 )
             elif tipo_geracao == "semanal":
                 instances, skip_reason = _compute_semanal_instances(
@@ -803,11 +860,18 @@ def run_routine_instance_job(
     today: str,
     *,
     dry_run: bool = False,
+    range_override: tuple[str, str] | None = None,
 ) -> dict[str, Any]:
     """Orchestrates the full query -> compute -> diff -> transact cycle
     against the live InstantDB app for one `dono_id`. Never carries an admin
     token (the caller must pass a `session_client()`-built `client`) and
     never issues a delete operation.
+
+    When `range_override` is provided, it fully replaces the default
+    `[today, end_of_next_month(today)]` window used in Step 3's compute
+    call — `today` itself remains used only for that default (a recorte
+    makes `today`/`--data-base` irrelevant to ranging, though it is still
+    passed through unchanged for API-shape stability).
 
     Step 1: query active templates (with the `antecessor` self-link selected
     for encadeado resolution). Zero rows short-circuits before ever issuing
@@ -854,7 +918,7 @@ def run_routine_instance_job(
     with instant_errors():
         existing = _query_existing_instances(client, instance_lookup_ids)
 
-    compute_result = compute_expected_instances(templates, today, existing)
+    compute_result = compute_expected_instances(templates, today, existing, range_override)
     expected = compute_result.expected
     skipped = compute_result.skipped
 
