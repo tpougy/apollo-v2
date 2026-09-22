@@ -163,6 +163,26 @@ from apollo_cli.crud_helpers import instant_errors
 TIPO_PRAZO_GERADO: Final[str] = "soft"  # D-05-C
 STATUS_INICIAL: Final[str] = "pendente"
 REGRAS_COMPETENCIA_SUPORTADAS: Final[tuple[str, ...]] = ("M0", "M-1", "M-2", "M+1")
+TIPO_GERACAO_CHOICES: Final[tuple[str, ...]] = ("du_fixo", "corrido_fixo", "encadeado", "semanal")
+DIA_SEMANA_CHOICES: Final[tuple[str, ...]] = (
+    "segunda",
+    "terca",
+    "quarta",
+    "quinta",
+    "sexta",
+    "sabado",
+    "domingo",
+)
+"""`TIPO_GERACAO_CHOICES`/`DIA_SEMANA_CHOICES` (Phase 31/BATCH-01): promoted
+here, public (no leading underscore), from what used to be
+`entities/rotina.py`'s private `_TIPO_GERACAO_CHOICES`/`_DIA_SEMANA_CHOICES`
+module constants — same value tuples, copied verbatim, zero behavior change.
+`entities/rotina.py` now imports all three choice-set constants
+(`REGRAS_COMPETENCIA_SUPORTADAS` plus these two) from this single module,
+matching this codebase's own convention of never importing a `_`-prefixed
+name across a module boundary. `batch_import.py`'s form-validation pass
+imports the same three, reusing the exact same value sets rather than
+re-deriving them (D-02)."""
 
 _DELTA_BY_RULE: Final[dict[str, int]] = {"M0": 0, "M-1": -1, "M-2": -2, "M+1": 1}
 

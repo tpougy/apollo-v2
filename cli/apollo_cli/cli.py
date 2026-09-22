@@ -9,11 +9,14 @@ authenticated as the same real user under the same InstantDB permission rules.
 from __future__ import annotations
 
 from importlib.metadata import version
+from pathlib import Path
 
 import click
 
 from apollo_cli import auth
+from apollo_cli.batch_import import run_batch_import
 from apollo_cli.config import load_instant_config
+from apollo_cli.crud_helpers import client_for_session, emit
 from apollo_cli.entities import register_entity_groups
 
 
@@ -65,6 +68,59 @@ def doctor() -> None:
         click.echo("admin token: present (dev/ops only — never used at runtime)")
     else:
         click.echo("admin token: absent")
+
+
+@apollo.command(name="import")
+@click.option(
+    "--from-json",
+    "from_json_path",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help=(
+        "Caminho para o arquivo JSON do lote: um objeto top-level com chaves "
+        '`fundos`/`templatesRotina` (ex.: `{"fundos": [...], '
+        '"templatesRotina": [...]}`), nenhuma outra chave e aceita. Cada '
+        "registro tem um `_local_id` (unico no arquivo inteiro) e campos "
+        "espelhando exatamente os --flags de `fundo criar`/`rotina template "
+        "criar`. `templatesRotina[].fundoId`/`antecessorId` aceitam um id "
+        'real ja existente OU `"$<local_id>"` para referenciar outro '
+        "registro do mesmo arquivo (inclusive um antecessor `encadeado` "
+        "listado antes ou depois no arquivo)."
+    ),
+)
+@click.option(
+    "--dry-run/--no-dry-run",
+    default=False,
+    help=(
+        "Com --dry-run, executa toda a validacao + verificacao de "
+        "existencia + resolucao de ids mas NUNCA escreve nada — apenas "
+        "reporta o que seria criado/o que ja existe. Default: --no-dry-run "
+        "(escreve)."
+    ),
+)
+def import_batch(from_json_path: Path, dry_run: bool) -> None:
+    """Cadastra `fundos` + `templatesRotina` em lote a partir de um unico
+    arquivo JSON (`apollo import --from-json <arquivo> [--dry-run]`).
+
+    Valida o arquivo INTEIRO antes de escrever qualquer coisa: qualquer
+    registro invalido em qualquer lista (campo ausente, choice invalido,
+    referencia `$<local_id>` nao resolvida, ciclo de antecessor, ou uma
+    chave `donoId` proibida) faz o comando reportar a lista COMPLETA de
+    problemas encontrados, sair com codigo 2, e nao escrever nada — mesmo
+    que so um registro dentre muitos esteja quebrado. Registros cuja chave
+    natural ja existir na base (fundos por `codigo`, templatesRotina por
+    `fundoId` resolvido + `nome`) sao reportados como `existing`, nunca
+    recriados. Este comando nunca cria uma `instanciasRotina` — apenas
+    `apollo rotina gerar-instancias` cria instancias.
+
+    Emite exatamente um documento JSON: `{"fundos": {"created": [...],
+    "existing": [...]}, "templatesRotina": {"created": [...], "existing":
+    [...]}}` (listas de `_local_id`, nao ids reais) em caso de sucesso, ou
+    `{"errors": [...]}` no stderr (exit 2) em caso de falha de validacao.
+    """
+    client, session = client_for_session()
+    report = run_batch_import(client, session.user_id, from_json_path, dry_run=dry_run)
+    emit(report)
 
 
 def main() -> None:

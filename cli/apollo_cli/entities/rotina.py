@@ -64,7 +64,9 @@ from apollo_cli.crud_helpers import (
     validate_iso_date,
 )
 from apollo_cli.routine_job import (
+    DIA_SEMANA_CHOICES,
     REGRAS_COMPETENCIA_SUPORTADAS,
+    TIPO_GERACAO_CHOICES,
     run_routine_instance_job,
     today_utc_iso_date,
 )
@@ -72,8 +74,6 @@ from apollo_cli.routine_job import (
 _ETYPE_TEMPLATE = "templatesRotina"
 _ETYPE_INSTANCIA = "instanciasRotina"
 _ETYPE_FUNDO = "fundos"
-_TIPO_GERACAO_CHOICES = ("du_fixo", "corrido_fixo", "encadeado", "semanal")
-_DIA_SEMANA_CHOICES = ("segunda", "terca", "quarta", "quinta", "sexta", "sabado", "domingo")
 _COMPETENCIA_RE: Final[re.Pattern[str]] = re.compile(r"^\d{4}-\d{2}$")
 # D-01/WR-01: exit code 5 for the "template has linked instancias, --force
 # not passed" guard — deliberately distinct from crud_helpers.EXIT_API_ERROR
@@ -213,7 +213,7 @@ group.add_command(instancia)
 @click.option("--nome", required=True, help="Display name of the routine template.")
 @click.option(
     "--tipo-geracao",
-    type=click.Choice(_TIPO_GERACAO_CHOICES),
+    type=click.Choice(TIPO_GERACAO_CHOICES),
     required=True,
     help=(
         "How instances are dated: 'du_fixo' = fixed business-day offset, "
@@ -280,7 +280,7 @@ group.add_command(instancia)
 )
 @click.option(
     "--dia-semana",
-    type=click.Choice(_DIA_SEMANA_CHOICES),
+    type=click.Choice(DIA_SEMANA_CHOICES),
     default=None,
     help=(
         "Dia da semana ancorando a geracao quando --tipo-geracao=semanal "
@@ -327,7 +327,7 @@ def criar(
 @click.option("--nome", default=None, help="New display name.")
 @click.option(
     "--tipo-geracao",
-    type=click.Choice(_TIPO_GERACAO_CHOICES),
+    type=click.Choice(TIPO_GERACAO_CHOICES),
     default=None,
     help="New generation type.",
 )
@@ -380,7 +380,7 @@ def criar(
 )
 @click.option(
     "--dia-semana",
-    type=click.Choice(_DIA_SEMANA_CHOICES),
+    type=click.Choice(DIA_SEMANA_CHOICES),
     default=None,
     help=(
         "New dia da semana anchoring generation when --tipo-geracao=semanal "
