@@ -2,20 +2,19 @@
 gsd_state_version: "1.0"
 milestone: v1.5
 milestone_name: Correções descobertas no onboarding real do calendário de rotinas (RBR)
-current_phase: 31
-current_plan: Not started
-status: completed
+status: Awaiting next milestone
 stopped_at: Phase 31 complete — all phases complete
-last_updated: "2026-09-22T23:04:15.671Z"
+last_updated: "2026-09-22T23:15:08.972Z"
 last_activity: 2026-09-22
-last_activity_desc: Phase 31 complete
-state_head: 34a5743a60977c747f3ecfbb236ee71965b7558d
+last_activity_desc: Milestone v1.5 completed and archived
+state_head: 65c383e4ef4331f42d2d77ce598e2cb9d614bfd6
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 11
   completed_plans: 11
   percent: 50
+current_phase: 31
 ---
 
 # Project State
@@ -29,13 +28,10 @@ See: .planning/PROJECT.md (updated 2026-08-14)
 
 ## Current Position
 
-Phase: 31
-Current Plan: Not started
-Total Plans in Phase: 2
-Status: All phases complete
-Last activity: 2026-09-22 — Phase 31 complete
-
-Progress: [█████░░░░░] 50%
+Phase: Milestone v1.5 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-09-22 — Milestone v1.5 completed and archived
 
 ## Performance Metrics
 
@@ -142,4 +138,4 @@ Resume file: None
 
 ## Operator Next Steps
 
-- Phase 26 (Validação na escrita — VAL-01/02/03) is complete, live-verified. Next: `/gsd-plan-phase 27` (Robustez do job — JOB-01/02/03), then proceed phase by phase through 31.
+- Start the next milestone with /gsd-new-milestone

@@ -1,5 +1,24 @@
 # Milestones
 
+## v1.5 Correções descobertas no onboarding real do calendário de rotinas (RBR) (Shipped: 2026-09-22)
+
+**Phases completed:** 6 phases, 11 plans, 19 tasks
+
+**Key accomplishments:**
+
+- `apollo rotina template criar/editar --regra-competencia` now rejects any value outside `M0`/`M-1`/`M-2`/`M+1` at write time via `click.Choice`, closing the silent-failure gap that previously only surfaced deep inside `gerar-instancias`; `--propagar-atraso-soft` and `instancia status`'s docstring no longer misdescribe their own behavior.
+- New `nth_business_day_from_month_end`/`nthBusinessDayFromMonthEnd` primitive in `bizdays.py`/`.ts`, wired into `du_fixo` via a sign-based dispatch wrapper, proven live against production InstantDB for the real "Previa DU-2" onboarding case (2026-08-27).
+- `_is_concluida`/`isConcluida` recognize case/accent/whitespace variants of "concluída" (both grammatical forms) in the `encadeado` successor date-estimation decision, and every `skipped` entry `gerar-instancias` emits now carries the template's `nome` — both proven live against production InstantDB, closing Phase 27 in full.
+- Added `templatesRotina.diaSemana: i.string().optional()` to the InstantDB schema and pushed it live to the real production app, verified via server-side pull and a live CLI read of the 84 real onboarding templates.
+- Fourth `tipoGeracao` ("semanal", anchored to a named weekday) wired end-to-end — Python compute engine, CLI, live InstantDB round trip proving the real "Atualiz Calc RF" case (7 real Fridays Aug/Sep 2026), and a byte-identical TypeScript mirror with a shared cross-runtime fixture.
+- Extended the SPA templatesRotina create/edit form to offer `tipoGeracao="semanal"` and a new non-required `diaSemana` select (7 weekday tokens), closing the SPA/CLI parity gap RESEARCH.md's Open Question 1 flagged; repaired both pre-existing e2e specs' stale option-set and column-index assertions, proven green in a real browser.
+- `apollo rotina gerar-instancias --competencia`/`--de`/`--ate` replace the default `[today, end_of_next_month(today)]` window entirely, live-proven against production InstantDB for single-competência generation, mid-month recovery of already-passed dates, and byte-identical row/dedupeKey idempotency across recorte and default-range runs.
+- `apollo rotina template deletar --force/--no-force` blocks silent instance-orphaning by default (exit 2, exact count), and `apollo rotina instancia limpar-orfas --confirmar` cleans exactly the resulting orphans — proven live against production, including the actual one-time removal of 22 pre-existing orphaned rows.
+- `apollo import --from-json <arquivo> [--dry-run]` — one atomic `client.transact()` bulk-creating `fundos` + `templatesRotina` from a single JSON file, with `$local_id`-prefixed cross-entity/same-batch references (including file-order-independent `encadeado` chains), two-pass collect-all-errors validation, and natural-key idempotency — live-proven end-to-end against the real production InstantDB app.
+- The phase's own literal acceptance bar proven live against the real production InstantDB app: an 18-fundo/84-template batch (the exact onboarding shape ROADMAP Success Criterion 3 names) completes in exactly ONE `apollo import` invocation, re-runs converge idempotently at that same scale, and a genuinely simulated partial-prior-landing (~1/3 of natural keys pre-seeded) resumes without duplicating a single record — plus a second, independent structural proof that `batch_import.py` can never create an `instanciasRotina` row.
+
+---
+
 ## v1.3 Navegação reorganizada + Dashboard de acompanhamento (Shipped: 2026-08-12)
 
 **Phases completed:** 6 phases, 24 plans, 54 tasks
