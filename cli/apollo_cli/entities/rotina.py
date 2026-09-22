@@ -37,6 +37,7 @@ from __future__ import annotations
 import calendar
 import json
 import re
+from datetime import date
 from typing import Final
 
 import click
@@ -96,21 +97,33 @@ def _merge_links(*links: dict[str, str] | None) -> dict[str, str] | None:
 def _validate_competencia_format(
     ctx: click.Context, param: click.Parameter, value: str | None
 ) -> str | None:
-    """Click callback: enforce `YYYY-MM` with a month component in `1..12`.
+    """Click callback: enforce `YYYY-MM` with a month component in `1..12`
+    and a year that `date` itself accepts.
 
     Mirrors `crud_helpers.validate_iso_date`'s exact shape, deliberately NOT
     `date.fromisoformat` (which requires a day component this flag lacks,
-    D-05).
+    D-05) — instead constructs `date(year, month, 1)` directly, which
+    bounds-checks the year against `MINYEAR..MAXYEAR` the same way
+    `validate_iso_date`'s `date.fromisoformat` call does for `--de`/`--ate`.
+    Without this, an out-of-range year like `0000` passed CLI validation and
+    flowed unguarded into `compute_expected_instances`, either silently
+    writing a garbage row or crashing the whole job (CR-01).
     """
     if value is None:
         return None
     if not _COMPETENCIA_RE.match(value):
         msg = f"{value!r} nao esta no formato AAAA-MM"
         raise click.BadParameter(msg, ctx=ctx, param=param)
+    year = int(value.split("-")[0])
     month = int(value.split("-")[1])
     if not (1 <= month <= 12):
         msg = f"{value!r} tem mes invalido (deve ser 01..12)"
         raise click.BadParameter(msg, ctx=ctx, param=param)
+    try:
+        date(year, month, 1)  # bounds-checks year against MINYEAR..MAXYEAR too
+    except ValueError as error:
+        msg = f"{value!r} tem ano invalido"
+        raise click.BadParameter(msg, ctx=ctx, param=param) from error
     return value
 
 
