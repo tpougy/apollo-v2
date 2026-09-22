@@ -7,6 +7,7 @@ session exists; a skip here is a failure of an earlier task, not a pass.
 
 from __future__ import annotations
 
+import importlib
 import json
 from collections import Counter
 from pathlib import Path
@@ -14,7 +15,9 @@ from typing import Any, cast
 
 import pytest
 from instantdb import Instant
+from instantdb import id as new_id
 
+from apollo_cli.crud_helpers import now_iso
 from apollo_cli.routine_job import (
     DIA_SEMANA_CHOICES,
     REGRAS_COMPETENCIA_SUPORTADAS,
@@ -186,6 +189,54 @@ def _assert_no_duplicate_rows_by_key(
     assert len(rows) == len(keys), f"{etype}: expected {len(keys)} rows, got {len(rows)}"
     for key in keys:
         assert counts[key] == 1, f"{etype}: {key!r} has {counts[key]} rows (expected 1)"
+
+
+def _seed_fundo(client: Instant, dono_id: str, record: dict[str, Any]) -> str:
+    """Directly `client.transact`s a single fundo row, bypassing the CLI
+    entirely — the closest honest simulation of "a prior partial run
+    already committed this," since a genuinely torn `apollo import` mid-run
+    is unreachable to engineer directly (RESEARCH.md Q3)."""
+    eid = new_id()
+    client.transact(
+        client.tx["fundos"][eid].create(
+            {
+                "nome": record["nome"],
+                "codigo": record["codigo"],
+                "ativo": True,
+                "createdAt": now_iso(),
+                "donoId": dono_id,
+            }
+        )
+    )
+    return eid
+
+
+def _seed_template(
+    client: Instant, dono_id: str, record: dict[str, Any], fundo_real_id: str | None
+) -> str:
+    """Directly `client.transact`s a single templatesRotina row, bypassing
+    the CLI entirely, linked to an already-real `fundo_real_id` (or no
+    `fundo` link at all) so its natural key exactly matches what
+    `run_batch_import`'s own resolution would compute for the same batch
+    record."""
+    eid = new_id()
+    fields: dict[str, Any] = {
+        "nome": record["nome"],
+        "tipoGeracao": record["tipoGeracao"],
+        "regraCompetencia": record["regraCompetencia"],
+        "propagarAtrasoSoft": False,
+        "ativo": True,
+        "donoId": dono_id,
+    }
+    if "offsetDias" in record:
+        fields["offsetDias"] = record["offsetDias"]
+    if "diaSemana" in record:
+        fields["diaSemana"] = record["diaSemana"]
+    chunk = client.tx["templatesRotina"][eid].create(fields)
+    if fundo_real_id is not None:
+        chunk = chunk.link({"fundo": fundo_real_id})
+    client.transact(chunk)
+    return eid
 
 
 def test_import_creates_fundos_and_templates_end_to_end_at_meaningful_scale(
@@ -738,3 +789,117 @@ def test_full_onboarding_scale_rerun_is_fully_existing_success_criterion_2(
     # zero duplicates.
     _assert_no_duplicate_rows_by_key(live_client, "fundos", "codigo", fundo_codigos)
     _assert_no_duplicate_rows_by_key(live_client, "templatesRotina", "nome", template_nomes)
+
+
+def test_partial_batch_already_landed_resumes_without_duplication(
+    run_cli: RunCli,
+    live_client: Instant,
+    live_session: Session,
+    cleanup_records: list[tuple[str, str]],
+    tmp_path: Path,
+) -> None:
+    """A batch where roughly a third of its fundo/template natural keys
+    already exist — seeded directly via `live_client` BEFORE `apollo import`
+    ever runs, simulating "a prior partial run already landed these" (a
+    genuinely torn `apollo import` mid-run is unreachable to engineer
+    directly per RESEARCH.md Q3) — converges correctly on ONE full-file
+    `apollo import` call: the pre-seeded third is reported `existing`, the
+    rest `created`, and re-querying confirms not one natural key has more
+    than one matching row (D-05/D-06/D-07's resumability guarantee, SC2)."""
+    suffix = unique_suffix()
+    dono_id = live_session.user_id
+    fundos, templates, _chains = _build_scale_batch(suffix, 6, 15, build_chains=False)
+    by_local_id = {record["_local_id"]: record for record in [*fundos, *templates]}
+
+    # Pre-seed roughly a third of the batch's natural keys directly,
+    # bypassing `apollo import` entirely: 2 of 6 fundos and 5 of 15
+    # templates (7 of 21 total natural keys, ~33%) — including one
+    # no-fundoId template (t10) to exercise the (donoId, None, nome) key too.
+    preseeded_fundo_local_ids = ["f1", "f2"]
+    preseeded_template_local_ids = ["t1", "t2", "t7", "t8", "t10"]
+
+    fundo_real_ids: dict[str, str] = {}
+    for local_id in preseeded_fundo_local_ids:
+        fundo_real_ids[local_id] = _seed_fundo(live_client, dono_id, by_local_id[local_id])
+
+    for local_id in preseeded_template_local_ids:
+        record = by_local_id[local_id]
+        fundo_ref = record.get("fundoId")
+        fundo_real_id = (
+            fundo_real_ids[fundo_ref[1:]]
+            if isinstance(fundo_ref, str) and fundo_ref.startswith("$")
+            else None
+        )
+        _seed_template(live_client, dono_id, record, fundo_real_id)
+
+    batch_path = _write_batch(tmp_path, {"fundos": fundos, "templatesRotina": templates})
+
+    result: CliInvocation = run_cli(["import", "--from-json", str(batch_path)])
+    assert result.result.exit_code == 0, result.result.output
+    report = cast("dict[str, Any]", result.json_out())
+
+    all_fundo_local_ids = {f"f{n}" for n in range(1, 7)}
+    all_template_local_ids = {f"t{n}" for n in range(1, 16)}
+
+    assert sorted(report["fundos"]["existing"]) == sorted(preseeded_fundo_local_ids)
+    assert sorted(report["fundos"]["created"]) == sorted(
+        all_fundo_local_ids - set(preseeded_fundo_local_ids)
+    )
+    assert sorted(report["templatesRotina"]["existing"]) == sorted(preseeded_template_local_ids)
+    assert sorted(report["templatesRotina"]["created"]) == sorted(
+        all_template_local_ids - set(preseeded_template_local_ids)
+    )
+
+    fundo_codigos = [f"LOTE-F{n}-{suffix}" for n in range(1, 7)]
+    template_nomes = [f"Template Lote {n} {suffix}" for n in range(1, 16)]
+
+    fundo_rows = _query_fundos_by_codigos(live_client, fundo_codigos)
+    assert len(fundo_rows) == 6
+    for row in fundo_rows.values():
+        cleanup_records.append(("fundos", row["id"]))
+
+    template_rows = _query_templates_by_nomes(live_client, template_nomes)
+    assert len(template_rows) == 15
+    for row in template_rows.values():
+        cleanup_records.append(("templatesRotina", row["id"]))
+
+    # Not one natural key (pre-seeded OR newly-created) has more than one
+    # matching row — the full-file re-run converged without duplicating a
+    # single pre-existing record.
+    _assert_no_duplicate_rows_by_key(live_client, "fundos", "codigo", fundo_codigos)
+    _assert_no_duplicate_rows_by_key(live_client, "templatesRotina", "nome", template_nomes)
+
+
+def test_batch_import_module_defines_no_instance_entity_reference() -> None:
+    """A second, independent structural check of D-10/C-06 beyond Plan
+    31-01's own text-grep gate
+    (`test_top_level_instanciasrotina_key_rejected_wholesale_c06`): a
+    runtime scan of the LOADED `apollo_cli.batch_import` module object's own
+    attributes (names via `dir(...)`, values via `vars(...)`) — not a text
+    search — confirming none of them equal or contain the instance entity's
+    schema name, `instanciasRotina`."""
+    module = importlib.import_module("apollo_cli.batch_import")
+    instance_entity_name = "instanciasRotina"
+
+    def _references_instance_entity(value: object) -> bool:
+        if isinstance(value, str):
+            return instance_entity_name in value
+        if isinstance(value, (frozenset, set, tuple, list)):
+            return any(_references_instance_entity(item) for item in value)
+        return False
+
+    # Module-level dunders (`__doc__`, `__name__`, `__file__`, ...) are
+    # Python/import-machinery metadata, not the module's own defined
+    # constants/logic — `__doc__` in particular legitimately DISCUSSES
+    # `instanciasRotina` in prose (explaining the exclusion this test
+    # proves structurally), so it is deliberately excluded from the scan.
+    offending = {
+        name: value
+        for name, value in vars(module).items()
+        if not name.startswith("__")
+        and (instance_entity_name in name or _references_instance_entity(value))
+    }
+    assert offending == {}, offending
+    assert not any(
+        instance_entity_name in name for name in dir(module) if not name.startswith("__")
+    )
