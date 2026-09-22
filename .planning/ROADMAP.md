@@ -157,7 +157,15 @@ perder instâncias do início do mês corrente por engano.
 
   4. Nenhuma instância gerada com o recorte tem uma `dataPrevista`/`dedupeKey`
      diferente da que teria sem o recorte.
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+
+- [ ] 29-01-PLAN.md — `--competencia`/`--de`/`--ate` em `gerar-instancias`,
+  `months_in_range`/`monthsInRange` como generalização compatível de `candidate_months`,
+  prova ao vivo dos 3 critérios de sucesso (recorte substitui o range default, recupera
+  datas já passadas do mês corrente, idempotência com/sem recorte) e paridade cross-runtime
+  (RANGE-01)
 
 ### Phase 30: Ciclo de vida e higiene de dados
 
