@@ -5,6 +5,7 @@ import {
   deleteInstance,
   readInstance,
   seedInstance,
+  sweepInstancesByDedupeKeyPrefix,
 } from "./fixtures/instancia-admin-fixture.ts";
 import { confirmRowDelete } from "./helpers/delete-confirmation.ts";
 import { openAndReadSelectOptions, selectByText } from "./helpers/form-controls.ts";
@@ -43,13 +44,13 @@ function uniqueName(prefix: string): string {
 function tryDeleteTemplate(eid: string | null | undefined): void {
   if (!eid) return;
   try {
-    apolloCli(["rotina", "template", "deletar", "--id", eid]);
+    apolloCli(["rotina", "template", "deletar", "--id", eid, "--force"]);
   } catch {
     // Already gone — fine.
   }
 }
 
-function sweepLeftovers(): void {
+async function sweepLeftovers(): Promise<void> {
   const templates = JSON.parse(apolloCli(["rotina", "template", "listar"])) as {
     id: string;
     nome: string;
@@ -60,6 +61,7 @@ function sweepLeftovers(): void {
   for (const record of templates) {
     if (record.nome.startsWith(PREFIX)) tryDeleteTemplate(record.id);
   }
+  await sweepInstancesByDedupeKeyPrefix(PREFIX, OWNER_EMAIL);
 }
 
 // logInferenciaClaude has no `deletar` command on the CLI by design
@@ -99,12 +101,12 @@ async function waitForSettle(page: Page): Promise<void> {
 }
 
 test.beforeEach(async () => {
-  sweepLeftovers();
+  await sweepLeftovers();
   await sweepLogLeftovers();
 });
 
 test.afterEach(async () => {
-  sweepLeftovers();
+  await sweepLeftovers();
   await sweepLogLeftovers();
 });
 

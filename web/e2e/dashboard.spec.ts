@@ -6,7 +6,12 @@ import { DASHBOARD_QUERY } from "../src/lib/dashboard/dashboardQuery.ts";
 // directly, so this file computes "this week" with the exact same plain-UTC
 // Monday-anchor algorithm the app itself uses, instead of duplicating it.
 import { semanaUtil } from "../src/lib/dashboard/derive.ts";
-import { adminQuery, deleteInstance, seedInstance } from "./fixtures/instancia-admin-fixture.ts";
+import {
+  adminQuery,
+  deleteInstance,
+  seedInstance,
+  sweepInstancesByDedupeKeyPrefix,
+} from "./fixtures/instancia-admin-fixture.ts";
 import { selectByText } from "./helpers/form-controls.ts";
 
 // This spec runs in the `authed` project (restores the storageState persisted
@@ -74,7 +79,9 @@ function tryDelete(group: string, eid: string | null | undefined): void {
   if (!eid) return;
   try {
     // `group` may be a multi-word CLI subcommand path (e.g. "rotina template").
-    apolloCli([...group.split(" "), "deletar", "--id", eid]);
+    const args = [...group.split(" "), "deletar", "--id", eid];
+    if (group === "rotina template") args.push("--force");
+    apolloCli(args);
   } catch {
     // Already gone -- fine.
   }
@@ -106,18 +113,19 @@ function sweepFundoLeftovers(): void {
 
 // Order matters: tickets and templates before fundos -- InstantDB does not
 // cascade-delete linked rows.
-function sweepLeftovers(): void {
+async function sweepLeftovers(): Promise<void> {
   sweepTicketLeftovers();
   sweepTemplateLeftovers();
   sweepFundoLeftovers();
+  await sweepInstancesByDedupeKeyPrefix(PREFIX, OWNER_EMAIL);
 }
 
-test.beforeAll(() => {
-  sweepLeftovers();
+test.beforeAll(async () => {
+  await sweepLeftovers();
 });
 
-test.afterAll(() => {
-  sweepLeftovers();
+test.afterAll(async () => {
+  await sweepLeftovers();
 });
 
 test.describe("DASH-02: empty ticket queue", () => {

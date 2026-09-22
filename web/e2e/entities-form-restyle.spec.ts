@@ -262,7 +262,7 @@ test.describe("templatesRotina — Select field conversion", () => {
     for (const record of templates) {
       if (!record.nome.startsWith(PREFIX)) continue;
       try {
-        apolloCli(["rotina", "template", "deletar", "--id", record.id]);
+        apolloCli(["rotina", "template", "deletar", "--id", record.id, "--force"]);
       } catch {
         // Already gone — fine.
       }

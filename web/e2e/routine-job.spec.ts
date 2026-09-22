@@ -39,7 +39,7 @@ function uniqueName(prefix: string): string {
 function tryDeleteTemplate(eid: string | null | undefined): void {
   if (!eid) return;
   try {
-    apolloCli(["rotina", "template", "deletar", "--id", eid]);
+    apolloCli(["rotina", "template", "deletar", "--id", eid, "--force"]);
   } catch {
     // Already gone — fine.
   }

@@ -1,7 +1,11 @@
 import { execFileSync } from "node:child_process";
 import { expect, type Page, test } from "@playwright/test";
 import { semanaUtil } from "../src/lib/dashboard/derive.ts";
-import { deleteInstance, seedInstance } from "./fixtures/instancia-admin-fixture.ts";
+import {
+  deleteInstance,
+  seedInstance,
+  sweepInstancesByDedupeKeyPrefix,
+} from "./fixtures/instancia-admin-fixture.ts";
 
 // This spec runs in the `authed` project (restores the storageState persisted
 // by auth.setup.ts). Every generated record uses the `phase23-e2e-` prefix so
@@ -43,13 +47,15 @@ function uniqueCodigo(prefix: string): string {
 function tryDelete(group: string, eid: string | null | undefined): void {
   if (!eid) return;
   try {
-    apolloCli([...group.split(" "), "deletar", "--id", eid]);
+    const args = [...group.split(" "), "deletar", "--id", eid];
+    if (group === "rotina template") args.push("--force");
+    apolloCli(args);
   } catch {
     // Already gone -- fine.
   }
 }
 
-function sweepLeftovers(): void {
+async function sweepLeftovers(): Promise<void> {
   // Order matters: subtarefas before tarefas before etapas before projetos
   // before rotina templates before tickets before fundos -- InstantDB does
   // not cascade-delete linked rows (same discipline as every other Phase 23
@@ -88,6 +94,7 @@ function sweepLeftovers(): void {
   for (const record of fundos) {
     if (record.nome.startsWith(PREFIX)) tryDelete("fundo", record.id);
   }
+  await sweepInstancesByDedupeKeyPrefix(PREFIX, OWNER_EMAIL);
 }
 
 function hojeIso(): string {
@@ -172,12 +179,12 @@ const INVENTORY: { testid: string; dialogTestidHint: string; reachVia: string }[
   },
 ];
 
-test.beforeAll(() => {
-  sweepLeftovers();
+test.beforeAll(async () => {
+  await sweepLeftovers();
 });
 
-test.afterAll(() => {
-  sweepLeftovers();
+test.afterAll(async () => {
+  await sweepLeftovers();
 });
 
 test.describe("Phase 23 Plan 07: Consolidated button-inventory + keyboard-accessibility + depth-cap-2 sweep", () => {
@@ -394,7 +401,7 @@ test.describe("Phase 23 Plan 07: Consolidated button-inventory + keyboard-access
     tryDelete("rotina template", templateId);
     tryDelete("ticket", ticketId);
     tryDelete("fundo", fundoId);
-    sweepLeftovers();
+    await sweepLeftovers();
   });
 
   async function gotoDashboard(page: Page): Promise<void> {
