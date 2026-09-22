@@ -102,7 +102,7 @@ foram decididas nesta sessão, antes do roadmap):
 
 ### Periodicidade semanal (SEM)
 
-- [ ] **SEM-01**: novo `tipoGeracao = "semanal"` para `templatesRotina`,
+- [x] **SEM-01**: novo `tipoGeracao = "semanal"` para `templatesRotina`,
   ancorado em um dia da semana (`--dia-semana`) em vez de um offset mensal,
   cobrindo eventos como "toda sexta-feira" sem forçar uma aproximação
   artificial num tipo mensal. Inclui a regra de competência aplicável a esse
