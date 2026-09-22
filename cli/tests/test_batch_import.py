@@ -10,6 +10,7 @@ from __future__ import annotations
 import importlib
 import json
 from collections import Counter
+from datetime import date
 from pathlib import Path
 from typing import Any, cast
 
@@ -1026,3 +1027,104 @@ def test_batch_import_module_defines_no_instance_entity_reference() -> None:
     assert not any(
         instance_entity_name in name for name in dir(module) if not name.startswith("__")
     )
+
+
+def test_import_then_gerar_instancias_end_to_end_integration(
+    run_cli: RunCli,
+    live_client: Instant,
+    live_session: Session,
+    cleanup_records: list[tuple[str, str]],
+    tmp_path: Path,
+) -> None:
+    """Milestone v1.5 integration check (raised by the v1.5 audit's
+    integration checker): the headline "bulk import -> generate instances"
+    flow has no automated test chaining `apollo import` (Phase 31) into
+    `gerar-instancias` (Phases 27/28/29) — this test closes that gap.
+
+    Imports one fundo, a `du_fixo` template, a `semanal` template
+    (`diaSemana=sexta`), and a 2-hop `encadeado` chain in ONE `apollo import`
+    call, then runs `gerar-instancias --data-base 2026-08-09` and confirms
+    every template's instances materialize correctly through the SAME
+    pipeline a hand-typed `criar`-based template would use — proving
+    import-created data is field-compatible with generation, not just
+    schema-compatible in isolation."""
+    suffix = unique_suffix()
+    fundo = _fundo_record("f1", suffix, 1)
+    templates = [
+        _template_record("t-du", suffix, 1, offset_dias=5, fundo_id="$f1"),
+        _template_record("t-sem", suffix, 2, tipo_geracao="semanal", dia_semana="sexta"),
+        _template_record("t-root", suffix, 3, offset_dias=2, fundo_id="$f1"),
+        _template_record(
+            "t-chain", suffix, 4, tipo_geracao="encadeado", offset_dias=1, antecessor_id="$t-root"
+        ),
+    ]
+    batch_path = _write_batch(tmp_path, {"fundos": [fundo], "templatesRotina": templates})
+
+    import_result: CliInvocation = run_cli(["import", "--from-json", str(batch_path)])
+    assert import_result.result.exit_code == 0, import_result.result.output
+    import_report = cast("dict[str, Any]", import_result.json_out())
+    assert import_report["fundos"]["created"] == ["f1"]
+    assert set(import_report["templatesRotina"]["created"]) == {
+        "t-du",
+        "t-sem",
+        "t-root",
+        "t-chain",
+    }
+
+    fundo_row = _query_fundos_by_codigos(live_client, [fundo["codigo"]])[fundo["codigo"]]
+    cleanup_records.append(("fundos", fundo_row["id"]))
+    template_nomes = [t["nome"] for t in templates]
+    template_rows = _query_templates_by_nomes(live_client, template_nomes)
+    template_ids: dict[str, str] = {}
+    for record in templates:
+        row = template_rows[record["nome"]]
+        template_ids[record["_local_id"]] = row["id"]
+        cleanup_records.append(("templatesRotina", row["id"]))
+
+    gerar_result: CliInvocation = run_cli(
+        ["rotina", "gerar-instancias", "--data-base", "2026-08-09"]
+    )
+    assert gerar_result.result.exit_code == 0, gerar_result.result.output
+    gerar_report = cast("dict[str, Any]", gerar_result.json_out())
+    assert gerar_report["created"], "expected at least the 4 imported templates' instances"
+
+    def _instances_for(local_id: str) -> list[dict[str, Any]]:
+        result = live_client.query(
+            {
+                "instanciasRotina": {
+                    "template": {},
+                    "$": {"where": {"template.id": template_ids[local_id]}},
+                }
+            }
+        )
+        rows = cast("list[dict[str, Any]]", result.get("instanciasRotina", []))
+        for row in rows:
+            cleanup_records.append(("instanciasRotina", row["id"]))
+        return rows
+
+    du_instances = _instances_for("t-du")
+    assert len(du_instances) >= 1, "du_fixo template imported via batch never generated"
+
+    sem_instances = _instances_for("t-sem")
+    assert len(sem_instances) >= 1, "semanal template imported via batch never generated"
+    assert all(date.fromisoformat(row["dataPrevista"]).weekday() == 4 for row in sem_instances), (
+        "every semanal instance's dataPrevista must fall on a Friday"
+    )
+
+    root_instances = _instances_for("t-root")
+    chain_instances = _instances_for("t-chain")
+    assert len(root_instances) >= 1, "encadeado antecessor (imported via batch) never generated"
+    assert len(chain_instances) >= 1, "encadeado successor (imported via batch) never generated"
+    root_by_competencia = {row["competencia"]: row for row in root_instances}
+    for chain_row in chain_instances:
+        root_row = root_by_competencia.get(chain_row["competencia"])
+        assert root_row is not None, (
+            "encadeado successor's competencia must match its antecessor's (inherited verbatim)"
+        )
+        # D-05-B: the successor's dataPrevista is `offsetDias` business days
+        # after the antecessor's — not independently verifying the business-
+        # day math here (routine_job.py's own tests already do), only that
+        # the chain genuinely resolved to a LATER date than its root, proving
+        # the antecessor link (written by `apollo import`, not `criar`) was
+        # correctly followed end-to-end by `gerar-instancias`.
+        assert chain_row["dataPrevista"] > root_row["dataPrevista"]
