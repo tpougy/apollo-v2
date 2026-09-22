@@ -411,6 +411,9 @@ function computeSemanalInstances(
   if (diaSemana === undefined || diaSemana === null) {
     return { skipReason: "dia_semana_ausente" };
   }
+  if (typeof diaSemana !== "string") {
+    return { skipReason: "dia_semana_invalido" };
+  }
   const idx = DIA_SEMANA_INDEX[diaSemana];
   if (idx === undefined) {
     return { skipReason: "dia_semana_invalido" };

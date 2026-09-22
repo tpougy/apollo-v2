@@ -343,6 +343,8 @@ def _compute_semanal_instances(
     dia_semana = template.get("diaSemana")
     if dia_semana is None:
         return [], "dia_semana_ausente"
+    if not isinstance(dia_semana, str):
+        return [], "dia_semana_invalido"
     idx = _DIA_SEMANA_INDEX.get(dia_semana)
     if idx is None:
         return [], "dia_semana_invalido"
