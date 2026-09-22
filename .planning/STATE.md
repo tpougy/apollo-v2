@@ -4,17 +4,18 @@ milestone: v1.5
 milestone_name: Correções descobertas no onboarding real do calendário de rotinas (RBR)
 current_phase: 28
 current_phase_name: Periodicidade semanal
+current_plan: 2
 status: executing
-stopped_at: Completed 27-02-PLAN.md (JOB-01 normalized status recognition + JOB-03 nome-in-skipped, Phase 27 fully complete)
-last_updated: "2026-09-22T18:25:47.390Z"
-last_activity: 2026-08-14
+stopped_at: Completed 28-01-PLAN.md
+last_updated: "2026-09-22T18:35:27.179Z"
+last_activity: 2026-09-22
 last_activity_desc: "Completed 26-01-PLAN.md: apollo rotina template criar/editar --regra-competencia bound to click.Choice(REGRAS_COMPETENCIA_SUPORTADAS), rejecting out-of-enum values at exit 2 before any write (VAL-01); --propagar-atraso-soft help text corrected to state the value is stored but not currently read (VAL-02); instancia status docstring corrected to describe dedupeKey as plain concatenation, not a hash (VAL-03); 15 pre-existing CLI/e2e fixtures repaired to the new enum; full offline cli/ pytest suite (348 passed) and the affected live tests green."
-state_head: 250f08442bebafcd487aee8e87d02010549a8198
+state_head: 146642bd98bc00d76f5c50d28a0bf44f3a4ae265
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 6
-  completed_plans: 3
+  completed_plans: 4
   percent: 33
 ---
 
@@ -29,10 +30,11 @@ See: .planning/PROJECT.md (updated 2026-08-14)
 
 ## Current Position
 
-Phase: 28 (Periodicidade semanal) — READY TO EXECUTE
-Plan: Not started
+Phase: 28 (Periodicidade semanal) — EXECUTING
+Current Plan: 2
+Total Plans in Phase: 3
 Status: Ready to execute
-Last activity: 2026-08-14 — Phase 27 complete, transitioned to Phase 28
+Last activity: 2026-09-22 — Completed 28-01-PLAN.md (diaSemana schema field pushed live)
 
 Progress: [███░░░░░░░] 33%
 
@@ -68,6 +70,7 @@ Progress: [███░░░░░░░] 33%
 | Phase 26 P01 | ~15min | 3 tasks | 8 files |
 | Phase 27 P01 | ~20min | 2 tasks | 10 files |
 | Phase 27 P02 | ~25min | 2 tasks | 6 files |
+| Phase 28 P01 | 25min | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -86,6 +89,7 @@ Decisions are logged in PROJECT.md Key Decisions table (all sourced from the loc
 - [Phase 26, Plan 01]: click.Choice enum enforcement on regra-competencia (imported from routine_job.py, never redeclared) closes VAL-01; propagar-atraso-soft help text and instancia status's dedupeKey docstring corrected for VAL-02/VAL-03. Repaired 15 pre-existing CLI/e2e fixtures broken by the new enum. Logged an unrelated, pre-existing live-DB pagination flake (test_criar_without_offset_dias_omits_key_entirely) to deferred-items.md.
 - [Phase 27, Plan 01]: du_fixo extended to accept offsetDias <= 0 via a sign-based dispatch wrapper (_du_fixo_nth_day/duFixoNthDay) passed as the pre-existing nth_day_fn parameter -- no new call site, no duplicated range/dedupeKey/competencia logic. New nth_business_day_from_month_end/nthBusinessDayFromMonthEnd lives in bizdays.py/.ts (not routine_job.py/routineJob.ts, its siblings' home) per CONTEXT.md's explicit target, requiring a small locally-duplicated lastDayOfMonth/calendar.monthrange to avoid a bizdays.ts -> routineJob.ts circular import. Live-proven against production InstantDB for the real Previa DU-2 case (2026-08-27); corrido_fixo and du_fixo offsetDias>=1 provably unaffected (zero regression, 354 offline cli/ tests + 101 web/ bun tests).
 - [Phase ?]: [Phase 27, Plan 02]: _is_concluida/isConcluida normalize the encadeado dataPrevistaEstimada status comparison (NFKD decompose + strip combining marks + casefold, recognizing both concluida/concluido grammatical forms) without closing status's free-text vocabulary at write time; nome threaded through every skipped entry in both runtimes with no InstantDB query change needed (already unrestricted); shared/routine-job.testcases.json mechanically retrofitted across all 28 scenarios. Phase 27 (Robustez do job) now fully complete: JOB-01/02/03.
+- [Phase 28]: diaSemana stored as i.string().optional() (Option B), not a reuse of offsetDias — matches plain-string convention of tipoGeracao/regraCompetencia/status
 
 ### Pending Todos
 
@@ -121,8 +125,8 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-08-14T21:04:22.144Z
-Stopped at: Completed 27-02-PLAN.md (JOB-01 normalized status recognition + JOB-03 nome-in-skipped, Phase 27 fully complete)
+Last session: 2026-09-22T18:35:19.813Z
+Stopped at: Completed 28-01-PLAN.md
 Resume file: None
 
 ## Operator Next Steps
