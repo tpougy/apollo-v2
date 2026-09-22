@@ -8,12 +8,18 @@ session exists; a skip here is a failure of an earlier task, not a pass.
 from __future__ import annotations
 
 import json
+from collections import Counter
 from pathlib import Path
 from typing import Any, cast
 
 import pytest
 from instantdb import Instant
 
+from apollo_cli.routine_job import (
+    DIA_SEMANA_CHOICES,
+    REGRAS_COMPETENCIA_SUPORTADAS,
+    TIPO_GERACAO_CHOICES,
+)
 from apollo_cli.session import Session
 from tests.conftest import CliInvocation, RunCli, unique_suffix
 
@@ -88,6 +94,98 @@ def _query_templates_by_nomes(
 
 def _instancia_count(run_cli: RunCli) -> int:
     return len(cast("list[dict[str, Any]]", run_cli(["rotina", "instancia", "listar"]).json_out()))
+
+
+def _build_scale_batch(
+    suffix: str, n_fundos: int, n_templates: int, *, build_chains: bool = True
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[list[str]]]:
+    """Programmatically builds `n_fundos` fundo records and `n_templates`
+    template records via looped construction (never hand-typed literals):
+    every template's `tipoGeracao` cycles through ALL `TIPO_GERACAO_CHOICES`
+    values, `regraCompetencia` cycles through `REGRAS_COMPETENCIA_SUPORTADAS`,
+    and `fundoId` round-robins across the `n_fundos` fundo local_ids (every
+    10th template deliberately left with no `fundoId` at all — a small
+    handful). When `build_chains` is set, 2 disjoint `encadeado` chains
+    (3-hop then 2-hop) are carved out of the templates the cycling above
+    already assigned `tipoGeracao="encadeado"` — every OTHER
+    `encadeado`-typed template deliberately keeps no `antecessorId` (a
+    valid, non-chained record); `build_chains=False` skips this (used for
+    smaller batches with too few `encadeado`-typed templates to carve 2
+    disjoint chains from). Returns `(fundos, templates, chains)` — `chains`
+    is the list of local_id chains, antecessor-first order, for live
+    assertion against real resolved links.
+    """
+    fundos = [_fundo_record(f"f{n}", suffix, n) for n in range(1, n_fundos + 1)]
+
+    tipo_values = list(TIPO_GERACAO_CHOICES)
+    regra_values = list(REGRAS_COMPETENCIA_SUPORTADAS)
+    dia_values = list(DIA_SEMANA_CHOICES)
+
+    templates: list[dict[str, Any]] = []
+    encadeado_local_ids: list[str] = []
+
+    for n in range(1, n_templates + 1):
+        local_id = f"t{n}"
+        tipo = tipo_values[(n - 1) % len(tipo_values)]
+        regra = regra_values[(n - 1) % len(regra_values)]
+        fundo_id = None if n % 10 == 0 else f"$f{((n - 1) % n_fundos) + 1}"
+
+        if tipo == "semanal":
+            record = _template_record(
+                local_id,
+                suffix,
+                n,
+                tipo_geracao=tipo,
+                regra_competencia=regra,
+                dia_semana=dia_values[(n - 1) % len(dia_values)],
+                fundo_id=fundo_id,
+            )
+        else:
+            record = _template_record(
+                local_id,
+                suffix,
+                n,
+                tipo_geracao=tipo,
+                regra_competencia=regra,
+                offset_dias=n,
+                fundo_id=fundo_id,
+            )
+        if tipo == "encadeado":
+            encadeado_local_ids.append(local_id)
+        templates.append(record)
+
+    chains: list[list[str]] = []
+    if build_chains:
+        assert len(encadeado_local_ids) >= 5, (
+            f"need >=5 encadeado-typed templates to carve 2 disjoint chains, "
+            f"got {len(encadeado_local_ids)}"
+        )
+        chain_a = encadeado_local_ids[0:3]
+        chain_b = encadeado_local_ids[3:5]
+        chains = [chain_a, chain_b]
+        by_local_id = {record["_local_id"]: record for record in templates}
+        for chain in chains:
+            for position in range(1, len(chain)):
+                by_local_id[chain[position]]["antecessorId"] = f"${chain[position - 1]}"
+
+    return fundos, templates, chains
+
+
+def _assert_no_duplicate_rows_by_key(
+    client: Instant, etype: str, where_field: str, keys: list[str]
+) -> None:
+    """Confirms exactly one row per natural key. A dict-collapsing helper
+    like `_query_fundos_by_codigos` silently hides a duplicate behind its
+    last-write-wins key, so this queries the RAW row list for the whole key
+    set in one call and counts occurrences per key directly via `Counter`."""
+    if not keys:
+        return
+    result = client.query({etype: {"$": {"where": {where_field: {"$in": keys}}}}})
+    rows = result.get(etype, [])
+    counts = Counter(row[where_field] for row in rows)
+    assert len(rows) == len(keys), f"{etype}: expected {len(keys)} rows, got {len(rows)}"
+    for key in keys:
+        assert counts[key] == 1, f"{etype}: {key!r} has {counts[key]} rows (expected 1)"
 
 
 def test_import_creates_fundos_and_templates_end_to_end_at_meaningful_scale(
@@ -537,3 +635,106 @@ def test_top_level_instanciasrotina_key_rejected_wholesale_c06(
 
     after_count = _instancia_count(run_cli)
     assert after_count == before_count
+
+
+def test_full_onboarding_scale_single_invocation_success_criterion_3(
+    run_cli: RunCli,
+    live_client: Instant,
+    live_session: Session,
+    cleanup_records: list[tuple[str, str]],
+    tmp_path: Path,
+) -> None:
+    """ROADMAP Success Criterion 3, literal scale: an 18-fundo/84-template
+    batch (the real onboarding shape) — cycling all 4 `tipoGeracao` values
+    and every `regraCompetencia` value, `fundoId` round-robin across the 18
+    fundo local_ids (a handful with none), and 2 disjoint `encadeado`
+    chains of 2-3 templates each — completes in exactly ONE
+    `apollo import --from-json` invocation, not 102 separate CLI calls."""
+    suffix = unique_suffix()
+    fundos, templates, chains = _build_scale_batch(suffix, 18, 84)
+    batch_path = _write_batch(tmp_path, {"fundos": fundos, "templatesRotina": templates})
+
+    result: CliInvocation = run_cli(["import", "--from-json", str(batch_path)])
+    assert result.result.exit_code == 0, result.result.output
+    report = cast("dict[str, Any]", result.json_out())
+
+    assert len(report["fundos"]["created"]) == 18
+    assert report["fundos"]["existing"] == []
+    assert len(report["templatesRotina"]["created"]) == 84
+    assert report["templatesRotina"]["existing"] == []
+
+    fundo_codigos = [f"LOTE-F{n}-{suffix}" for n in range(1, 19)]
+    fundo_rows = _query_fundos_by_codigos(live_client, fundo_codigos)
+    assert set(fundo_rows) == set(fundo_codigos)
+    for row in fundo_rows.values():
+        assert row["donoId"] == live_session.user_id
+        assert row["ativo"] is True
+        cleanup_records.append(("fundos", row["id"]))
+
+    template_nomes = [f"Template Lote {n} {suffix}" for n in range(1, 85)]
+    template_rows = _query_templates_by_nomes(live_client, template_nomes, with_links=True)
+    assert set(template_rows) == set(template_nomes)
+    template_real_ids: dict[str, str] = {}
+    for n in range(1, 85):
+        row = template_rows[f"Template Lote {n} {suffix}"]
+        assert row["donoId"] == live_session.user_id
+        template_real_ids[f"t{n}"] = row["id"]
+        cleanup_records.append(("templatesRotina", row["id"]))
+
+    # Both encadeado chains' antecessor links resolve to the correct real
+    # sibling ids, regardless of chain-member position in the file.
+    assert len(chains) == 2
+    for chain in chains:
+        assert 2 <= len(chain) <= 3
+        for position in range(1, len(chain)):
+            child_nome = f"Template Lote {chain[position][1:]} {suffix}"
+            parent_local_id = chain[position - 1]
+            antecessor = _single(template_rows[child_nome].get("antecessor"))
+            assert antecessor is not None
+            assert antecessor["id"] == template_real_ids[parent_local_id]
+
+
+def test_full_onboarding_scale_rerun_is_fully_existing_success_criterion_2(
+    run_cli: RunCli,
+    live_client: Instant,
+    cleanup_records: list[tuple[str, str]],
+    tmp_path: Path,
+) -> None:
+    """ROADMAP Success Criterion 2, literal onboarding scale: re-running the
+    identical 18+84 file reports every record `existing` for BOTH entities
+    (fundos and templatesRotina) — zero `created`, and the live row counts
+    by natural key are unchanged, zero duplicate rows (D-05)."""
+    suffix = unique_suffix()
+    fundos, templates, _chains = _build_scale_batch(suffix, 18, 84)
+    batch_path = _write_batch(tmp_path, {"fundos": fundos, "templatesRotina": templates})
+
+    first: CliInvocation = run_cli(["import", "--from-json", str(batch_path)])
+    assert first.result.exit_code == 0, first.result.output
+    first_report = cast("dict[str, Any]", first.json_out())
+    assert len(first_report["fundos"]["created"]) == 18
+    assert len(first_report["templatesRotina"]["created"]) == 84
+
+    second: CliInvocation = run_cli(["import", "--from-json", str(batch_path)])
+    assert second.result.exit_code == 0, second.result.output
+    second_report = cast("dict[str, Any]", second.json_out())
+    assert second_report["fundos"]["created"] == []
+    assert len(second_report["fundos"]["existing"]) == 18
+    assert second_report["templatesRotina"]["created"] == []
+    assert len(second_report["templatesRotina"]["existing"]) == 84
+
+    fundo_codigos = [f"LOTE-F{n}-{suffix}" for n in range(1, 19)]
+    fundo_rows = _query_fundos_by_codigos(live_client, fundo_codigos)
+    assert len(fundo_rows) == 18
+    for row in fundo_rows.values():
+        cleanup_records.append(("fundos", row["id"]))
+
+    template_nomes = [f"Template Lote {n} {suffix}" for n in range(1, 85)]
+    template_rows = _query_templates_by_nomes(live_client, template_nomes)
+    assert len(template_rows) == 84
+    for row in template_rows.values():
+        cleanup_records.append(("templatesRotina", row["id"]))
+
+    # Still exactly one row per natural key — the second, no-op call created
+    # zero duplicates.
+    _assert_no_duplicate_rows_by_key(live_client, "fundos", "codigo", fundo_codigos)
+    _assert_no_duplicate_rows_by_key(live_client, "templatesRotina", "nome", template_nomes)
