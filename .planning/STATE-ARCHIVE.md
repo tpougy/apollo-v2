@@ -174,3 +174,13 @@ Pruned entries from STATE.md. Recoverable but no longer loaded into agent contex
 ### Performance Metrics
 
 | 26 | 1 | - | - |
+
+## Pruned 2026-09-22 (phases 1-27, kept recent 3)
+
+### Decisions
+
+- [Phase 27, Plan 01]: du_fixo extended to accept offsetDias <= 0 via a sign-based dispatch wrapper (_du_fixo_nth_day/duFixoNthDay) passed as the pre-existing nth_day_fn parameter -- no new call site, no duplicated range/dedupeKey/competencia logic. New nth_business_day_from_month_end/nthBusinessDayFromMonthEnd lives in bizdays.py/.ts (not routine_job.py/routineJob.ts, its siblings' home) per CONTEXT.md's explicit target, requiring a small locally-duplicated lastDayOfMonth/calendar.monthrange to avoid a bizdays.ts -> routineJob.ts circular import. Live-proven against production InstantDB for the real Previa DU-2 case (2026-08-27); corrido_fixo and du_fixo offsetDias>=1 provably unaffected (zero regression, 354 offline cli/ tests + 101 web/ bun tests).
+
+### Performance Metrics
+
+| 27 | 2 | - | - |
