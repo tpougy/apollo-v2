@@ -942,6 +942,57 @@ def test_import_rejects_duplicate_template_natural_key_within_same_batch(
     assert template_rows == {}
 
 
+def test_import_rejects_malformed_reference_field_types_as_validation_errors(
+    run_cli: RunCli,
+    live_client: Instant,
+    tmp_path: Path,
+) -> None:
+    """A non-string `fundoId` (an int) and a non-string `antecessorId` (a
+    list) are rejected as clean, zero-write validation errors (WR-01)
+    instead of reaching a live query/transact call (`fundoId`) or silently
+    dropping the intended antecessor chain link (`antecessorId`)."""
+    suffix = unique_suffix()
+
+    templates = [
+        {
+            "_local_id": "bad_fundo_type",
+            "nome": f"Bad Fundo Type {suffix}",
+            "tipoGeracao": "du_fixo",
+            "regraCompetencia": "M0",
+            "offsetDias": 1,
+            "fundoId": 123,
+        },
+        {
+            "_local_id": "bad_antecessor_type",
+            "nome": f"Bad Antecessor Type {suffix}",
+            "tipoGeracao": "encadeado",
+            "regraCompetencia": "M0",
+            "offsetDias": 0,
+            "antecessorId": ["not", "a", "string"],
+        },
+    ]
+
+    batch_path = _write_batch(tmp_path, {"fundos": [], "templatesRotina": templates})
+
+    result: CliInvocation = run_cli(["import", "--from-json", str(batch_path)])
+    assert result.result.exit_code == 2, result.result.output
+    error_body = cast("dict[str, Any]", json.loads(result.result.output or result.result.stderr))
+    errors = cast("list[dict[str, Any]]", error_body["errors"])
+
+    assert any(
+        e["_local_id"] == "bad_fundo_type" and e["reason"] == "fundo_id_invalido" for e in errors
+    ), errors
+    assert any(
+        e["_local_id"] == "bad_antecessor_type" and e["reason"] == "antecessor_id_invalido"
+        for e in errors
+    ), errors
+
+    template_rows = _query_templates_by_nomes(
+        live_client, [f"Bad Fundo Type {suffix}", f"Bad Antecessor Type {suffix}"]
+    )
+    assert template_rows == {}
+
+
 def test_batch_import_module_defines_no_instance_entity_reference() -> None:
     """A second, independent structural check of D-10/C-06 beyond Plan
     31-01's own text-grep gate

@@ -202,6 +202,16 @@ def _check_template_form(index: int, record: object) -> list[dict[str, Any]]:
     if "propagarAtrasoSoft" in record and not isinstance(record["propagarAtrasoSoft"], bool):
         errors.append(_error(_ETYPE_TEMPLATE, index, local_id, "propagar_atraso_soft_invalido"))
 
+    fundo_id_value = record.get("fundoId")
+    if fundo_id_value is not None and (not isinstance(fundo_id_value, str) or not fundo_id_value):
+        errors.append(_error(_ETYPE_TEMPLATE, index, local_id, "fundo_id_invalido"))
+
+    antecessor_id_value = record.get("antecessorId")
+    if antecessor_id_value is not None and (
+        not isinstance(antecessor_id_value, str) or not antecessor_id_value
+    ):
+        errors.append(_error(_ETYPE_TEMPLATE, index, local_id, "antecessor_id_invalido"))
+
     if "donoId" in record:
         errors.append(_error(_ETYPE_TEMPLATE, index, local_id, "donoId_nao_permitido"))
 
