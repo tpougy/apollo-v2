@@ -148,6 +148,34 @@
         "rangeEnd": "2026-09-30",
         "diaSemana": "sexta",
         "expected": ["2026-08-14", "2026-08-21", "2026-08-28", "2026-09-04", "2026-09-11", "2026-09-18", "2026-09-25"]
+      },
+      {
+        "nome": "rangeStart e a propria sexta-feira alvo (lead == 0), rangeEnd nao coincide",
+        "rangeStart": "2026-08-14",
+        "rangeEnd": "2026-08-20",
+        "diaSemana": "sexta",
+        "expected": ["2026-08-14"]
+      },
+      {
+        "nome": "rangeEnd e a propria sexta-feira alvo (limite superior inclusivo), rangeStart nao coincide",
+        "rangeStart": "2026-08-10",
+        "rangeEnd": "2026-08-14",
+        "diaSemana": "sexta",
+        "expected": ["2026-08-14"]
+      },
+      {
+        "nome": "range invertido (rangeStart > rangeEnd) nunca gera ocorrencias",
+        "rangeStart": "2026-09-30",
+        "rangeEnd": "2026-08-09",
+        "diaSemana": "sexta",
+        "expected": []
+      },
+      {
+        "nome": "domingo (indice 6, dia diferente de sexta) prova a paridade do modulo (idx - weekday) % 7",
+        "rangeStart": "2026-08-09",
+        "rangeEnd": "2026-09-30",
+        "diaSemana": "domingo",
+        "expected": ["2026-08-09", "2026-08-16", "2026-08-23", "2026-08-30", "2026-09-06", "2026-09-13", "2026-09-20", "2026-09-27"]
       }
     ]
   },
