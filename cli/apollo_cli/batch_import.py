@@ -230,6 +230,66 @@ def _check_local_id_uniqueness(fundos: list[Any], templates: list[Any]) -> list[
     return errors
 
 
+def _check_fundo_codigo_uniqueness(fundos: list[Any]) -> list[dict[str, Any]]:
+    """In-batch natural-key collision check (CR-01, D-05): two fundo records
+    sharing a `codigo` that isn't yet in the DB would otherwise both
+    independently resolve as "new" in `_resolve_fundos` and both land in the
+    same `transact()` call, creating two rows with an identical `(donoId,
+    codigo)` natural key. Mirrors `_check_local_id_uniqueness`'s "one error
+    per occurrence" design — every colliding record gets its own error, not
+    a single summary error."""
+    occurrences: dict[str, list[int]] = defaultdict(list)
+    for index, record in enumerate(fundos):
+        if isinstance(record, dict):
+            codigo = record.get("codigo")
+            if isinstance(codigo, str) and codigo:
+                occurrences[codigo].append(index)
+
+    errors: list[dict[str, Any]] = []
+    for indices in occurrences.values():
+        if len(indices) > 1:
+            for index in indices:
+                local_id = _local_id_of(fundos[index])
+                errors.append(_error(_ETYPE_FUNDO, index, local_id, "codigo_duplicado_no_lote"))
+    return errors
+
+
+def _check_template_natural_key_uniqueness(templates: list[Any]) -> list[dict[str, Any]]:
+    """In-batch natural-key collision check (CR-01, D-05) for
+    `templatesRotina`, keyed on the RAW `fundoId` field value as written
+    (a bare/real id string, a `$local_id` reference, or absent) plus `nome`
+    — NOT the resolved real id, since this runs in the form-validation pass,
+    before `$local_id` resolution happens. Two sibling records writing the
+    identical raw `fundoId` value (the common same-batch-collision shape)
+    still collide correctly under this key. Without this check, two
+    templates sharing a resolved `(fundoId, nome)` pair that isn't yet in
+    the DB would both independently resolve as "new" in `_resolve_templates`
+    and both land in the same `transact()` call."""
+    occurrences: dict[tuple[object, str], list[int]] = defaultdict(list)
+    for index, record in enumerate(templates):
+        if not isinstance(record, dict):
+            continue
+        nome = record.get("nome")
+        if not isinstance(nome, str) or not nome:
+            continue
+        fundo_id_value = record.get("fundoId")
+        # `fundo_id_value` may be an unhashable malformed type (e.g. a
+        # list) — WR-01's own form check flags that separately; here it
+        # only needs a stable, collision-safe key component, never a crash.
+        key_component = (
+            fundo_id_value if isinstance(fundo_id_value, (str, type(None))) else id(fundo_id_value)
+        )
+        occurrences[(key_component, nome)].append(index)
+
+    errors: list[dict[str, Any]] = []
+    for indices in occurrences.values():
+        if len(indices) > 1:
+            for index in indices:
+                local_id = _local_id_of(templates[index])
+                errors.append(_error(_ETYPE_TEMPLATE, index, local_id, "nome_duplicado_no_lote"))
+    return errors
+
+
 def _check_references(
     templates: list[Any], fundo_local_ids: set[str], template_local_ids: set[str]
 ) -> list[dict[str, Any]]:
@@ -550,6 +610,8 @@ def run_batch_import(
     for index, record in enumerate(templates):
         errors.extend(_check_template_form(index, record))
     errors.extend(_check_local_id_uniqueness(fundos, templates))
+    errors.extend(_check_fundo_codigo_uniqueness(fundos))
+    errors.extend(_check_template_natural_key_uniqueness(templates))
 
     fundo_local_ids = {
         local_id for record in fundos if (local_id := _local_id_of(record)) is not None

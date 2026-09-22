@@ -870,6 +870,78 @@ def test_partial_batch_already_landed_resumes_without_duplication(
     _assert_no_duplicate_rows_by_key(live_client, "templatesRotina", "nome", template_nomes)
 
 
+def test_import_rejects_duplicate_fundo_codigo_within_same_batch(
+    run_cli: RunCli,
+    live_client: Instant,
+    tmp_path: Path,
+) -> None:
+    """Two fundo records in the SAME batch sharing a `codigo` that doesn't
+    yet exist in the DB are rejected wholesale (CR-01, D-05): without the
+    in-batch natural-key check, both would independently resolve as "new" in
+    `_resolve_fundos` and both land in the same `transact()`, creating two
+    rows with an identical `(donoId, codigo)` natural key. Exit 2, zero
+    writes, and both colliding `_local_id`s named in the error."""
+    suffix = unique_suffix()
+
+    fundos = [
+        {"_local_id": "dup_f1", "nome": f"Dup Fundo A {suffix}", "codigo": f"DUPCOD-{suffix}"},
+        {"_local_id": "dup_f2", "nome": f"Dup Fundo B {suffix}", "codigo": f"DUPCOD-{suffix}"},
+    ]
+
+    batch_path = _write_batch(tmp_path, {"fundos": fundos, "templatesRotina": []})
+
+    result: CliInvocation = run_cli(["import", "--from-json", str(batch_path)])
+    assert result.result.exit_code == 2, result.result.output
+    error_body = cast("dict[str, Any]", json.loads(result.result.output or result.result.stderr))
+    errors = cast("list[dict[str, Any]]", error_body["errors"])
+    colliding_local_ids = {
+        e["_local_id"] for e in errors if e["reason"] == "codigo_duplicado_no_lote"
+    }
+    assert colliding_local_ids == {"dup_f1", "dup_f2"}, errors
+
+    fundo_rows = _query_fundos_by_codigos(live_client, [f"DUPCOD-{suffix}"])
+    assert fundo_rows == {}
+
+
+def test_import_rejects_duplicate_template_natural_key_within_same_batch(
+    run_cli: RunCli,
+    live_client: Instant,
+    tmp_path: Path,
+) -> None:
+    """Two templatesRotina records in the SAME batch sharing the identical
+    raw `fundoId` value plus `nome` are rejected wholesale (CR-01, D-05):
+    without the in-batch natural-key check, both would independently resolve
+    as "new" in `_resolve_templates` and both land in the same `transact()`,
+    creating two rows with an identical resolved `(fundo, nome)` natural
+    key. Exit 2, zero writes for the WHOLE file (including the sibling
+    fundo record), and both colliding `_local_id`s named in the error."""
+    suffix = unique_suffix()
+
+    fundos = [
+        {"_local_id": "dup_t_fundo", "nome": f"Dup T Fundo {suffix}", "codigo": f"DUPTF-{suffix}"}
+    ]
+    templates = [
+        _template_record("dup_t1", suffix, 1, offset_dias=1, fundo_id="$dup_t_fundo"),
+        _template_record("dup_t2", suffix, 1, offset_dias=2, fundo_id="$dup_t_fundo"),
+    ]
+
+    batch_path = _write_batch(tmp_path, {"fundos": fundos, "templatesRotina": templates})
+
+    result: CliInvocation = run_cli(["import", "--from-json", str(batch_path)])
+    assert result.result.exit_code == 2, result.result.output
+    error_body = cast("dict[str, Any]", json.loads(result.result.output or result.result.stderr))
+    errors = cast("list[dict[str, Any]]", error_body["errors"])
+    colliding_local_ids = {
+        e["_local_id"] for e in errors if e["reason"] == "nome_duplicado_no_lote"
+    }
+    assert colliding_local_ids == {"dup_t1", "dup_t2"}, errors
+
+    fundo_rows = _query_fundos_by_codigos(live_client, [f"DUPTF-{suffix}"])
+    assert fundo_rows == {}
+    template_rows = _query_templates_by_nomes(live_client, [f"Template Lote 1 {suffix}"])
+    assert template_rows == {}
+
+
 def test_batch_import_module_defines_no_instance_entity_reference() -> None:
     """A second, independent structural check of D-10/C-06 beyond Plan
     31-01's own text-grep gate
