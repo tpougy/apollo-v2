@@ -57,6 +57,17 @@ const _schema = i.schema({
     // Marked `.optional()` because Phase 3/4 test templates already exist
     // live without it and InstantDB cannot backfill a required attribute
     // onto existing rows.
+    // A new weekly-anchor string field is added below (Phase 28/SEM-01,
+    // NOT in the original SPEC field table above): applies only when
+    // `tipoGeracao == "semanal"` (ignored by the other three types), stores
+    // the CLI's own lowercase, unaccented Portuguese weekday token verbatim
+    // (`"segunda"`..`"domingo"`), matching the plain-string convention
+    // already used by `tipoGeracao`/`regraCompetencia`/`status` (never an
+    // encoded integer, unlike the numeric offset field above). Marked
+    // `.optional()` for the same reason as that field: every pre-existing
+    // templatesRotina row (including the 84 real onboarding templates) has
+    // no value for it and InstantDB cannot backfill a required attribute
+    // onto existing rows.
     templatesRotina: i.entity({
       nome: i.string(),
       tipoGeracao: i.string(),
@@ -64,6 +75,7 @@ const _schema = i.schema({
       propagarAtrasoSoft: i.boolean(),
       ativo: i.boolean(),
       offsetDias: i.number().optional(),
+      diaSemana: i.string().optional(),
       donoId: i.string().indexed(),
     }),
     // SPEC row: instanciasRotina | dedupeKey (unique+indexed), dataPrevista, dataPrevistaEstimada, competencia, tipoPrazo, status, donoId
