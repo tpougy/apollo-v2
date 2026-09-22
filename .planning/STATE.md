@@ -1,18 +1,19 @@
 ---
-gsd_state_version: 1.0
+gsd_state_version: "1.0"
 milestone: v1.5
-milestone_name: Correções descobertas no onboarding real do calendário de rotinas
+milestone_name: Correções descobertas no onboarding real do calendário de rotinas (RBR)
 current_phase: 28
 current_phase_name: Periodicidade semanal
-status: planning
+status: executing
 stopped_at: Completed 27-02-PLAN.md (JOB-01 normalized status recognition + JOB-03 nome-in-skipped, Phase 27 fully complete)
-last_updated: "2026-08-14T21:32:27.100Z"
+last_updated: "2026-09-22T18:25:47.390Z"
 last_activity: 2026-08-14
 last_activity_desc: "Completed 26-01-PLAN.md: apollo rotina template criar/editar --regra-competencia bound to click.Choice(REGRAS_COMPETENCIA_SUPORTADAS), rejecting out-of-enum values at exit 2 before any write (VAL-01); --propagar-atraso-soft help text corrected to state the value is stored but not currently read (VAL-02); instancia status docstring corrected to describe dedupeKey as plain concatenation, not a hash (VAL-03); 15 pre-existing CLI/e2e fixtures repaired to the new enum; full offline cli/ pytest suite (348 passed) and the affected live tests green."
+state_head: 250f08442bebafcd487aee8e87d02010549a8198
 progress:
   total_phases: 6
   completed_phases: 2
-  total_plans: 3
+  total_plans: 6
   completed_plans: 3
   percent: 33
 ---
@@ -28,12 +29,12 @@ See: .planning/PROJECT.md (updated 2026-08-14)
 
 ## Current Position
 
-Phase: 28 of 31 (Periodicidade semanal)
+Phase: 28 (Periodicidade semanal) — READY TO EXECUTE
 Plan: Not started
-Status: Ready to plan
+Status: Ready to execute
 Last activity: 2026-08-14 — Phase 27 complete, transitioned to Phase 28
 
-Progress: [██████████] 100%
+Progress: [███░░░░░░░] 33%
 
 ## Performance Metrics
 
