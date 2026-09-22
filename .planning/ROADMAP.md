@@ -226,7 +226,17 @@ urgência relativa entre as seis)
 
   3. Um lote equivalente ao onboarding real (18 fundos + 84 templates) completa em uma
      única invocação, não 102.
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+
+- [ ] 31-01-PLAN.md — `apollo import --from-json <arquivo> [--dry-run]`: parse, two-pass
+  validation (collect-all-errors), natural-key existence check, id pre-assignment, one atomic
+  heterogeneous transact + ambiguous-failure recovery, live-proven at meaningful scale
+  (encadeado chain + both reference forms) (BATCH-01)
+- [ ] 31-02-PLAN.md — full 18-fundo/84-template onboarding-scale proof in one invocation
+  (Success Criterion 3), same-scale re-run + partial-batch-already-landed resume proofs
+  (Success Criterion 2), whole-cli/-package gate sweep (BATCH-01)
 
 <details>
 <summary>✅ v1.0 Apollo v2 MVP (Phases 1-6) — SHIPPED 2026-08-09</summary>
