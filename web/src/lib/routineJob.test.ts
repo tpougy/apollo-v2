@@ -6,6 +6,7 @@ import {
   DIA_SEMANA_INDEX,
   type ExistingInstance,
   endOfNextMonth,
+  monthsInRange,
   nthBusinessDayOfMonth,
   nthCalendarDayOfMonth,
   type SkipReason,
@@ -52,11 +53,19 @@ interface WeeklyOccurrencesCase {
   expected: string[];
 }
 
+interface MonthsInRangeCase {
+  nome: string;
+  rangeStart: string;
+  rangeEnd: string;
+  expected: Array<[number, number]>;
+}
+
 interface Scenario {
   nome: string;
   today: string;
   templates: TemplateRow[];
   existing: ExistingInstance[];
+  rangeOverride?: [string, string];
   expectedInstances: Array<{
     dedupeKey: string;
     templateId: string;
@@ -74,6 +83,7 @@ const dayMath = fixture.dayMath as {
   endOfNextMonth: EndOfNextMonthCase[];
   shiftCompetencia: ShiftCompetenciaCase[];
   weeklyOccurrences: WeeklyOccurrencesCase[];
+  monthsInRange: MonthsInRangeCase[];
 };
 const scenarios = fixture.scenarios as Scenario[];
 
@@ -119,12 +129,20 @@ describe("routineJob dayMath fixture parity", () => {
       });
     }
   });
+
+  describe("monthsInRange", () => {
+    for (const c of dayMath.monthsInRange) {
+      test(c.nome, () => {
+        expect(monthsInRange(c.rangeStart, c.rangeEnd)).toEqual(c.expected);
+      });
+    }
+  });
 });
 
 describe("routineJob computeExpectedInstances scenario fixture parity", () => {
   for (const s of scenarios) {
     test(s.nome, () => {
-      const result = computeExpectedInstances(s.templates, s.today, s.existing);
+      const result = computeExpectedInstances(s.templates, s.today, s.existing, s.rangeOverride);
       expect(result.expected).toEqual(s.expectedInstances);
       expect(result.skipped).toEqual(s.expectedSkipped);
     });

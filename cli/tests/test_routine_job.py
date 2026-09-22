@@ -29,6 +29,7 @@ from apollo_cli.routine_job import (
     build_dedupe_key,
     compute_expected_instances,
     end_of_next_month,
+    months_in_range,
     nth_business_day_of_month,
     nth_calendar_day_of_month,
     shift_competencia,
@@ -80,13 +81,24 @@ def test_weekly_occurrences(case: dict[str, Any]) -> None:
     )
 
 
+@pytest.mark.parametrize("case", FIXTURE["dayMath"]["monthsInRange"], ids=lambda c: c["nome"])
+def test_months_in_range(case: dict[str, Any]) -> None:
+    assert months_in_range(case["rangeStart"], case["rangeEnd"]) == [
+        tuple(pair) for pair in case["expected"]
+    ]
+
+
 # --- scenarios fixture parity (not live) ------------------------------------
 
 
 @pytest.mark.parametrize("scenario", FIXTURE["scenarios"], ids=lambda s: s["nome"])
 def test_scenario(scenario: dict[str, Any]) -> None:
+    range_override = scenario.get("rangeOverride")
     result = compute_expected_instances(
-        scenario["templates"], scenario["today"], scenario["existing"]
+        scenario["templates"],
+        scenario["today"],
+        scenario["existing"],
+        tuple(range_override) if range_override else None,
     )
     assert result.expected == scenario["expectedInstances"]
     assert result.skipped == scenario["expectedSkipped"]

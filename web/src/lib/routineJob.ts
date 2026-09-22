@@ -117,6 +117,27 @@
  * "every matching weekday across the whole range" without a rewrite.
  * `offsetDias` is never read for `semanal` templates (document-only,
  * mirrors `encadeado` never consulting its own unused `regraCompetencia`).
+ *
+ * `rangeOverride` (**RANGE-01**): `computeExpectedInstances` accepts an
+ * optional `rangeOverride?: [string, string]` that, when provided, fully
+ * REPLACES (never intersects) the default `[today, endOfNextMonth(today)]`
+ * window — a narrower-or-differently-positioned recorte can therefore reach
+ * a date before `today` or exclude the following month entirely, neither of
+ * which a mere filter over the default range could ever do (D-01).
+ * `monthsInRange(rangeStart, rangeEnd)` generalizes `computeFixedInstances`'s
+ * old `today`-derived, always-exactly-two-months `candidateMonths` into
+ * every `[year, month]` pair whose calendar month intersects an arbitrary
+ * `[rangeStart, rangeEnd]` window, strictly backward compatible by
+ * construction: `monthsInRange(today, endOfNextMonth(today))` always equals
+ * exactly `[[todayYear, todayMonth], [nextMonthYear, nextMonth]]`, since
+ * `today`'s own month always intersects trivially and `endOfNextMonth` is by
+ * definition that following month's last day (D-02). `weeklyOccurrences`/
+ * `computeSemanalInstances` and the `encadeado` sweep's range filter needed
+ * zero change since they already consume `rangeStart`/`rangeEnd` directly,
+ * never `today` (D-03). No caller in `web/` ever supplies a range override —
+ * there is no SPA surface for `gerar-instancias` (D-07/D-08); this
+ * generalization exists purely for cross-runtime parity with the Python
+ * twin.
  */
 
 import { addBusinessDays, isBusinessDay, nthBusinessDayFromMonthEnd } from "./bizdays";
@@ -276,19 +297,60 @@ function validateOffsetDias(
 type NthDayFn = (year: number, month: number, n: number) => string;
 
 /**
+ * Every `[year, month]` pair whose calendar month has non-empty
+ * intersection with `[rangeStart, rangeEnd]`, in chronological order.
+ * Returns `[]` when `rangeStart > rangeEnd` (inverted range).
+ *
+ * This is the generalization of `computeFixedInstances`'s old
+ * `today`-derived, always-exactly-two-months `candidateMonths` block —
+ * strictly backward compatible by construction (D-02):
+ * `monthsInRange(today, endOfNextMonth(today))` always equals exactly
+ * `[[todayYear, todayMonth], [nextMonthYear, nextMonth]]`, since `today`'s
+ * own month always intersects `[today, endOfNextMonth(today)]` trivially,
+ * and the following month also intersects (`endOfNextMonth` is by
+ * definition that following month's last day). Exported (no local-only
+ * visibility): this is the pure date-math primitive, directly
+ * fixture-tested like `endOfNextMonth`/`weeklyOccurrences`.
+ */
+export function monthsInRange(rangeStart: string, rangeEnd: string): Array<[number, number]> {
+  if (rangeStart > rangeEnd) {
+    return [];
+  }
+
+  const [startYearStr, startMonthStr] = rangeStart.split("-");
+  let year = Number(startYearStr);
+  let month = Number(startMonthStr);
+
+  const [endYearStr, endMonthStr] = rangeEnd.split("-");
+  const endYear = Number(endYearStr);
+  const endMonth = Number(endMonthStr);
+
+  const months: Array<[number, number]> = [];
+  while (year < endYear || (year === endYear && month <= endMonth)) {
+    months.push([year, month]);
+    const nextMonth = month === 12 ? 1 : month + 1;
+    if (nextMonth === 1) {
+      year += 1;
+    }
+    month = nextMonth;
+  }
+
+  return months;
+}
+
+/**
  * Compute the `du_fixo`/`corrido_fixo` expected instances for a single
- * template across the two candidate months touching
- * `[today, endOfNextMonth(today)]`. `nthDayFn` supplies the type-specific
- * date rule (`nthBusinessDayOfMonth` or `nthCalendarDayOfMonth`) — everything
- * else (range filter, competencia derivation, dedupeKey, tipoPrazo) is
- * shared between the two fixed-offset generation types. Throws on any
- * underlying business-day computation error (e.g. `CalendarRangeError`) so
- * the caller's per-template try/catch can convert it into a `skipped` entry
- * — this function itself never catches.
+ * template across every candidate month intersecting
+ * `[rangeStart, rangeEnd]`. `nthDayFn` supplies the type-specific date rule
+ * (`nthBusinessDayOfMonth` or `nthCalendarDayOfMonth`) — everything else
+ * (range filter, competencia derivation, dedupeKey, tipoPrazo) is shared
+ * between the two fixed-offset generation types. Throws on any underlying
+ * business-day computation error (e.g. `CalendarRangeError`) so the
+ * caller's per-template try/catch can convert it into a `skipped` entry —
+ * this function itself never catches.
  */
 function computeFixedInstances(
   template: TemplateRow,
-  today: string,
   rangeStart: string,
   rangeEnd: string,
   minOffsetDias: number,
@@ -300,16 +362,7 @@ function computeFixedInstances(
   }
   const offsetDias = template.offsetDias as number;
 
-  const [todayYearStr, todayMonthStr] = today.split("-");
-  const todayYear = Number(todayYearStr);
-  const todayMonth = Number(todayMonthStr);
-  const nextMonth = todayMonth === 12 ? 1 : todayMonth + 1;
-  const nextMonthYear = todayMonth === 12 ? todayYear + 1 : todayYear;
-
-  const candidateMonths: Array<[number, number]> = [
-    [todayYear, todayMonth],
-    [nextMonthYear, nextMonth],
-  ];
+  const candidateMonths = monthsInRange(rangeStart, rangeEnd);
 
   const instances: ExpectedInstance[] = [];
   for (const [y, m] of candidateMonths) {
@@ -514,9 +567,9 @@ export function computeExpectedInstances(
   templates: readonly TemplateRow[],
   today: string,
   existing: readonly ExistingInstance[],
+  rangeOverride?: [string, string],
 ): ComputeResult {
-  const rangeStart = today;
-  const rangeEnd = endOfNextMonth(today);
+  const [rangeStart, rangeEnd] = rangeOverride ?? [today, endOfNextMonth(today)];
 
   const expected: ExpectedInstance[] = [];
   const skipped: SkippedTemplate[] = [];
@@ -580,21 +633,13 @@ export function computeExpectedInstances(
       if (template.tipoGeracao === "du_fixo") {
         result = computeFixedInstances(
           template,
-          today,
           rangeStart,
           rangeEnd,
           DU_FIXO_MIN_OFFSET_DIAS,
           duFixoNthDay,
         );
       } else if (template.tipoGeracao === "corrido_fixo") {
-        result = computeFixedInstances(
-          template,
-          today,
-          rangeStart,
-          rangeEnd,
-          1,
-          nthCalendarDayOfMonth,
-        );
+        result = computeFixedInstances(template, rangeStart, rangeEnd, 1, nthCalendarDayOfMonth);
       } else if (template.tipoGeracao === "semanal") {
         result = computeSemanalInstances(template, rangeStart, rangeEnd);
       } else {
