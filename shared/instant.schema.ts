@@ -9,20 +9,8 @@ import { i } from "@instantdb/svelte";
 
 const _schema = i.schema({
   entities: {
-    // SPEC row: fundos | nome, codigo, ativo, donoId, createdAt
-    // TRANSITIONAL (quick task 260922-vbt): kept additively alongside the
-    // new generic `entidades` entity below through Task 1-3 so no
-    // not-yet-renamed CLI/web code path breaks mid-migration. Removed
-    // entirely (entity + its 3 links + perms rule) in Task 4's destructive
-    // schema push, once all consumers have moved to `entidades`.
-    fundos: i.entity({
-      nome: i.string(),
-      codigo: i.string().indexed(),
-      ativo: i.boolean(),
-      donoId: i.string().indexed(),
-      createdAt: i.date(),
-    }),
-    // Generic replacement for `fundos` (quick task 260922-vbt, CONTEXT.md
+    // Generic replacement for the old fixed `fundos` entity (quick task
+    // 260922-vbt, CONTEXT.md
     // D1-D7): `tipoEntidade` is a free-text discriminator (e.g. "Fundo",
     // "Cliente", "Area") with no closed vocabulary/catalog entity, mirroring
     // this schema's existing convention for `status`/`tipoGeracao`/
@@ -140,18 +128,6 @@ const _schema = i.schema({
     }),
   },
   links: {
-    fundoProjetos: {
-      forward: { on: "projetos", has: "one", label: "fundo" },
-      reverse: { on: "fundos", has: "many", label: "projetos" },
-    },
-    fundoTemplatesRotina: {
-      forward: { on: "templatesRotina", has: "one", label: "fundo" },
-      reverse: { on: "fundos", has: "many", label: "templatesRotina" },
-    },
-    fundoTickets: {
-      forward: { on: "tickets", has: "one", label: "fundo" },
-      reverse: { on: "fundos", has: "many", label: "tickets" },
-    },
     entidadeProjetos: {
       forward: { on: "projetos", has: "one", label: "entidade" },
       reverse: { on: "entidades", has: "many", label: "projetos" },
