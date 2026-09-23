@@ -948,16 +948,39 @@ test.describe("DASH-04: rotinas by fundo", () => {
     await expect(lastCard).toContainText("Sem fundo vinculado");
   });
 
-  test("the 5-instance fundo's card caps at 4 rotinas-row plus one +1 rotinas-overflow", async ({
+  test("the 5-instance fundo's card shows all 5 rotinas-row with no cap, scrollable when they overflow the column", async ({
     page,
   }) => {
     test.setTimeout(60_000);
 
+    await page.setViewportSize({ width: 1280, height: 500 });
     await page.goto("/");
     const card = page.locator(`[data-testid="rotinas-fundo-card"][data-eid="${fundoId}"]`);
     await expect(card).toBeVisible({ timeout: RESYNC_TIMEOUT });
-    await expect(card.getByTestId("rotinas-row")).toHaveCount(4);
-    await expect(card.getByTestId("rotinas-overflow")).toContainText("+1");
+    await expect(card.getByTestId("rotinas-row")).toHaveCount(5);
+
+    const lista = card.getByTestId("rotinas-coluna-lista");
+    const overflowY = await lista.evaluate((el) => getComputedStyle(el).overflowY);
+    expect(overflowY).toBe("auto");
+
+    // The `dash-placeholder-rotinas` grid cell's real height is derived from
+    // WeekCalendar + ProjectStrips' own combined content height (CSS Grid
+    // row-span stretch), not from the browser viewport -- so whether 5 rows
+    // genuinely overflow it is a function of unrelated, unpredictable
+    // production data (project/task counts), not this test's own fixture.
+    // To measure "scroll interno na coluna quando houver mais itens do que
+    // cabe" deterministically, this constrains the column body itself to a
+    // small height -- the exact same overflow-y:auto CSS mechanism the real
+    // (viewport-driven) narrow-column case exercises, just made
+    // reproducible rather than incidental.
+    await lista.evaluate((el) => {
+      el.style.maxHeight = "120px";
+    });
+    const [scrollHeight, clientHeight] = await lista.evaluate((el) => [
+      el.scrollHeight,
+      el.clientHeight,
+    ]);
+    expect(scrollHeight).toBeGreaterThan(clientHeight);
   });
 
   test("each rotinas-row shows the linked template's nome, not the instancia id", async ({
@@ -1012,7 +1035,7 @@ test.describe("DASH-04: rotinas by fundo", () => {
     await page.goto("/");
     const card = page.locator(`[data-testid="rotinas-fundo-card"][data-eid="${fundoId}"]`);
     await expect(card).toBeVisible({ timeout: RESYNC_TIMEOUT });
-    await expect(card.getByTestId("rotinas-row")).toHaveCount(4, { timeout: RESYNC_TIMEOUT });
+    await expect(card.getByTestId("rotinas-row")).toHaveCount(5, { timeout: RESYNC_TIMEOUT });
 
     await selectByText(page, "rotinas-status", "atrasadas");
     await expect(card.getByTestId("rotinas-row")).toHaveCount(1, { timeout: RESYNC_TIMEOUT });
@@ -1022,7 +1045,7 @@ test.describe("DASH-04: rotinas by fundo", () => {
     );
 
     await selectByText(page, "rotinas-status", "todas");
-    await expect(card.getByTestId("rotinas-row")).toHaveCount(4, { timeout: RESYNC_TIMEOUT });
+    await expect(card.getByTestId("rotinas-row")).toHaveCount(5, { timeout: RESYNC_TIMEOUT });
   });
 
   test("ordenar: data (mais distante) reverses the fundo group's row order", async ({ page }) => {
@@ -1057,6 +1080,38 @@ test.describe("DASH-04: rotinas by fundo", () => {
     await expect(page.getByTestId("rotinas-agrupar")).toContainText("agrupar: fundo");
     await expect(page.getByTestId("rotinas-ordenar")).toContainText("ordenar: data-asc");
     await expect(page.getByTestId("rotinas-status")).toContainText("status: todas");
+  });
+
+  test("each rotinas-row's title uses line-clamp-2, never a single-line truncate", async ({
+    page,
+  }) => {
+    test.setTimeout(60_000);
+
+    await page.goto("/");
+    const card = page.locator(`[data-testid="rotinas-fundo-card"][data-eid="${fundoId}"]`);
+    await expect(card).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    await expect(card.getByTestId("rotinas-row-titulo").first()).toHaveClass(/line-clamp-2/, {
+      timeout: RESYNC_TIMEOUT,
+    });
+  });
+
+  test("each rotinas-row shows its group's fundo nome when linked, and omits it for 'Sem fundo vinculado'", async ({
+    page,
+  }) => {
+    test.setTimeout(60_000);
+
+    await page.goto("/");
+    const card = page.locator(`[data-testid="rotinas-fundo-card"][data-eid="${fundoId}"]`);
+    await expect(card).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    const fundoCaptions = card.getByTestId("rotinas-row-fundo");
+    await expect(fundoCaptions).toHaveCount(5, { timeout: RESYNC_TIMEOUT });
+    for (const caption of await fundoCaptions.all()) {
+      await expect(caption).toContainText(fundoNome);
+    }
+
+    const semFundoCard = page.locator(`[data-testid="rotinas-fundo-card"][data-eid=""]`);
+    await expect(semFundoCard).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    await expect(semFundoCard.getByTestId("rotinas-row-fundo")).toHaveCount(0);
   });
 });
 
