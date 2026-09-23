@@ -3,10 +3,10 @@ gsd_state_version: "1.0"
 milestone: v1.5
 status: Awaiting next milestone
 stopped_at: Phase 31 complete — all phases complete
-last_updated: "2026-09-23T15:00:02.071Z"
+last_updated: "2026-09-23T15:31:23.973Z"
 last_activity: 2026-09-23
-last_activity_desc: Completed quick task 260922-vbt (fundos -> entidades rename + migration)
-state_head: f46bd78e7ee3d8c81069af5c94b1d29d23620cde
+last_activity_desc: Completed quick task 260923-h35 (vite.config.ts Cloudflare Pages app_id fallback)
+state_head: 616cc8be779713709d2bcfd986e4503949f40189
 progress:
   total_phases: 6
   completed_phases: 6
@@ -31,7 +31,7 @@ See: .planning/PROJECT.md (updated 2026-09-22)
 Phase: Milestone v1.5 complete
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-09-23 — Completed quick task 260922-vbt: generalizar fundos para entidades com multiplos tipos configuraveis (58 registros de producao migrados)
+Last activity: 2026-09-23 — Completed quick task 260923-h35: vite.config.ts ganhou fallback para process.env.VITE_INSTANT_APP_ID, habilitando build no Cloudflare Pages
 
 ## Performance Metrics
 
@@ -121,6 +121,7 @@ None — v1.5 roadmap coverage is 12/12 requirements mapped with no orphans. No 
 | 260922-vbt | Generalizar fundos para entidades com multiplos tipos configuraveis: nova modelagem de entidade generica no lugar de fundos fixo, com suporte a multiplos tipos de entidade (cada tipo com seu proprio label, ex Fundo/Cliente/Area), templatesRotina e projetos e tickets passam a vincular a uma entidade de qualquer tipo, migracao dos dados de producao existentes (fundos atuais viram entidades do tipo Fundo). | 2026-09-23 | cc5218f | Verified (human_needed item resolved — see VERIFICATION.md and Deferred Items rows below) | .planning/quick/260922-vbt-generalizar-fundos-para-entidades-com-mu |
 | 5 | Trocar o título da página (title tag) de "Apollo v2" para "Apollo" no app web. | 2026-09-23 | dfc982a | — | — |
 | 6 | Corrigir warning "state_referenced_locally" em EntityScreen.svelte via untrack() (2o warning, nested <button> em ProjetosSection, mantido como debito tecnico ja documentado) | 2026-09-23 | f46bd78 | — | — |
+| 260923-h35 | Ajustar web/vite.config.ts para permitir build no Cloudflare Pages: fallback para process.env.VITE_INSTANT_APP_ID quando .env.instantdb nao existir, comportamento identico quando o arquivo existir, INSTANT_APP_ADMIN_TOKEN nunca exposto. | 2026-09-23 | 616cc8b | Verified | [260923-h35-ajustar-web-vite-config-ts-para-permitir](./quick/260923-h35-ajustar-web-vite-config-ts-para-permitir/) |
 
 ## Deferred Items
 
