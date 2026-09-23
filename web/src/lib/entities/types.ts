@@ -18,6 +18,12 @@ export interface LinkDef {
   targetLabelField: string; // field shown in the option text, e.g. "nome"
   required: boolean;
   excludeSelf?: boolean; // true for templatesRotina.antecessor (self-link)
+  // When true, the link is rendered as a display-only table value (via the
+  // existing generic listColumns/columnValue/labelForLinkedValue machinery,
+  // unchanged) but is NEVER exposed as an editable <select> in the
+  // create/edit form — see instanciasRotina.template for the motivating
+  // case (a link whose value must never be user-reassignable).
+  readOnly?: boolean;
 }
 
 export interface XorLinkDef {

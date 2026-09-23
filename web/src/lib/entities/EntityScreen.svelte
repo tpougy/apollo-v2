@@ -81,10 +81,12 @@
   // generic engine trades static query typing for config-driven reuse.
   const query = db.useQuery(() => buildQuery(config) as never);
 
-  const linkTargetQueries = (config.links ?? []).map((link) => ({
-    link,
-    result: db.useQuery(() => ({ [link.targetEtype]: {} }) as never),
-  }));
+  const linkTargetQueries = (config.links ?? [])
+    .filter((link) => !link.readOnly)
+    .map((link) => ({
+      link,
+      result: db.useQuery(() => ({ [link.targetEtype]: {} }) as never),
+    }));
 
   const xorTargetQueries = config.xorLink
     ? config.xorLink.choices.map((choice) => ({
@@ -709,7 +711,7 @@
           </div>
         {/each}
 
-        {#each config.links ?? [] as link (link.label)}
+        {#each (config.links ?? []).filter((l) => !l.readOnly) as link (link.label)}
           <div class="space-y-2">
             <Label for={`link-${link.label}`}>{link.label}</Label>
             <Select.Root

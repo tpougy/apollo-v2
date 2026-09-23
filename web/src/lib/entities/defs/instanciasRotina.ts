@@ -19,21 +19,20 @@ import type { EntityConfig } from "../types";
 // form to `status` only — exactly mirroring the CLI's `rotina instancia
 // status` command, which updates ONLY `status` for the identical reason.
 //
-// The `template` link (schema link `templateInstancias`) is deliberately
-// NOT declared here. The shipped EntityScreen.svelte (04-02) renders every
-// entry in `links` as an editable `<select>` in the create/edit form
-// unconditionally — `updatableFields` only narrows `fields`, it has no
-// effect on `links`. Declaring `template` as a link (the only way to pull
-// its data into the query/table at all — see EntityScreen.svelte's
-// `buildQuery`) would therefore reopen exactly the reassignment hole this
-// definition exists to close: a user could silently re-parent an instance to
-// a different template via the edit form, desynchronizing it from the
-// dedupeKey that was computed against its ORIGINAL template. Since the
-// shared component cannot be modified in this plan (owned by 04-02, shared
-// with parallel wave-3 plans) and no read-only-link rendering mode exists,
-// the owning template's name is intentionally omitted from `listColumns`
-// rather than exposing it through an editable selector. See 04-05-SUMMARY.md
-// for the full trade-off writeup.
+// The `template` link (schema link `templateInstancias`) IS declared below,
+// with `readOnly: true`. EntityScreen.svelte's generic `readOnly` filter
+// (added alongside this definition) excludes any such link from the two
+// places that would otherwise let a user reassign it — `linkTargetQueries`
+// (no selectable option list is even fetched) and the per-link `<Select>`
+// loop in the create/edit form — while still resolving it into the table
+// via the existing generic `listColumns`/`columnValue`/`labelForLinkedValue`
+// machinery (unchanged, already generic over any link). This closes the
+// display gap (an operator previously had no way to see which template
+// produced a given instance) without reopening the reassignment hole this
+// definition previously avoided by omitting the link entirely: no control
+// ever renders for a `readOnly` link, so `selectedLinks[label]` is only ever
+// seeded from the row's current server value (`startEdit`) and resubmitted
+// unchanged (`handleSubmit`'s relink loop) — never user-alterable.
 const instanciasRotinaConfig: EntityConfig = {
   etype: "instanciasRotina",
   titulo: "Instâncias de rotina",
@@ -56,7 +55,16 @@ const instanciasRotinaConfig: EntityConfig = {
     { name: "tipoPrazo", label: "Tipo de prazo", required: true, kind: "text" },
     { name: "status", label: "Status", required: true, kind: "text" },
   ],
-  listColumns: ["competencia", "dataPrevista", "status", "tipoPrazo"],
+  links: [
+    {
+      label: "template",
+      targetEtype: "templatesRotina",
+      targetLabelField: "nome",
+      required: false,
+      readOnly: true,
+    },
+  ],
+  listColumns: ["template", "competencia", "dataPrevista", "status", "tipoPrazo"],
 };
 
 export default instanciasRotinaConfig;

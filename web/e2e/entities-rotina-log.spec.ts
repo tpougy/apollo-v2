@@ -267,6 +267,63 @@ test("WEB-07: instanciasRotina offers no create, no delete, and status-only edit
   }
 });
 
+test("WEB-10: instanciasRotina listing mostra o nome do template e o mantém somente leitura", async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+
+  const nomeTemplate = uniqueName("template-nome");
+  const created = JSON.parse(
+    apolloCli([
+      "rotina",
+      "template",
+      "criar",
+      "--nome",
+      nomeTemplate,
+      "--tipo-geracao",
+      "du_fixo",
+      "--regra-competencia",
+      "M0",
+    ]),
+  ) as { id: string };
+  const templateId = created.id;
+
+  const dedupeKey = uniqueName("dedupe");
+  const dataPrevista = "2026-03-01T00:00:00.000Z";
+  const competencia = uniqueName("competencia");
+  const eid = await seedInstance(
+    {
+      dedupeKey,
+      dataPrevista,
+      competencia,
+      tipoPrazo: "hard",
+      status: "pendente",
+    },
+    OWNER_EMAIL,
+    templateId,
+  );
+
+  try {
+    await page.goto("/");
+    await page.getByTestId("nav-instanciasRotina").click();
+    const row = page.getByTestId("row").filter({ hasText: competencia });
+    await expect(row).toBeVisible({ timeout: RESYNC_TIMEOUT });
+
+    // The template column resolves the source template's nome inline.
+    await expect(row).toContainText(nomeTemplate, { timeout: RESYNC_TIMEOUT });
+
+    // Opening the edit dialog still shows only field-status — no link-template
+    // select ever renders, proving the column stays read-only.
+    await row.getByTestId("row-edit").click();
+    await expect(page.getByTestId("field-status")).toHaveCount(1);
+    await expect(page.getByTestId("link-template")).toHaveCount(0);
+    await page.getByTestId("entity-cancel").click();
+  } finally {
+    await deleteInstance(eid);
+    tryDeleteTemplate(templateId);
+  }
+});
+
 test("WEB-09: logInferenciaClaude is a pure read-only table showing CLI-written entries", async ({
   page,
 }) => {
