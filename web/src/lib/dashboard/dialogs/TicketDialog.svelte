@@ -25,7 +25,7 @@
     dataRecebimento: string;
     dataPrevista?: string | null;
     tipoPrazo: string;
-    fundo?: { id: string; nome: string } | null;
+    entidade?: { id: string; nome: string } | null;
     subtarefas?: { id: string; titulo: string; concluida: boolean }[];
   };
 
@@ -83,7 +83,7 @@
     {onOpenChange}
     size="M"
     title={ticket.titulo}
-    contexto={`${ticket.fundo?.nome ?? "Sem fundo"} · ${ticket.tipoPrazo.toUpperCase()} · ${(ticket.dataPrevista ?? ticket.dataRecebimento).slice(0, 10)}`}
+    contexto={`${ticket.entidade?.nome ?? "Sem entidade"} · ${ticket.tipoPrazo.toUpperCase()} · ${(ticket.dataPrevista ?? ticket.dataRecebimento).slice(0, 10)}`}
     {breadcrumb}
     onEditar={startEditar}
     onVerPagina={verPagina}

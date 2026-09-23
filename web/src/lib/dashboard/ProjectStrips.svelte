@@ -10,7 +10,7 @@
   // its own row types rather than importing Dashboard.svelte's, since
   // Dashboard.svelte exports none).
   type SubtarefaRow = { id: string; concluida: boolean };
-  type FundoRow = { id: string; nome: string };
+  type EntidadeRow = { id: string; nome: string };
   type TarefaRow = {
     id: string;
     titulo: string;
@@ -19,13 +19,18 @@
     subtarefas?: SubtarefaRow[];
   };
   type EtapaRow = { id: string; nome: string; ordem: number; tarefas?: TarefaRow[] };
-  type ProjetoRow = { id: string; nome: string; fundo?: FundoRow | null; etapas?: EtapaRow[] };
+  type ProjetoRow = {
+    id: string;
+    nome: string;
+    entidade?: EntidadeRow | null;
+    etapas?: EtapaRow[];
+  };
 
   let {
     projetos,
     hojeIso,
     onVerProjetos,
-    onOpenFundo,
+    onOpenEntidade,
     onOpenProjeto,
     onOpenEtapa,
     onOpenTarefa,
@@ -33,7 +38,7 @@
     projetos: ProjetoRow[];
     hojeIso: string;
     onVerProjetos: () => void;
-    onOpenFundo: (id: string) => void;
+    onOpenEntidade: (id: string) => void;
     onOpenProjeto: (id: string) => void;
     onOpenEtapa: (id: string) => void;
     onOpenTarefa: (id: string) => void;
@@ -176,16 +181,16 @@
           </button>
           <button
             type="button"
-            data-testid="project-strip-fundo-badge"
-            data-eid={projeto.fundo?.id ?? ""}
-            onclick={projeto.fundo?.id
+            data-testid="project-strip-entidade-badge"
+            data-eid={projeto.entidade?.id ?? ""}
+            onclick={projeto.entidade?.id
               ? (e) => {
                   e.stopPropagation();
-                  onOpenFundo(projeto.fundo!.id);
+                  onOpenEntidade(projeto.entidade!.id);
                 }
               : undefined}
           >
-            <Badge variant="outline">{projeto.fundo?.nome ?? "Sem fundo vinculado"}</Badge>
+            <Badge variant="outline">{projeto.entidade?.nome ?? "Sem entidade vinculada"}</Badge>
           </button>
           <span data-testid="project-strip-meta" class="text-xs text-muted-foreground">
             {etapasOrdenadas.length} etapas - {totalTarefas} tarefas

@@ -78,7 +78,7 @@ const templatesRotinaConfig: EntityConfig = {
     { name: "ativo", label: "Ativo", required: true, kind: "boolean" },
   ],
   links: [
-    { label: "fundo", targetEtype: "fundos", targetLabelField: "nome", required: false },
+    { label: "entidade", targetEtype: "entidades", targetLabelField: "nome", required: false },
     {
       label: "antecessor",
       targetEtype: "templatesRotina",
@@ -87,7 +87,15 @@ const templatesRotinaConfig: EntityConfig = {
       excludeSelf: true,
     },
   ],
-  listColumns: ["nome", "tipoGeracao", "offsetDias", "diaSemana", "ativo", "fundo", "antecessor"],
+  listColumns: [
+    "nome",
+    "tipoGeracao",
+    "offsetDias",
+    "diaSemana",
+    "ativo",
+    "entidade",
+    "antecessor",
+  ],
 };
 
 export default templatesRotinaConfig;

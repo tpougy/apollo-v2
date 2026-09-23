@@ -188,7 +188,7 @@ export function cargaDoMes(
 
 // ---------------------------------------------------------------------------
 // New DASH-06 exports (Phase 21 Task 3): cross-referenced weekly agenda and
-// fundo grouping. Local shapes only — this module stays decoupled from
+// entidade grouping. Local shapes only — this module stays decoupled from
 // dashboardQuery.ts, never importing its types.
 // ---------------------------------------------------------------------------
 
@@ -200,12 +200,12 @@ export interface Item {
   titulo: string;
   prazo: string;
   vencido: boolean;
-  fundoId: string | null;
+  entidadeId: string | null;
 }
 
-interface ProjetoFundoLike {
+interface ProjetoEntidadeLike {
   id: string;
-  fundo: { id: string } | null;
+  entidade: { id: string } | null;
 }
 
 interface TarefaAgendaLike {
@@ -218,17 +218,17 @@ interface TarefaAgendaLike {
 }
 
 // Widened (Plan 23-05, Deviation Rule 1/2) to add an optional `nome` on
-// `template` -- `rotinasDoFundo`'s return type is this same interface, and
-// FundoDialog.svelte's read-only rotina list needs `instancia.template.nome`
-// (the template's own display name, distinct from `template.fundo.nome`)
+// `template` -- `rotinasDoEntidade`'s return type is this same interface, and
+// EntidadeDialog.svelte's read-only rotina list needs `instancia.template.nome`
+// (the template's own display name, distinct from `template.entidade.nome`)
 // to render each row's label. Optional, so every existing caller/fixture
-// that never supplied it (agendaPorDia/rotinasPorFundo's own call sites)
+// that never supplied it (agendaPorDia/rotinasPorEntidade's own call sites)
 // stays structurally compatible -- zero behavior change, zero new query.
 interface InstanciaAgendaLike {
   id: string;
   dataPrevista: string;
   tipoPrazo: string;
-  template: { nome?: string; fundo: { id: string; nome: string } | null } | null;
+  template: { nome?: string; entidade: { id: string; nome: string } | null } | null;
 }
 
 interface TicketAgendaLike {
@@ -236,7 +236,7 @@ interface TicketAgendaLike {
   titulo: string;
   tipoPrazo: string;
   dataPrevista?: string | null;
-  fundo: { id: string } | null;
+  entidade: { id: string } | null;
 }
 
 const ITEM_TIPO_ORDER: Record<ItemTipo, number> = { tarefa: 0, rotina: 1, ticket: 2 };
@@ -247,7 +247,7 @@ function semanaKeys(semana: { dias: string[]; sabado: string; domingo: string })
 
 /**
  * spec-ui.md §5.2: `agendaPorDia(dados, semana) → Map<isoDate, Item[]>`,
- * `Item = { tipo, id, titulo, prazo, vencido, fundoId }`.
+ * `Item = { tipo, id, titulo, prazo, vencido, entidadeId }`.
  *
  * Deliberate signature deviation from spec §5.2's shorthand
  * `agendaPorDia(dados, semana)`: this implementation adds an explicit `hoje:
@@ -258,7 +258,7 @@ function semanaKeys(semana: { dias: string[]; sabado: string; domingo: string })
  *
  * Note on rotina Item.titulo: `InstanciaAgendaLike` (per this phase's locked
  * field list) carries no title-bearing field of its own — only
- * `template.fundo.{id,nome}`. `instancia.id` is used as a stable, unique
+ * `template.entidade.{id,nome}`. `instancia.id` is used as a stable, unique
  * placeholder `titulo` for rotina items; Phase 22 (which builds the actual
  * rotina rendering) will need to resolve a human-readable label separately
  * when it wires this Map to real UI. Documented as this phase's discretion
@@ -266,7 +266,7 @@ function semanaKeys(semana: { dias: string[]; sabado: string; domingo: string })
  */
 export function agendaPorDia(
   dados: {
-    projetos: ProjetoFundoLike[];
+    projetos: ProjetoEntidadeLike[];
     tarefas: TarefaAgendaLike[];
     instanciasRotina: InstanciaAgendaLike[];
     tickets: TicketAgendaLike[];
@@ -274,14 +274,14 @@ export function agendaPorDia(
   semana: { dias: string[]; sabado: string; domingo: string },
   hoje: Date,
 ): Map<string, Item[]> {
-  // The ONLY way to resolve a tarefa's fundoId: dashboardQuery.ts's locked
-  // query shape nests `tarefas.etapa.projeto` WITHOUT a further `.fundo` hop
-  // (that hop only exists on the separate top-level `projetos` branch of the
-  // same query result) — build a projetoId -> fundoId lookup from
-  // `dados.projetos` instead of ever expecting `.etapa.projeto.fundo`.
-  const fundoIdByProjetoId = new Map<string, string | null>();
+  // The ONLY way to resolve a tarefa's entidadeId: dashboardQuery.ts's locked
+  // query shape nests `tarefas.etapa.projeto` WITHOUT a further `.entidade`
+  // hop (that hop only exists on the separate top-level `projetos` branch of
+  // the same query result) — build a projetoId -> entidadeId lookup from
+  // `dados.projetos` instead of ever expecting `.etapa.projeto.entidade`.
+  const entidadeIdByProjetoId = new Map<string, string | null>();
   for (const projeto of dados.projetos) {
-    fundoIdByProjetoId.set(projeto.id, projeto.fundo?.id ?? null);
+    entidadeIdByProjetoId.set(projeto.id, projeto.entidade?.id ?? null);
   }
 
   const keys = semanaKeys(semana);
@@ -301,7 +301,7 @@ export function agendaPorDia(
     const dia = tarefa.dataPrevista.slice(0, 10);
     if (!keySet.has(dia)) continue;
     const projetoId = tarefa.etapa?.projeto?.id ?? null;
-    const fundoId = projetoId ? (fundoIdByProjetoId.get(projetoId) ?? null) : null;
+    const entidadeId = projetoId ? (entidadeIdByProjetoId.get(projetoId) ?? null) : null;
     const concluido = tarefaConcluida(tarefa);
     pushItem(dia, {
       tipo: "tarefa",
@@ -309,7 +309,7 @@ export function agendaPorDia(
       titulo: tarefa.titulo,
       prazo: tarefa.dataPrevista,
       vencido: vencido(tarefa.dataPrevista, concluido, hoje),
-      fundoId,
+      entidadeId,
       _hard: tarefa.tipoPrazo === "hard",
     });
   }
@@ -317,7 +317,7 @@ export function agendaPorDia(
   for (const instancia of dados.instanciasRotina) {
     const dia = instancia.dataPrevista.slice(0, 10);
     if (!keySet.has(dia)) continue;
-    const fundoId = instancia.template?.fundo?.id ?? null;
+    const entidadeId = instancia.template?.entidade?.id ?? null;
     // Every instanciaRotina inside the window becomes a "rotina" Item
     // regardless of its own tipoPrazo. Neither `instanciasRotina` nor
     // `tickets` carries any non-string completion signal, so `concluido` is
@@ -330,7 +330,7 @@ export function agendaPorDia(
       titulo: instancia.id,
       prazo: instancia.dataPrevista,
       vencido: vencido(instancia.dataPrevista, false, hoje),
-      fundoId,
+      entidadeId,
       _hard: instancia.tipoPrazo === "hard",
     });
   }
@@ -340,7 +340,7 @@ export function agendaPorDia(
     if (!ticket.dataPrevista) continue;
     const dia = ticket.dataPrevista.slice(0, 10);
     if (!keySet.has(dia)) continue;
-    const fundoId = ticket.fundo?.id ?? null;
+    const entidadeId = ticket.entidade?.id ?? null;
     // Same documented concluido=false decision as rotina items above.
     pushItem(dia, {
       tipo: "ticket",
@@ -348,7 +348,7 @@ export function agendaPorDia(
       titulo: ticket.titulo,
       prazo: ticket.dataPrevista,
       vencido: vencido(ticket.dataPrevista, false, hoje),
-      fundoId,
+      entidadeId,
       _hard: true, // only hard tickets are ever included
     });
   }
@@ -377,35 +377,40 @@ export function agendaPorDia(
 }
 
 /**
- * spec-ui.md §5.2: `rotinasPorFundo(instancias, semana) → Grupo[]`, with the
- * `null` (sem fundo) group **always last**, regardless of alphabetical
- * position. Filters to the same 7-date window as `agendaPorDia`.
+ * spec-ui.md §5.2: `rotinasPorEntidade(instancias, semana) → Grupo[]`, with
+ * the `null` (sem entidade) group **always last**, regardless of
+ * alphabetical position. Filters to the same 7-date window as
+ * `agendaPorDia`.
  */
-export function rotinasPorFundo(
+export function rotinasPorEntidade(
   instancias: InstanciaAgendaLike[],
   semana: { dias: string[]; sabado: string; domingo: string },
-): { fundoId: string | null; fundoNome: string | null; instancias: InstanciaAgendaLike[] }[] {
+): {
+  entidadeId: string | null;
+  entidadeNome: string | null;
+  instancias: InstanciaAgendaLike[];
+}[] {
   const keySet = new Set(semanaKeys(semana));
   const windowed = instancias.filter((i) => keySet.has(i.dataPrevista.slice(0, 10)));
 
   const groups = new Map<
     string | null,
-    { fundoNome: string | null; instancias: InstanciaAgendaLike[] }
+    { entidadeNome: string | null; instancias: InstanciaAgendaLike[] }
   >();
   for (const instancia of windowed) {
-    const fundoId = instancia.template?.fundo?.id ?? null;
-    const fundoNome = instancia.template?.fundo?.nome ?? null;
-    let group = groups.get(fundoId);
+    const entidadeId = instancia.template?.entidade?.id ?? null;
+    const entidadeNome = instancia.template?.entidade?.nome ?? null;
+    let group = groups.get(entidadeId);
     if (!group) {
-      group = { fundoNome, instancias: [] };
-      groups.set(fundoId, group);
+      group = { entidadeNome, instancias: [] };
+      groups.set(entidadeId, group);
     }
     group.instancias.push(instancia);
   }
 
-  const result = Array.from(groups.entries()).map(([fundoId, group]) => ({
-    fundoId,
-    fundoNome: group.fundoNome,
+  const result = Array.from(groups.entries()).map(([entidadeId, group]) => ({
+    entidadeId,
+    entidadeNome: group.entidadeNome,
     instancias: [...group.instancias].sort((a, b) => {
       if (a.dataPrevista !== b.dataPrevista) return a.dataPrevista < b.dataPrevista ? -1 : 1;
       return a.id.localeCompare(b.id);
@@ -413,34 +418,35 @@ export function rotinasPorFundo(
   }));
 
   result.sort((a, b) => {
-    if (a.fundoId === null) return b.fundoId === null ? 0 : 1;
-    if (b.fundoId === null) return -1;
-    return (a.fundoNome ?? "").localeCompare(b.fundoNome ?? "");
+    if (a.entidadeId === null) return b.entidadeId === null ? 0 : 1;
+    if (b.entidadeId === null) return -1;
+    return (a.entidadeNome ?? "").localeCompare(b.entidadeNome ?? "");
   });
 
   return result;
 }
 
 /**
- * spec-ui.md §4 row 5 ("Fundo" dialog): "conteúdo mínimo" requires "todas as
- * rotinas do fundo (não só as da semana)" -- every rotina instance belonging
- * to a fundo, regardless of which calendar week it falls in.
+ * spec-ui.md §4 row 5 ("Fundo" dialog, now the generic Entidade dialog):
+ * "conteúdo mínimo" requires "todas as rotinas do fundo (não só as da
+ * semana)" -- every rotina instance belonging to an entidade, regardless of
+ * which calendar week it falls in.
  *
- * Deliberate contrast with `rotinasPorFundo` above: this export takes NO
+ * Deliberate contrast with `rotinasPorEntidade` above: this export takes NO
  * `semana` parameter and applies no date-window filter at all -- it is the
- * week-unbounded counterpart `rotinasPorFundo` cannot provide (that function
- * always filters to a single 7-day window first). Reuses the exact same
- * `InstanciaAgendaLike` shape, so any caller that already has the array
- * `rotinasPorFundo` accepts (e.g. Dashboard.svelte's already-fetched
+ * week-unbounded counterpart `rotinasPorEntidade` cannot provide (that
+ * function always filters to a single 7-day window first). Reuses the exact
+ * same `InstanciaAgendaLike` shape, so any caller that already has the array
+ * `rotinasPorEntidade` accepts (e.g. Dashboard.svelte's already-fetched
  * `instanciasRotina`) can pass it here unchanged -- zero new query.
  *
- * A `null`/`undefined` `template` or `template.fundo` never matches any
- * concrete `fundoId` string (optional chaining short-circuits to
+ * A `null`/`undefined` `template` or `template.entidade` never matches any
+ * concrete `entidadeId` string (optional chaining short-circuits to
  * `undefined`, which is never `===` to a string).
  */
-export function rotinasDoFundo(
+export function rotinasDoEntidade(
   instancias: InstanciaAgendaLike[],
-  fundoId: string,
+  entidadeId: string,
 ): InstanciaAgendaLike[] {
-  return instancias.filter((i) => i.template?.fundo?.id === fundoId);
+  return instancias.filter((i) => i.template?.entidade?.id === entidadeId);
 }

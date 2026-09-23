@@ -67,7 +67,7 @@
     status: string;
     dataInicioPrevista?: string;
     dataFimPrevista?: string;
-    fundo?: { id: string; nome: string };
+    entidade?: { id: string; nome: string };
     etapas?: EtapaRow[];
   };
 
@@ -80,7 +80,7 @@
   const query = db.useQuery(
     () =>
       ({
-        projetos: { fundo: {}, etapas: { tarefas: { subtarefas: {} } } },
+        projetos: { entidade: {}, etapas: { tarefas: { subtarefas: {} } } },
       }) as never,
   );
 
@@ -93,10 +93,10 @@
     return (projeto.etapas ?? []).reduce((sum, e) => sum + (e.tarefas ?? []).length, 0);
   }
 
-  type GroupBy = "fundo" | "nenhum" | "status";
+  type GroupBy = "entidade" | "nenhum" | "status";
 
   let searchTerm = $state("");
-  let groupBy = $state<GroupBy>("fundo");
+  let groupBy = $state<GroupBy>("entidade");
   let selectedProjetoId = $state<string | null>(null);
 
   // Which etapa (by id) is open in the detail column's accordion. Empty
@@ -156,7 +156,7 @@
 
   // Both lookups read from `rowsOf()` -- the SAME array already rendered by
   // this component's own already-fetched query -- never a second fetch.
-  // Attaches the owning projeto's nome/fundo?.nome (and, for a tarefa, its
+  // Attaches the owning projeto's nome/entidade?.nome (and, for a tarefa, its
   // owning etapa's nome) while building the flat row shape
   // TaskDialog.svelte/EtapaDialog.svelte expect.
   function findEtapaById(id: string) {
@@ -168,7 +168,7 @@
           nome: etapa.nome,
           ordem: etapa.ordem,
           projetoNome: projeto.nome,
-          fundoNome: projeto.fundo?.nome ?? null,
+          entidadeNome: projeto.entidade?.nome ?? null,
           tarefas: (etapa.tarefas ?? []).map((tarefa) => ({
             id: tarefa.id,
             titulo: tarefa.titulo,
@@ -199,7 +199,7 @@
             subtarefas: tarefa.subtarefas,
             etapaNome: etapa.nome,
             projetoNome: projeto.nome,
-            fundoNome: projeto.fundo?.nome ?? null,
+            entidadeNome: projeto.entidade?.nome ?? null,
           };
         }
       }
@@ -210,8 +210,9 @@
 
   // Mirrors Shell.svelte's own nestedGroups grouping pattern (Map +
   // Array.from(entries), zero per-entity branching), extended to 3 modes.
-  // "Sem fundo vinculado" is forced last only in "fundo" mode — "status"
-  // mode sorts purely alphabetically, per spec §2.2's display-only control.
+  // "Sem entidade vinculada" is forced last only in "entidade" mode —
+  // "status" mode sorts purely alphabetically, per spec §2.2's display-only
+  // control.
   function groupProjetos(
     rows: ProjetoRow[],
     mode: GroupBy,
@@ -222,16 +223,17 @@
     }
     const groups = new Map<string, ProjetoRow[]>();
     for (const row of sorted) {
-      const label = mode === "fundo" ? row.fundo?.nome ?? "Sem fundo vinculado" : row.status;
+      const label =
+        mode === "entidade" ? (row.entidade?.nome ?? "Sem entidade vinculada") : row.status;
       const list = groups.get(label) ?? [];
       list.push(row);
       groups.set(label, list);
     }
     const entries = Array.from(groups.entries());
     entries.sort((a, b) => {
-      if (mode === "fundo") {
-        if (a[0] === "Sem fundo vinculado") return 1;
-        if (b[0] === "Sem fundo vinculado") return -1;
+      if (mode === "entidade") {
+        if (a[0] === "Sem entidade vinculada") return 1;
+        if (b[0] === "Sem entidade vinculada") return -1;
       }
       return a[0].localeCompare(b[0]);
     });
@@ -434,7 +436,7 @@
             {`agrupar: ${groupBy}`}
           </Select.Trigger>
           <Select.Content>
-            <Select.Item value="fundo" label="fundo">fundo</Select.Item>
+            <Select.Item value="entidade" label="entidade">entidade</Select.Item>
             <Select.Item value="nenhum" label="nenhum">nenhum</Select.Item>
             <Select.Item value="status" label="status">status</Select.Item>
           </Select.Content>
@@ -522,7 +524,7 @@
                 </div>
               </div>
               <p class="text-sm text-muted-foreground">
-                {selectedProjeto.fundo?.nome ?? "Sem fundo vinculado"} ·
+                {selectedProjeto.entidade?.nome ?? "Sem entidade vinculada"} ·
                 {(selectedProjeto.etapas ?? []).length} etapas ·
                 {totalTarefas(selectedProjeto)} tarefas
               </p>

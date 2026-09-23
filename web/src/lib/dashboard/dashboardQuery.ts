@@ -3,9 +3,9 @@
 // this plan, WeekCalendar in Plan 21-03) must receive its rows as props from
 // Dashboard.svelte — never call `db.useQuery`/`useDashboardQuery` itself.
 //
-// The `instanciasRotina.template.fundo` two-hop path exists at the schema
-// level (`instanciasRotina --template--> templatesRotina --fundo--> fundos`,
-// shared/instant.schema.ts) but is deliberately absent from
+// The `instanciasRotina.template.entidade` two-hop path exists at the schema
+// level (`instanciasRotina --template--> templatesRotina --entidade-->
+// entidades`, shared/instant.schema.ts) but is deliberately absent from
 // `defs/instanciasRotina.ts`'s presentation-layer `EntityConfig` — declaring
 // it there would make `EntityScreen` render an always-editable `<select>`
 // that could re-parent an instance and desync its `dedupeKey`. This query
@@ -28,11 +28,11 @@
 // present to compute a non-zero `feitas` count -- without this fix, both
 // surfaces would silently show 0/N regardless of reality.
 export const DASHBOARD_QUERY = {
-  projetos: { fundo: {}, etapas: { tarefas: { subtarefas: {} } } },
+  projetos: { entidade: {}, etapas: { tarefas: { subtarefas: {} } } },
   tarefas: { etapa: { projeto: {} }, subtarefas: {} },
-  instanciasRotina: { template: { fundo: {} } },
-  tickets: { fundo: {}, subtarefas: {} },
-  fundos: {},
+  instanciasRotina: { template: { entidade: {} } },
+  tickets: { entidade: {}, subtarefas: {} },
+  entidades: {},
 };
 
 // This module deliberately has ZERO runtime imports (in particular, no

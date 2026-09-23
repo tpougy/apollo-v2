@@ -25,7 +25,7 @@
     nome: string;
     ordem: number;
     projetoNome?: string | null;
-    fundoNome?: string | null;
+    entidadeNome?: string | null;
     tarefas?: {
       id: string;
       titulo: string;
@@ -84,7 +84,7 @@
     {onOpenChange}
     size="M"
     title={etapa.nome}
-    contexto={`${etapa.fundoNome ?? "Sem fundo"} · ${etapa.projetoNome ?? "Sem projeto"}`}
+    contexto={`${etapa.entidadeNome ?? "Sem entidade"} · ${etapa.projetoNome ?? "Sem projeto"}`}
     {breadcrumb}
     onEditar={startEditar}
     onVerPagina={verPagina}

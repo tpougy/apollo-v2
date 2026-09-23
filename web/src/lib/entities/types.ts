@@ -13,8 +13,8 @@ export type FieldDef =
   | { name: string; label: string; required: boolean; kind: "select"; options: readonly string[] };
 
 export interface LinkDef {
-  label: string; // link label on THIS entity, e.g. "fundo", "projeto", "antecessor"
-  targetEtype: string; // e.g. "fundos"
+  label: string; // link label on THIS entity, e.g. "entidade", "projeto", "antecessor"
+  targetEtype: string; // e.g. "entidades"
   targetLabelField: string; // field shown in the option text, e.g. "nome"
   required: boolean;
   excludeSelf?: boolean; // true for templatesRotina.antecessor (self-link)

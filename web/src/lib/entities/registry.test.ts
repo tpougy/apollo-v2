@@ -70,6 +70,14 @@ const navConfigs = entityConfigs.filter((c) => (c.nav ?? "primary") === "primary
 // Phase 3, mirrored here verbatim in intent.
 const ENTITY_RE = /^ {4}(\w+): i\.entity\(/gm;
 
+// TRANSITIONAL (quick task 260922-vbt): mirrors cli/tests/test_cli_surface.py's
+// own `_PENDING_SCHEMA_REMOVAL` exception exactly. `fundos` is additively kept
+// in `shared/instant.schema.ts` only until this quick task's own Task 4
+// destructive schema push lands — `defs/fundos.ts` no longer exists after
+// this task's rename, but the schema still declares `fundos` through Task 3.
+// Remove this constant and its one usage entirely once that push ships.
+const PENDING_SCHEMA_REMOVAL = new Set(["fundos"]);
+
 function schemaEntityNames(): string[] {
   const schemaPath = fileURLToPath(
     new URL("../../../../shared/instant.schema.ts", import.meta.url),
@@ -81,7 +89,7 @@ function schemaEntityNames(): string[] {
     `expected >= 9 entities in ${schemaPath} matching ${ENTITY_RE.source}, ` +
       `found ${names.length}: ${JSON.stringify(names)} -- the schema's formatting may have changed`,
   ).toBeGreaterThanOrEqual(9);
-  return names;
+  return names.filter((name) => !PENDING_SCHEMA_REMOVAL.has(name));
 }
 
 const SCHEMA_ENTITY_NAMES = schemaEntityNames();
@@ -98,7 +106,7 @@ interface ExpectedCapabilities {
 // in the schema MUST appear here — a new entity landing with no entry fails
 // test_schema_entity_has_screen below, naming the missing entity.
 const EXPECTED_CAPABILITIES: Record<string, ExpectedCapabilities> = {
-  fundos: { create: true, update: true, delete: true },
+  entidades: { create: true, update: true, delete: true },
   projetos: { create: true, update: true, delete: true },
   etapas: { create: true, update: true, delete: true },
   tarefas: { create: true, update: true, delete: true },
@@ -136,6 +144,18 @@ describe("registry coverage: every schema entity has a screen", () => {
     const schemaSet = new Set(SCHEMA_ENTITY_NAMES);
     const stale = Object.keys(EXPECTED_CAPABILITIES).filter((name) => !schemaSet.has(name));
     expect(stale, `EXPECTED_CAPABILITIES has entries not in the schema: ${stale}`).toEqual([]);
+  });
+
+  test("EXPECTED_CAPABILITIES never carries a pending-removal key", () => {
+    // Catches forgetting to also drop the old key when replacing it (e.g.
+    // keeping "fundos" after adding "entidades") — mirrors
+    // cli/tests/test_cli_surface.py's identical guard.
+    const leaked = Object.keys(EXPECTED_CAPABILITIES).filter((name) =>
+      PENDING_SCHEMA_REMOVAL.has(name),
+    );
+    expect(leaked, `EXPECTED_CAPABILITIES still has transitional-removal keys: ${leaked}`).toEqual(
+      [],
+    );
   });
 });
 
@@ -323,7 +343,7 @@ describe("registry coverage: navConfigs derivation (NAV-04)", () => {
       "instanciasRotina",
       "tickets",
       "projetos",
-      "fundos",
+      "entidades",
       "logInferenciaClaude",
     ]);
   });

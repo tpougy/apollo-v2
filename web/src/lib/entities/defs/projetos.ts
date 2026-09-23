@@ -3,8 +3,8 @@ import type { EntityConfig } from "../types";
 // SPEC row: projetos | nome, descricao, status, dataInicioPrevista, dataFimPrevista, owner-id
 // (shared/instant.schema.ts). The owner-id field is deliberately absent from
 // `fields` — injected from the authenticated session at submit time (see
-// EntityScreen.svelte), never here. `--fundo-id` on the CLI is optional, so
-// the `fundo` link here is `required: false` to match.
+// EntityScreen.svelte), never here. `--entidade-id` on the CLI is optional,
+// so the `entidade` link here is `required: false` to match.
 const projetosConfig: EntityConfig = {
   etype: "projetos",
   titulo: "Projetos",
@@ -23,8 +23,10 @@ const projetosConfig: EntityConfig = {
     },
     { name: "dataFimPrevista", label: "Data fim prevista", required: false, kind: "date" },
   ],
-  links: [{ label: "fundo", targetEtype: "fundos", targetLabelField: "nome", required: false }],
-  listColumns: ["nome", "status", "fundo", "dataInicioPrevista", "dataFimPrevista"],
+  links: [
+    { label: "entidade", targetEtype: "entidades", targetLabelField: "nome", required: false },
+  ],
+  listColumns: ["nome", "status", "entidade", "dataInicioPrevista", "dataFimPrevista"],
 };
 
 export default projetosConfig;

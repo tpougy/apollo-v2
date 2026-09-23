@@ -2,7 +2,7 @@
   import Inbox from "@lucide/svelte/icons/inbox";
   import * as Empty from "$lib/components/ui/empty";
 
-  // Row shape mirrors dashboardQuery.ts's `tickets: { fundo: {}, subtarefas: {} }`
+  // Row shape mirrors dashboardQuery.ts's `tickets: { entidade: {}, subtarefas: {} }`
   // nesting, one level deep, following ProjetosSection.svelte's own
   // ProjetoRow/TarefaRow convention.
   export type TicketRow = {
@@ -11,7 +11,7 @@
     tipoPrazo: string;
     dataPrevista?: string | null;
     dataRecebimento: string;
-    fundo?: { id: string; nome: string } | null;
+    entidade?: { id: string; nome: string } | null;
   };
 
   let {
@@ -60,7 +60,7 @@
         >
           <p class="line-clamp-2 text-sm">{ticket.titulo}</p>
           <p class="text-xs text-muted-foreground">
-            {ticket.fundo?.nome ?? "Sem fundo"} · {ticket.tipoPrazo.toUpperCase()} ·
+            {ticket.entidade?.nome ?? "Sem entidade"} · {ticket.tipoPrazo.toUpperCase()} ·
             {(ticket.dataPrevista ?? ticket.dataRecebimento).slice(0, 10)}
           </p>
         </button>

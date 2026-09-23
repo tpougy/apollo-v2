@@ -5,8 +5,8 @@ import {
   cargaDoMes,
   faixaHeatmap,
   progressoEtapa,
-  rotinasDoFundo,
-  rotinasPorFundo,
+  rotinasDoEntidade,
+  rotinasPorEntidade,
   semanaUtil,
   tarefaConcluida,
   vencido,
@@ -189,18 +189,18 @@ describe("cargaDoMes", () => {
   });
 });
 
-// Fixture week for agendaPorDia/rotinasPorFundo: semanaUtil("2026-08-11")
+// Fixture week for agendaPorDia/rotinasPorEntidade: semanaUtil("2026-08-11")
 // (a Tuesday) -> Monday 2026-08-10 .. Friday 2026-08-14, sabado 2026-08-15,
 // domingo 2026-08-16. `hoje` is fixed to 2026-08-11 for every vencido check.
 const SEMANA = semanaUtil("2026-08-11");
 const HOJE = new Date("2026-08-11T12:00:00.000Z");
 
 describe("agendaPorDia", () => {
-  test("resolves a tarefa's fundoId by cross-referencing dados.projetos (matched+fundo, no etapa, unmatched projeto, matched projeto with no fundo)", () => {
+  test("resolves a tarefa's entidadeId by cross-referencing dados.projetos (matched+entidade, no etapa, unmatched projeto, matched projeto with no entidade)", () => {
     const dados = {
       projetos: [
-        { id: "proj-1", fundo: { id: "fundo-A" } },
-        { id: "proj-2", fundo: null },
+        { id: "proj-1", entidade: { id: "entidade-A" } },
+        { id: "proj-2", entidade: null },
       ],
       tarefas: [
         {
@@ -225,8 +225,8 @@ describe("agendaPorDia", () => {
           etapa: { projeto: { id: "proj-999" } },
         },
         {
-          id: "t-projeto-no-fundo",
-          titulo: "Projeto no fundo",
+          id: "t-projeto-no-entidade",
+          titulo: "Projeto no entidade",
           tipoPrazo: "soft",
           dataPrevista: "2026-08-12",
           etapa: { projeto: { id: "proj-2" } },
@@ -240,10 +240,10 @@ describe("agendaPorDia", () => {
     const items = result.get("2026-08-12") ?? [];
     const byId = new Map(items.map((i) => [i.id, i]));
 
-    expect(byId.get("t-matched")?.fundoId).toBe("fundo-A");
-    expect(byId.get("t-no-etapa")?.fundoId).toBeNull();
-    expect(byId.get("t-unmatched-projeto")?.fundoId).toBeNull();
-    expect(byId.get("t-projeto-no-fundo")?.fundoId).toBeNull();
+    expect(byId.get("t-matched")?.entidadeId).toBe("entidade-A");
+    expect(byId.get("t-no-etapa")?.entidadeId).toBeNull();
+    expect(byId.get("t-unmatched-projeto")?.entidadeId).toBeNull();
+    expect(byId.get("t-projeto-no-entidade")?.entidadeId).toBeNull();
   });
 
   test("a tarefa's vencido flag matches vencido(dataPrevista, tarefaConcluida(tarefa), hoje) exactly", () => {
@@ -287,7 +287,7 @@ describe("agendaPorDia", () => {
     expect(byId.get("t-future")?.vencido).toBe(false);
   });
 
-  test("every instanciaRotina in the 7-day window becomes a rotina Item regardless of tipoPrazo, fundoId from template.fundo.id or null, vencido always concluido=false", () => {
+  test("every instanciaRotina in the 7-day window becomes a rotina Item regardless of tipoPrazo, entidadeId from template.entidade.id or null, vencido always concluido=false", () => {
     const dados = {
       projetos: [],
       tarefas: [],
@@ -296,7 +296,7 @@ describe("agendaPorDia", () => {
           id: "r-soft-past",
           dataPrevista: "2026-08-10",
           tipoPrazo: "soft",
-          template: { fundo: { id: "fundo-B", nome: "Fundo B" } },
+          template: { entidade: { id: "entidade-B", nome: "Fundo B" } },
         },
         {
           id: "r-no-template",
@@ -308,7 +308,7 @@ describe("agendaPorDia", () => {
           id: "r-outside-window",
           dataPrevista: "2026-08-20",
           tipoPrazo: "hard",
-          template: { fundo: { id: "fundo-B", nome: "Fundo B" } },
+          template: { entidade: { id: "entidade-B", nome: "Fundo B" } },
         },
       ],
       tickets: [],
@@ -319,20 +319,20 @@ describe("agendaPorDia", () => {
     const byId = new Map(allItems.map((i) => [i.id, i]));
 
     expect(byId.get("r-soft-past")?.tipo).toBe("rotina");
-    expect(byId.get("r-soft-past")?.fundoId).toBe("fundo-B");
+    expect(byId.get("r-soft-past")?.entidadeId).toBe("entidade-B");
     // Past dataPrevista + hard-coded concluido=false -> vencido true, even
     // though the instancia's own tipoPrazo is "soft".
     expect(byId.get("r-soft-past")?.vencido).toBe(true);
 
     expect(byId.get("r-no-template")?.tipo).toBe("rotina");
-    expect(byId.get("r-no-template")?.fundoId).toBeNull();
+    expect(byId.get("r-no-template")?.entidadeId).toBeNull();
     // 2026-08-15 is after hoje (2026-08-11) -> not vencido.
     expect(byId.get("r-no-template")?.vencido).toBe(false);
 
     expect(byId.has("r-outside-window")).toBe(false);
   });
 
-  test("a ticket appears only when tipoPrazo is hard AND dataPrevista is in window; fundoId from ticket.fundo.id; vencido always concluido=false", () => {
+  test("a ticket appears only when tipoPrazo is hard AND dataPrevista is in window; entidadeId from ticket.entidade.id; vencido always concluido=false", () => {
     const dados = {
       projetos: [],
       tarefas: [],
@@ -343,28 +343,28 @@ describe("agendaPorDia", () => {
           titulo: "Hard in window",
           tipoPrazo: "hard",
           dataPrevista: "2026-08-10",
-          fundo: { id: "fundo-A" },
+          entidade: { id: "entidade-A" },
         },
         {
           id: "tk-soft-in-window",
           titulo: "Soft in window",
           tipoPrazo: "soft",
           dataPrevista: "2026-08-10",
-          fundo: { id: "fundo-A" },
+          entidade: { id: "entidade-A" },
         },
         {
           id: "tk-hard-no-date",
           titulo: "Hard no date",
           tipoPrazo: "hard",
           dataPrevista: null,
-          fundo: null,
+          entidade: null,
         },
         {
           id: "tk-hard-outside-window",
           titulo: "Hard outside window",
           tipoPrazo: "hard",
           dataPrevista: "2026-08-20",
-          fundo: null,
+          entidade: null,
         },
       ],
     };
@@ -374,7 +374,7 @@ describe("agendaPorDia", () => {
     const byId = new Map(allItems.map((i) => [i.id, i]));
 
     expect(byId.get("tk-hard-in-window")?.tipo).toBe("ticket");
-    expect(byId.get("tk-hard-in-window")?.fundoId).toBe("fundo-A");
+    expect(byId.get("tk-hard-in-window")?.entidadeId).toBe("entidade-A");
     expect(byId.get("tk-hard-in-window")?.vencido).toBe(true); // past + concluido=false
 
     expect(byId.has("tk-soft-in-window")).toBe(false);
@@ -408,7 +408,7 @@ describe("agendaPorDia", () => {
           titulo: "Alfa ticket",
           tipoPrazo: "hard",
           dataPrevista: "2026-08-10",
-          fundo: null,
+          entidade: null,
         },
       ],
     };
@@ -435,28 +435,28 @@ describe("agendaPorDia", () => {
   });
 });
 
-describe("rotinasPorFundo", () => {
-  test("groups by template.fundo.id, fundoNome from template.fundo.nome, null-fundo group forced last regardless of alphabetical position", () => {
+describe("rotinasPorEntidade", () => {
+  test("groups by template.entidade.id, entidadeNome from template.entidade.nome, null-entidade group forced last regardless of alphabetical position", () => {
     const instancias = [
       {
         id: "r1",
         dataPrevista: "2026-08-10",
         tipoPrazo: "soft",
-        template: { fundo: { id: "fundo-z", nome: "Zulu" } },
+        template: { entidade: { id: "entidade-z", nome: "Zulu" } },
       },
       { id: "r2", dataPrevista: "2026-08-11", tipoPrazo: "soft", template: null },
       {
         id: "r3",
         dataPrevista: "2026-08-12",
         tipoPrazo: "soft",
-        template: { fundo: { id: "fundo-a", nome: "Alfa" } },
+        template: { entidade: { id: "entidade-a", nome: "Alfa" } },
       },
     ];
 
-    const groups = rotinasPorFundo(instancias, SEMANA);
+    const groups = rotinasPorEntidade(instancias, SEMANA);
 
-    expect(groups.map((g) => g.fundoId)).toEqual(["fundo-a", "fundo-z", null]);
-    expect(groups.map((g) => g.fundoNome)).toEqual(["Alfa", "Zulu", null]);
+    expect(groups.map((g) => g.entidadeId)).toEqual(["entidade-a", "entidade-z", null]);
+    expect(groups.map((g) => g.entidadeNome)).toEqual(["Alfa", "Zulu", null]);
   });
 
   test("within a group, instancias sort by dataPrevista ascending then id", () => {
@@ -465,23 +465,23 @@ describe("rotinasPorFundo", () => {
         id: "r-b",
         dataPrevista: "2026-08-12",
         tipoPrazo: "soft",
-        template: { fundo: { id: "fundo-a", nome: "Alfa" } },
+        template: { entidade: { id: "entidade-a", nome: "Alfa" } },
       },
       {
         id: "r-a-later-id",
         dataPrevista: "2026-08-10",
         tipoPrazo: "soft",
-        template: { fundo: { id: "fundo-a", nome: "Alfa" } },
+        template: { entidade: { id: "entidade-a", nome: "Alfa" } },
       },
       {
         id: "r-a-earlier-id",
         dataPrevista: "2026-08-10",
         tipoPrazo: "soft",
-        template: { fundo: { id: "fundo-a", nome: "Alfa" } },
+        template: { entidade: { id: "entidade-a", nome: "Alfa" } },
       },
     ];
 
-    const groups = rotinasPorFundo(instancias, SEMANA);
+    const groups = rotinasPorEntidade(instancias, SEMANA);
     expect(groups).toHaveLength(1);
     expect(groups[0]?.instancias.map((i) => i.id)).toEqual([
       "r-a-earlier-id",
@@ -496,32 +496,32 @@ describe("rotinasPorFundo", () => {
       { id: "outside-window", dataPrevista: "2026-08-20", tipoPrazo: "soft", template: null },
     ];
 
-    const groups = rotinasPorFundo(instancias, SEMANA);
+    const groups = rotinasPorEntidade(instancias, SEMANA);
     const allIds = groups.flatMap((g) => g.instancias.map((i) => i.id));
     expect(allIds).toEqual(["in-window"]);
   });
 });
 
-describe("rotinasDoFundo", () => {
-  test("returns exactly the instancias whose template.fundo.id matches, in original relative order (stable, no re-sort)", () => {
+describe("rotinasDoEntidade", () => {
+  test("returns exactly the instancias whose template.entidade.id matches, in original relative order (stable, no re-sort)", () => {
     const instancias = [
       {
         id: "r-a1",
         dataPrevista: "2026-08-12",
         tipoPrazo: "soft",
-        template: { fundo: { id: "a", nome: "Alfa" } },
+        template: { entidade: { id: "a", nome: "Alfa" } },
       },
       {
         id: "r-b",
         dataPrevista: "2026-08-10",
         tipoPrazo: "soft",
-        template: { fundo: { id: "b", nome: "Bravo" } },
+        template: { entidade: { id: "b", nome: "Bravo" } },
       },
       {
         id: "r-a2",
         dataPrevista: "2026-08-11",
         tipoPrazo: "soft",
-        template: { fundo: { id: "a", nome: "Alfa" } },
+        template: { entidade: { id: "a", nome: "Alfa" } },
       },
       {
         id: "r-no-template",
@@ -531,46 +531,46 @@ describe("rotinasDoFundo", () => {
       },
     ];
 
-    const result = rotinasDoFundo(instancias, "a");
+    const result = rotinasDoEntidade(instancias, "a");
 
     // Exactly the 2 matching "a" instancias, in original relative order
-    // (r-a1 before r-a2, unlike rotinasPorFundo's own date-then-id re-sort).
+    // (r-a1 before r-a2, unlike rotinasPorEntidade's own date-then-id re-sort).
     expect(result.map((i) => i.id)).toEqual(["r-a1", "r-a2"]);
   });
 
-  test("is week-unbounded: matches an instancia whose dataPrevista falls many weeks outside rotinasPorFundo's own 7-day window", () => {
+  test("is week-unbounded: matches an instancia whose dataPrevista falls many weeks outside rotinasPorEntidade's own 7-day window", () => {
     const instancias = [
       {
         id: "r-far-future",
         dataPrevista: "2026-11-30", // many weeks outside SEMANA's 7-day window
         tipoPrazo: "soft",
-        template: { fundo: { id: "a", nome: "Alfa" } },
+        template: { entidade: { id: "a", nome: "Alfa" } },
       },
     ];
 
-    // Confirm this date really is outside rotinasPorFundo's window: it
+    // Confirm this date really is outside rotinasPorEntidade's window: it
     // groups by the same 7-day SEMANA window used elsewhere in this file.
-    const viaRotinasPorFundo = rotinasPorFundo(instancias, SEMANA);
-    expect(viaRotinasPorFundo.flatMap((g) => g.instancias.map((i) => i.id))).toEqual([]);
+    const viaRotinasPorEntidade = rotinasPorEntidade(instancias, SEMANA);
+    expect(viaRotinasPorEntidade.flatMap((g) => g.instancias.map((i) => i.id))).toEqual([]);
 
-    const result = rotinasDoFundo(instancias, "a");
+    const result = rotinasDoEntidade(instancias, "a");
     expect(result.map((i) => i.id)).toEqual(["r-far-future"]);
   });
 
-  test("nonexistent fundoId -> empty array, never throws", () => {
+  test("nonexistent entidadeId -> empty array, never throws", () => {
     const instancias = [
       {
         id: "r-a",
         dataPrevista: "2026-08-12",
         tipoPrazo: "soft",
-        template: { fundo: { id: "a", nome: "Alfa" } },
+        template: { entidade: { id: "a", nome: "Alfa" } },
       },
     ];
 
-    expect(rotinasDoFundo(instancias, "nonexistent-id")).toEqual([]);
+    expect(rotinasDoEntidade(instancias, "nonexistent-id")).toEqual([]);
   });
 
-  test("instancia with template: null is never matched by any concrete fundoId string", () => {
+  test("instancia with template: null is never matched by any concrete entidadeId string", () => {
     const instancias = [
       {
         id: "r-no-template",
@@ -580,8 +580,8 @@ describe("rotinasDoFundo", () => {
       },
     ];
 
-    expect(rotinasDoFundo(instancias, "a")).toEqual([]);
-    expect(rotinasDoFundo(instancias, "null")).toEqual([]);
-    expect(rotinasDoFundo(instancias, "undefined")).toEqual([]);
+    expect(rotinasDoEntidade(instancias, "a")).toEqual([]);
+    expect(rotinasDoEntidade(instancias, "null")).toEqual([]);
+    expect(rotinasDoEntidade(instancias, "undefined")).toEqual([]);
   });
 });

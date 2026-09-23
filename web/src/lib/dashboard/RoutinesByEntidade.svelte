@@ -2,40 +2,44 @@
   import * as Select from "$lib/components/ui/select";
   import { vencido } from "./derive";
 
-  // Deliberately minimal -- fundo grouping arrives already resolved via
-  // `grupos` (rotinasPorFundo's own, unmodified return value) and the label
-  // arrives via the separate `nomeById` map, so this row type needs neither
-  // `template` nor `fundo` of its own.
+  // Deliberately minimal -- entidade grouping arrives already resolved via
+  // `grupos` (rotinasPorEntidade's own, unmodified return value) and the
+  // label arrives via the separate `nomeById` map, so this row type needs
+  // neither `template` nor `entidade` of its own.
   type InstanciaRow = { id: string; dataPrevista: string; tipoPrazo: string };
-  type Grupo = { fundoId: string | null; fundoNome: string | null; instancias: InstanciaRow[] };
+  type Grupo = {
+    entidadeId: string | null;
+    entidadeNome: string | null;
+    instancias: InstanciaRow[];
+  };
 
   let {
     grupos,
     nomeById,
     hojeIso,
-    onOpenFundo,
+    onOpenEntidade,
     onOpenRotina,
   }: {
     grupos: Grupo[];
     nomeById: Map<string, string>;
     hojeIso: string;
-    onOpenFundo: (id: string) => void;
+    onOpenEntidade: (id: string) => void;
     onOpenRotina: (id: string) => void;
   } = $props();
 
   type SortBy = "data-asc" | "data-desc";
   type StatusFilter = "todas" | "atrasadas";
 
-  // "agrupar: fundo" is a fixed, single-value selection: fundo grouping is
-  // already the data's own shape from rotinasPorFundo (Dashboard.svelte
-  // computes `grupos`, this component only renders it, "Sem fundo vinculado"
-  // already forced last) -- there is no OTHER grouping key to switch to this
-  // phase, mirroring CONTEXT.md/22-RESEARCH.md's own framing that "fundo" is
-  // "the only one wired to non-trivial logic this phase". The control is
-  // still rendered as a real Select.Root (spec-ui.md section 3.4: omitting
-  // it outright is not acceptable), deliberately a no-op selection over a
-  // one-item set.
-  let agrupar = $state<"fundo">("fundo");
+  // "agrupar: entidade" is a fixed, single-value selection: entidade grouping
+  // is already the data's own shape from rotinasPorEntidade (Dashboard.svelte
+  // computes `grupos`, this component only renders it, "Sem entidade
+  // vinculada" already forced last) -- there is no OTHER grouping key to
+  // switch to this phase, mirroring CONTEXT.md/22-RESEARCH.md's own framing
+  // that "entidade" is "the only one wired to non-trivial logic this phase".
+  // The control is still rendered as a real Select.Root (spec-ui.md section
+  // 3.4: omitting it outright is not acceptable), deliberately a no-op
+  // selection over a one-item set.
+  let agrupar = $state<"entidade">("entidade");
   let ordenar = $state<SortBy>("data-asc");
   let statusFiltro = $state<StatusFilter>("todas");
 
@@ -43,8 +47,8 @@
 
   // Never re-sort/re-filter the top-level `grupos` array itself -- only ever
   // transform each group's OWN `instancias` list via `.map()` (order-
-  // preserving), or the "Sem fundo vinculado is always last" guarantee
-  // rotinasPorFundo already establishes would break.
+  // preserving), or the "Sem entidade vinculada is always last" guarantee
+  // rotinasPorEntidade already establishes would break.
   const gruposExibidos = $derived.by(() =>
     grupos.map((grupo) => ({
       ...grupo,
@@ -65,14 +69,14 @@
       type="single"
       value={agrupar}
       onValueChange={(v) => {
-        if (v) agrupar = v as "fundo";
+        if (v) agrupar = v as "entidade";
       }}
     >
       <Select.Trigger data-testid="rotinas-agrupar" class="w-full">
         {`agrupar: ${agrupar}`}
       </Select.Trigger>
       <Select.Content>
-        <Select.Item value="fundo" label="fundo">fundo</Select.Item>
+        <Select.Item value="entidade" label="entidade">entidade</Select.Item>
       </Select.Content>
     </Select.Root>
 
@@ -117,29 +121,29 @@
     <p class="text-sm text-muted-foreground">Nenhuma rotina esta semana.</p>
   {:else}
     <div data-testid="rotinas-colunas" class="flex flex-1 min-h-0 gap-3 overflow-x-auto">
-      {#each gruposExibidos as grupo (grupo.fundoId ?? "sem-fundo")}
+      {#each gruposExibidos as grupo (grupo.entidadeId ?? "sem-entidade")}
         {@const overdueCount = grupo.instancias.filter((i) =>
           vencido(i.dataPrevista, false, hoje),
         ).length}
         <div
-          data-testid="rotinas-fundo-card"
-          data-eid={grupo.fundoId ?? ""}
+          data-testid="rotinas-entidade-card"
+          data-eid={grupo.entidadeId ?? ""}
           class="flex h-full w-48 shrink-0 flex-col gap-2 rounded border bg-card/60 p-3"
         >
           <button
             type="button"
-            data-testid="rotinas-fundo-titulo"
+            data-testid="rotinas-entidade-titulo"
             class="shrink-0 block text-left text-sm font-medium"
-            onclick={grupo.fundoId ? () => onOpenFundo(grupo.fundoId!) : undefined}
+            onclick={grupo.entidadeId ? () => onOpenEntidade(grupo.entidadeId!) : undefined}
           >
-            {grupo.fundoNome ?? "Sem fundo vinculado"}
+            {grupo.entidadeNome ?? "Sem entidade vinculada"}
           </button>
-          <p data-testid="rotinas-fundo-meta" class="shrink-0 text-xs text-muted-foreground">
+          <p data-testid="rotinas-entidade-meta" class="shrink-0 text-xs text-muted-foreground">
             {grupo.instancias.length} rotinas - {overdueCount} atrasadas
           </p>
           <div
             data-testid="rotinas-coluna-lista"
-            data-eid={grupo.fundoId ?? ""}
+            data-eid={grupo.entidadeId ?? ""}
             class="flex-1 min-h-0 space-y-2 overflow-y-auto"
           >
             {#if grupo.displayed.length === 0}
@@ -171,9 +175,9 @@
                   <p data-testid="rotinas-row-titulo" class="line-clamp-2 text-sm">
                     {nomeById.get(instancia.id) ?? "Rotina"}
                   </p>
-                  {#if grupo.fundoNome}
-                    <p data-testid="rotinas-row-fundo" class="text-xs text-muted-foreground">
-                      {grupo.fundoNome}
+                  {#if grupo.entidadeNome}
+                    <p data-testid="rotinas-row-entidade" class="text-xs text-muted-foreground">
+                      {grupo.entidadeNome}
                     </p>
                   {/if}
                 </button>

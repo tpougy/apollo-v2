@@ -19,7 +19,7 @@
   const tarefasConfig = requireConfig("tarefas");
 
   // Deliberately flat, pre-shaped-by-the-host contract (never a nested
-  // etapa.projeto.fundo link chain) -- every host that resolves a tarefa has
+  // etapa.projeto.entidade link chain) -- every host that resolves a tarefa has
   // a DIFFERENT raw query shape (ProjetosSection.svelte here; Dashboard.svelte
   // in Plans 23-04/23-06), so each host does its own join/resolution
   // (derive.ts's own "cross-referencing happens once, at the host"
@@ -37,7 +37,7 @@
     subtarefas?: { id: string; titulo: string; concluida: boolean }[];
     etapaNome?: string | null;
     projetoNome?: string | null;
-    fundoNome?: string | null;
+    entidadeNome?: string | null;
   };
 
   // Self-contained: this component alone resolves everything it needs from
@@ -95,7 +95,7 @@
     {onOpenChange}
     size="S"
     title={tarefa.titulo}
-    contexto={`${tarefa.fundoNome ?? "Sem fundo"} · ${tarefa.etapaNome ? `${tarefa.projetoNome} · ${tarefa.etapaNome}` : "Sem etapa"}`}
+    contexto={`${tarefa.entidadeNome ?? "Sem entidade"} · ${tarefa.etapaNome ? `${tarefa.projetoNome} · ${tarefa.etapaNome}` : "Sem etapa"}`}
     {breadcrumb}
     onEditar={startEditar}
     onVerPagina={verPagina}

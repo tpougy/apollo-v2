@@ -25,7 +25,7 @@
     tipoPrazo: string;
     status: string;
     templateNome?: string | null;
-    fundoNome?: string | null;
+    entidadeNome?: string | null;
   };
 
   // Self-contained: this component alone resolves everything it needs from
@@ -83,7 +83,7 @@
     {onOpenChange}
     size="S"
     title={rotina.templateNome ?? "Rotina"}
-    contexto={`${rotina.fundoNome ?? "Sem fundo"} · ${rotina.competencia}`}
+    contexto={`${rotina.entidadeNome ?? "Sem entidade"} · ${rotina.competencia}`}
     {breadcrumb}
     onEditar={startEditar}
     onVerPagina={verPagina}

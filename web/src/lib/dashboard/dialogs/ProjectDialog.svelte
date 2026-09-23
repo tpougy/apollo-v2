@@ -25,7 +25,7 @@
   export type ProjectDialogRow = {
     id: string;
     nome: string;
-    fundoNome?: string | null;
+    entidadeNome?: string | null;
     etapas: {
       id: string;
       nome: string;
@@ -129,7 +129,7 @@
     {onOpenChange}
     size="L"
     title={projeto.nome}
-    contexto={`${projeto.fundoNome ?? "Sem fundo vinculado"} · ${projeto.etapas.length} etapas · ${projeto.etapas.reduce((s, e) => s + e.tarefas.length, 0)} tarefas`}
+    contexto={`${projeto.entidadeNome ?? "Sem entidade vinculada"} · ${projeto.etapas.length} etapas · ${projeto.etapas.reduce((s, e) => s + e.tarefas.length, 0)} tarefas`}
     onEditar={startEditar}
     onVerPagina={verPagina}
   >

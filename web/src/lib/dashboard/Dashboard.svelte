@@ -1,17 +1,17 @@
 <script lang="ts">
   import { db } from "../db";
   import { useDashboardQuery } from "./dashboardQuery";
-  import { agendaPorDia, cargaDoMes, rotinasPorFundo, semanaUtil } from "./derive";
+  import { agendaPorDia, cargaDoMes, rotinasPorEntidade, semanaUtil } from "./derive";
   import DayDialog from "./dialogs/DayDialog.svelte";
+  import EntidadeDialog from "./dialogs/EntidadeDialog.svelte";
   import EtapaDialog from "./dialogs/EtapaDialog.svelte";
-  import FundoDialog from "./dialogs/FundoDialog.svelte";
   import ProjectDialog from "./dialogs/ProjectDialog.svelte";
   import RotinaDialog from "./dialogs/RotinaDialog.svelte";
   import TaskDialog from "./dialogs/TaskDialog.svelte";
   import TicketDialog from "./dialogs/TicketDialog.svelte";
   import MonthHeatmap from "./MonthHeatmap.svelte";
   import ProjectStrips from "./ProjectStrips.svelte";
-  import RoutinesByFundo from "./RoutinesByFundo.svelte";
+  import RoutinesByEntidade from "./RoutinesByEntidade.svelte";
   import TicketQueue from "./TicketQueue.svelte";
   import WeekCalendar from "./WeekCalendar.svelte";
 
@@ -22,13 +22,13 @@
   // `subtarefas: {}` query branch, same "widen too-narrow local TS type, add
   // zero new query" precedent this plan already applies to TicketRow below).
   type SubtarefaRow = { id: string; titulo: string; concluida: boolean };
-  type FundoRow = { id: string; nome: string };
+  type EntidadeRow = { id: string; nome: string };
   type EtapaRow = { id: string; nome: string; ordem: number; tarefas?: TarefaRow[] };
   type ProjetoRow = {
     id: string;
     nome: string;
     status: string;
-    fundo?: FundoRow;
+    entidade?: EntidadeRow;
     etapas?: EtapaRow[];
   };
   // Widened (Plan 23-04, Task 2) to add `descricao`/`dataPrevistaEstimada`/
@@ -51,10 +51,10 @@
     etapa?: { id: string; nome: string; projeto?: ProjetoRow };
     subtarefas?: SubtarefaRow[];
   };
-  type TemplateRow = { id: string; nome: string; fundo?: FundoRow };
+  type TemplateRow = { id: string; nome: string; entidade?: EntidadeRow };
   // Widened (Plan 23-04, Task 2) to add `dedupeKey`/`dataPrevistaEstimada`/
   // `competencia` -- all already fetched at runtime via the unchanged
-  // `instanciasRotina: { template: { fundo: {} } }` query branch
+  // `instanciasRotina: { template: { entidade: {} } }` query branch
   // (defs/instanciasRotina.ts's own field list), needed by RotinaDialog's
   // read-only body.
   type InstanciaRotinaRow = {
@@ -76,7 +76,7 @@
     tipoPrazo: string;
     dataPrevista?: string;
     dataRecebimento: string;
-    fundo?: FundoRow;
+    entidade?: EntidadeRow;
     subtarefas?: SubtarefaRow[];
   };
 
@@ -85,7 +85,7 @@
     tarefas?: TarefaRow[];
     instanciasRotina?: InstanciaRotinaRow[];
     tickets?: TicketRow[];
-    fundos?: FundoRow[];
+    entidades?: EntidadeRow[];
   };
 
   const query = useDashboardQuery(db);
@@ -121,7 +121,7 @@
   // (the first-level dialog) and swaps in a new second-level entry, never
   // growing past 2 -- "swap-in-place," never two simultaneous Dialog.Root
   // instances.
-  type DialogKind = "ticket" | "dia" | "tarefa" | "projeto" | "fundo" | "etapa" | "rotina";
+  type DialogKind = "ticket" | "dia" | "tarefa" | "projeto" | "entidade" | "etapa" | "rotina";
   type DialogRef = { kind: DialogKind; id: string };
   let dialogStack = $state<DialogRef[]>([]);
 
@@ -199,7 +199,7 @@
   );
 
   // Same find-by-id scan idiom as ProjetosSection.svelte's findEtapaById --
-  // attaches the owning projeto's nome/fundo?.nome while flattening into
+  // attaches the owning projeto's nome/entidade?.nome while flattening into
   // EtapaDialog's EtapaDialogRow contract.
   const activeEtapaForDialog = $derived.by(() => {
     if (activeDialogRef?.kind !== "etapa") return undefined;
@@ -211,7 +211,7 @@
           nome: e.nome,
           ordem: e.ordem,
           projetoNome: p.nome,
-          fundoNome: p.fundo?.nome ?? null,
+          entidadeNome: p.entidade?.nome ?? null,
           tarefas: e.tarefas ?? [],
         };
       }
@@ -220,26 +220,29 @@
   });
 
   // Belt (this no-op guard) and suspenders (each call site's own onclick
-  // guard, added in RoutinesByFundo.svelte/ProjectStrips.svelte) against
-  // Pitfall 2: a null/empty fundo id ("Sem fundo vinculado") must never open
-  // a blank Fundo dialog.
-  function openFundoDialog(id: string): void {
+  // guard, added in RoutinesByEntidade.svelte/ProjectStrips.svelte) against
+  // Pitfall 2: a null/empty entidade id ("Sem entidade vinculada") must never
+  // open a blank Entidade dialog.
+  function openEntidadeDialog(id: string): void {
     if (!id) return;
-    openDialog({ kind: "fundo", id });
+    openDialog({ kind: "entidade", id });
   }
 
-  function fundoNomeFor(id: string): string {
-    return (query.data as DashboardData | undefined)?.fundos?.find((f) => f.id === id)?.nome ?? "Fundo";
+  function entidadeNomeFor(id: string): string {
+    return (
+      (query.data as DashboardData | undefined)?.entidades?.find((f) => f.id === id)?.nome ??
+      "Entidade"
+    );
   }
 
   // Built straight from already-fetched data (projetoRows()/ticketRows(),
   // both sourced from the one DASHBOARD_QUERY call) -- zero new query.
-  // FundoDialog.svelte only ever narrows further via its own `.filter()`.
-  const fundoDialogProjetos = $derived(
-    projetoRows().map((p) => ({ id: p.id, nome: p.nome, fundoId: p.fundo?.id ?? null })),
+  // EntidadeDialog.svelte only ever narrows further via its own `.filter()`.
+  const entidadeDialogProjetos = $derived(
+    projetoRows().map((p) => ({ id: p.id, nome: p.nome, entidadeId: p.entidade?.id ?? null })),
   );
-  const fundoDialogTickets = $derived(
-    ticketRows().map((t) => ({ id: t.id, titulo: t.titulo, fundoId: t.fundo?.id ?? null })),
+  const entidadeDialogTickets = $derived(
+    ticketRows().map((t) => ({ id: t.id, titulo: t.titulo, entidadeId: t.entidade?.id ?? null })),
   );
 
   // spec-ui.md §4 row 2's "ir para esta semana" -- reuses the existing
@@ -251,11 +254,11 @@
 
   // Dashboard-local lookup (not a new derive.ts export) -- the exact
   // componentry-level join 23-RESEARCH.md's Q1 recommends, distinct from the
-  // one genuinely new pure function, `rotinasDoFundo`, already added in Plan
-  // 23-02.
-  const fundoByProjetoId = $derived.by(() => {
-    const map = new Map<string, FundoRow | null>();
-    for (const p of projetoRows()) map.set(p.id, p.fundo ?? null);
+  // one genuinely new pure function, `rotinasDoEntidade`, already added in
+  // Plan 23-02.
+  const entidadeByProjetoId = $derived.by(() => {
+    const map = new Map<string, EntidadeRow | null>();
+    for (const p of projetoRows()) map.set(p.id, p.entidade ?? null);
     return map;
   });
 
@@ -278,7 +281,7 @@
       tipoPrazo: raw.tipoPrazo,
       status: raw.status,
       templateNome: raw.template?.nome ?? null,
-      fundoNome: raw.template?.fundo?.nome ?? null,
+      entidadeNome: raw.template?.entidade?.nome ?? null,
     };
   });
 
@@ -294,7 +297,7 @@
     const raw = (data?.tarefas ?? []).find((t) => t.id === activeDialogRef.id);
     if (!raw) return undefined;
     const projetoId = raw.etapa?.projeto?.id ?? null;
-    const fundo = projetoId ? (fundoByProjetoId.get(projetoId) ?? null) : null;
+    const entidade = projetoId ? (entidadeByProjetoId.get(projetoId) ?? null) : null;
     return {
       id: raw.id,
       titulo: raw.titulo,
@@ -307,7 +310,7 @@
       subtarefas: raw.subtarefas,
       etapaNome: raw.etapa?.nome ?? null,
       projetoNome: raw.etapa?.projeto?.nome ?? null,
-      fundoNome: fundo?.nome ?? null,
+      entidadeNome: entidade?.nome ?? null,
     };
   });
 
@@ -353,7 +356,7 @@
   const semana = $derived(semanaUtil(semanaBase));
 
   // agendaPorDia's local *Like shapes require a handful of fields as
-  // non-optional-but-nullable (e.g. `etapa: {...} | null`, `fundo: {...} |
+  // non-optional-but-nullable (e.g. `etapa: {...} | null`, `entidade: {...} |
   // null`) where DashboardData's row types (Plan 21-02) declare the
   // equivalent link as merely optional (`etapa?: ...`) — this normalization
   // bridges that gap explicitly rather than casting past it.
@@ -362,7 +365,7 @@
     return {
       projetos: (data?.projetos ?? []).map((p) => ({
         id: p.id,
-        fundo: p.fundo ? { id: p.fundo.id } : null,
+        entidade: p.entidade ? { id: p.entidade.id } : null,
       })),
       tarefas: (data?.tarefas ?? []).map((t) => ({
         id: t.id,
@@ -384,8 +387,8 @@
         template: i.template
           ? {
               nome: i.template.nome,
-              fundo: i.template.fundo
-                ? { id: i.template.fundo.id, nome: i.template.fundo.nome }
+              entidade: i.template.entidade
+                ? { id: i.template.entidade.id, nome: i.template.entidade.nome }
                 : null,
             }
           : null,
@@ -395,7 +398,7 @@
         titulo: t.titulo,
         tipoPrazo: t.tipoPrazo,
         dataPrevista: t.dataPrevista,
-        fundo: t.fundo ? { id: t.fundo.id } : null,
+        entidade: t.entidade ? { id: t.entidade.id } : null,
       })),
     };
   });
@@ -416,7 +419,7 @@
   );
   const mesNome = $derived(MESES_PT_BR[new Date(`${semana.dias[4]}T00:00:00.000Z`).getUTCMonth()]);
 
-  const rotinaGrupos = $derived(rotinasPorFundo(dadosNormalizados.instanciasRotina, semana));
+  const rotinaGrupos = $derived(rotinasPorEntidade(dadosNormalizados.instanciasRotina, semana));
 
   // Sourced straight from `query.data` (not `dadosNormalizados`, which never
   // carries a bare id -> label lookup shape) -- the only place this map's
@@ -511,11 +514,11 @@
     >
       <div class="flex h-full min-h-0 flex-col gap-6">
         <div class="min-h-0 flex-1">
-          <RoutinesByFundo
+          <RoutinesByEntidade
             grupos={rotinaGrupos}
             nomeById={rotinaNomeById}
             {hojeIso}
-            onOpenFundo={openFundoDialog}
+            onOpenEntidade={openEntidadeDialog}
             onOpenRotina={openRotinaDialog}
           />
         </div>
@@ -530,7 +533,7 @@
         projetos={projetoRows()}
         {hojeIso}
         onVerProjetos={goToProjetos}
-        onOpenFundo={openFundoDialog}
+        onOpenEntidade={openEntidadeDialog}
         onOpenProjeto={openProjetoDialog}
         onOpenEtapa={openEtapaDialog}
         onOpenTarefa={openTarefaDialog}
@@ -589,14 +592,14 @@
         if (!open) closeAllDialogs();
       }}
     />
-  {:else if activeDialogRef?.kind === "fundo"}
-    <FundoDialog
+  {:else if activeDialogRef?.kind === "entidade"}
+    <EntidadeDialog
       open={true}
-      fundoId={activeDialogRef.id}
-      fundoNome={fundoNomeFor(activeDialogRef.id)}
+      entidadeId={activeDialogRef.id}
+      entidadeNome={entidadeNomeFor(activeDialogRef.id)}
       instanciasRotina={dadosNormalizados.instanciasRotina}
-      projetos={fundoDialogProjetos}
-      tickets={fundoDialogTickets}
+      projetos={entidadeDialogProjetos}
+      tickets={entidadeDialogTickets}
       onOpenChange={(open) => {
         if (!open) closeAllDialogs();
       }}
@@ -608,7 +611,7 @@
         ? {
             id: activeProjetoForDialog.id,
             nome: activeProjetoForDialog.nome,
-            fundoNome: activeProjetoForDialog.fundo?.nome ?? null,
+            entidadeNome: activeProjetoForDialog.entidade?.nome ?? null,
             etapas: (activeProjetoForDialog.etapas ?? []).map((e) => ({
               id: e.id,
               nome: e.nome,
