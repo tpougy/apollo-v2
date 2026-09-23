@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 11
+open_count: 13
 waived_count: 0
-fixed_count: 3
-total_count: 14
-last_updated: 2026-08-12T05:19:40.923Z
+fixed_count: 4
+total_count: 17
+last_updated: 2026-09-23T03:31:55.073Z
 ---
 
 # Broken Windows Ledger
@@ -29,6 +29,9 @@ last_updated: 2026-08-12T05:19:40.923Z
 | 12 | 18 | deviation | web/e2e/shell-chrome.spec.ts |  | References dead nav-etapas/nav-templatesRotina/nav-subtarefas/nav-tarefas testids (removed by 18-01's NAV-02 topbar restructuring) and/or hardcoded 9-entity counts; requires 18-03's NAV-05 gotoNested e2e migration before this file passes again -- expected transient state within this phase's multi-plan sequence, empirically confirmed via 18-02's A/B verification run, not a regression introduced by 18-02's EntityScreen.svelte diff. | open |  | 2026-08-11T16:49:59.027Z |  |
 | 13 | 19 | deviation | web/src/lib/sections/ProjetosSection.svelte |  | Hidden-host dialog pattern (etapaHostEl/tarefaHostEl/projetoHostEl) mounts EntityScreen's formError <Alert> (entity-error testid) inside the same class="hidden" wrapper as the rest of the instance -- only the Dialog itself escapes via bits-ui's Portal, so entity-error never becomes visible when a create/edit fails through a hidden host. The sonner error toast (toast.error) still fires and is the only user-visible error signal for this flow. Discovered in 19-04's T-04-04 rewrite; not fixed (no production code touched by that plan). Consider surfacing formError inside the Dialog itself in a future phase. | open |  | 2026-08-11T20:46:42.335Z |  |
 | 14 | 23 | deviation | web/src/lib/sections/ProjetosSection.svelte |  | etapa-kanban-card is a real <button> nested inside etapa-kanban-column's own <button> (per 23-03-PLAN.md's literal Task 2 text and Task 3 test (a), which both require tagName===button for both elements). Valid only because this app is a client-only Vite SPA with an empty index.html shell (no SSR/HTML-string parse of this markup) -- svelte-check flags an expected SSR-hydration warning at this exact line. Revisit if SSR is ever adopted. | open |  | 2026-08-12T05:19:40.923Z |  |
+| 15 | 260922-vbt | deviation | web/e2e/entities-entidades.spec.ts |  | WEB-02 empty-state assertion assumes entidades table is empty; false since Task 1 migrated 58 real fundos rows into entidades (pre-existing assumption gap, not caused by this rename). | fixed |  | 2026-09-23T03:26:03.837Z | 2026-09-23T03:31:55.073Z |
+| 16 | 260922-vbt | deviation | web/e2e/entities-header-states.spec.ts |  | ENTTBL-06 empty-state assertion assumes entidades table is empty; false since Task 1 migrated 58 real fundos rows into entidades (pre-existing assumption gap, not caused by this rename). | open |  | 2026-09-23T03:26:09.122Z |  |
+| 17 | 260922-vbt | deviation | web/e2e/cross-phase-verification.spec.ts |  | VERIFY-05 keyboard-focus smoke for entidades assumes the freshly-created row is one Tab away from entity-create-start; false since Task 1 migrated 58 real rows into entidades, changing tab order (pre-existing assumption gap, not caused by this rename). | open |  | 2026-09-23T03:26:09.224Z |  |
 
 ````json
 [
@@ -199,6 +202,45 @@ last_updated: 2026-08-12T05:19:40.923Z
     "reason": "",
     "recorded_at": "2026-08-12T05:19:40.923Z",
     "resolved_at": null
+  },
+  {
+    "id": 15,
+    "kind": "deviation",
+    "phase": "260922-vbt",
+    "file": "web/e2e/entities-entidades.spec.ts",
+    "line": null,
+    "description": "WEB-02 empty-state assertion assumes entidades table is empty; false since Task 1 migrated 58 real fundos rows into entidades (pre-existing assumption gap, not caused by this rename).",
+    "status": "fixed",
+    "reason": "",
+    "recorded_at": "2026-09-23T03:26:03.837Z",
+    "resolved_at": "2026-09-23T03:31:55.073Z",
+    "milestone": "v1.5"
+  },
+  {
+    "id": 16,
+    "kind": "deviation",
+    "phase": "260922-vbt",
+    "file": "web/e2e/entities-header-states.spec.ts",
+    "line": null,
+    "description": "ENTTBL-06 empty-state assertion assumes entidades table is empty; false since Task 1 migrated 58 real fundos rows into entidades (pre-existing assumption gap, not caused by this rename).",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-23T03:26:09.122Z",
+    "resolved_at": null,
+    "milestone": "v1.5"
+  },
+  {
+    "id": 17,
+    "kind": "deviation",
+    "phase": "260922-vbt",
+    "file": "web/e2e/cross-phase-verification.spec.ts",
+    "line": null,
+    "description": "VERIFY-05 keyboard-focus smoke for entidades assumes the freshly-created row is one Tab away from entity-create-start; false since Task 1 migrated 58 real rows into entidades, changing tab order (pre-existing assumption gap, not caused by this rename).",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-23T03:26:09.224Z",
+    "resolved_at": null,
+    "milestone": "v1.5"
   }
 ]
 ````
