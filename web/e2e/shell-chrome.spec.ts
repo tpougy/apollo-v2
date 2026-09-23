@@ -103,13 +103,13 @@ test("single app-identity element when authenticated — exactly one root h1, no
   await page.goto("/");
   await expect(page.getByTestId("app-shell")).toBeVisible();
 
-  await expect(page.getByText("Apollo v2", { exact: true })).toHaveCount(1);
-  await expect(page.getByText("Apollo v2", { exact: true })).toBeVisible();
+  await expect(page.getByText("Apollo", { exact: true })).toHaveCount(1);
+  await expect(page.getByText("Apollo", { exact: true })).toBeVisible();
 
   // The authenticated shell now owns a single top-level heading
   // (`shell-app-name`, promoted to `<h1>` to fix the skipped-heading-level
   // regression from WR-01) — this must never duplicate to 2+ instances,
   // and it is a structurally different element from `App.svelte`'s
   // signed-out `<h1>` (asserted separately in design-system.spec.ts).
-  await expect(page.locator("h1", { hasText: "Apollo v2" })).toHaveCount(1);
+  await expect(page.locator("h1", { hasText: "Apollo" })).toHaveCount(1);
 });

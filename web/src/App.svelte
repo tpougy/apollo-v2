@@ -9,7 +9,7 @@
 <Toaster />
 
 <SignedOut {db}>
-  <h1>Apollo v2</h1>
+  <h1>Apollo</h1>
   <LoginScreen />
 </SignedOut>
 

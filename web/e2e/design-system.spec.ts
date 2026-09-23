@@ -10,7 +10,7 @@ import { expect, test } from "@playwright/test";
 test("Tailwind preflight resets heading and body styles", async ({ page }) => {
   await page.goto("/");
 
-  const h1 = page.locator("h1", { hasText: "Apollo v2" });
+  const h1 = page.locator("h1", { hasText: "Apollo" });
   const [h1Font, bodyFont] = await Promise.all([
     h1.evaluate((el) => getComputedStyle(el).fontSize),
     page.evaluate(() => getComputedStyle(document.body).fontSize),
