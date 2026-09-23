@@ -3,18 +3,18 @@ gsd_state_version: "1.0"
 milestone: v1.5
 status: Awaiting next milestone
 stopped_at: Phase 31 complete — all phases complete
-last_updated: "2026-09-23T15:31:23.973Z"
+last_updated: "2026-09-23T17:19:26.651Z"
 last_activity: 2026-09-23
-last_activity_desc: Completed quick task 260923-h35 (vite.config.ts Cloudflare Pages app_id fallback)
-state_head: 616cc8be779713709d2bcfd986e4503949f40189
+last_activity_desc: Completed quick task 260923-ivg (tooltips no form de templatesRotina + fix do bug de desselecao do diaSemana)
+state_head: c8e5ea5ce6cd826e70bf716de2d0bb902171ddfa
+milestone_name: Correções descobertas no onboarding real do calendário de rotinas (RBR)
+current_phase: null
 progress:
   total_phases: 6
   completed_phases: 6
   total_plans: 11
   completed_plans: 11
   percent: 100
-milestone_name: Correções descobertas no onboarding real do calendário de rotinas (RBR)
-current_phase: null
 ---
 
 # Project State
@@ -31,7 +31,7 @@ See: .planning/PROJECT.md (updated 2026-09-22)
 Phase: Milestone v1.5 complete
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-09-23 — Completed quick task 260923-h35: vite.config.ts ganhou fallback para process.env.VITE_INSTANT_APP_ID, habilitando build no Cloudflare Pages
+Last activity: 2026-09-23 — Completed quick task 260923-ivg: tooltips de ajuda em todos os 6 campos do formulario de templatesRotina, e correcao do bug que impedia desselecionar diaSemana de volta para vazio
 
 ## Performance Metrics
 
@@ -122,6 +122,7 @@ None — v1.5 roadmap coverage is 12/12 requirements mapped with no orphans. No 
 | 5 | Trocar o título da página (title tag) de "Apollo v2" para "Apollo" no app web. | 2026-09-23 | dfc982a | — | — |
 | 6 | Corrigir warning "state_referenced_locally" em EntityScreen.svelte via untrack() (2o warning, nested <button> em ProjetosSection, mantido como debito tecnico ja documentado) | 2026-09-23 | f46bd78 | — | — |
 | 260923-h35 | Ajustar web/vite.config.ts para permitir build no Cloudflare Pages: fallback para process.env.VITE_INSTANT_APP_ID quando .env.instantdb nao existir, comportamento identico quando o arquivo existir, INSTANT_APP_ADMIN_TOKEN nunca exposto. | 2026-09-23 | 616cc8b | Verified | [260923-h35-ajustar-web-vite-config-ts-para-permitir](./quick/260923-h35-ajustar-web-vite-config-ts-para-permitir/) |
+| 260923-ivg | Tooltips de ajuda em templatesRotina (6 campos, componente Tooltip novo baseado em bits-ui) + fix do bug de nao conseguir desselecionar diaSemana (Select renderer + submit-payload loop, ambos corrigidos). | 2026-09-23 | c8e5ea5 | Verified | [260923-ivg-adicionar-tooltips-de-ajuda-no-formulari](./quick/260923-ivg-adicionar-tooltips-de-ajuda-no-formulari/) |
 
 ## Deferred Items
 
