@@ -21,6 +21,7 @@ const donoRules = {
 
 const rules = {
   fundos: donoRules,
+  entidades: donoRules,
   projetos: donoRules,
   etapas: donoRules,
   tarefas: donoRules,
