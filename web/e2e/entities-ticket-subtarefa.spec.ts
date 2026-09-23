@@ -180,7 +180,7 @@ test("WEB-08: tickets full browser CRUD round trip, including a long multi-line 
   const optionValues = await openAndReadSelectOptions(page, "field-tipoPrazo");
   expect(optionValues.sort()).toEqual(["hard", "soft"]);
 
-  // (1) Create: dataRecebimento set, dataPrevista left blank, no fundo link.
+  // (1) Create: dataRecebimento set, dataPrevista left blank, no entidade link.
   await page.getByTestId("field-titulo").fill(titulo);
   await page.getByTestId("field-corpo").fill(corpo);
   await page.getByTestId("field-remetente").fill(remetente);

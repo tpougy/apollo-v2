@@ -11,7 +11,7 @@ import { gotoNested } from "./helpers/gotoNested.ts";
 // pattern.
 //
 // Post-reload assertions use a generous timeout (RESYNC_TIMEOUT), copied
-// verbatim from 04-02's `entities-fundos.spec.ts` for the same reason: a
+// verbatim from 04-02's `entities-entidades.spec.ts` for the same reason: a
 // reload forces the real InstantDB Reactor to re-authenticate and re-sync
 // over the network before the reactive query reflects server-confirmed
 // state, and that round trip against the live hosted backend can
@@ -79,7 +79,7 @@ function tryDelete(group: string, eid: string | null | undefined): void {
 // interrupted, run) created it — makes the suite self-healing rather than
 // accumulating flaky leftovers in the live app (mirrors 04-02's
 // `sweepLeftovers` pattern, extended across the tarefa -> etapa -> projeto
-// -> fundo chain so a parent is never deleted before its children).
+// -> entidade chain so a parent is never deleted before its children).
 function sweepLeftovers(): void {
   const tarefas = JSON.parse(apolloCli(["tarefa", "listar"])) as { id: string; titulo: string }[];
   for (const record of tarefas) {
@@ -93,9 +93,9 @@ function sweepLeftovers(): void {
   for (const record of projetos) {
     if (record.nome.startsWith(PREFIX)) tryDelete("projeto", record.id);
   }
-  const fundos = JSON.parse(apolloCli(["fundo", "listar"])) as { id: string; nome: string }[];
-  for (const record of fundos) {
-    if (record.nome.startsWith(PREFIX)) tryDelete("fundo", record.id);
+  const entidades = JSON.parse(apolloCli(["entidade", "listar"])) as { id: string; nome: string }[];
+  for (const record of entidades) {
+    if (record.nome.startsWith(PREFIX)) tryDelete("entidade", record.id);
   }
 }
 
@@ -105,8 +105,8 @@ function sweepLeftovers(): void {
 // projeto/etapa the next entity down the chain links to", independent of
 // whichever throwaway records a given test creates and deletes through the
 // UI for its own create/edit/delete assertions.
-let chainFundoId = "";
-let chainFundoNome = "";
+let chainEntidadeId = "";
+let chainEntidadeNome = "";
 let chainProjetoId = "";
 let chainProjetoNome = "";
 let chainEtapaId = "";
@@ -115,11 +115,21 @@ let chainEtapaNome = "";
 test.beforeAll(() => {
   sweepLeftovers();
 
-  chainFundoNome = uniqueName("chain-fundo");
-  const fundoCreated = JSON.parse(
-    apolloCli(["fundo", "criar", "--nome", chainFundoNome, "--codigo", chainFundoNome, "--ativo"]),
+  chainEntidadeNome = uniqueName("chain-fundo");
+  const entidadeCreated = JSON.parse(
+    apolloCli([
+      "entidade",
+      "criar",
+      "--nome",
+      chainEntidadeNome,
+      "--codigo",
+      chainEntidadeNome,
+      "--tipo-entidade",
+      "Fundo",
+      "--ativo",
+    ]),
   ) as { id: string };
-  chainFundoId = fundoCreated.id;
+  chainEntidadeId = entidadeCreated.id;
 
   chainProjetoNome = uniqueName("chain-projeto");
   const projetoCreated = JSON.parse(
@@ -148,11 +158,11 @@ test.beforeAll(() => {
 test.afterAll(() => {
   tryDelete("etapa", chainEtapaId);
   tryDelete("projeto", chainProjetoId);
-  tryDelete("fundo", chainFundoId);
+  tryDelete("entidade", chainEntidadeId);
   sweepLeftovers();
 });
 
-test("WEB-03: projetos full browser CRUD round trip, with and without an optional fundo link", async ({
+test("WEB-03: projetos full browser CRUD round trip, with and without an optional entidade link", async ({
   page,
 }) => {
   test.setTimeout(90_000);
@@ -163,9 +173,9 @@ test("WEB-03: projetos full browser CRUD round trip, with and without an optiona
   await page.goto("/");
   await page.getByTestId("nav-projetos").click();
 
-  // (1) Create projeto A: nome + status only, no fundo link. Assert it
-  // appears in the master list, correctly grouped under "Sem fundo
-  // vinculado" (the master column's grouping default) — proving the
+  // (1) Create projeto A: nome + status only, no entidade link. Assert it
+  // appears in the master list, correctly grouped under "Sem entidade
+  // vinculada" (the master column's grouping default) — proving the
   // optional link is genuinely absent, not silently defaulted.
   await page.getByTestId("project-create-start").click();
   await page.getByTestId("field-nome").fill(nomeA);
@@ -178,13 +188,13 @@ test("WEB-03: projetos full browser CRUD round trip, with and without an optiona
   expect(eidA).toBeTruthy();
 
   const groupA = itemA.locator("xpath=ancestor::*[@data-testid='project-group']");
-  await expect(groupA.getByTestId("project-group-heading")).toHaveText("Sem fundo vinculado");
+  await expect(groupA.getByTestId("project-group-heading")).toHaveText("Sem entidade vinculada");
 
-  // (2) Select it; assert the detail header shows "Sem fundo vinculado" and
+  // (2) Select it; assert the detail header shows "Sem entidade vinculada" and
   // zero etapas/tarefas counts.
   await itemA.click();
   const header = page.getByTestId("project-header");
-  await expect(header).toContainText("Sem fundo vinculado");
+  await expect(header).toContainText("Sem entidade vinculada");
   await expect(header).toContainText("0 etapas");
   await expect(header).toContainText("0 tarefas");
 
@@ -221,19 +231,19 @@ test("WEB-03: projetos full browser CRUD round trip, with and without an optiona
     )
     .toContain(dataInicioPrevistaValue);
 
-  // (4) Create projeto B WITH a fundo link selected; assert it appears in
-  // the master list, correctly grouped under the fundo's own nome (not
-  // "Sem fundo vinculado").
+  // (4) Create projeto B WITH an entidade link selected; assert it appears
+  // in the master list, correctly grouped under the entidade's own nome (not
+  // "Sem entidade vinculada").
   await page.getByTestId("project-create-start").click();
   await page.getByTestId("field-nome").fill(nomeB);
   await page.getByTestId("field-status").fill("ativo");
-  await selectByText(page, "link-fundo", chainFundoNome);
+  await selectByText(page, "link-entidade", chainEntidadeNome);
   await submitForm(page);
 
   const itemB = page.getByTestId("project-item").filter({ hasText: nomeB });
   await expect(itemB).toBeVisible({ timeout: RESYNC_TIMEOUT });
   const groupB = itemB.locator("xpath=ancestor::*[@data-testid='project-group']");
-  await expect(groupB.getByTestId("project-group-heading")).toHaveText(chainFundoNome);
+  await expect(groupB.getByTestId("project-group-heading")).toHaveText(chainEntidadeNome);
 
   // No UI-driven delete step: ProjetosSection has no delete affordance
   // (spec-ui.md §2.2 lists only "editar projeto"/"+ etapa" as header

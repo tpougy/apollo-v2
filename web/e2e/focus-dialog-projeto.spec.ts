@@ -57,7 +57,7 @@ async function submitForm(page: Page): Promise<void> {
 
 function sweepLeftovers(): void {
   // Order matters: subtarefas before tarefas before etapas before projetos
-  // before fundos -- InstantDB does not cascade-delete linked rows (same
+  // before entidades -- InstantDB does not cascade-delete linked rows (same
   // discipline as every other Phase 23 spec's own sweepLeftovers).
   const subtarefas = JSON.parse(apolloCli(["subtarefa", "listar"])) as {
     id: string;
@@ -78,9 +78,9 @@ function sweepLeftovers(): void {
   for (const record of projetos) {
     if (record.nome.startsWith(PREFIX)) tryDelete("projeto", record.id);
   }
-  const fundos = JSON.parse(apolloCli(["fundo", "listar"])) as { id: string; nome: string }[];
-  for (const record of fundos) {
-    if (record.nome.startsWith(PREFIX)) tryDelete("fundo", record.id);
+  const entidades = JSON.parse(apolloCli(["entidade", "listar"])) as { id: string; nome: string }[];
+  for (const record of entidades) {
+    if (record.nome.startsWith(PREFIX)) tryDelete("entidade", record.id);
   }
 }
 
@@ -93,8 +93,8 @@ test.afterAll(() => {
 });
 
 test.describe("Phase 23 Plan 06: Projeto dialog (depth-2 launch point) + remaining ProjectStrips wiring + subtarefas query fix", () => {
-  let fundoId = "";
-  let fundoNome = "";
+  let entidadeId = "";
+  let entidadeNome = "";
   let projetoId = "";
   let projetoNome = "";
 
@@ -115,10 +115,19 @@ test.describe("Phase 23 Plan 06: Projeto dialog (depth-2 launch point) + remaini
   let novaTarefaId = "";
 
   test.beforeAll(() => {
-    fundoNome = uniqueName("fundo");
-    fundoId = (
+    entidadeNome = uniqueName("fundo");
+    entidadeId = (
       JSON.parse(
-        apolloCli(["fundo", "criar", "--nome", fundoNome, "--codigo", uniqueCodigo("P23J")]),
+        apolloCli([
+          "entidade",
+          "criar",
+          "--nome",
+          entidadeNome,
+          "--codigo",
+          uniqueCodigo("P23J"),
+          "--tipo-entidade",
+          "Fundo",
+        ]),
       ) as { id: string }
     ).id;
 
@@ -132,8 +141,8 @@ test.describe("Phase 23 Plan 06: Projeto dialog (depth-2 launch point) + remaini
           projetoNome,
           "--status",
           "ativo",
-          "--fundo-id",
-          fundoId,
+          "--entidade-id",
+          entidadeId,
         ]),
       ) as { id: string }
     ).id;
@@ -235,7 +244,7 @@ test.describe("Phase 23 Plan 06: Projeto dialog (depth-2 launch point) + remaini
     tryDelete("etapa", etapaId);
     tryDelete("etapa", etapaVaziaId);
     tryDelete("projeto", projetoId);
-    tryDelete("fundo", fundoId);
+    tryDelete("entidade", entidadeId);
     sweepLeftovers();
   });
 

@@ -47,9 +47,9 @@ function uniqueName(prefix: string): string {
 }
 
 function uniqueCodigo(prefix: string): string {
-  // fundos.codigo has no documented length ceiling in the CLI help, but
+  // entidades.codigo has no documented length ceiling in the CLI help, but
   // stays short/unique-ish per its own doc comment -- mirrors the short
-  // codigo style already used by entities-fundos.spec.ts fixtures.
+  // codigo style already used by entities-entidades.spec.ts fixtures.
   return `${prefix}${Date.now().toString().slice(-6)}${Math.floor(Math.random() * 100)}`;
 }
 
@@ -104,19 +104,19 @@ function sweepTemplateLeftovers(): void {
   }
 }
 
-function sweepFundoLeftovers(): void {
-  const fundos = JSON.parse(apolloCli(["fundo", "listar"])) as { id: string; nome: string }[];
-  for (const record of fundos) {
-    if (record.nome.startsWith(PREFIX)) tryDelete("fundo", record.id);
+function sweepEntidadeLeftovers(): void {
+  const entidades = JSON.parse(apolloCli(["entidade", "listar"])) as { id: string; nome: string }[];
+  for (const record of entidades) {
+    if (record.nome.startsWith(PREFIX)) tryDelete("entidade", record.id);
   }
 }
 
-// Order matters: tickets and templates before fundos -- InstantDB does not
+// Order matters: tickets and templates before entidades -- InstantDB does not
 // cascade-delete linked rows.
 async function sweepLeftovers(): Promise<void> {
   sweepTicketLeftovers();
   sweepTemplateLeftovers();
-  sweepFundoLeftovers();
+  sweepEntidadeLeftovers();
   await sweepInstancesByDedupeKeyPrefix(PREFIX, OWNER_EMAIL);
 }
 
@@ -146,19 +146,28 @@ test.describe("DASH-02: empty ticket queue", () => {
 });
 
 test.describe("DASH-01/DASH-02/DASH-07: ticket ordering and navigation", () => {
-  let fundoId = "";
-  let fundoNome = "";
+  let entidadeId = "";
+  let entidadeNome = "";
   let hardTicketId = "";
   let hardTicketTitulo = "";
   let softTicketId = "";
   let softTicketTitulo = "";
 
   test.beforeAll(() => {
-    fundoNome = uniqueName("fundo");
-    const fundoCreated = JSON.parse(
-      apolloCli(["fundo", "criar", "--nome", fundoNome, "--codigo", uniqueCodigo("T21")]),
+    entidadeNome = uniqueName("fundo");
+    const entidadeCreated = JSON.parse(
+      apolloCli([
+        "entidade",
+        "criar",
+        "--nome",
+        entidadeNome,
+        "--codigo",
+        uniqueCodigo("T21"),
+        "--tipo-entidade",
+        "Fundo",
+      ]),
     ) as { id: string };
-    fundoId = fundoCreated.id;
+    entidadeId = entidadeCreated.id;
 
     // Hard ticket with an EARLIER dataPrevista.
     hardTicketTitulo = uniqueName("ticket-hard");
@@ -180,8 +189,8 @@ test.describe("DASH-01/DASH-02/DASH-07: ticket ordering and navigation", () => {
         "pendente",
         "--data-prevista",
         "2026-01-05",
-        "--fundo-id",
-        fundoId,
+        "--entidade-id",
+        entidadeId,
       ]),
     ) as { id: string };
     hardTicketId = hardCreated.id;
@@ -206,8 +215,8 @@ test.describe("DASH-01/DASH-02/DASH-07: ticket ordering and navigation", () => {
         "pendente",
         "--data-prevista",
         "2026-01-20",
-        "--fundo-id",
-        fundoId,
+        "--entidade-id",
+        entidadeId,
       ]),
     ) as { id: string };
     softTicketId = softCreated.id;
@@ -216,7 +225,7 @@ test.describe("DASH-01/DASH-02/DASH-07: ticket ordering and navigation", () => {
   test.afterAll(() => {
     tryDelete("ticket", hardTicketId);
     tryDelete("ticket", softTicketId);
-    tryDelete("fundo", fundoId);
+    tryDelete("entidade", entidadeId);
   });
 
   test("hard-first ordering, correct meta line, and working navigation to Tickets", async ({
@@ -236,9 +245,9 @@ test.describe("DASH-01/DASH-02/DASH-07: ticket ordering and navigation", () => {
     const firstCard = page.getByTestId("dash-ticket-card").first();
     await expect(firstCard).toHaveAttribute("data-eid", hardTicketId, { timeout: RESYNC_TIMEOUT });
 
-    await expect(hardCard).toContainText(fundoNome);
+    await expect(hardCard).toContainText(entidadeNome);
     await expect(hardCard).toContainText("HARD");
-    await expect(softCard).toContainText(fundoNome);
+    await expect(softCard).toContainText(entidadeNome);
     await expect(softCard).toContainText("SOFT");
 
     await page.getByTestId("dash-tickets-ver-todos").click();
@@ -297,25 +306,34 @@ test.describe("DASH-01: responsive grid order", () => {
   });
 });
 
-test.describe("DASH-07: live instanciasRotina.template.fundo two-hop proof", () => {
-  let fundoId = "";
+test.describe("DASH-07: live instanciasRotina.template.entidade two-hop proof", () => {
+  let entidadeId = "";
   let templateId = "";
   let instanceId = "";
 
   test.afterAll(async () => {
     if (instanceId) await deleteInstance(instanceId);
     tryDelete("rotina template", templateId);
-    tryDelete("fundo", fundoId);
+    tryDelete("entidade", entidadeId);
   });
 
-  test("adminQuery(DASHBOARD_QUERY) resolves instanciasRotina.template.fundo through the exact query object the app ships", async () => {
+  test("adminQuery(DASHBOARD_QUERY) resolves instanciasRotina.template.entidade through the exact query object the app ships", async () => {
     test.setTimeout(60_000);
 
-    const fundoNome = uniqueName("fundo-dash07");
-    const fundoCreated = JSON.parse(
-      apolloCli(["fundo", "criar", "--nome", fundoNome, "--codigo", uniqueCodigo("D07")]),
+    const entidadeNome = uniqueName("fundo-dash07");
+    const entidadeCreated = JSON.parse(
+      apolloCli([
+        "entidade",
+        "criar",
+        "--nome",
+        entidadeNome,
+        "--codigo",
+        uniqueCodigo("D07"),
+        "--tipo-entidade",
+        "Fundo",
+      ]),
     ) as { id: string };
-    fundoId = fundoCreated.id;
+    entidadeId = entidadeCreated.id;
 
     const templateNome = uniqueName("template-dash07");
     const templateCreated = JSON.parse(
@@ -329,8 +347,8 @@ test.describe("DASH-07: live instanciasRotina.template.fundo two-hop proof", () 
         "du_fixo",
         "--regra-competencia",
         "M0",
-        "--fundo-id",
-        fundoId,
+        "--entidade-id",
+        entidadeId,
       ]),
     ) as { id: string };
     templateId = templateCreated.id;
@@ -348,8 +366,8 @@ test.describe("DASH-07: live instanciasRotina.template.fundo two-hop proof", () 
       templateId,
     );
 
-    type TemplateLink = { id: string; fundo?: FundoLink | FundoLink[] };
-    type FundoLink = { id: string; nome: string };
+    type TemplateLink = { id: string; entidade?: EntidadeLink | EntidadeLink[] };
+    type EntidadeLink = { id: string; nome: string };
     const result = await adminQuery<{
       instanciasRotina: {
         id: string;
@@ -365,15 +383,15 @@ test.describe("DASH-07: live instanciasRotina.template.fundo two-hop proof", () 
     // the exact same normalization routineJob.ts:622 already applies when
     // reading its own admin-queried `instanciasRotina.template`.
     const template = Array.isArray(seeded?.template) ? seeded?.template[0] : seeded?.template;
-    const fundo = Array.isArray(template?.fundo) ? template?.fundo[0] : template?.fundo;
+    const entidade = Array.isArray(template?.entidade) ? template?.entidade[0] : template?.entidade;
 
-    expect(fundo?.id).toBe(fundoId);
-    expect(fundo?.nome).toBe(fundoNome);
+    expect(entidade?.id).toBe(entidadeId);
+    expect(entidade?.nome).toBe(entidadeNome);
   });
 });
 
 test.describe("DASH-03: tarefa item rendering", () => {
-  let fundoId = "";
+  let entidadeId = "";
   let projetoId = "";
   let etapaId = "";
   let tarefaId = "";
@@ -384,18 +402,27 @@ test.describe("DASH-03: tarefa item rendering", () => {
     tryDelete("tarefa", tarefaId);
     tryDelete("etapa", etapaId);
     tryDelete("projeto", projetoId);
-    tryDelete("fundo", fundoId);
+    tryDelete("entidade", entidadeId);
   });
 
-  test("hard tarefa linked through etapa/projeto/fundo renders under Monday with border-foreground", async ({
+  test("hard tarefa linked through etapa/projeto/entidade renders under Monday with border-foreground", async ({
     page,
   }) => {
     test.setTimeout(60_000);
 
-    const fundoNome = uniqueName("fundo-tarefa");
-    fundoId = (
+    const entidadeNome = uniqueName("fundo-tarefa");
+    entidadeId = (
       JSON.parse(
-        apolloCli(["fundo", "criar", "--nome", fundoNome, "--codigo", uniqueCodigo("T03A")]),
+        apolloCli([
+          "entidade",
+          "criar",
+          "--nome",
+          entidadeNome,
+          "--codigo",
+          uniqueCodigo("T03A"),
+          "--tipo-entidade",
+          "Fundo",
+        ]),
       ) as { id: string }
     ).id;
 
@@ -409,8 +436,8 @@ test.describe("DASH-03: tarefa item rendering", () => {
           projetoNome,
           "--status",
           "em andamento",
-          "--fundo-id",
-          fundoId,
+          "--entidade-id",
+          entidadeId,
         ]),
       ) as { id: string }
     ).id;
@@ -465,7 +492,7 @@ test.describe("DASH-03: tarefa item rendering", () => {
 });
 
 test.describe("DASH-03: hard-vs-soft ticket week-band filtering", () => {
-  let fundoId = "";
+  let entidadeId = "";
   let hardTicketId = "";
   let hardTicketTitulo = "";
   let softTicketId = "";
@@ -475,7 +502,7 @@ test.describe("DASH-03: hard-vs-soft ticket week-band filtering", () => {
   test.afterAll(() => {
     tryDelete("ticket", hardTicketId);
     tryDelete("ticket", softTicketId);
-    tryDelete("fundo", fundoId);
+    tryDelete("entidade", entidadeId);
   });
 
   test("hard ticket renders under Wednesday; soft ticket never appears as a dash-week-item but still lists in dash-tickets", async ({
@@ -483,10 +510,19 @@ test.describe("DASH-03: hard-vs-soft ticket week-band filtering", () => {
   }) => {
     test.setTimeout(60_000);
 
-    const fundoNome = uniqueName("fundo-ticket-filter");
-    fundoId = (
+    const entidadeNome = uniqueName("fundo-ticket-filter");
+    entidadeId = (
       JSON.parse(
-        apolloCli(["fundo", "criar", "--nome", fundoNome, "--codigo", uniqueCodigo("T03B")]),
+        apolloCli([
+          "entidade",
+          "criar",
+          "--nome",
+          entidadeNome,
+          "--codigo",
+          uniqueCodigo("T03B"),
+          "--tipo-entidade",
+          "Fundo",
+        ]),
       ) as { id: string }
     ).id;
 
@@ -510,8 +546,8 @@ test.describe("DASH-03: hard-vs-soft ticket week-band filtering", () => {
           "pendente",
           "--data-prevista",
           semana.dias[2],
-          "--fundo-id",
-          fundoId,
+          "--entidade-id",
+          entidadeId,
         ]),
       ) as { id: string }
     ).id;
@@ -536,8 +572,8 @@ test.describe("DASH-03: hard-vs-soft ticket week-band filtering", () => {
           "pendente",
           "--data-prevista",
           semana.dias[2],
-          "--fundo-id",
-          fundoId,
+          "--entidade-id",
+          entidadeId,
         ]),
       ) as { id: string }
     ).id;
@@ -571,7 +607,7 @@ test.describe("DASH-03: hard-vs-soft ticket week-band filtering", () => {
 });
 
 test.describe("DASH-03: live two-hop rotina rendering", () => {
-  let fundoId = "";
+  let entidadeId = "";
   let templateId = "";
   let instanceId = "";
   const semana = computeSemana();
@@ -579,18 +615,27 @@ test.describe("DASH-03: live two-hop rotina rendering", () => {
   test.afterAll(async () => {
     if (instanceId) await deleteInstance(instanceId);
     tryDelete("rotina template", templateId);
-    tryDelete("fundo", fundoId);
+    tryDelete("entidade", entidadeId);
   });
 
-  test("instanciasRotina.template.fundo two-hop path renders live as a rotina item under Friday", async ({
+  test("instanciasRotina.template.entidade two-hop path renders live as a rotina item under Friday", async ({
     page,
   }) => {
     test.setTimeout(60_000);
 
-    const fundoNome = uniqueName("fundo-rotina-week");
-    fundoId = (
+    const entidadeNome = uniqueName("fundo-rotina-week");
+    entidadeId = (
       JSON.parse(
-        apolloCli(["fundo", "criar", "--nome", fundoNome, "--codigo", uniqueCodigo("T03C")]),
+        apolloCli([
+          "entidade",
+          "criar",
+          "--nome",
+          entidadeNome,
+          "--codigo",
+          uniqueCodigo("T03C"),
+          "--tipo-entidade",
+          "Fundo",
+        ]),
       ) as { id: string }
     ).id;
 
@@ -607,8 +652,8 @@ test.describe("DASH-03: live two-hop rotina rendering", () => {
           "du_fixo",
           "--regra-competencia",
           "M0",
-          "--fundo-id",
-          fundoId,
+          "--entidade-id",
+          entidadeId,
         ]),
       ) as { id: string }
     ).id;
@@ -640,14 +685,14 @@ test.describe("DASH-03: live two-hop rotina rendering", () => {
 });
 
 test.describe("DASH-03: weekend chip", () => {
-  let fundoId = "";
+  let entidadeId = "";
   let ticketId = "";
   let ticketTitulo = "";
   const semana = computeSemana();
 
   test.afterAll(() => {
     tryDelete("ticket", ticketId);
-    tryDelete("fundo", fundoId);
+    tryDelete("entidade", entidadeId);
   });
 
   test("chip is absent with zero weekend items, then appears and opens a popover once one exists", async ({
@@ -659,10 +704,19 @@ test.describe("DASH-03: weekend chip", () => {
     await expect(page.getByTestId("dash-grid")).toBeVisible({ timeout: RESYNC_TIMEOUT });
     await expect(page.getByTestId("dash-weekend-chip")).toHaveCount(0);
 
-    const fundoNome = uniqueName("fundo-weekend");
-    fundoId = (
+    const entidadeNome = uniqueName("fundo-weekend");
+    entidadeId = (
       JSON.parse(
-        apolloCli(["fundo", "criar", "--nome", fundoNome, "--codigo", uniqueCodigo("T03D")]),
+        apolloCli([
+          "entidade",
+          "criar",
+          "--nome",
+          entidadeNome,
+          "--codigo",
+          uniqueCodigo("T03D"),
+          "--tipo-entidade",
+          "Fundo",
+        ]),
       ) as { id: string }
     ).id;
 
@@ -686,8 +740,8 @@ test.describe("DASH-03: weekend chip", () => {
           "pendente",
           "--data-prevista",
           semana.sabado,
-          "--fundo-id",
-          fundoId,
+          "--entidade-id",
+          entidadeId,
         ]),
       ) as { id: string }
     ).id;
@@ -763,11 +817,11 @@ test.describe("DASH-03: week navigation", () => {
   });
 });
 
-test.describe("DASH-04: rotinas by fundo", () => {
+test.describe("DASH-04: rotinas by entidade", () => {
   const semana = computeSemana();
   const hoje = hojeIso();
   // This week's 7 date keys, ascending (Mon..Fri, then this week's own
-  // Sat/Dom) -- the exact window rotinasPorFundo filters to.
+  // Sat/Dom) -- the exact window rotinasPorEntidade filters to.
   const keys = [...semana.dias, semana.sabado, semana.domingo];
   const pastDays = keys.filter((k) => k < hoje);
   const naoPastDays = keys.filter((k) => k >= hoje);
@@ -775,27 +829,36 @@ test.describe("DASH-04: rotinas by fundo", () => {
   // window's earliest key) -- the one weekday with zero earlier days inside
   // its own week. Tests that need a genuinely-overdue instance skip
   // themselves in that rare case rather than asserting on a day this fixture
-  // cannot construct without reaching outside rotinasPorFundo's window.
+  // cannot construct without reaching outside rotinasPorEntidade's window.
   const vencidaDia = pastDays.length > 0 ? pastDays[pastDays.length - 1] : null;
 
-  let fundoId = "";
-  let fundoNome = "";
+  let entidadeId = "";
+  let entidadeNome = "";
   let templateId = "";
-  let fundoOrdenarId = "";
+  let entidadeOrdenarId = "";
   let templateOrdenarId = "";
   let outroTemplateId = "";
   const instanceIds: string[] = [];
   const ordenarInstanceIds: string[] = [];
   let vencidaInstanceId = "";
   let futureInstanceId = "";
-  let semFundoInstanceId = "";
+  let semEntidadeInstanceId = "";
   let templateNome = "";
 
   test.beforeAll(async () => {
-    fundoNome = uniqueName("fundo-rotinas");
-    fundoId = (
+    entidadeNome = uniqueName("fundo-rotinas");
+    entidadeId = (
       JSON.parse(
-        apolloCli(["fundo", "criar", "--nome", fundoNome, "--codigo", uniqueCodigo("T22A")]),
+        apolloCli([
+          "entidade",
+          "criar",
+          "--nome",
+          entidadeNome,
+          "--codigo",
+          uniqueCodigo("T22A"),
+          "--tipo-entidade",
+          "Fundo",
+        ]),
       ) as { id: string }
     ).id;
 
@@ -812,8 +875,8 @@ test.describe("DASH-04: rotinas by fundo", () => {
           "du_fixo",
           "--regra-competencia",
           "M0",
-          "--fundo-id",
-          fundoId,
+          "--entidade-id",
+          entidadeId,
         ]),
       ) as { id: string }
     ).id;
@@ -847,15 +910,24 @@ test.describe("DASH-04: rotinas by fundo", () => {
       }
     }
 
-    // A SECOND fundo/template with exactly 3 instances, all dated on/after
+    // A SECOND entidade/template with exactly 3 instances, all dated on/after
     // `hoje` (never vencida) -- dedicated, under-the-4-cap fixture for the
     // ordenar test, so every instance is always visible and "reverses order"
     // can be asserted as an exact full-list reversal without the 4-row cap
     // interfering.
-    const fundoOrdenarNome = uniqueName("fundo-rotinas-ordenar");
-    fundoOrdenarId = (
+    const entidadeOrdenarNome = uniqueName("fundo-rotinas-ordenar");
+    entidadeOrdenarId = (
       JSON.parse(
-        apolloCli(["fundo", "criar", "--nome", fundoOrdenarNome, "--codigo", uniqueCodigo("T22B")]),
+        apolloCli([
+          "entidade",
+          "criar",
+          "--nome",
+          entidadeOrdenarNome,
+          "--codigo",
+          uniqueCodigo("T22B"),
+          "--tipo-entidade",
+          "Fundo",
+        ]),
       ) as { id: string }
     ).id;
 
@@ -871,8 +943,8 @@ test.describe("DASH-04: rotinas by fundo", () => {
           "du_fixo",
           "--regra-competencia",
           "M0",
-          "--fundo-id",
-          fundoOrdenarId,
+          "--entidade-id",
+          entidadeOrdenarId,
         ]),
       ) as { id: string }
     ).id;
@@ -893,8 +965,8 @@ test.describe("DASH-04: rotinas by fundo", () => {
       ordenarInstanceIds.push(id);
     }
 
-    // A template with NO fundo -- its one instance lands in the always-last
-    // "Sem fundo vinculado" group.
+    // A template with NO entidade -- its one instance lands in the always-last
+    // "Sem entidade vinculada" group.
     outroTemplateId = (
       JSON.parse(
         apolloCli([
@@ -911,7 +983,7 @@ test.describe("DASH-04: rotinas by fundo", () => {
       ) as { id: string }
     ).id;
 
-    semFundoInstanceId = await seedInstance(
+    semEntidadeInstanceId = await seedInstance(
       {
         dedupeKey: uniqueName("dedupe-sem-fundo"),
         dataPrevista: `${naoPastDays[0]}T00:00:00.000Z`,
@@ -927,35 +999,37 @@ test.describe("DASH-04: rotinas by fundo", () => {
   test.afterAll(async () => {
     for (const id of instanceIds) await deleteInstance(id);
     for (const id of ordenarInstanceIds) await deleteInstance(id);
-    if (semFundoInstanceId) await deleteInstance(semFundoInstanceId);
+    if (semEntidadeInstanceId) await deleteInstance(semEntidadeInstanceId);
     tryDelete("rotina template", templateId);
     tryDelete("rotina template", templateOrdenarId);
     tryDelete("rotina template", outroTemplateId);
-    tryDelete("fundo", fundoId);
-    tryDelete("fundo", fundoOrdenarId);
+    tryDelete("entidade", entidadeId);
+    tryDelete("entidade", entidadeOrdenarId);
   });
 
-  test("fundo-grouping order: 'Sem fundo vinculado' card is always last", async ({ page }) => {
+  test("entidade-grouping order: 'Sem entidade vinculada' card is always last", async ({
+    page,
+  }) => {
     test.setTimeout(60_000);
 
     await page.goto("/");
     await expect(page.getByTestId("dash-grid")).toBeVisible({ timeout: RESYNC_TIMEOUT });
 
-    const cards = page.getByTestId("rotinas-fundo-card");
+    const cards = page.getByTestId("rotinas-entidade-card");
     await expect(cards).not.toHaveCount(0);
     const lastCard = cards.last();
     await expect(lastCard).toHaveAttribute("data-eid", "", { timeout: RESYNC_TIMEOUT });
-    await expect(lastCard).toContainText("Sem fundo vinculado");
+    await expect(lastCard).toContainText("Sem entidade vinculada");
   });
 
-  test("the 5-instance fundo's card shows all 5 rotinas-row with no cap, scrollable when they overflow the column", async ({
+  test("the 5-instance entidade's card shows all 5 rotinas-row with no cap, scrollable when they overflow the column", async ({
     page,
   }) => {
     test.setTimeout(60_000);
 
     await page.setViewportSize({ width: 1280, height: 500 });
     await page.goto("/");
-    const card = page.locator(`[data-testid="rotinas-fundo-card"][data-eid="${fundoId}"]`);
+    const card = page.locator(`[data-testid="rotinas-entidade-card"][data-eid="${entidadeId}"]`);
     await expect(card).toBeVisible({ timeout: RESYNC_TIMEOUT });
     await expect(card.getByTestId("rotinas-row")).toHaveCount(5);
 
@@ -989,7 +1063,7 @@ test.describe("DASH-04: rotinas by fundo", () => {
     test.setTimeout(60_000);
 
     await page.goto("/");
-    const card = page.locator(`[data-testid="rotinas-fundo-card"][data-eid="${fundoId}"]`);
+    const card = page.locator(`[data-testid="rotinas-entidade-card"][data-eid="${entidadeId}"]`);
     await expect(card).toBeVisible({ timeout: RESYNC_TIMEOUT });
     const firstRow = card.getByTestId("rotinas-row").first();
     await expect(firstRow).toContainText(templateNome, { timeout: RESYNC_TIMEOUT });
@@ -1033,7 +1107,7 @@ test.describe("DASH-04: rotinas by fundo", () => {
     );
 
     await page.goto("/");
-    const card = page.locator(`[data-testid="rotinas-fundo-card"][data-eid="${fundoId}"]`);
+    const card = page.locator(`[data-testid="rotinas-entidade-card"][data-eid="${entidadeId}"]`);
     await expect(card).toBeVisible({ timeout: RESYNC_TIMEOUT });
     await expect(card.getByTestId("rotinas-row")).toHaveCount(5, { timeout: RESYNC_TIMEOUT });
 
@@ -1048,11 +1122,15 @@ test.describe("DASH-04: rotinas by fundo", () => {
     await expect(card.getByTestId("rotinas-row")).toHaveCount(5, { timeout: RESYNC_TIMEOUT });
   });
 
-  test("ordenar: data (mais distante) reverses the fundo group's row order", async ({ page }) => {
+  test("ordenar: data (mais distante) reverses the entidade group's row order", async ({
+    page,
+  }) => {
     test.setTimeout(60_000);
 
     await page.goto("/");
-    const card = page.locator(`[data-testid="rotinas-fundo-card"][data-eid="${fundoOrdenarId}"]`);
+    const card = page.locator(
+      `[data-testid="rotinas-entidade-card"][data-eid="${entidadeOrdenarId}"]`,
+    );
     await expect(card).toBeVisible({ timeout: RESYNC_TIMEOUT });
     await expect(card.getByTestId("rotinas-row")).toHaveCount(3, { timeout: RESYNC_TIMEOUT });
 
@@ -1077,7 +1155,7 @@ test.describe("DASH-04: rotinas by fundo", () => {
 
     await page.goto("/");
     await expect(page.getByTestId("dash-grid")).toBeVisible({ timeout: RESYNC_TIMEOUT });
-    await expect(page.getByTestId("rotinas-agrupar")).toContainText("agrupar: fundo");
+    await expect(page.getByTestId("rotinas-agrupar")).toContainText("agrupar: entidade");
     await expect(page.getByTestId("rotinas-ordenar")).toContainText("ordenar: data-asc");
     await expect(page.getByTestId("rotinas-status")).toContainText("status: todas");
   });
@@ -1088,30 +1166,30 @@ test.describe("DASH-04: rotinas by fundo", () => {
     test.setTimeout(60_000);
 
     await page.goto("/");
-    const card = page.locator(`[data-testid="rotinas-fundo-card"][data-eid="${fundoId}"]`);
+    const card = page.locator(`[data-testid="rotinas-entidade-card"][data-eid="${entidadeId}"]`);
     await expect(card).toBeVisible({ timeout: RESYNC_TIMEOUT });
     await expect(card.getByTestId("rotinas-row-titulo").first()).toHaveClass(/line-clamp-2/, {
       timeout: RESYNC_TIMEOUT,
     });
   });
 
-  test("each rotinas-row shows its group's fundo nome when linked, and omits it for 'Sem fundo vinculado'", async ({
+  test("each rotinas-row shows its group's entidade nome when linked, and omits it for 'Sem entidade vinculada'", async ({
     page,
   }) => {
     test.setTimeout(60_000);
 
     await page.goto("/");
-    const card = page.locator(`[data-testid="rotinas-fundo-card"][data-eid="${fundoId}"]`);
+    const card = page.locator(`[data-testid="rotinas-entidade-card"][data-eid="${entidadeId}"]`);
     await expect(card).toBeVisible({ timeout: RESYNC_TIMEOUT });
-    const fundoCaptions = card.getByTestId("rotinas-row-fundo");
-    await expect(fundoCaptions).toHaveCount(5, { timeout: RESYNC_TIMEOUT });
-    for (const caption of await fundoCaptions.all()) {
-      await expect(caption).toContainText(fundoNome);
+    const entidadeCaptions = card.getByTestId("rotinas-row-entidade");
+    await expect(entidadeCaptions).toHaveCount(5, { timeout: RESYNC_TIMEOUT });
+    for (const caption of await entidadeCaptions.all()) {
+      await expect(caption).toContainText(entidadeNome);
     }
 
-    const semFundoCard = page.locator(`[data-testid="rotinas-fundo-card"][data-eid=""]`);
-    await expect(semFundoCard).toBeVisible({ timeout: RESYNC_TIMEOUT });
-    await expect(semFundoCard.getByTestId("rotinas-row-fundo")).toHaveCount(0);
+    const semEntidadeCard = page.locator(`[data-testid="rotinas-entidade-card"][data-eid=""]`);
+    await expect(semEntidadeCard).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    await expect(semEntidadeCard.getByTestId("rotinas-row-entidade")).toHaveCount(0);
   });
 });
 

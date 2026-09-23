@@ -19,7 +19,7 @@ import {
 // literal prefix across files that all call it would let one file's sweep
 // delete another file's in-flight instanciasRotina rows if the suite's
 // `workers: 1`/`fullyParallel: false` (playwright.config.ts) were ever
-// relaxed. Keep this suffix unique among focus-dialog-fundo.spec.ts,
+// relaxed. Keep this suffix unique among focus-dialog-entidade.spec.ts,
 // focus-dialog-dia-rotina.spec.ts, and focus-dialog-button-inventory.spec.ts
 // (the three files that call the sweep) if you ever rename it.
 //
@@ -68,7 +68,7 @@ function tryDelete(group: string, eid: string | null | undefined): void {
 
 async function sweepLeftovers(): Promise<void> {
   // Order matters: subtarefas before tarefas before etapas before projetos
-  // before rotina templates before tickets before fundos -- InstantDB does
+  // before rotina templates before tickets before entidades -- InstantDB does
   // not cascade-delete linked rows (same discipline as every other Phase 23
   // spec's own sweepLeftovers).
   const subtarefas = JSON.parse(apolloCli(["subtarefa", "listar"])) as {
@@ -101,9 +101,9 @@ async function sweepLeftovers(): Promise<void> {
   for (const record of tickets) {
     if (record.titulo.startsWith(PREFIX)) tryDelete("ticket", record.id);
   }
-  const fundos = JSON.parse(apolloCli(["fundo", "listar"])) as { id: string; nome: string }[];
-  for (const record of fundos) {
-    if (record.nome.startsWith(PREFIX)) tryDelete("fundo", record.id);
+  const entidades = JSON.parse(apolloCli(["entidade", "listar"])) as { id: string; nome: string }[];
+  for (const record of entidades) {
+    if (record.nome.startsWith(PREFIX)) tryDelete("entidade", record.id);
   }
   await sweepInstancesByDedupeKeyPrefix(PREFIX, OWNER_EMAIL);
 }
@@ -147,8 +147,8 @@ const INVENTORY: { testid: string; dialogTestidHint: string; reachVia: string }[
     reachVia: "dashboard",
   },
   {
-    testid: "project-strip-fundo-badge",
-    dialogTestidHint: "fundo-dialog-rotinas",
+    testid: "project-strip-entidade-badge",
+    dialogTestidHint: "entidade-dialog-rotinas",
     reachVia: "dashboard",
   },
   {
@@ -162,8 +162,8 @@ const INVENTORY: { testid: string; dialogTestidHint: string; reachVia: string }[
     reachVia: "dashboard",
   },
   {
-    testid: "rotinas-fundo-titulo",
-    dialogTestidHint: "fundo-dialog-rotinas",
+    testid: "rotinas-entidade-titulo",
+    dialogTestidHint: "entidade-dialog-rotinas",
     reachVia: "dashboard",
   },
   { testid: "rotinas-row", dialogTestidHint: "focus-dialog-editar", reachVia: "dashboard" },
@@ -203,8 +203,8 @@ test.describe("Phase 23 Plan 07: Consolidated button-inventory + keyboard-access
 
   expect(INVENTORY.length).toBe(16);
 
-  let fundoId = "";
-  let fundoNome = "";
+  let entidadeId = "";
+  let entidadeNome = "";
 
   let projetoId = "";
   let projetoNome = "";
@@ -227,10 +227,19 @@ test.describe("Phase 23 Plan 07: Consolidated button-inventory + keyboard-access
   let rotinaWeekendId = "";
 
   test.beforeAll(async () => {
-    fundoNome = uniqueName("fundo");
-    fundoId = (
+    entidadeNome = uniqueName("fundo");
+    entidadeId = (
       JSON.parse(
-        apolloCli(["fundo", "criar", "--nome", fundoNome, "--codigo", uniqueCodigo("P23Z")]),
+        apolloCli([
+          "entidade",
+          "criar",
+          "--nome",
+          entidadeNome,
+          "--codigo",
+          uniqueCodigo("P23Z"),
+          "--tipo-entidade",
+          "Fundo",
+        ]),
       ) as { id: string }
     ).id;
 
@@ -244,8 +253,8 @@ test.describe("Phase 23 Plan 07: Consolidated button-inventory + keyboard-access
           projetoNome,
           "--status",
           "ativo",
-          "--fundo-id",
-          fundoId,
+          "--entidade-id",
+          entidadeId,
         ]),
       ) as { id: string }
     ).id;
@@ -348,8 +357,8 @@ test.describe("Phase 23 Plan 07: Consolidated button-inventory + keyboard-access
           "pendente",
           "--data-prevista",
           semana.dias[0],
-          "--fundo-id",
-          fundoId,
+          "--entidade-id",
+          entidadeId,
         ]),
       ) as { id: string }
     ).id;
@@ -367,13 +376,13 @@ test.describe("Phase 23 Plan 07: Consolidated button-inventory + keyboard-access
           "du_fixo",
           "--regra-competencia",
           "M0",
-          "--fundo-id",
-          fundoId,
+          "--entidade-id",
+          entidadeId,
         ]),
       ) as { id: string }
     ).id;
 
-    // Tuesday (weekday, week-scoped -- feeds rotinas-fundo-titulo/rotinas-row
+    // Tuesday (weekday, week-scoped -- feeds rotinas-entidade-titulo/rotinas-row
     // and dash-week-item tipo=rotina).
     rotinaWeekdayId = await seedInstance(
       {
@@ -411,7 +420,7 @@ test.describe("Phase 23 Plan 07: Consolidated button-inventory + keyboard-access
     tryDelete("projeto", projetoId);
     tryDelete("rotina template", templateId);
     tryDelete("ticket", ticketId);
-    tryDelete("fundo", fundoId);
+    tryDelete("entidade", entidadeId);
     await sweepLeftovers();
   });
 
@@ -472,8 +481,8 @@ test.describe("Phase 23 Plan 07: Consolidated button-inventory + keyboard-access
     const nome = strip.getByTestId("project-strip-nome");
     expect(await nome.evaluate((el) => el.tagName.toLowerCase())).toBe("button");
 
-    const fundoBadge = strip.getByTestId("project-strip-fundo-badge");
-    expect(await fundoBadge.evaluate((el) => el.tagName.toLowerCase())).toBe("button");
+    const entidadeBadge = strip.getByTestId("project-strip-entidade-badge");
+    expect(await entidadeBadge.evaluate((el) => el.tagName.toLowerCase())).toBe("button");
 
     const stripColumn = strip.locator(
       `[data-testid="project-strip-column"][data-eid="${etapaComTarefasId}"]`,
@@ -484,12 +493,14 @@ test.describe("Phase 23 Plan 07: Consolidated button-inventory + keyboard-access
     const stripCard = stripColumn.getByTestId("project-strip-card").first();
     expect(await stripCard.evaluate((el) => el.tagName.toLowerCase())).toBe("button");
 
-    const fundoCard = page.locator(`[data-testid="rotinas-fundo-card"][data-eid="${fundoId}"]`);
-    await expect(fundoCard).toBeVisible({ timeout: RESYNC_TIMEOUT });
-    const rotinasTitulo = fundoCard.getByTestId("rotinas-fundo-titulo");
+    const entidadeCard = page.locator(
+      `[data-testid="rotinas-entidade-card"][data-eid="${entidadeId}"]`,
+    );
+    await expect(entidadeCard).toBeVisible({ timeout: RESYNC_TIMEOUT });
+    const rotinasTitulo = entidadeCard.getByTestId("rotinas-entidade-titulo");
     expect(await rotinasTitulo.evaluate((el) => el.tagName.toLowerCase())).toBe("button");
 
-    const rotinasRow = fundoCard.locator(
+    const rotinasRow = entidadeCard.locator(
       `[data-testid="rotinas-row"][data-eid="${rotinaWeekdayId}"]`,
     );
     await expect(rotinasRow).toBeVisible({ timeout: RESYNC_TIMEOUT });
@@ -602,22 +613,24 @@ test.describe("Phase 23 Plan 07: Consolidated button-inventory + keyboard-access
     await page.keyboard.press("Escape");
     await expect(page.getByRole("dialog")).toHaveCount(0, { timeout: RESYNC_TIMEOUT });
 
-    // 4. RoutinesByFundo.svelte -- rotinas-fundo-titulo, activated with Enter
-    //    (the seeded fundo's REAL card, never the "Sem fundo vinculado" one,
-    //    which is a documented no-op per 23-05-SUMMARY.md).
+    // 4. RoutinesByEntidade.svelte -- rotinas-entidade-titulo, activated with
+    //    Enter (the seeded entidade's REAL card, never the "Sem entidade
+    //    vinculada" one, which is a documented no-op per 23-05-SUMMARY.md).
     await gotoDashboard(page);
-    const fundoCard = page.locator(`[data-testid="rotinas-fundo-card"][data-eid="${fundoId}"]`);
-    const rotinasTitulo = fundoCard.getByTestId("rotinas-fundo-titulo");
+    const entidadeCard = page.locator(
+      `[data-testid="rotinas-entidade-card"][data-eid="${entidadeId}"]`,
+    );
+    const rotinasTitulo = entidadeCard.getByTestId("rotinas-entidade-titulo");
     await rotinasTitulo.focus();
     await expect(async () => {
       const attrs = await activeElementAttrs(page);
-      expect(attrs.testid).toBe("rotinas-fundo-titulo");
+      expect(attrs.testid).toBe("rotinas-entidade-titulo");
     }).toPass({ timeout: RESYNC_TIMEOUT });
     await page.keyboard.press("Enter");
     dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible({ timeout: RESYNC_TIMEOUT });
     await expect(dialog).toHaveClass(/sm:max-w-3xl/);
-    await expect(dialog).toContainText(fundoNome);
+    await expect(dialog).toContainText(entidadeNome);
     await page.keyboard.press("Escape");
     await expect(page.getByRole("dialog")).toHaveCount(0, { timeout: RESYNC_TIMEOUT });
 

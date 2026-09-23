@@ -4,7 +4,7 @@ import { expect, test } from "@playwright/test";
 // storageState (no cookies, no origins) — no dependency on the `setup`
 // project, so it never triggers a magic-code send.
 const ENTITY_NAMES = [
-  "fundos",
+  "entidades",
   "projetos",
   "etapas",
   "tarefas",

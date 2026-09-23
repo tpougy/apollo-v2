@@ -45,7 +45,7 @@ function tryDelete(group: string, eid: string | null | undefined): void {
 
 function sweepLeftovers(): void {
   // Order matters: subtarefas before tarefas before etapas before projetos
-  // before fundos -- InstantDB does not cascade-delete linked rows (same
+  // before entidades -- InstantDB does not cascade-delete linked rows (same
   // discipline as projetos-section.spec.ts's own sweepLeftovers).
   const subtarefas = JSON.parse(apolloCli(["subtarefa", "listar"])) as {
     id: string;
@@ -66,15 +66,15 @@ function sweepLeftovers(): void {
   for (const record of projetos) {
     if (record.nome.startsWith(PREFIX)) tryDelete("projeto", record.id);
   }
-  const fundos = JSON.parse(apolloCli(["fundo", "listar"])) as { id: string; nome: string }[];
-  for (const record of fundos) {
-    if (record.nome.startsWith(PREFIX)) tryDelete("fundo", record.id);
+  const entidades = JSON.parse(apolloCli(["entidade", "listar"])) as { id: string; nome: string }[];
+  for (const record of entidades) {
+    if (record.nome.startsWith(PREFIX)) tryDelete("entidade", record.id);
   }
 }
 
 test.describe("Phase 23 Plan 03: Etapa/Tarefa focus dialogs in ProjetosSection", () => {
-  let fundoId = "";
-  let fundoNome = "";
+  let entidadeId = "";
+  let entidadeNome = "";
   let projetoId = "";
   let projetoNome = "";
   let etapaId = "";
@@ -89,11 +89,20 @@ test.describe("Phase 23 Plan 03: Etapa/Tarefa focus dialogs in ProjetosSection",
   test.beforeAll(() => {
     sweepLeftovers();
 
-    fundoNome = uniqueName("fundo");
-    const fundoCreated = JSON.parse(
-      apolloCli(["fundo", "criar", "--nome", fundoNome, "--codigo", uniqueCodigo("P23K")]),
+    entidadeNome = uniqueName("fundo");
+    const entidadeCreated = JSON.parse(
+      apolloCli([
+        "entidade",
+        "criar",
+        "--nome",
+        entidadeNome,
+        "--codigo",
+        uniqueCodigo("P23K"),
+        "--tipo-entidade",
+        "Fundo",
+      ]),
     ) as { id: string };
-    fundoId = fundoCreated.id;
+    entidadeId = entidadeCreated.id;
 
     projetoNome = uniqueName("projeto");
     const projetoCreated = JSON.parse(
@@ -104,8 +113,8 @@ test.describe("Phase 23 Plan 03: Etapa/Tarefa focus dialogs in ProjetosSection",
         projetoNome,
         "--status",
         "ativo",
-        "--fundo-id",
-        fundoId,
+        "--entidade-id",
+        entidadeId,
       ]),
     ) as { id: string };
     projetoId = projetoCreated.id;
@@ -201,7 +210,7 @@ test.describe("Phase 23 Plan 03: Etapa/Tarefa focus dialogs in ProjetosSection",
     tryDelete("tarefa", tarefaFuturaId);
     tryDelete("etapa", etapaId);
     tryDelete("projeto", projetoId);
-    tryDelete("fundo", fundoId);
+    tryDelete("entidade", entidadeId);
     sweepLeftovers();
   });
 
@@ -273,7 +282,7 @@ test.describe("Phase 23 Plan 03: Etapa/Tarefa focus dialogs in ProjetosSection",
     await expect(page.getByRole("dialog")).toHaveCount(0, { timeout: RESYNC_TIMEOUT });
   });
 
-  test("(c) clicking etapa-kanban-card opens the Tarefa dialog at S width with titulo/competencia/subtarefas and a fundo·projeto·etapa context line", async ({
+  test("(c) clicking etapa-kanban-card opens the Tarefa dialog at S width with titulo/competencia/subtarefas and an entidade·projeto·etapa context line", async ({
     page,
   }) => {
     await gotoEtapaKanban(page);
@@ -289,7 +298,7 @@ test.describe("Phase 23 Plan 03: Etapa/Tarefa focus dialogs in ProjetosSection",
     await expect(dialog).toContainText(tarefaAtrasadaCompetencia);
 
     const contexto = dialog.locator('[data-slot="dialog-description"]');
-    await expect(contexto).toHaveText(`${fundoNome} · ${projetoNome} · ${etapaNome}`);
+    await expect(contexto).toHaveText(`${entidadeNome} · ${projetoNome} · ${etapaNome}`);
 
     const subtarefas = dialog.getByTestId("task-dialog-subtarefas");
     await expect(subtarefas).toBeVisible();

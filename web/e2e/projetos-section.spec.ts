@@ -53,7 +53,7 @@ function tryDelete(group: string, eid: string | null | undefined): void {
 
 function sweepLeftovers(): void {
   // Order matters: tarefas/subtarefas before etapas before projetos before
-  // fundos, mirroring entities-projeto-etapa-tarefa.spec.ts's own
+  // entidades, mirroring entities-projeto-etapa-tarefa.spec.ts's own
   // sweepLeftovers — InstantDB does not cascade-delete linked rows.
   const subtarefas = JSON.parse(apolloCli(["subtarefa", "listar"])) as {
     id: string;
@@ -74,58 +74,68 @@ function sweepLeftovers(): void {
   for (const record of projetos) {
     if (record.nome.startsWith(PREFIX)) tryDelete("projeto", record.id);
   }
-  const fundos = JSON.parse(apolloCli(["fundo", "listar"])) as { id: string; nome: string }[];
-  for (const record of fundos) {
-    if (record.nome.startsWith(PREFIX)) tryDelete("fundo", record.id);
+  const entidades = JSON.parse(apolloCli(["entidade", "listar"])) as { id: string; nome: string }[];
+  for (const record of entidades) {
+    if (record.nome.startsWith(PREFIX)) tryDelete("entidade", record.id);
   }
 }
 
-let fundoId = "";
-let fundoNome = "";
-let projetoComFundoId = "";
-let projetoComFundoNome = "";
-let projetoSemFundoId = "";
-let projetoSemFundoNome = "";
+let entidadeId = "";
+let entidadeNome = "";
+let projetoComEntidadeId = "";
+let projetoComEntidadeNome = "";
+let projetoSemEntidadeId = "";
+let projetoSemEntidadeNome = "";
 
 test.beforeAll(() => {
   sweepLeftovers();
 
-  fundoNome = uniqueName("fundo");
-  const fundoCreated = JSON.parse(
-    apolloCli(["fundo", "criar", "--nome", fundoNome, "--codigo", fundoNome, "--ativo"]),
+  entidadeNome = uniqueName("fundo");
+  const entidadeCreated = JSON.parse(
+    apolloCli([
+      "entidade",
+      "criar",
+      "--nome",
+      entidadeNome,
+      "--codigo",
+      entidadeNome,
+      "--tipo-entidade",
+      "Fundo",
+      "--ativo",
+    ]),
   ) as { id: string };
-  fundoId = fundoCreated.id;
+  entidadeId = entidadeCreated.id;
 
-  projetoComFundoNome = uniqueName("projeto-com-fundo");
-  const projetoComFundoCreated = JSON.parse(
+  projetoComEntidadeNome = uniqueName("projeto-com-fundo");
+  const projetoComEntidadeCreated = JSON.parse(
     apolloCli([
       "projeto",
       "criar",
       "--nome",
-      projetoComFundoNome,
+      projetoComEntidadeNome,
       "--status",
       "ativo",
-      "--fundo-id",
-      fundoId,
+      "--entidade-id",
+      entidadeId,
     ]),
   ) as { id: string };
-  projetoComFundoId = projetoComFundoCreated.id;
+  projetoComEntidadeId = projetoComEntidadeCreated.id;
 
-  projetoSemFundoNome = uniqueName("projeto-sem-fundo");
-  const projetoSemFundoCreated = JSON.parse(
-    apolloCli(["projeto", "criar", "--nome", projetoSemFundoNome, "--status", "ativo"]),
+  projetoSemEntidadeNome = uniqueName("projeto-sem-fundo");
+  const projetoSemEntidadeCreated = JSON.parse(
+    apolloCli(["projeto", "criar", "--nome", projetoSemEntidadeNome, "--status", "ativo"]),
   ) as { id: string };
-  projetoSemFundoId = projetoSemFundoCreated.id;
+  projetoSemEntidadeId = projetoSemEntidadeCreated.id;
 });
 
 test.afterAll(() => {
-  tryDelete("projeto", projetoComFundoId);
-  tryDelete("projeto", projetoSemFundoId);
-  tryDelete("fundo", fundoId);
+  tryDelete("projeto", projetoComEntidadeId);
+  tryDelete("projeto", projetoSemEntidadeId);
+  tryDelete("entidade", entidadeId);
   sweepLeftovers();
 });
 
-test("NEST-02: master column groups projetos by fundo, 'Sem fundo vinculado' last", async ({
+test("NEST-02: master column groups projetos by entidade, 'Sem entidade vinculada' last", async ({
   page,
 }) => {
   await page.goto("/");
@@ -134,33 +144,35 @@ test("NEST-02: master column groups projetos by fundo, 'Sem fundo vinculado' las
   await expect(page.locator("h2")).toHaveText("Projetos");
   await expect(page.locator("h2")).toHaveCount(1);
 
-  const fundoItem = page.getByTestId("project-item").filter({ hasText: projetoComFundoNome });
-  const semFundoItem = page.getByTestId("project-item").filter({ hasText: projetoSemFundoNome });
-  await expect(fundoItem).toBeVisible({ timeout: RESYNC_TIMEOUT });
-  await expect(semFundoItem).toBeVisible({ timeout: RESYNC_TIMEOUT });
-  await expect(fundoItem).toHaveAttribute("data-eid", projetoComFundoId);
-  await expect(semFundoItem).toHaveAttribute("data-eid", projetoSemFundoId);
+  const entidadeItem = page.getByTestId("project-item").filter({ hasText: projetoComEntidadeNome });
+  const semEntidadeItem = page
+    .getByTestId("project-item")
+    .filter({ hasText: projetoSemEntidadeNome });
+  await expect(entidadeItem).toBeVisible({ timeout: RESYNC_TIMEOUT });
+  await expect(semEntidadeItem).toBeVisible({ timeout: RESYNC_TIMEOUT });
+  await expect(entidadeItem).toHaveAttribute("data-eid", projetoComEntidadeId);
+  await expect(semEntidadeItem).toHaveAttribute("data-eid", projetoSemEntidadeId);
 
-  // The fundo-linked projeto is under a heading matching the fundo's nome.
-  const fundoGroup = page.getByTestId("project-group").filter({
-    has: page.getByTestId("project-group-heading").filter({ hasText: fundoNome }),
+  // The entidade-linked projeto is under a heading matching the entidade's nome.
+  const entidadeGroup = page.getByTestId("project-group").filter({
+    has: page.getByTestId("project-group-heading").filter({ hasText: entidadeNome }),
   });
   await expect(
-    fundoGroup.getByTestId("project-item").filter({ hasText: projetoComFundoNome }),
+    entidadeGroup.getByTestId("project-item").filter({ hasText: projetoComEntidadeNome }),
   ).toBeVisible();
 
-  // The fundo-less projeto is under "Sem fundo vinculado".
-  const semFundoGroup = page.getByTestId("project-group").filter({
-    has: page.getByTestId("project-group-heading").filter({ hasText: "Sem fundo vinculado" }),
+  // The entidade-less projeto is under "Sem entidade vinculada".
+  const semEntidadeGroup = page.getByTestId("project-group").filter({
+    has: page.getByTestId("project-group-heading").filter({ hasText: "Sem entidade vinculada" }),
   });
   await expect(
-    semFundoGroup.getByTestId("project-item").filter({ hasText: projetoSemFundoNome }),
+    semEntidadeGroup.getByTestId("project-item").filter({ hasText: projetoSemEntidadeNome }),
   ).toBeVisible();
 
-  // "Sem fundo vinculado" is always sorted last among the group headings.
+  // "Sem entidade vinculada" is always sorted last among the group headings.
   const headings = page.getByTestId("project-group-heading");
   const lastHeadingText = await headings.last().textContent();
-  expect(lastHeadingText?.trim()).toBe("Sem fundo vinculado");
+  expect(lastHeadingText?.trim()).toBe("Sem entidade vinculada");
 });
 
 test("NEST-02: name search filters client-side over already-loaded rows", async ({ page }) => {
@@ -168,21 +180,21 @@ test("NEST-02: name search filters client-side over already-loaded rows", async 
   await page.getByTestId("nav-projetos").click();
 
   await expect(
-    page.getByTestId("project-item").filter({ hasText: projetoComFundoNome }),
+    page.getByTestId("project-item").filter({ hasText: projetoComEntidadeNome }),
   ).toBeVisible({ timeout: RESYNC_TIMEOUT });
   await expect(
-    page.getByTestId("project-item").filter({ hasText: projetoSemFundoNome }),
+    page.getByTestId("project-item").filter({ hasText: projetoSemEntidadeNome }),
   ).toBeVisible({ timeout: RESYNC_TIMEOUT });
 
-  // A substring unique to projetoComFundoNome (its own generated name) hides
-  // the other fixture's item while keeping this one visible.
-  await page.getByTestId("project-search").fill(projetoComFundoNome);
+  // A substring unique to projetoComEntidadeNome (its own generated name)
+  // hides the other fixture's item while keeping this one visible.
+  await page.getByTestId("project-search").fill(projetoComEntidadeNome);
 
   await expect(
-    page.getByTestId("project-item").filter({ hasText: projetoComFundoNome }),
+    page.getByTestId("project-item").filter({ hasText: projetoComEntidadeNome }),
   ).toBeVisible();
   await expect(
-    page.getByTestId("project-item").filter({ hasText: projetoSemFundoNome }),
+    page.getByTestId("project-item").filter({ hasText: projetoSemEntidadeNome }),
   ).toHaveCount(0);
 });
 
@@ -214,20 +226,20 @@ test("NEST-02: selecting a project-item highlights it and shows its breadcrumb/h
   await page.goto("/");
   await page.getByTestId("nav-projetos").click();
 
-  const item = page.getByTestId("project-item").filter({ hasText: projetoComFundoNome });
+  const item = page.getByTestId("project-item").filter({ hasText: projetoComEntidadeNome });
   await expect(item).toBeVisible({ timeout: RESYNC_TIMEOUT });
 
-  const otherItem = page.getByTestId("project-item").filter({ hasText: projetoSemFundoNome });
+  const otherItem = page.getByTestId("project-item").filter({ hasText: projetoSemEntidadeNome });
   const otherBgBefore = await otherItem.evaluate((el) => getComputedStyle(el).backgroundColor);
 
   await item.click();
 
   await expect(page.getByTestId("project-breadcrumb")).toHaveText(
-    `PROJETOS › ${projetoComFundoNome}`,
+    `PROJETOS › ${projetoComEntidadeNome}`,
   );
   const header = page.getByTestId("project-header");
-  await expect(header.locator("h3")).toHaveText(projetoComFundoNome);
-  await expect(header).toContainText(fundoNome);
+  await expect(header.locator("h3")).toHaveText(projetoComEntidadeNome);
+  await expect(header).toContainText(entidadeNome);
   await expect(header).toContainText("0 etapas");
   await expect(header).toContainText("0 tarefas");
 

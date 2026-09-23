@@ -118,7 +118,7 @@ test("ENTFRM-06: tarefas create Dialog composes Dialog.Description (reusing conf
   await page.getByTestId("entity-cancel").click();
 });
 
-test("ENTFRM-07: submitting fundos' create Dialog shows a genuinely observable busy/spinner state on entity-submit during the live write", async ({
+test("ENTFRM-07: submitting entidades' create Dialog shows a genuinely observable busy/spinner state on entity-submit during the live write", async ({
   page,
 }) => {
   test.setTimeout(60_000);
@@ -129,12 +129,13 @@ test("ENTFRM-07: submitting fundos' create Dialog shows a genuinely observable b
 
   try {
     await page.goto("/");
-    await page.getByTestId("nav-fundos").click();
+    await page.getByTestId("nav-entidades").click();
     await page.getByTestId("entity-create-start").click();
     await expect(page.getByRole("dialog")).toBeVisible();
 
     await page.getByTestId("field-nome").fill(nome);
     await page.getByTestId("field-codigo").fill(codigo);
+    await page.getByTestId("field-tipoEntidade").fill("Fundo");
     const ativoCheckbox = page.getByTestId("field-ativo");
     if (!(await ativoCheckbox.isChecked())) {
       await ativoCheckbox.check();
@@ -158,7 +159,7 @@ test("ENTFRM-07: submitting fundos' create Dialog shows a genuinely observable b
   } finally {
     if (eid) {
       try {
-        apolloCli(["fundo", "deletar", "--id", eid]);
+        apolloCli(["entidade", "deletar", "--id", eid]);
       } catch {
         // Already gone — fine.
       }

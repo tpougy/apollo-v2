@@ -99,7 +99,7 @@ export async function deleteInstance(eid: string): Promise<void> {
  * precedent. Used by `dashboard.spec.ts` to run the exact same
  * `DASHBOARD_QUERY` object `useDashboardQuery()` runs, via the admin API
  * instead of the reactive client, proving the live two-hop
- * `instanciasRotina.template.fundo` path resolves.
+ * `instanciasRotina.template.entidade` path resolves.
  */
 export async function adminQuery<T>(query: Record<string, unknown>): Promise<T> {
   return (await adminDb.query(query as never)) as T;
@@ -159,7 +159,7 @@ export async function deleteInstancesByTemplate(templateId: string): Promise<voi
  * `instanciasRotina` record owned by `ownerEmail` whose `dedupeKey` starts
  * with `prefix`, via the admin API. Added specifically because
  * `instanciasRotina` has no `nome` field, so the existing name-prefix sweeps
- * (`sweepLeftovers`/`sweepTemplateLeftovers`/`sweepFundoLeftovers` across the
+ * (`sweepLeftovers`/`sweepTemplateLeftovers`/`sweepEntidadeLeftovers` across the
  * e2e specs) can never find a stray instance directly. `apollo rotina
  * instancia limpar-orfas` (Phase 30, LIFE-02) is insufficient here because a
  * spec's own sweep may run while the instance's `template` link is STILL

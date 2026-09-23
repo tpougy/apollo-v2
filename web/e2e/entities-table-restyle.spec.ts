@@ -12,7 +12,7 @@ import {
 // see 04-01). Every generated record uses the `phase09-e2e-` prefix so
 // leftovers are greppable/removable, and every test cleans up what it
 // created (success path + afterEach guard), mirroring
-// entities-fundos.spec.ts / entities-rotina-log.spec.ts's discipline.
+// entities-entidades.spec.ts / entities-rotina-log.spec.ts's discipline.
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const RESYNC_TIMEOUT = 15_000;
@@ -30,12 +30,12 @@ function uniqueName(prefix: string): string {
   return `${PREFIX}${prefix}-${Date.now()}-${Math.floor(Math.random() * 10_000)}`;
 }
 
-function sweepFundosLeftovers(): void {
-  const listed = JSON.parse(apolloCli(["fundo", "listar"])) as { id: string; nome: string }[];
+function sweepEntidadesLeftovers(): void {
+  const listed = JSON.parse(apolloCli(["entidade", "listar"])) as { id: string; nome: string }[];
   for (const record of listed) {
     if (!record.nome.startsWith(PREFIX)) continue;
     try {
-      apolloCli(["fundo", "deletar", "--id", record.id]);
+      apolloCli(["entidade", "deletar", "--id", record.id]);
     } catch {
       // Already gone — fine.
     }
@@ -55,16 +55,16 @@ async function sweepLogLeftovers(): Promise<void> {
 }
 
 test.beforeEach(async () => {
-  sweepFundosLeftovers();
+  sweepEntidadesLeftovers();
   await sweepLogLeftovers();
 });
 
 test.afterEach(async () => {
-  sweepFundosLeftovers();
+  sweepEntidadesLeftovers();
   await sweepLogLeftovers();
 });
 
-test("ENTTBL: fundos (full-CRUD) — Table role, Badge on ativo, row count matches query", async ({
+test("ENTTBL: entidades (full-CRUD) — Table role, Badge on ativo, row count matches query", async ({
   page,
 }) => {
   test.setTimeout(60_000);
@@ -75,15 +75,35 @@ test("ENTTBL: fundos (full-CRUD) — Table role, Badge on ativo, row count match
   const codigoInativo = uniqueName("inativo-cod");
 
   const createdAtivo = JSON.parse(
-    apolloCli(["fundo", "criar", "--nome", nomeAtivo, "--codigo", codigoAtivo, "--ativo"]),
+    apolloCli([
+      "entidade",
+      "criar",
+      "--nome",
+      nomeAtivo,
+      "--codigo",
+      codigoAtivo,
+      "--tipo-entidade",
+      "Fundo",
+      "--ativo",
+    ]),
   ) as { id: string };
   const createdInativo = JSON.parse(
-    apolloCli(["fundo", "criar", "--nome", nomeInativo, "--codigo", codigoInativo, "--inativo"]),
+    apolloCli([
+      "entidade",
+      "criar",
+      "--nome",
+      nomeInativo,
+      "--codigo",
+      codigoInativo,
+      "--tipo-entidade",
+      "Fundo",
+      "--inativo",
+    ]),
   ) as { id: string };
 
   try {
     await page.goto("/");
-    await page.getByTestId("nav-fundos").click();
+    await page.getByTestId("nav-entidades").click();
 
     // Native <table> (rendered by shadcn Table) carries an implicit ARIA
     // role of "table" with zero markup change needed for this assertion.
@@ -104,8 +124,8 @@ test("ENTTBL: fundos (full-CRUD) — Table role, Badge on ativo, row count match
     // rows this test just seeded.
     expect(await page.getByTestId("row").count()).toBeGreaterThanOrEqual(2);
   } finally {
-    apolloCli(["fundo", "deletar", "--id", createdAtivo.id]);
-    apolloCli(["fundo", "deletar", "--id", createdInativo.id]);
+    apolloCli(["entidade", "deletar", "--id", createdAtivo.id]);
+    apolloCli(["entidade", "deletar", "--id", createdInativo.id]);
   }
 });
 

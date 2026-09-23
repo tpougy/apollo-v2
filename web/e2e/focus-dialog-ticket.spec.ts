@@ -44,15 +44,15 @@ function sweepLeftovers(): void {
   for (const record of tickets) {
     if (record.titulo.startsWith(PREFIX)) tryDelete("ticket", record.id);
   }
-  const fundos = JSON.parse(apolloCli(["fundo", "listar"])) as { id: string; nome: string }[];
-  for (const record of fundos) {
-    if (record.nome.startsWith(PREFIX)) tryDelete("fundo", record.id);
+  const entidades = JSON.parse(apolloCli(["entidade", "listar"])) as { id: string; nome: string }[];
+  for (const record of entidades) {
+    if (record.nome.startsWith(PREFIX)) tryDelete("entidade", record.id);
   }
 }
 
 test.describe("Phase 23 Plan 01: Ticket focus dialog", () => {
-  let fundoId = "";
-  let fundoNome = "";
+  let entidadeId = "";
+  let entidadeNome = "";
   let ticketId = "";
   let ticketTitulo = "";
   let ticketCorpo = "";
@@ -63,11 +63,20 @@ test.describe("Phase 23 Plan 01: Ticket focus dialog", () => {
   test.beforeAll(() => {
     sweepLeftovers();
 
-    fundoNome = uniqueName("fundo");
-    const fundoCreated = JSON.parse(
-      apolloCli(["fundo", "criar", "--nome", fundoNome, "--codigo", uniqueCodigo("P23")]),
+    entidadeNome = uniqueName("fundo");
+    const entidadeCreated = JSON.parse(
+      apolloCli([
+        "entidade",
+        "criar",
+        "--nome",
+        entidadeNome,
+        "--codigo",
+        uniqueCodigo("P23"),
+        "--tipo-entidade",
+        "Fundo",
+      ]),
     ) as { id: string };
-    fundoId = fundoCreated.id;
+    entidadeId = entidadeCreated.id;
 
     ticketTitulo = uniqueName("ticket");
     ticketCorpo = `corpo do ${ticketTitulo}`;
@@ -90,8 +99,8 @@ test.describe("Phase 23 Plan 01: Ticket focus dialog", () => {
         "pendente",
         "--data-prevista",
         dataPrevista,
-        "--fundo-id",
-        fundoId,
+        "--entidade-id",
+        entidadeId,
       ]),
     ) as { id: string };
     ticketId = ticketCreated.id;
@@ -99,7 +108,7 @@ test.describe("Phase 23 Plan 01: Ticket focus dialog", () => {
 
   test.afterAll(() => {
     tryDelete("ticket", ticketId);
-    tryDelete("fundo", fundoId);
+    tryDelete("entidade", entidadeId);
   });
 
   test("opens a real Dialog.Root at M width showing the ticket's corpo/remetente/dataRecebimento; Esc closes it", async ({
@@ -128,7 +137,7 @@ test.describe("Phase 23 Plan 01: Ticket focus dialog", () => {
     await expect(page.getByRole("dialog")).toHaveCount(0, { timeout: RESYNC_TIMEOUT });
   });
 
-  test("context line reads `${fundo} · HARD · ${data}` exactly", async ({ page }) => {
+  test("context line reads `${entidade} · HARD · ${data}` exactly", async ({ page }) => {
     test.setTimeout(60_000);
 
     await page.goto("/");
@@ -141,7 +150,7 @@ test.describe("Phase 23 Plan 01: Ticket focus dialog", () => {
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible({ timeout: RESYNC_TIMEOUT });
     const contexto = dialog.locator('[data-slot="dialog-description"]');
-    await expect(contexto).toHaveText(`${fundoNome} · HARD · ${dataPrevista}`);
+    await expect(contexto).toHaveText(`${entidadeNome} · HARD · ${dataPrevista}`);
 
     await page.keyboard.press("Escape");
     await expect(page.getByRole("dialog")).toHaveCount(0, { timeout: RESYNC_TIMEOUT });

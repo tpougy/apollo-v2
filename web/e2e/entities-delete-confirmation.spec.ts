@@ -14,7 +14,7 @@ import { gotoNested } from "./helpers/gotoNested.ts";
 // safety), on top of Plan 16-01's AlertDialog conversion. This spec runs in
 // the `authed` project (restores the storageState persisted by
 // auth.setup.ts) and uses `tarefas` (full-CRUD) as its primary subject —
-// deliberately NOT `fundos`, which 16-01's own WEB-02 test already exercises,
+// deliberately NOT `entidades`, which 16-01's own WEB-02 test already exercises,
 // so this file proves the requirements independently on a different entity.
 //
 // Every generated `tarefas` record uses the `phase16-e2e-` prefix so

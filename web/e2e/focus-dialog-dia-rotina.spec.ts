@@ -19,7 +19,7 @@ import {
 // literal prefix across files that all call it would let one file's sweep
 // delete another file's in-flight instanciasRotina rows if the suite's
 // `workers: 1`/`fullyParallel: false` (playwright.config.ts) were ever
-// relaxed. Keep this suffix unique among focus-dialog-fundo.spec.ts,
+// relaxed. Keep this suffix unique among focus-dialog-entidade.spec.ts,
 // focus-dialog-dia-rotina.spec.ts, and focus-dialog-button-inventory.spec.ts
 // (the three files that call the sweep) if you ever rename it.
 //
@@ -75,9 +75,9 @@ async function sweepLeftovers(): Promise<void> {
   for (const record of templates) {
     if (record.nome.startsWith(PREFIX)) tryDelete("rotina template", record.id);
   }
-  const fundos = JSON.parse(apolloCli(["fundo", "listar"])) as { id: string; nome: string }[];
-  for (const record of fundos) {
-    if (record.nome.startsWith(PREFIX)) tryDelete("fundo", record.id);
+  const entidades = JSON.parse(apolloCli(["entidade", "listar"])) as { id: string; nome: string }[];
+  for (const record of entidades) {
+    if (record.nome.startsWith(PREFIX)) tryDelete("entidade", record.id);
   }
   await sweepInstancesByDedupeKeyPrefix(PREFIX, OWNER_EMAIL);
 }
@@ -126,8 +126,8 @@ test.afterAll(async () => {
 test.describe("Phase 23 Plan 04: Dia/Rotina dialogs + full calendar-family wiring", () => {
   const semana = computeSemana();
 
-  let fundoId = "";
-  let fundoNome = "";
+  let entidadeId = "";
+  let entidadeNome = "";
 
   // Rotina: one weekday-dated, one weekend-dated instance, same template.
   let templateId = "";
@@ -150,10 +150,19 @@ test.describe("Phase 23 Plan 04: Dia/Rotina dialogs + full calendar-family wirin
   const outroDia = otherWeekDayThisMonth();
 
   test.beforeAll(async () => {
-    fundoNome = uniqueName("fundo");
-    fundoId = (
+    entidadeNome = uniqueName("fundo");
+    entidadeId = (
       JSON.parse(
-        apolloCli(["fundo", "criar", "--nome", fundoNome, "--codigo", uniqueCodigo("P23D")]),
+        apolloCli([
+          "entidade",
+          "criar",
+          "--nome",
+          entidadeNome,
+          "--codigo",
+          uniqueCodigo("P23D"),
+          "--tipo-entidade",
+          "Fundo",
+        ]),
       ) as { id: string }
     ).id;
 
@@ -170,8 +179,8 @@ test.describe("Phase 23 Plan 04: Dia/Rotina dialogs + full calendar-family wirin
           "du_fixo",
           "--regra-competencia",
           "M0",
-          "--fundo-id",
-          fundoId,
+          "--entidade-id",
+          entidadeId,
         ]),
       ) as { id: string }
     ).id;
@@ -242,8 +251,8 @@ test.describe("Phase 23 Plan 04: Dia/Rotina dialogs + full calendar-family wirin
           "pendente",
           "--data-prevista",
           semana.dias[2],
-          "--fundo-id",
-          fundoId,
+          "--entidade-id",
+          entidadeId,
         ]),
       ) as { id: string }
     ).id;
@@ -268,8 +277,8 @@ test.describe("Phase 23 Plan 04: Dia/Rotina dialogs + full calendar-family wirin
           "pendente",
           "--data-prevista",
           semana.sabado,
-          "--fundo-id",
-          fundoId,
+          "--entidade-id",
+          entidadeId,
         ]),
       ) as { id: string }
     ).id;
@@ -282,7 +291,7 @@ test.describe("Phase 23 Plan 04: Dia/Rotina dialogs + full calendar-family wirin
     tryDelete("ticket", ticketWeekdayId);
     tryDelete("ticket", ticketWeekendId);
     tryDelete("rotina template", templateId);
-    tryDelete("fundo", fundoId);
+    tryDelete("entidade", entidadeId);
   });
 
   test("(a) rotina items show the template's nome, never the instancia id, in both the weekday card and the weekend popover", async ({

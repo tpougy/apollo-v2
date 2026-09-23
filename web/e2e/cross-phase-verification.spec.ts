@@ -17,7 +17,7 @@ import { gotoNested } from "./helpers/gotoNested.ts";
 // default `authed`-project session.
 //
 // Every generated record uses the `phase17-e2e-` prefix so leftovers are
-// greppable/removable, mirroring entities-fundos.spec.ts's/
+// greppable/removable, mirroring entities-entidades.spec.ts's/
 // entities-delete-confirmation.spec.ts's own CLI-based sweep convention.
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
@@ -36,12 +36,12 @@ function uniqueName(prefix: string): string {
   return `${PREFIX}${prefix}-${Date.now()}-${Math.floor(Math.random() * 10_000)}`;
 }
 
-function sweepFundosLeftovers(): void {
-  const listed = JSON.parse(apolloCli(["fundo", "listar"])) as { id: string; nome: string }[];
+function sweepEntidadesLeftovers(): void {
+  const listed = JSON.parse(apolloCli(["entidade", "listar"])) as { id: string; nome: string }[];
   for (const record of listed) {
     if (!record.nome.startsWith(PREFIX)) continue;
     try {
-      apolloCli(["fundo", "deletar", "--id", record.id]);
+      apolloCli(["entidade", "deletar", "--id", record.id]);
     } catch {
       // Already gone -- fine.
     }
@@ -61,26 +61,36 @@ function sweepTarefasLeftovers(): void {
 }
 
 test.beforeEach(() => {
-  sweepFundosLeftovers();
+  sweepEntidadesLeftovers();
   sweepTarefasLeftovers();
 });
 
 test.afterEach(() => {
-  sweepFundosLeftovers();
+  sweepEntidadesLeftovers();
   sweepTarefasLeftovers();
 });
 
-function createFundoViaCli(nome: string): string {
+function createEntidadeViaCli(nome: string): string {
   const codigo = uniqueName("cod");
   const created = JSON.parse(
-    apolloCli(["fundo", "criar", "--nome", nome, "--codigo", codigo, "--ativo"]),
+    apolloCli([
+      "entidade",
+      "criar",
+      "--nome",
+      nome,
+      "--codigo",
+      codigo,
+      "--tipo-entidade",
+      "Fundo",
+      "--ativo",
+    ]),
   ) as { id: string };
   return created.id;
 }
 
-function tryDeleteFundo(eid: string): void {
+function tryDeleteEntidade(eid: string): void {
   try {
-    apolloCli(["fundo", "deletar", "--id", eid]);
+    apolloCli(["entidade", "deletar", "--id", eid]);
   } catch {
     // Already gone -- fine.
   }
@@ -145,7 +155,7 @@ async function assertFocusVisibleAndUnclipped(page: Page, boundaryTestId: string
 // Task 1 (tracer): cross-phase walkthrough with spacing-parity assertions
 // ---------------------------------------------------------------------------
 
-test("VERIFY-07/POLISH-04: cross-phase walkthrough -- Login -> Shell -> fundos table/form/delete, spacing scale measured at each stop", async ({
+test("VERIFY-07/POLISH-04: cross-phase walkthrough -- Login -> Shell -> entidades table/form/delete, spacing scale measured at each stop", async ({
   page,
   browser,
 }) => {
@@ -207,8 +217,8 @@ test("VERIFY-07/POLISH-04: cross-phase walkthrough -- Login -> Shell -> fundos t
   await expect(page.locator("h2")).toHaveText("Projetos");
   await expect(page.getByTestId("entity-header")).toHaveCount(0);
 
-  // ---- fundos leg: full-CRUD representative, same page ----
-  await page.getByTestId("nav-fundos").click();
+  // ---- entidades leg: full-CRUD representative, same page ----
+  await page.getByTestId("nav-entidades").click();
   await expect(page.getByTestId("entity-table-frame")).toBeVisible({ timeout: RESYNC_TIMEOUT });
 
   await page.getByTestId("entity-create-start").click();
@@ -232,6 +242,7 @@ test("VERIFY-07/POLISH-04: cross-phase walkthrough -- Login -> Shell -> fundos t
   const codigo = uniqueName("walkthrough-cod");
   await page.getByTestId("field-nome").fill(nome);
   await page.getByTestId("field-codigo").fill(codigo);
+  await page.getByTestId("field-tipoEntidade").fill("Fundo");
   await pickDate(page, "field-createdAt");
   const ativoCheckbox = page.getByTestId("field-ativo");
   if (!(await ativoCheckbox.isChecked())) {
@@ -283,7 +294,7 @@ test("POLISH-04: entity-header to content vertical gap is non-zero and on the sp
   // itself, the same measurement technique already used above for Login's
   // and the Dialog's space-y-4/space-y-2 scales.
   await page.goto("/");
-  await page.getByTestId("nav-fundos").click();
+  await page.getByTestId("nav-entidades").click();
   const entityHeader = page.getByTestId("entity-header");
   await expect(entityHeader).toBeVisible();
   await expect(page.getByTestId("entity-table-frame")).toBeVisible({ timeout: RESYNC_TIMEOUT });
@@ -410,16 +421,16 @@ test("VERIFY-05/POLISH-03: tarefas delete-confirmation AlertDialog legible in bo
 // Task 2: keyboard/focus-visible smoke tests, one per capability class
 // ---------------------------------------------------------------------------
 
-test("VERIFY-05: keyboard/focus-visible smoke -- fundos (full-CRUD): Tab reaches row-edit then row-delete, both with a real, unclipped focus-visible affordance", async ({
+test("VERIFY-05: keyboard/focus-visible smoke -- entidades (full-CRUD): Tab reaches row-edit then row-delete, both with a real, unclipped focus-visible affordance", async ({
   page,
 }) => {
   test.setTimeout(60_000);
 
   const nome = uniqueName("kb-fundo");
-  const eid = createFundoViaCli(nome);
+  const eid = createEntidadeViaCli(nome);
   try {
     await page.goto("/");
-    await page.getByTestId("nav-fundos").click();
+    await page.getByTestId("nav-entidades").click();
     const row = page.getByTestId("row").filter({ hasText: nome });
     await expect(row).toBeVisible({ timeout: RESYNC_TIMEOUT });
 
@@ -434,7 +445,7 @@ test("VERIFY-05: keyboard/focus-visible smoke -- fundos (full-CRUD): Tab reaches
     await expect(row.getByTestId("row-delete")).toBeFocused();
     await assertFocusVisibleAndUnclipped(page, "entity-table-frame");
   } finally {
-    tryDeleteFundo(eid);
+    tryDeleteEntidade(eid);
   }
 });
 
@@ -461,7 +472,7 @@ test("VERIFY-05: keyboard/focus-visible smoke -- instanciasRotina (restricted, u
     // This live app's instanciasRotina table is never guaranteed empty
     // (Shell.svelte's routine-instance generation job runs on every
     // authenticated mount and can create real rows independent of this
-    // test's own seeded record) -- so, unlike fundos, this test asserts on
+    // test's own seeded record) -- so, unlike entidades, this test asserts on
     // whichever row-edit Tab reaches, not a specific row filtered by this
     // test's own competencia. The seeded record below only guarantees at
     // least one row exists even on a completely fresh app instance.

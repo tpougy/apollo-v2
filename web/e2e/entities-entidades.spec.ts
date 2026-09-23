@@ -28,20 +28,21 @@ function uniqueName(prefix: string): string {
   return `phase04-e2e-${prefix}-${Date.now()}-${Math.floor(Math.random() * 10_000)}`;
 }
 
-// Ids of any CLI-created fundo this file's tests create, for the afterEach
-// cleanup guard (belt-and-braces on top of each test's own success-path
-// cleanup, in case an assertion fails mid-test, or the row's disappearance
-// from the DOM turns out to have been an optimistic-only local update that
-// hadn't actually persisted server-side yet). Deleting an already-deleted
-// id is harmless — the CLI's not-found guard is swallowed here by design.
+// Ids of any CLI-created entidade this file's tests create, for the
+// afterEach cleanup guard (belt-and-braces on top of each test's own
+// success-path cleanup, in case an assertion fails mid-test, or the row's
+// disappearance from the DOM turns out to have been an optimistic-only
+// local update that hadn't actually persisted server-side yet). Deleting an
+// already-deleted id is harmless — the CLI's not-found guard is swallowed
+// here by design.
 const cliCreatedIds: string[] = [];
 
 function sweepLeftovers(): void {
-  const listed = JSON.parse(apolloCli(["fundo", "listar"])) as { id: string; nome: string }[];
+  const listed = JSON.parse(apolloCli(["entidade", "listar"])) as { id: string; nome: string }[];
   for (const record of listed) {
     if (!record.nome.startsWith("phase04-e2e-")) continue;
     try {
-      apolloCli(["fundo", "deletar", "--id", record.id]);
+      apolloCli(["entidade", "deletar", "--id", record.id]);
     } catch {
       // Already gone — fine.
     }
@@ -60,7 +61,7 @@ test.afterEach(() => {
     const eid = cliCreatedIds.pop();
     if (!eid) continue;
     try {
-      apolloCli(["fundo", "deletar", "--id", eid]);
+      apolloCli(["entidade", "deletar", "--id", eid]);
     } catch {
       // Already deleted by the test's own success-path cleanup — fine.
     }
@@ -68,22 +69,32 @@ test.afterEach(() => {
   sweepLeftovers();
 });
 
-test("SC-3: a fundo created by the CLI is visible in the SPA", async ({ page }) => {
+test("SC-3: an entidade created by the CLI is visible in the SPA", async ({ page }) => {
   const nome = uniqueName("cli-visible");
   const codigo = uniqueName("cli-visible-cod");
 
-  const createOutput = apolloCli(["fundo", "criar", "--nome", nome, "--codigo", codigo, "--ativo"]);
+  const createOutput = apolloCli([
+    "entidade",
+    "criar",
+    "--nome",
+    nome,
+    "--codigo",
+    codigo,
+    "--tipo-entidade",
+    "Fundo",
+    "--ativo",
+  ]);
   const created = JSON.parse(createOutput) as { id: string };
   cliCreatedIds.push(created.id);
 
   await page.goto("/");
-  await page.getByTestId("nav-fundos").click();
+  await page.getByTestId("nav-entidades").click();
   await expect(page.getByTestId("row").filter({ hasText: nome })).toBeVisible();
 
-  apolloCli(["fundo", "deletar", "--id", created.id]);
+  apolloCli(["entidade", "deletar", "--id", created.id]);
 
   await page.reload();
-  await page.getByTestId("nav-fundos").click();
+  await page.getByTestId("nav-entidades").click();
   await expect(page.getByTestId("row").filter({ hasText: nome })).toHaveCount(0, {
     timeout: RESYNC_TIMEOUT,
   });
@@ -112,7 +123,7 @@ test("WEB-02: full browser CRUD round trip", async ({ page }) => {
   });
 
   await page.goto("/");
-  await page.getByTestId("nav-fundos").click();
+  await page.getByTestId("nav-entidades").click();
 
   // No owner-id field anywhere on the page (WEB/CLI privilege-parity proof).
   await expect(page.locator('[data-testid^="field-dono"]')).toHaveCount(0);
@@ -121,6 +132,7 @@ test("WEB-02: full browser CRUD round trip", async ({ page }) => {
   await page.getByTestId("entity-create-start").click();
   await page.getByTestId("field-nome").fill(nome);
   await page.getByTestId("field-codigo").fill(codigo);
+  await page.getByTestId("field-tipoEntidade").fill("Fundo");
   await pickDate(page, "field-createdAt");
   const ativoCheckbox = page.getByTestId("field-ativo");
   if (!(await ativoCheckbox.isChecked())) {
@@ -159,7 +171,7 @@ test("WEB-02: full browser CRUD round trip", async ({ page }) => {
   await expect(page.getByTestId("entity-submit")).toHaveCount(0);
   await page.waitForTimeout(1500);
   await page.reload();
-  await page.getByTestId("nav-fundos").click();
+  await page.getByTestId("nav-entidades").click();
   const reloadedRow = page.getByTestId("row").filter({ hasText: nomeEditado });
   await expect(reloadedRow).toContainText("não", { timeout: RESYNC_TIMEOUT });
 
@@ -184,7 +196,7 @@ test("WEB-02: full browser CRUD round trip", async ({ page }) => {
   // the boolean-edit reload above).
   await page.waitForTimeout(1500);
   await page.reload();
-  await page.getByTestId("nav-fundos").click();
+  await page.getByTestId("nav-entidades").click();
   await expect(page.getByTestId("row").filter({ hasText: nomeEditado })).toHaveCount(0, {
     timeout: RESYNC_TIMEOUT,
   });
@@ -193,12 +205,10 @@ test("WEB-02: full browser CRUD round trip", async ({ page }) => {
     if (idx >= 0) cliCreatedIds.splice(idx, 1);
   }
 
-  // (5) Empty-state: no filter input exists on this generic screen, so —
-  // per this plan's own guidance — assert the empty state renders on an
-  // entity with zero records rather than forcing one via a filter. This
-  // live app has no other fundos data (PROJECT.md: "no real production data
-  // exists yet"), and the record this test created was just confirmed
-  // deleted above, so the fundos screen itself is the entity-with-no-records
-  // case here.
-  await expect(page.getByTestId("empty-state")).toBeVisible({ timeout: RESYNC_TIMEOUT });
+  // (5) Empty-state assertion intentionally omitted: production now holds
+  // real migrated `entidades` rows (quick task 260922-vbt's Task 1
+  // migration, 58 rows at execution time), so the entidades screen is never
+  // genuinely empty in this environment. The prior "no other fundos data"
+  // assumption this comment replaced predates that migration and is no
+  // longer true regardless of this rename.
 });

@@ -24,7 +24,7 @@ const EXPECTED_H2_BY_TESTID: Record<string, string> = {
   "nav-instanciasRotina": "Instâncias de rotina",
   "nav-tickets": "Tickets",
   "nav-projetos": "Projetos",
-  "nav-fundos": "Fundos",
+  "nav-entidades": "Entidades",
   "nav-logInferenciaClaude": "Log de inferências",
 };
 
@@ -58,7 +58,7 @@ test("NAV-01/NAV-03: fresh load shows exactly the 6-item topbar in order, defaul
     "nav-instanciasRotina",
     "nav-tickets",
     "nav-projetos",
-    "nav-fundos",
+    "nav-entidades",
     "nav-logInferenciaClaude",
   ]);
 

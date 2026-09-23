@@ -39,7 +39,7 @@ function tryDelete(group: string, eid: string | null | undefined): void {
 }
 
 // Order matters: subtarefas before tarefas before etapas before projetos
-// before fundos -- InstantDB does not cascade-delete linked rows.
+// before entidades -- InstantDB does not cascade-delete linked rows.
 function sweepLeftovers(): void {
   const subtarefas = JSON.parse(apolloCli(["subtarefa", "listar"])) as {
     id: string;
@@ -60,9 +60,9 @@ function sweepLeftovers(): void {
   for (const record of projetos) {
     if (record.nome.startsWith(PREFIX)) tryDelete("projeto", record.id);
   }
-  const fundos = JSON.parse(apolloCli(["fundo", "listar"])) as { id: string; nome: string }[];
-  for (const record of fundos) {
-    if (record.nome.startsWith(PREFIX)) tryDelete("fundo", record.id);
+  const entidades = JSON.parse(apolloCli(["entidade", "listar"])) as { id: string; nome: string }[];
+  for (const record of entidades) {
+    if (record.nome.startsWith(PREFIX)) tryDelete("entidade", record.id);
   }
 }
 
@@ -100,8 +100,8 @@ test.describe("DASH-05: empty state", () => {
 });
 
 test.describe("DASH-05: project strip rendering", () => {
-  let fundoId = "";
-  let fundoNome = "";
+  let entidadeId = "";
+  let entidadeNome = "";
   let projetoId = "";
   let projetoNome = "";
   let projetoSemEtapaId = "";
@@ -124,11 +124,20 @@ test.describe("DASH-05: project strip rendering", () => {
   test.beforeAll(() => {
     sweepLeftovers();
 
-    fundoNome = uniqueName("fundo");
-    const fundoCreated = JSON.parse(
-      apolloCli(["fundo", "criar", "--nome", fundoNome, "--codigo", uniqueCodigo("P22")]),
+    entidadeNome = uniqueName("fundo");
+    const entidadeCreated = JSON.parse(
+      apolloCli([
+        "entidade",
+        "criar",
+        "--nome",
+        entidadeNome,
+        "--codigo",
+        uniqueCodigo("P22"),
+        "--tipo-entidade",
+        "Fundo",
+      ]),
     ) as { id: string };
-    fundoId = fundoCreated.id;
+    entidadeId = entidadeCreated.id;
 
     projetoNome = uniqueName("projeto");
     const projetoCreated = JSON.parse(
@@ -139,8 +148,8 @@ test.describe("DASH-05: project strip rendering", () => {
         projetoNome,
         "--status",
         "em andamento",
-        "--fundo-id",
-        fundoId,
+        "--entidade-id",
+        entidadeId,
       ]),
     ) as { id: string };
     projetoId = projetoCreated.id;
@@ -307,7 +316,7 @@ test.describe("DASH-05: project strip rendering", () => {
     tryDelete("etapa", etapaOrdem2Id);
     tryDelete("projeto", projetoId);
     tryDelete("projeto", projetoSemEtapaId);
-    tryDelete("fundo", fundoId);
+    tryDelete("entidade", entidadeId);
     sweepLeftovers();
   });
 
@@ -380,7 +389,7 @@ test.describe("DASH-05: project strip rendering", () => {
     expect(nomeTag).toBe("button");
 
     const badgeTag = await strip
-      .getByTestId("project-strip-fundo-badge")
+      .getByTestId("project-strip-entidade-badge")
       .evaluate((el) => el.tagName.toLowerCase());
     expect(badgeTag).toBe("button");
 

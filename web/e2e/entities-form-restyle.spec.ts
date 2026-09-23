@@ -9,11 +9,11 @@ import {
   openSubtarefasPanelForTicket,
 } from "./helpers/subtarefasPanel.ts";
 
-// Proves ENTFRM-01/02 for the fundos (full-CRUD) capability class against the
+// Proves ENTFRM-01/02 for the entidades (full-CRUD) capability class against the
 // restyled shadcn Dialog/Input/Textarea/Checkbox/Popover+Calendar form, live
 // against InstantDB. This spec runs in the `authed` project (restores the
 // storageState persisted by auth.setup.ts — see 04-01), mirroring
-// entities-fundos.spec.ts's CLI-fixture/sweep/cleanup discipline exactly.
+// entities-entidades.spec.ts's CLI-fixture/sweep/cleanup discipline exactly.
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const RESYNC_TIMEOUT = 15_000;
@@ -32,11 +32,11 @@ function uniqueName(prefix: string): string {
 }
 
 function sweepLeftovers(): void {
-  const listed = JSON.parse(apolloCli(["fundo", "listar"])) as { id: string; nome: string }[];
+  const listed = JSON.parse(apolloCli(["entidade", "listar"])) as { id: string; nome: string }[];
   for (const record of listed) {
     if (!record.nome.startsWith(PREFIX)) continue;
     try {
-      apolloCli(["fundo", "deletar", "--id", record.id]);
+      apolloCli(["entidade", "deletar", "--id", record.id]);
     } catch {
       // Already gone — fine.
     }
@@ -51,7 +51,7 @@ test.afterEach(() => {
   sweepLeftovers();
 });
 
-test("ENTFRM-01: fundos (full-CRUD) — Dialog role, text/checkbox fields render and persist", async ({
+test("ENTFRM-01: entidades (full-CRUD) — Dialog role, text/checkbox fields render and persist", async ({
   page,
 }) => {
   test.setTimeout(90_000);
@@ -61,7 +61,7 @@ test("ENTFRM-01: fundos (full-CRUD) — Dialog role, text/checkbox fields render
   const codigo = uniqueName("dialog-cod");
 
   await page.goto("/");
-  await page.getByTestId("nav-fundos").click();
+  await page.getByTestId("nav-entidades").click();
 
   // (1) Open create — a real shadcn Dialog (role="dialog"), not a bare form.
   await page.getByTestId("entity-create-start").click();
@@ -69,6 +69,7 @@ test("ENTFRM-01: fundos (full-CRUD) — Dialog role, text/checkbox fields render
 
   await page.getByTestId("field-nome").fill(nome);
   await page.getByTestId("field-codigo").fill(codigo);
+  await page.getByTestId("field-tipoEntidade").fill("Fundo");
   const ativoCheckbox = page.getByTestId("field-ativo");
   if (!(await ativoCheckbox.isChecked())) {
     await ativoCheckbox.check();
@@ -78,7 +79,7 @@ test("ENTFRM-01: fundos (full-CRUD) — Dialog role, text/checkbox fields render
   await page.getByTestId("entity-submit").click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
 
-  // FDBK-01: creating a fundo produces a visible success toast.
+  // FDBK-01: creating an entidade produces a visible success toast.
   await expect(page.locator('[data-sonner-toast][data-type="success"]')).toBeVisible();
 
   const row = page.getByTestId("row").filter({ hasText: nome });
@@ -89,7 +90,7 @@ test("ENTFRM-01: fundos (full-CRUD) — Dialog role, text/checkbox fields render
   // Reload and assert the picked date persisted correctly to live InstantDB
   // (ENTFRM-02) — not just an optimistic local view.
   await page.reload();
-  await page.getByTestId("nav-fundos").click();
+  await page.getByTestId("nav-entidades").click();
   await expect(page.getByTestId("row").filter({ hasText: nome })).toContainText(createdAtValue, {
     timeout: RESYNC_TIMEOUT,
   });
@@ -112,7 +113,7 @@ test("ENTFRM-01: fundos (full-CRUD) — Dialog role, text/checkbox fields render
     timeout: RESYNC_TIMEOUT,
   });
 
-  // FDBK-01: deleting a fundo produces a second, distinct success toast.
+  // FDBK-01: deleting an entidade produces a second, distinct success toast.
   // Filtered by exact text (not just the generic success-toast locator used
   // for creation above): the AlertDialog confirm path is fast enough that
   // the earlier "Registro atualizado." toast (Sonner's default ~4s auto-
@@ -142,7 +143,7 @@ test("ENTFRM-04: missing required field blocks submission, shows Alert, fires ze
   });
 
   await page.goto("/");
-  await page.getByTestId("nav-fundos").click();
+  await page.getByTestId("nav-entidades").click();
   await page.getByTestId("entity-create-start").click();
   await expect(page.getByRole("dialog")).toBeVisible();
 
@@ -169,7 +170,7 @@ test("ENTFRM-04: missing required field blocks submission, shows Alert, fires ze
 });
 
 // FDBK-01 / ROADMAP Phase 10 SC5: instanciasRotina's status-only edit is the
-// "restricted capability" class alongside fundos' full-CRUD class above — no
+// "restricted capability" class alongside entidades' full-CRUD class above — no
 // create affordance exists, the edit Dialog contains exactly one field
 // control (a plain Input, since `status` is kind:"text"), and a successful
 // status change still produces a success toast.
@@ -237,22 +238,22 @@ test("FDBK-01: instanciasRotina status-only edit — single field Dialog, no cre
 });
 
 // ENTFRM-01/03: templatesRotina smoke test — proves the static-option Select
-// (tipoGeracao) AND the relationship-link Select (fundo) both render via
+// (tipoGeracao) AND the relationship-link Select (entidade) both render via
 // shadcn Select and persist correctly. Does not duplicate
 // entities-rotina-log.spec.ts's own full-CRUD/antecessor-self-exclude
 // coverage — that stays exclusively in that pre-existing spec (fixed in this
 // phase's own 10-04 plan).
 test.describe("templatesRotina — Select field conversion", () => {
-  // NOTE: the outer `test.beforeEach`/`afterEach` above (scoped to fundos
+  // NOTE: the outer `test.beforeEach`/`afterEach` above (scoped to entidades
   // via the same PREFIX) run for every test in this file, including this
   // nested describe — outer beforeEach fires BEFORE any local hook. If the
-  // fundo fixture were created in a `beforeAll` here, it would already exist
-  // by the time the outer `beforeEach` sweeps every phase10-e2e-* fundo,
-  // deleting the fixture right before the test body runs. Creating it in a
-  // local `beforeEach` (which fires AFTER the outer one) avoids that race,
-  // and the outer `afterEach`'s sweep is exactly the cleanup this fixture
-  // needs afterward — no separate afterAll delete required.
-  let fundoNome = "";
+  // entidade fixture were created in a `beforeAll` here, it would already
+  // exist by the time the outer `beforeEach` sweeps every phase10-e2e-*
+  // entidade, deleting the fixture right before the test body runs. Creating
+  // it in a local `beforeEach` (which fires AFTER the outer one) avoids that
+  // race, and the outer `afterEach`'s sweep is exactly the cleanup this
+  // fixture needs afterward — no separate afterAll delete required.
+  let entidadeNome = "";
 
   function sweepTemplateLeftovers(): void {
     const templates = JSON.parse(apolloCli(["rotina", "template", "listar"])) as {
@@ -271,14 +272,16 @@ test.describe("templatesRotina — Select field conversion", () => {
 
   test.beforeEach(() => {
     sweepTemplateLeftovers();
-    fundoNome = uniqueName("template-fundo");
+    entidadeNome = uniqueName("template-fundo");
     apolloCli([
-      "fundo",
+      "entidade",
       "criar",
       "--nome",
-      fundoNome,
+      entidadeNome,
       "--codigo",
       uniqueName("template-fundo-cod"),
+      "--tipo-entidade",
+      "Fundo",
     ]);
   });
 
@@ -286,7 +289,7 @@ test.describe("templatesRotina — Select field conversion", () => {
     sweepTemplateLeftovers();
   });
 
-  test("ENTFRM-01/03: templatesRotina — static-option Select (tipoGeracao) and relationship-link Select (fundo) render and persist", async ({
+  test("ENTFRM-01/03: templatesRotina — static-option Select (tipoGeracao) and relationship-link Select (entidade) render and persist", async ({
     page,
   }) => {
     test.setTimeout(90_000);
@@ -304,14 +307,14 @@ test.describe("templatesRotina — Select field conversion", () => {
     await page.getByTestId("field-nome").fill(nome);
     await page.getByTestId("field-regraCompetencia").fill("regra teste");
     await selectByText(page, "field-tipoGeracao", "du_fixo");
-    await selectByText(page, "link-fundo", fundoNome);
+    await selectByText(page, "link-entidade", entidadeNome);
 
     await page.getByTestId("entity-submit").click();
     await expect(page.getByRole("dialog")).toHaveCount(0);
 
     const row = page.getByTestId("row").filter({ hasText: nome });
     await expect(row).toBeVisible({ timeout: RESYNC_TIMEOUT });
-    await expect(row).toContainText(fundoNome);
+    await expect(row).toContainText(entidadeNome);
 
     await confirmRowDelete(page, row);
     await expect(page.getByTestId("row").filter({ hasText: nome })).toHaveCount(0, {

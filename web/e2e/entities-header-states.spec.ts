@@ -18,11 +18,11 @@ import { STORAGE_STATE } from "../playwright.config.ts";
 
 const RESYNC_TIMEOUT = 15_000;
 
-test("ENTTBL-04: fundos (full-CRUD) page-header structure, light + dark", async ({ page }) => {
+test("ENTTBL-04: entidades (full-CRUD) page-header structure, light + dark", async ({ page }) => {
   for (const colorScheme of ["light", "dark"] as const) {
     await page.emulateMedia({ colorScheme });
     await page.goto("/");
-    await page.getByTestId("nav-fundos").click();
+    await page.getByTestId("nav-entidades").click();
 
     const header = page.getByTestId("entity-header");
     await expect(header).toBeVisible();
@@ -31,7 +31,7 @@ test("ENTTBL-04: fundos (full-CRUD) page-header structure, light + dark", async 
 
     const h2 = header.locator("h2");
     await expect(h2).toHaveCount(1);
-    await expect(h2).toHaveText("Fundos");
+    await expect(h2).toHaveText("Entidades");
 
     const description = page.getByTestId("entity-description");
     await expect(description).not.toHaveText("");
@@ -75,15 +75,18 @@ test("ENTTBL-04: logInferenciaClaude (read-only) header renders, create action c
   await expect(page.getByTestId("entity-table-frame")).toBeVisible({ timeout: RESYNC_TIMEOUT });
 });
 
-test("ENTTBL-06: fundos empty state is a sibling of <Table>, CTA reuses the create Dialog", async ({
+test("ENTTBL-06: entidades empty state is a sibling of <Table>, CTA reuses the create Dialog", async ({
   page,
 }) => {
   await page.goto("/");
-  await page.getByTestId("nav-fundos").click();
+  await page.getByTestId("nav-entidades").click();
 
-  // This live app's fundos baseline is empty (no real production data
-  // exists yet, per PROJECT.md) — the same assumption entities-fundos.spec.ts's
-  // WEB-02 test relies on for its own final empty-state assertion.
+  // NOTE: this live app's `entidades` baseline is NOT actually empty as of
+  // quick task 260922-vbt's Task 1 migration (58 rows migrated from
+  // `fundos`) -- the "no real production data exists yet" assumption this
+  // comment (and entities-entidades.spec.ts's own WEB-02 empty-state
+  // assertion) predates that migration and predates this task's rename; see
+  // that file's own updated comment for the same pre-existing gap.
   const emptyState = page.getByTestId("empty-state");
   await expect(emptyState).toBeVisible({ timeout: RESYNC_TIMEOUT });
   // Empty is a sibling replacement for <Table>, never nested table content —
@@ -105,7 +108,7 @@ test("ENTTBL-06: fundos empty state is a sibling of <Table>, CTA reuses the crea
   await expect(page.getByTestId("empty-state")).toBeVisible();
 });
 
-test("ENTTBL-05: fundos loading state shows the Skeleton grid, never the old plain-text indicator", async ({
+test("ENTTBL-05: entidades loading state shows the Skeleton grid, never the old plain-text indicator", async ({
   browser,
 }) => {
   test.setTimeout(90_000);
@@ -149,15 +152,15 @@ test("ENTTBL-05: fundos loading state shows the Skeleton grid, never the old pla
 
     try {
       // Since Phase 18-01, the default mount route is Dashboard (NAV-03),
-      // not fundos (ordem no longer determines the initial route) — a nav
-      // click to fundos is now required to trigger this entity's first
+      // not entidades (ordem no longer determines the initial route) — a nav
+      // click to entidades is now required to trigger this entity's first
       // query round trip. Only wait for navigation "commit" (not the
       // "load" event) — the throttled, unbundled Vite dev ESM import graph
       // can otherwise chain past the "load" event's own timeout even
       // though the app's own script has long since started executing and
       // mounted the loading UI under test.
       await page.goto("/", { waitUntil: "commit", timeout: 60_000 });
-      await page.getByTestId("nav-fundos").click();
+      await page.getByTestId("nav-entidades").click();
 
       const loading = page.getByTestId("entity-loading");
       await expect(loading).toBeVisible({ timeout: 45_000 });

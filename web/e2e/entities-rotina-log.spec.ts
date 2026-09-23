@@ -126,7 +126,7 @@ test("WEB-06: templatesRotina full CRUD, including the self-referential antecess
   const optionValues = await openAndReadSelectOptions(page, "field-tipoGeracao");
   expect(optionValues.sort()).toEqual(["corrido_fixo", "du_fixo", "encadeado", "semanal"]);
 
-  // Create A with neither fundo nor antecessor.
+  // Create A with neither entidade nor antecessor.
   await page.getByTestId("field-nome").fill(nomeA);
   await selectByText(page, "field-tipoGeracao", "du_fixo");
   await page.getByTestId("field-regraCompetencia").fill("mes-corrente");
@@ -138,7 +138,7 @@ test("WEB-06: templatesRotina full CRUD, including the self-referential antecess
   expect(eidA).toBeTruthy();
 
   // Both link columns blank (listColumns: nome, tipoGeracao, offsetDias,
-  // diaSemana, ativo, fundo, antecessor).
+  // diaSemana, ativo, entidade, antecessor).
   const cellsA = rowA.locator("td");
   await expect(cellsA.nth(5)).toHaveText("");
   await expect(cellsA.nth(6)).toHaveText("");
