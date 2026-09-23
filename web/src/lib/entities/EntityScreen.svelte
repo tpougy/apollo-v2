@@ -177,6 +177,14 @@
   let mode = $state<"create" | "edit" | null>(null);
   let editingId = $state<string | null>(null);
   let formValues = $state<FormValues>({});
+  // Snapshot of formValues as they existed when the form opened (create:
+  // every optional field starts ""/false, so the clear-detection logic below
+  // never fires for creates; edit: the row's actual persisted values). Used
+  // at submit time to distinguish "field is optional and was never filled
+  // in" (fine to omit from the payload) from "field HAD a value and the user
+  // explicitly cleared it back to empty" (must be sent as an explicit null
+  // clear) — see handleSubmit's payload-building loop.
+  let initialFormValues = $state<FormValues>({});
   let selectedLinks = $state<Record<string, string>>({});
   let xorParentType = $state<string | null>(null);
   let xorParentId = $state<string>("");
@@ -214,6 +222,7 @@
       values[f.name] = f.kind === "boolean" ? false : "";
     }
     formValues = values;
+    initialFormValues = { ...values };
     const links: Record<string, string> = {};
     for (const link of config.links ?? []) links[link.label] = "";
     selectedLinks = presetLinks ? { ...links, ...presetLinks } : links;
@@ -241,6 +250,7 @@
       }
     }
     formValues = values;
+    initialFormValues = { ...values };
     const links: Record<string, string> = {};
     for (const link of config.links ?? []) {
       const linked = row[link.label] as LinkedRow | LinkedRow[] | undefined;
@@ -294,7 +304,7 @@
       }
 
       const visible = editableFields();
-      const payload: Record<string, string | number | boolean> = {};
+      const payload: Record<string, string | number | boolean | null> = {};
       for (const f of visible) {
         const raw = formValues[f.name];
         if (raw === undefined || raw === "") {
@@ -302,6 +312,15 @@
             formError = `Campo obrigatório: ${f.label}`;
             toast.error(formError);
             return;
+          }
+          // Distinguish "optional field never had a value" (omit from the
+          // payload — unchanged behavior) from "optional field HAD a value
+          // when the form opened and the user explicitly cleared it back to
+          // empty" (must reach InstantDB as a real clear, or the old value
+          // silently survives — see 260923-ivg-RESEARCH.md Common Pitfall 1).
+          const initial = initialFormValues[f.name];
+          if (initial !== undefined && initial !== "") {
+            payload[f.name] = null;
           }
           continue;
         }
@@ -720,6 +739,9 @@
                   {(formValues[f.name] as string) || "selecione..."}
                 </Select.Trigger>
                 <Select.Content>
+                  {#if !f.required}
+                    <Select.Item value="" label="—">—</Select.Item>
+                  {/if}
                   {#each f.options as opt (opt)}
                     <Select.Item value={opt} label={opt}>{opt}</Select.Item>
                   {/each}

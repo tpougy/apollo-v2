@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
-import { expect, test } from "@playwright/test";
-import { sweepInstancesByDedupeKeyPrefix } from "./fixtures/instancia-admin-fixture.ts";
+import { expect, type Page, test } from "@playwright/test";
+import { adminQuery, sweepInstancesByDedupeKeyPrefix } from "./fixtures/instancia-admin-fixture.ts";
+import { openAndReadSelectOptions, selectByText } from "./helpers/form-controls.ts";
 import { gotoNested } from "./helpers/gotoNested.ts";
 
 // This spec runs in the `authed` project (restores the storageState persisted
@@ -53,6 +54,21 @@ async function sweepLeftovers(): Promise<void> {
   await sweepInstancesByDedupeKeyPrefix(PREFIX, OWNER_EMAIL);
 }
 
+// Click "salvar", tolerating the same rare DOM-actionability race documented
+// in entities-rotina-log.spec.ts's local submitForm — InstantDB's reactive
+// link-target queries can re-render the form at the exact instant
+// Playwright's click actionability check re-verifies "stable". Duplicated
+// locally per this file's own no-shared-helper convention.
+async function submitForm(page: Page): Promise<void> {
+  await page.waitForTimeout(300);
+  try {
+    await page.getByTestId("entity-submit").click({ timeout: 10_000 });
+  } catch (err) {
+    const formGone = (await page.locator("form").count()) === 0;
+    if (!formGone) throw err;
+  }
+}
+
 test.beforeEach(async () => {
   await sweepLeftovers();
 });
@@ -85,6 +101,67 @@ test("TOOLTIP-01: ativo's help tooltip appears on hover and on keyboard focus", 
   await expect(tooltipContent).toContainText("job de geração");
 
   await page.getByTestId("entity-cancel").click();
+});
+
+test("CLEAR-01: diaSemana can be set then cleared back to empty, and the persisted value is actually absent afterward", async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+
+  const nome = uniqueName("clear");
+  const created = JSON.parse(
+    apolloCli([
+      "rotina",
+      "template",
+      "criar",
+      "--nome",
+      nome,
+      "--tipo-geracao",
+      "semanal",
+      "--regra-competencia",
+      "M0",
+      "--dia-semana",
+      "segunda",
+    ]),
+  ) as { id: string };
+  const templateId = created.id;
+
+  try {
+    await gotoNested(page, "templatesRotina");
+    const row = page.getByTestId("row").filter({ hasText: nome });
+    await expect(row).toBeVisible();
+    await row.getByTestId("row-edit").click();
+
+    // diaSemana currently reads "segunda".
+    await expect(page.getByTestId("field-diaSemana")).toHaveText("segunda");
+
+    // Clear it back to blank via the real UI — only possible because Part
+    // A's fix now renders a blank "—" option.
+    await selectByText(page, "field-diaSemana", "—");
+    await submitForm(page);
+    await page.waitForTimeout(1500);
+
+    // The actual server-side proof (D4): a live admin re-query, not the UI.
+    const result = await adminQuery<{
+      templatesRotina: { id: string; diaSemana?: string | null }[];
+    }>({
+      templatesRotina: { $: { where: { id: templateId } } },
+    });
+    const persisted = result.templatesRotina[0];
+    expect(persisted?.diaSemana ?? null).toBeNull();
+
+    // tipoGeracao must NOT gain a blank option — Part A's fix should not
+    // weaken the required-field guarantee. (The edit dialog already
+    // auto-closed on successful submit — handleSubmit sets mode = null on
+    // both create and edit success — so no extra cancel click is needed
+    // before opening the create dialog here.)
+    await page.getByTestId("entity-create-start").click();
+    const tipoGeracaoOptions = await openAndReadSelectOptions(page, "field-tipoGeracao");
+    expect(tipoGeracaoOptions).not.toContain("—");
+    await page.getByTestId("entity-cancel").click();
+  } finally {
+    tryDeleteTemplate(templateId);
+  }
 });
 
 test("TOOLTIP-02: propagarAtrasoSoft's help tooltip appears on hover and keyboard focus, and honestly states its no-op status", async ({
