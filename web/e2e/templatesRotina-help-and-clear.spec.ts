@@ -86,3 +86,31 @@ test("TOOLTIP-01: ativo's help tooltip appears on hover and on keyboard focus", 
 
   await page.getByTestId("entity-cancel").click();
 });
+
+test("TOOLTIP-02: propagarAtrasoSoft's help tooltip appears on hover and keyboard focus, and honestly states its no-op status", async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+
+  await gotoNested(page, "templatesRotina");
+  await page.getByTestId("entity-create-start").click();
+
+  const helpTrigger = page.getByTestId("field-help-propagarAtrasoSoft");
+  const tooltipContent = page.locator('[data-slot="tooltip-content"]');
+
+  // Hover trigger mode.
+  await helpTrigger.hover();
+  await expect(tooltipContent).toBeVisible();
+  await expect(tooltipContent).toContainText("reservado");
+  await expect(tooltipContent).toContainText("soft");
+  await page.keyboard.press("Escape");
+  await expect(tooltipContent).toBeHidden();
+
+  // Keyboard-focus trigger mode — no mouse action at all.
+  await helpTrigger.focus();
+  await expect(tooltipContent).toBeVisible();
+  await expect(tooltipContent).toContainText("reservado");
+  await expect(tooltipContent).toContainText("soft");
+
+  await page.getByTestId("entity-cancel").click();
+});

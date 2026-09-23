@@ -49,12 +49,14 @@ const templatesRotinaConfig: EntityConfig = {
       required: true,
       kind: "select",
       options: ["du_fixo", "corrido_fixo", "encadeado", "semanal"],
+      help: 'Define como a data prevista de cada instância é calculada: "du_fixo" = Nº dia útil do mês (offset ≥ 1 conta a partir do 1º dia; offset ≤ 0 conta a partir do último dia útil do mês, ex.: 0 = último dia útil). "corrido_fixo" = Nº dia corrido do mês (offset sempre ≥ 1). "encadeado" = X dias úteis após a data prevista do template antecessor selecionado. "semanal" = toda ocorrência do dia da semana definido em "Dia da semana", sem usar offset.',
     },
     {
       name: "offsetDias",
       label: "Offset (dias)",
       required: false,
       kind: "number",
+      help: 'Opcional; seu significado depende do Tipo de geração: "du_fixo" → Nº dia útil do mês; "corrido_fixo" → Nº dia corrido do mês; "encadeado" → dias úteis após a data prevista do antecessor. Não é utilizado quando o Tipo de geração é "semanal".',
     },
     {
       name: "diaSemana",
@@ -62,18 +64,21 @@ const templatesRotinaConfig: EntityConfig = {
       required: false,
       kind: "select",
       options: ["segunda", "terca", "quarta", "quinta", "sexta", "sabado", "domingo"],
+      help: 'Aplicável somente quando Tipo de geração = "semanal": define o dia da semana em que a instância é gerada, toda semana. Não tem efeito para os demais tipos de geração.',
     },
     {
       name: "regraCompetencia",
       label: "Regra de competência",
       required: true,
       kind: "text",
+      help: 'Texto livre, mas só 4 valores são reconhecidos pelo job de geração: "M0" (mesmo mês da data prevista), "M-1" (mês anterior), "M-2" (dois meses antes), "M+1" (mês seguinte). Qualquer outro valor faz o template ser ignorado na geração. Para templates "encadeado", este campo não é considerado — a competência é sempre herdada do antecessor.',
     },
     {
       name: "propagarAtrasoSoft",
       label: "Propagar atraso soft",
       required: true,
       kind: "boolean",
+      help: 'Campo reservado: hoje não tem nenhum efeito na geração de instâncias. Toda instância gerada recebe automaticamente tipoPrazo "soft", independente do valor marcado aqui — propagação de atraso ainda não foi implementada.',
     },
     {
       name: "ativo",
