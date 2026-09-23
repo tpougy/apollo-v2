@@ -4,7 +4,7 @@
   import CircleAlert from "@lucide/svelte/icons/circle-alert";
   import Inbox from "@lucide/svelte/icons/inbox";
   import LoaderCircle from "@lucide/svelte/icons/loader-circle";
-  import { onDestroy, tick } from "svelte";
+  import { onDestroy, tick, untrack } from "svelte";
   import { toast } from "svelte-sonner";
   import { Alert, AlertDescription } from "$lib/components/ui/alert";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
@@ -40,9 +40,10 @@
 
   // EntityScreen is always mounted keyed on etype (see Shell.svelte's
   // `{#key ativo}`), so config is fixed for the component's lifetime.
-  // Snapshotting it once avoids Svelte's "state referenced locally" warning
-  // that would otherwise fire on every non-reactive read of the prop below.
-  const config = configProp;
+  // Snapshotting it once via `untrack` makes the one-time, non-reactive read
+  // explicit to Svelte's compiler, silencing the "state referenced locally"
+  // warning instead of merely working around it.
+  const config = untrack(() => configProp);
 
   // Generic record shape for query results — the schema is dynamic per
   // config, so it cannot be expressed as a literal InstaQL type here.
