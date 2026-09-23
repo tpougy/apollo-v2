@@ -507,16 +507,18 @@
     </div>
     <div
       data-testid="dash-placeholder-rotinas"
-      class="order-3 lg:order-none lg:col-start-3 lg:row-start-1 lg:row-span-2"
+      class="order-3 lg:order-none lg:col-start-3 lg:row-start-1 lg:row-span-2 flex flex-col"
     >
-      <div class="space-y-6">
-        <RoutinesByFundo
-          grupos={rotinaGrupos}
-          nomeById={rotinaNomeById}
-          {hojeIso}
-          onOpenFundo={openFundoDialog}
-          onOpenRotina={openRotinaDialog}
-        />
+      <div class="flex h-full min-h-0 flex-col gap-6">
+        <div class="min-h-0 flex-1">
+          <RoutinesByFundo
+            grupos={rotinaGrupos}
+            nomeById={rotinaNomeById}
+            {hojeIso}
+            onOpenFundo={openFundoDialog}
+            onOpenRotina={openRotinaDialog}
+          />
+        </div>
         <MonthHeatmap carga={carga} ano={anoMes.ano} mes={anoMes.mes} onOpenDia={openDiaDialog} />
       </div>
     </div>

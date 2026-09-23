@@ -59,8 +59,8 @@
   );
 </script>
 
-<div data-testid="dash-rotinas" class="space-y-4">
-  <div class="flex items-center gap-2">
+<div data-testid="dash-rotinas" class="flex h-full min-h-0 flex-col gap-4">
+  <div class="shrink-0 flex items-center gap-2">
     <Select.Root
       type="single"
       value={agrupar}
@@ -116,66 +116,72 @@
   {#if grupos.length === 0}
     <p class="text-sm text-muted-foreground">Nenhuma rotina esta semana.</p>
   {:else}
-    {#each gruposExibidos as grupo (grupo.fundoId ?? "sem-fundo")}
-      {@const overdueCount = grupo.instancias.filter((i) =>
-        vencido(i.dataPrevista, false, hoje),
-      ).length}
-      {@const visiveis = grupo.displayed.slice(0, 4)}
-      {@const overflow = grupo.displayed.length - 4}
-      <div
-        data-testid="rotinas-fundo-card"
-        data-eid={grupo.fundoId ?? ""}
-        class="rounded border bg-card/60 p-3 space-y-2"
-      >
-        <button
-          type="button"
-          data-testid="rotinas-fundo-titulo"
-          class="block text-left text-sm font-medium"
-          onclick={grupo.fundoId ? () => onOpenFundo(grupo.fundoId!) : undefined}
+    <div data-testid="rotinas-colunas" class="flex flex-1 min-h-0 gap-3 overflow-x-auto">
+      {#each gruposExibidos as grupo (grupo.fundoId ?? "sem-fundo")}
+        {@const overdueCount = grupo.instancias.filter((i) =>
+          vencido(i.dataPrevista, false, hoje),
+        ).length}
+        <div
+          data-testid="rotinas-fundo-card"
+          data-eid={grupo.fundoId ?? ""}
+          class="flex h-full w-48 shrink-0 flex-col gap-2 rounded border bg-card/60 p-3"
         >
-          {grupo.fundoNome ?? "Sem fundo vinculado"}
-        </button>
-        <p data-testid="rotinas-fundo-meta" class="text-xs text-muted-foreground">
-          {grupo.instancias.length} rotinas - {overdueCount} atrasadas
-        </p>
-        {#if grupo.displayed.length === 0}
-          <p class="text-sm text-muted-foreground">Nenhuma rotina corresponde ao filtro</p>
-        {:else}
-          {#each visiveis as instancia (instancia.id)}
-            {@const atrasada = vencido(instancia.dataPrevista, false, hoje)}
-            <button
-              type="button"
-              data-testid="rotinas-row"
-              data-eid={instancia.id}
-              class="flex w-full items-center gap-2 text-left"
-              onclick={(e) => {
-                e.stopPropagation();
-                onOpenRotina(instancia.id);
-              }}
-            >
-              <span
-                data-testid="rotinas-row-bolinha"
-                class="inline-block size-2 rounded-full {atrasada
-                  ? 'bg-destructive'
-                  : 'bg-muted-foreground'}"
-              ></span>
-              <span class="text-xs text-muted-foreground">
-                {instancia.dataPrevista.slice(8, 10)}/{instancia.dataPrevista.slice(5, 7)}
-              </span>
-              <span class="text-sm">{nomeById.get(instancia.id) ?? "Rotina"}</span>
-            </button>
-          {/each}
-          {#if overflow > 0}
-            <div
-              data-testid="rotinas-overflow"
-              data-eid={grupo.fundoId ?? ""}
-              class="text-xs text-muted-foreground"
-            >
-              +{overflow}
-            </div>
-          {/if}
-        {/if}
-      </div>
-    {/each}
+          <button
+            type="button"
+            data-testid="rotinas-fundo-titulo"
+            class="shrink-0 block text-left text-sm font-medium"
+            onclick={grupo.fundoId ? () => onOpenFundo(grupo.fundoId!) : undefined}
+          >
+            {grupo.fundoNome ?? "Sem fundo vinculado"}
+          </button>
+          <p data-testid="rotinas-fundo-meta" class="shrink-0 text-xs text-muted-foreground">
+            {grupo.instancias.length} rotinas - {overdueCount} atrasadas
+          </p>
+          <div
+            data-testid="rotinas-coluna-lista"
+            data-eid={grupo.fundoId ?? ""}
+            class="flex-1 min-h-0 space-y-2 overflow-y-auto"
+          >
+            {#if grupo.displayed.length === 0}
+              <p class="text-sm text-muted-foreground">Nenhuma rotina corresponde ao filtro</p>
+            {:else}
+              {#each grupo.displayed as instancia (instancia.id)}
+                {@const atrasada = vencido(instancia.dataPrevista, false, hoje)}
+                <button
+                  type="button"
+                  data-testid="rotinas-row"
+                  data-eid={instancia.id}
+                  class="block w-full rounded border p-2 text-left space-y-1"
+                  onclick={(e) => {
+                    e.stopPropagation();
+                    onOpenRotina(instancia.id);
+                  }}
+                >
+                  <span class="flex items-center gap-2">
+                    <span
+                      data-testid="rotinas-row-bolinha"
+                      class="inline-block size-2 rounded-full {atrasada
+                        ? 'bg-destructive'
+                        : 'bg-muted-foreground'}"
+                    ></span>
+                    <span class="text-xs text-muted-foreground">
+                      {instancia.dataPrevista.slice(8, 10)}/{instancia.dataPrevista.slice(5, 7)}
+                    </span>
+                  </span>
+                  <p data-testid="rotinas-row-titulo" class="line-clamp-2 text-sm">
+                    {nomeById.get(instancia.id) ?? "Rotina"}
+                  </p>
+                  {#if grupo.fundoNome}
+                    <p data-testid="rotinas-row-fundo" class="text-xs text-muted-foreground">
+                      {grupo.fundoNome}
+                    </p>
+                  {/if}
+                </button>
+              {/each}
+            {/if}
+          </div>
+        </div>
+      {/each}
+    </div>
   {/if}
 </div>
