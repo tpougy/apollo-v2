@@ -1,19 +1,19 @@
 ---
 gsd_state_version: "1.0"
 milestone: v1.5
-milestone_name: Correções descobertas no onboarding real do calendário de rotinas (RBR)
 status: Awaiting next milestone
 stopped_at: Phase 31 complete — all phases complete
-last_updated: "2026-09-23T03:41:54.256Z"
+last_updated: "2026-09-23T14:51:00.125Z"
 last_activity: 2026-09-23
 last_activity_desc: Completed quick task 260922-vbt (fundos -> entidades rename + migration)
-state_head: 65c383e4ef4331f42d2d77ce598e2cb9d614bfd6
+state_head: dfc982a0066e997476cfb43376f020eb6e410943
 progress:
   total_phases: 6
   completed_phases: 6
   total_plans: 11
   completed_plans: 11
   percent: 100
+milestone_name: Correções descobertas no onboarding real do calendário de rotinas (RBR)
 current_phase: null
 ---
 
@@ -119,6 +119,7 @@ None — v1.5 roadmap coverage is 12/12 requirements mapped with no orphans. No 
 | 260922-t1m | Mostrar o nome do template de rotina na listagem de instancias de rotina: hoje a tabela/listagem de instanciasRotina (CLI apollo rotina instancia listar e a tela correspondente na SPA web) mostra competencia, data prevista, status/prazo e acoes, mas nao o nome do templateRotina de origem. Adicionar essa coluna/campo, resolvendo o nome via o link instanciasRotina.template ja existente no schema. Sem mudanca de schema, so de leitura/exibicao (CLI e web). | 2026-09-22 | 5f72b14 | Verified | .planning/quick/20260922-mostrar-o-nome-do-template-de-rotina-na-listagem-de-instanci |
 | 260922-t1n | Dashboard: kanban de rotinas em tela cheia estilo Trello. Hoje o resumo Kanban do dashboard mostra poucos itens (~3) e cards com so o titulo truncado em 1 linha. Mudar para: (1) ocupar a altura visivel da pagina/viewport disponivel, (2) scroll interno na coluna quando houver mais itens do que cabe, (3) titulo do card em ate 2 linhas (wrap, nao truncar em 1 linha), (4) mostrar no resumo do card o nome do fundo associado a instancia/rotina, quando houver (via o link ja existente instanciasRotina -> template -> fundo, ou o link direto se existir). Escopo e a tela do dashboard ja existente na SPA web, sem mudanca de schema. | 2026-09-22 | c4d58ae | Verified | .planning/quick/20260922-dashboard-kanban-de-rotinas-em-tela-cheia-estilo-trello |
 | 260922-vbt | Generalizar fundos para entidades com multiplos tipos configuraveis: nova modelagem de entidade generica no lugar de fundos fixo, com suporte a multiplos tipos de entidade (cada tipo com seu proprio label, ex Fundo/Cliente/Area), templatesRotina e projetos e tickets passam a vincular a uma entidade de qualquer tipo, migracao dos dados de producao existentes (fundos atuais viram entidades do tipo Fundo). | 2026-09-23 | cc5218f | Verified (human_needed item resolved — see VERIFICATION.md and Deferred Items rows below) | .planning/quick/260922-vbt-generalizar-fundos-para-entidades-com-mu |
+| 5 | Trocar o título da página (title tag) de "Apollo v2" para "Apollo" no app web. | 2026-09-23 | dfc982a | — | — |
 
 ## Deferred Items
 
