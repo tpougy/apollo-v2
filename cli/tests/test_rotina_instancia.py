@@ -112,6 +112,54 @@ def _query_instancia(client: Instant, eid: str) -> dict[str, Any] | None:
     return rows[0] if rows else None
 
 
+def _linked_template(row: dict[str, Any]) -> dict[str, Any] | None:
+    """Normalizes the `template` expanded-link field, which InstantDB has
+    been observed (see `test_routine_job_parity.py`'s `_linked_template_id`)
+    to return as either a nested dict or a one-element list of dicts
+    depending on query shape. Handles both, returning `None` when absent.
+    """
+    linked = row.get("template")
+    if isinstance(linked, list):
+        return linked[0] if linked else None
+    return linked
+
+
+def test_listar_expands_template_nome_inline(
+    run_cli: RunCli,
+    live_client: Instant,
+    live_session: Session,
+    cleanup_records: list[tuple[str, str]],
+) -> None:
+    suffix = unique_suffix()
+    template_id = _create_template(run_cli, cleanup_records, suffix)
+    template_nome = f"Template p/ Instancia {suffix}"
+    seeded = _seed_instancia(live_client, live_session, template_id, suffix)
+    eid = seeded["id"]
+    cleanup_records.append(("instanciasRotina", eid))
+
+    # Unfiltered listar carries the expanded template.nome inline.
+    listar_result: CliInvocation = run_cli(["rotina", "instancia", "listar"])
+    assert listar_result.result.exit_code == 0, listar_result.result.output
+    all_records = cast("list[dict[str, Any]]", listar_result.json_out())
+    matching = [r for r in all_records if r["id"] == eid]
+    assert matching, "seeded instance must appear in unfiltered listar"
+    linked = _linked_template(matching[0])
+    assert linked is not None, "seeded instance must carry an expanded template sub-record"
+    assert linked["nome"] == template_nome
+
+    # --template-id-filtered listar also carries the expanded template.nome.
+    filtered_result: CliInvocation = run_cli(
+        ["rotina", "instancia", "listar", "--template-id", template_id]
+    )
+    assert filtered_result.result.exit_code == 0, filtered_result.result.output
+    filtered = cast("list[dict[str, Any]]", filtered_result.json_out())
+    filtered_matching = [r for r in filtered if r["id"] == eid]
+    assert filtered_matching, "seeded instance must appear in --template-id-filtered listar"
+    filtered_linked = _linked_template(filtered_matching[0])
+    assert filtered_linked is not None
+    assert filtered_linked["nome"] == template_nome
+
+
 def test_listar_and_status_round_trip(
     run_cli: RunCli,
     live_client: Instant,

@@ -59,6 +59,7 @@ from apollo_cli.crud_helpers import (
     drop_none,
     emit,
     get_entity,
+    instant_errors,
     list_entities,
     update_entity,
     validate_iso_date,
@@ -523,9 +524,29 @@ def listar(fundo_id: str | None, ativo: bool | None, limit: int | None) -> None:
 @click.option("--status", default=None, help="Filter by exact `status` match.")
 @click.option("--limit", type=int, default=None, help="Maximum number of records to return.")
 def listar_instancia(template_id: str | None, status: str | None, limit: int | None) -> None:
-    """List generated routine instances visible to the authenticated session."""
+    """List generated routine instances visible to the authenticated session.
+
+    Unlike most `listar` commands in this module, this one does NOT delegate
+    to `crud_helpers.list_entities` (which never expands links) — it runs a
+    direct `client.query` sub-expanding the `template` link, the exact
+    `{"template": {}, ...}` shape `limpar_orfas` already uses a few lines
+    below in this file, so every emitted row carries its source
+    `templatesRotina` record (id + every field, notably `nome`) inline under
+    the existing `template` key. This lets an operator see which recurring
+    routine produced a given instance without a separate lookup. `--limit`
+    and `--template-id`/`--status` filtering semantics are unchanged; only
+    the emitted row shape gains the inline `template` sub-object. No CLI
+    flag, no schema change. `template.listar` (a few lines above) is
+    untouched — it still uses `list_entities` and never expands links.
+    """
     where = drop_none({"template.id": template_id, "status": status})
-    records = list_entities(etype=_ETYPE_INSTANCIA, where=where, limit=limit)
+    query_opts: dict[str, object] = {"where": where}
+    if limit is not None:
+        query_opts["limit"] = limit
+    client, _ = client_for_session()
+    with instant_errors():
+        result = client.query({_ETYPE_INSTANCIA: {"template": {}, "$": query_opts}})
+    records = result.get(_ETYPE_INSTANCIA, [])
     emit(records)
 
 
