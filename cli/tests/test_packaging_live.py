@@ -40,7 +40,7 @@ def _subprocess_env(session_file: str) -> dict[str, str]:
 
     This dev machine carries a real, persisted `~/.config/apollo-cli/session`
     from prior legitimate `apollo auth login` use (see plan 24-01
-    SUMMARY.md's Decisions) — without this override, `fundo listar` would
+    SUMMARY.md's Decisions) — without this override, `entidade listar` would
     return a real (empty) query result at exit 0 instead of exercising the
     `no_session` contract this test asserts, making the test behave
     differently on this machine than on a genuinely fresh install.
@@ -116,7 +116,7 @@ def test_installed_wheel_runs_outside_repo_with_no_shared_or_env_file(
     # behavior — proves no import-time crash, not a live-data assertion
     # (matches test_auth_rejection.py's existing no_session contract).
     listar = subprocess.run(
-        [str(apollo_bin), "fundo", "listar"],
+        [str(apollo_bin), "entidade", "listar"],
         cwd=str(outside_cwd),
         capture_output=True,
         text=True,

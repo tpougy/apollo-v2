@@ -24,28 +24,37 @@ pytestmark = pytest.mark.live
 def _query_template(
     client: Instant, eid: str, *, with_links: bool = False
 ) -> dict[str, Any] | None:
-    sub_query: dict[str, Any] = {"fundo": {}, "antecessor": {}} if with_links else {}
+    sub_query: dict[str, Any] = {"entidade": {}, "antecessor": {}} if with_links else {}
     result = client.query({"templatesRotina": {**sub_query, "$": {"where": {"id": eid}}}})
     rows = result.get("templatesRotina", [])
     return rows[0] if rows else None
 
 
 def _single(value: dict[str, Any] | list[dict[str, Any]] | None) -> dict[str, Any] | None:
-    """`fundo`/`antecessor` may come back as a single dict or a one-item list."""
+    """`entidade`/`antecessor` may come back as a single dict or a one-item list."""
     if isinstance(value, list):
         assert len(value) == 1
         return value[0]
     return value
 
 
-def _create_fundo(run_cli: RunCli, cleanup_records: list[tuple[str, str]], suffix: str) -> str:
-    fundo_result: CliInvocation = run_cli(
-        ["fundo", "criar", "--nome", f"Fundo p/ Rotina {suffix}", "--codigo", f"ROT-{suffix}"]
+def _create_entidade(run_cli: RunCli, cleanup_records: list[tuple[str, str]], suffix: str) -> str:
+    entidade_result: CliInvocation = run_cli(
+        [
+            "entidade",
+            "criar",
+            "--nome",
+            f"Fundo p/ Rotina {suffix}",
+            "--codigo",
+            f"ROT-{suffix}",
+            "--tipo-entidade",
+            "Fundo",
+        ]
     )
-    assert fundo_result.result.exit_code == 0, fundo_result.result.output
-    fundo_id = cast("dict[str, Any]", fundo_result.json_out())["id"]
-    cleanup_records.append(("fundos", fundo_id))
-    return fundo_id
+    assert entidade_result.result.exit_code == 0, entidade_result.result.output
+    entidade_id = cast("dict[str, Any]", entidade_result.json_out())["id"]
+    cleanup_records.append(("entidades", entidade_id))
+    return entidade_id
 
 
 def _seed_linked_instancia(
@@ -116,9 +125,9 @@ def test_full_crud_round_trip(
     assert record["propagarAtrasoSoft"] is True
     assert record["ativo"] is True
 
-    # 3. criar with --fundo-id (throwaway fundo) -> nested fundo resolves
-    fundo_id = _create_fundo(run_cli, cleanup_records, suffix)
-    with_fundo_result: CliInvocation = run_cli(
+    # 3. criar with --entidade-id (throwaway entidade) -> nested entidade resolves
+    entidade_id = _create_entidade(run_cli, cleanup_records, suffix)
+    with_entidade_result: CliInvocation = run_cli(
         [
             "rotina",
             "template",
@@ -129,18 +138,18 @@ def test_full_crud_round_trip(
             "corrido_fixo",
             "--regra-competencia",
             "M0",
-            "--fundo-id",
-            fundo_id,
+            "--entidade-id",
+            entidade_id,
         ]
     )
-    assert with_fundo_result.result.exit_code == 0, with_fundo_result.result.output
-    with_fundo_id = cast("dict[str, Any]", with_fundo_result.json_out())["id"]
-    cleanup_records.append(("templatesRotina", with_fundo_id))
-    with_fundo_record = _query_template(live_client, with_fundo_id, with_links=True)
-    assert with_fundo_record is not None
-    linked_fundo = _single(with_fundo_record.get("fundo"))
-    assert linked_fundo is not None
-    assert linked_fundo["id"] == fundo_id
+    assert with_entidade_result.result.exit_code == 0, with_entidade_result.result.output
+    with_entidade_id = cast("dict[str, Any]", with_entidade_result.json_out())["id"]
+    cleanup_records.append(("templatesRotina", with_entidade_id))
+    with_entidade_record = _query_template(live_client, with_entidade_id, with_links=True)
+    assert with_entidade_record is not None
+    linked_entidade = _single(with_entidade_record.get("entidade"))
+    assert linked_entidade is not None
+    assert linked_entidade["id"] == entidade_id
 
     # 4. criar with --antecessor-id <first id> -> nested antecessor resolves (self-link proof)
     sucessor_result: CliInvocation = run_cli(

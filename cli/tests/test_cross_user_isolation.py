@@ -15,7 +15,7 @@ query. `test_auth_rejection.py`'s test 6 documents, as executable
 documentation, that InstantDB's `view` rule silently filters disallowed rows
 out of query results: an empty `listar` returns HTTP 200 with `[]` whether or
 not perms are enforced, and whether or not any matching row exists. A
-VERIFY-05 assertion of the form "the second user's `apollo fundo listar`
+VERIFY-05 assertion of the form "the second user's `apollo entidade listar`
 shows nothing" would therefore be worthless. Only
 `pytest.raises(InstantAPIError)` with `body["type"] == "permission-denied"`
 on a create/update/delete attempt is valid evidence here. The requirement's
@@ -134,32 +134,33 @@ def second_client(second_session: Session) -> Instant:
 
 
 @pytest.fixture
-def tp_owned_fundo(
+def tp_owned_entidade(
     live_client: Instant,
     live_session: Session,
     cleanup_records: list[tuple[str, str]],
 ) -> Iterator[tuple[str, str]]:
-    """A fresh `fundos` record owned by tp@, dedicated to this module.
+    """A fresh `entidades` record owned by tp@, dedicated to this module.
 
     Created and cleaned up via tp@'s own `live_client`/`cleanup_records` — per
     RESEARCH Open Question 1's "own your fixtures" recommendation, this test
     never targets a record another phase's leftover sweep depends on.
     """
     nome = f"phase06-verify05-{unique_suffix()}"
-    fundo_id = new_id()
+    entidade_id = new_id()
     live_client.transact(
-        live_client.tx.fundos[fundo_id].create(
+        live_client.tx.entidades[entidade_id].create(
             {
                 "nome": nome,
                 "codigo": "V05",
+                "tipoEntidade": "Fundo",
                 "ativo": True,
                 "createdAt": now_iso(),
                 "donoId": live_session.user_id,
             }
         )
     )
-    cleanup_records.append(("fundos", fundo_id))
-    yield fundo_id, nome
+    cleanup_records.append(("entidades", entidade_id))
+    yield entidade_id, nome
 
 
 # --- 0. Guard: the two sessions are genuinely different users --------------
@@ -188,14 +189,15 @@ def test_01_second_user_cannot_create_a_record_owned_by_tp(
     live_session: Session,
 ) -> None:
     nome = f"phase06-verify05-{unique_suffix()}"
-    fundo_id = new_id()
+    entidade_id = new_id()
 
     with pytest.raises(InstantAPIError) as exc_info:
         second_client.transact(
-            second_client.tx.fundos[fundo_id].create(
+            second_client.tx.entidades[entidade_id].create(
                 {
                     "nome": nome,
                     "codigo": "V05-CREATE",
+                    "tipoEntidade": "Fundo",
                     "ativo": True,
                     "createdAt": now_iso(),
                     "donoId": live_session.user_id,
@@ -205,8 +207,8 @@ def test_01_second_user_cannot_create_a_record_owned_by_tp(
 
     assert _permission_denied_type(exc_info.value) == "permission-denied"
 
-    result = live_client.query({"fundos": {"$": {"where": {"nome": nome}}}})
-    assert result.get("fundos", []) == []
+    result = live_client.query({"entidades": {"$": {"where": {"nome": nome}}}})
+    assert result.get("entidades", []) == []
 
 
 # --- 2. Update of tp@'s row is denied ---------------------------------------
@@ -216,17 +218,17 @@ def test_01_second_user_cannot_create_a_record_owned_by_tp(
 def test_02_second_user_cannot_update_tps_record(
     second_client: Instant,
     live_client: Instant,
-    tp_owned_fundo: tuple[str, str],
+    tp_owned_entidade: tuple[str, str],
 ) -> None:
-    fundo_id, original_nome = tp_owned_fundo
+    entidade_id, original_nome = tp_owned_entidade
 
     with pytest.raises(InstantAPIError) as exc_info:
-        second_client.transact(second_client.tx.fundos[fundo_id].update({"nome": "hijacked"}))
+        second_client.transact(second_client.tx.entidades[entidade_id].update({"nome": "hijacked"}))
 
     assert _permission_denied_type(exc_info.value) == "permission-denied"
 
-    result = live_client.query({"fundos": {"$": {"where": {"id": fundo_id}}}})
-    rows = result.get("fundos", [])
+    result = live_client.query({"entidades": {"$": {"where": {"id": entidade_id}}}})
+    rows = result.get("entidades", [])
     assert len(rows) == 1
     assert rows[0]["nome"] == original_nome
 
@@ -238,17 +240,17 @@ def test_02_second_user_cannot_update_tps_record(
 def test_03_second_user_cannot_delete_tps_record(
     second_client: Instant,
     live_client: Instant,
-    tp_owned_fundo: tuple[str, str],
+    tp_owned_entidade: tuple[str, str],
 ) -> None:
-    fundo_id, _original_nome = tp_owned_fundo
+    entidade_id, _original_nome = tp_owned_entidade
 
     with pytest.raises(InstantAPIError) as exc_info:
-        second_client.transact(second_client.tx.fundos[fundo_id].delete())
+        second_client.transact(second_client.tx.entidades[entidade_id].delete())
 
     assert _permission_denied_type(exc_info.value) == "permission-denied"
 
-    result = live_client.query({"fundos": {"$": {"where": {"id": fundo_id}}}})
-    assert len(result.get("fundos", [])) == 1
+    result = live_client.query({"entidades": {"$": {"where": {"id": entidade_id}}}})
+    assert len(result.get("entidades", [])) == 1
 
 
 # --- 4. Positive control: second user's OWN create succeeds ----------------
@@ -269,26 +271,27 @@ def test_04_second_user_can_create_its_own_record_positive_control(
     rules under test forbid from deleting a second-user-owned record.
     """
     nome = f"phase06-verify05-{unique_suffix()}"
-    fundo_id = new_id()
+    entidade_id = new_id()
 
     try:
         second_client.transact(
-            second_client.tx.fundos[fundo_id].create(
+            second_client.tx.entidades[entidade_id].create(
                 {
                     "nome": nome,
                     "codigo": "V05-OWN",
+                    "tipoEntidade": "Fundo",
                     "ativo": True,
                     "createdAt": now_iso(),
                     "donoId": second_session.user_id,
                 }
             )
         )
-        result = second_client.query({"fundos": {"$": {"where": {"id": fundo_id}}}})
-        rows = result.get("fundos", [])
+        result = second_client.query({"entidades": {"$": {"where": {"id": entidade_id}}}})
+        rows = result.get("entidades", [])
         assert len(rows) == 1
         assert rows[0]["nome"] == nome
     finally:
-        second_client.transact(second_client.tx.fundos[fundo_id].delete())
+        second_client.transact(second_client.tx.entidades[entidade_id].delete())
 
 
 # --- 5. Guarded second-user teardown (opt-in) -------------------------------
@@ -358,11 +361,11 @@ def test_06_zz_guarded_second_user_teardown(
     assert second_session.user_id != live_session.user_id
     assert second_session.email != live_session.email
 
-    # Guard 4a (inventory, BEFORE): tp@'s fundos count and user_id.
+    # Guard 4a (inventory, BEFORE): tp@'s entidades count and user_id.
     before_result = live_client.query(
-        {"fundos": {"$": {"where": {"donoId": live_session.user_id}}}}
+        {"entidades": {"$": {"where": {"donoId": live_session.user_id}}}}
     )
-    before_count = len(before_result.get("fundos", []))
+    before_count = len(before_result.get("entidades", []))
 
     admin = login_client()
 
@@ -372,9 +375,9 @@ def test_06_zz_guarded_second_user_teardown(
     deleted_id = deleted.get("id") if isinstance(deleted, dict) else None
     assert deleted_id == second_session.user_id
 
-    # Guard 4b (inventory, AFTER): tp@'s fundos count and whoami unchanged.
-    after_result = live_client.query({"fundos": {"$": {"where": {"donoId": live_session.user_id}}}})
-    after_count = len(after_result.get("fundos", []))
+    # Guard 4b (inventory, AFTER): tp@'s entidades count and whoami unchanged.
+    after_result = live_client.query({"entidades": {"$": {"where": {"donoId": live_session.user_id}}}})
+    after_count = len(after_result.get("entidades", []))
     assert after_count == before_count
 
     reloaded_tp_session = load_session()
@@ -386,10 +389,11 @@ def test_06_zz_guarded_second_user_teardown(
     dead_client = session_client(second_session)
     with pytest.raises(InstantAPIError):
         dead_client.transact(
-            dead_client.tx.fundos[new_id()].create(
+            dead_client.tx.entidades[new_id()].create(
                 {
                     "nome": "post-delete-probe",
                     "codigo": "V05-DEAD",
+                    "tipoEntidade": "Fundo",
                     "ativo": True,
                     "createdAt": now_iso(),
                     "donoId": second_session.user_id,

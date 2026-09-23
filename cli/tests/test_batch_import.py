@@ -44,7 +44,7 @@ def _write_batch(tmp_path: Path, data: dict[str, Any]) -> Path:
     return path
 
 
-def _fundo_record(local_id: str, suffix: str, n: int) -> dict[str, Any]:
+def _entidade_record(local_id: str, suffix: str, n: int) -> dict[str, Any]:
     return {
         "_local_id": local_id,
         "nome": f"Fundo Lote {n} {suffix}",
@@ -61,7 +61,7 @@ def _template_record(
     regra_competencia: str = "M0",
     offset_dias: int | None = None,
     dia_semana: str | None = None,
-    fundo_id: str | None = None,
+    entidade_id: str | None = None,
     antecessor_id: str | None = None,
 ) -> dict[str, Any]:
     record: dict[str, Any] = {
@@ -74,22 +74,22 @@ def _template_record(
         record["offsetDias"] = offset_dias
     if dia_semana is not None:
         record["diaSemana"] = dia_semana
-    if fundo_id is not None:
-        record["fundoId"] = fundo_id
+    if entidade_id is not None:
+        record["entidadeId"] = entidade_id
     if antecessor_id is not None:
         record["antecessorId"] = antecessor_id
     return record
 
 
-def _query_fundos_by_codigos(client: Instant, codigos: list[str]) -> dict[str, dict[str, Any]]:
-    result = client.query({"fundos": {"$": {"where": {"codigo": {"$in": codigos}}}}})
-    return {row["codigo"]: row for row in result.get("fundos", [])}
+def _query_entidades_by_codigos(client: Instant, codigos: list[str]) -> dict[str, dict[str, Any]]:
+    result = client.query({"entidades": {"$": {"where": {"codigo": {"$in": codigos}}}}})
+    return {row["codigo"]: row for row in result.get("entidades", [])}
 
 
 def _query_templates_by_nomes(
     client: Instant, nomes: list[str], *, with_links: bool = False
 ) -> dict[str, dict[str, Any]]:
-    sub_query: dict[str, Any] = {"fundo": {}, "antecessor": {}} if with_links else {}
+    sub_query: dict[str, Any] = {"entidade": {}, "antecessor": {}} if with_links else {}
     result = client.query(
         {"templatesRotina": {**sub_query, "$": {"where": {"nome": {"$in": nomes}}}}}
     )
@@ -101,14 +101,14 @@ def _instancia_count(run_cli: RunCli) -> int:
 
 
 def _build_scale_batch(
-    suffix: str, n_fundos: int, n_templates: int, *, build_chains: bool = True
+    suffix: str, n_entidades: int, n_templates: int, *, build_chains: bool = True
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[list[str]]]:
-    """Programmatically builds `n_fundos` fundo records and `n_templates`
+    """Programmatically builds `n_entidades` fundo records and `n_templates`
     template records via looped construction (never hand-typed literals):
     every template's `tipoGeracao` cycles through ALL `TIPO_GERACAO_CHOICES`
     values, `regraCompetencia` cycles through `REGRAS_COMPETENCIA_SUPORTADAS`,
-    and `fundoId` round-robins across the `n_fundos` fundo local_ids (every
-    10th template deliberately left with no `fundoId` at all — a small
+    and `entidadeId` round-robins across the `n_entidades` fundo local_ids (every
+    10th template deliberately left with no `entidadeId` at all — a small
     handful). When `build_chains` is set, 2 disjoint `encadeado` chains
     (3-hop then 2-hop) are carved out of the templates the cycling above
     already assigned `tipoGeracao="encadeado"` — every OTHER
@@ -119,7 +119,7 @@ def _build_scale_batch(
     is the list of local_id chains, antecessor-first order, for live
     assertion against real resolved links.
     """
-    fundos = [_fundo_record(f"f{n}", suffix, n) for n in range(1, n_fundos + 1)]
+    fundos = [_entidade_record(f"f{n}", suffix, n) for n in range(1, n_entidades + 1)]
 
     tipo_values = list(TIPO_GERACAO_CHOICES)
     regra_values = list(REGRAS_COMPETENCIA_SUPORTADAS)
@@ -132,7 +132,7 @@ def _build_scale_batch(
         local_id = f"t{n}"
         tipo = tipo_values[(n - 1) % len(tipo_values)]
         regra = regra_values[(n - 1) % len(regra_values)]
-        fundo_id = None if n % 10 == 0 else f"$f{((n - 1) % n_fundos) + 1}"
+        entidade_id = None if n % 10 == 0 else f"$f{((n - 1) % n_entidades) + 1}"
 
         if tipo == "semanal":
             record = _template_record(
@@ -142,7 +142,7 @@ def _build_scale_batch(
                 tipo_geracao=tipo,
                 regra_competencia=regra,
                 dia_semana=dia_values[(n - 1) % len(dia_values)],
-                fundo_id=fundo_id,
+                entidade_id=entidade_id,
             )
         else:
             record = _template_record(
@@ -152,7 +152,7 @@ def _build_scale_batch(
                 tipo_geracao=tipo,
                 regra_competencia=regra,
                 offset_dias=n,
-                fundo_id=fundo_id,
+                entidade_id=entidade_id,
             )
         if tipo == "encadeado":
             encadeado_local_ids.append(local_id)
@@ -179,7 +179,7 @@ def _assert_no_duplicate_rows_by_key(
     client: Instant, etype: str, where_field: str, keys: list[str]
 ) -> None:
     """Confirms exactly one row per natural key. A dict-collapsing helper
-    like `_query_fundos_by_codigos` silently hides a duplicate behind its
+    like `_query_entidades_by_codigos` silently hides a duplicate behind its
     last-write-wins key, so this queries the RAW row list for the whole key
     set in one call and counts occurrences per key directly via `Counter`."""
     if not keys:
@@ -192,17 +192,18 @@ def _assert_no_duplicate_rows_by_key(
         assert counts[key] == 1, f"{etype}: {key!r} has {counts[key]} rows (expected 1)"
 
 
-def _seed_fundo(client: Instant, dono_id: str, record: dict[str, Any]) -> str:
-    """Directly `client.transact`s a single fundo row, bypassing the CLI
+def _seed_entidade(client: Instant, dono_id: str, record: dict[str, Any]) -> str:
+    """Directly `client.transact`s a single entidade row, bypassing the CLI
     entirely — the closest honest simulation of "a prior partial run
     already committed this," since a genuinely torn `apollo import` mid-run
     is unreachable to engineer directly (RESEARCH.md Q3)."""
     eid = new_id()
     client.transact(
-        client.tx["fundos"][eid].create(
+        client.tx["entidades"][eid].create(
             {
                 "nome": record["nome"],
                 "codigo": record["codigo"],
+                "tipoEntidade": record.get("tipoEntidade", "Fundo"),
                 "ativo": True,
                 "createdAt": now_iso(),
                 "donoId": dono_id,
@@ -213,11 +214,11 @@ def _seed_fundo(client: Instant, dono_id: str, record: dict[str, Any]) -> str:
 
 
 def _seed_template(
-    client: Instant, dono_id: str, record: dict[str, Any], fundo_real_id: str | None
+    client: Instant, dono_id: str, record: dict[str, Any], entidade_real_id: str | None
 ) -> str:
     """Directly `client.transact`s a single templatesRotina row, bypassing
-    the CLI entirely, linked to an already-real `fundo_real_id` (or no
-    `fundo` link at all) so its natural key exactly matches what
+    the CLI entirely, linked to an already-real `entidade_real_id` (or no
+    `entidade` link at all) so its natural key exactly matches what
     `run_batch_import`'s own resolution would compute for the same batch
     record."""
     eid = new_id()
@@ -234,8 +235,8 @@ def _seed_template(
     if "diaSemana" in record:
         fields["diaSemana"] = record["diaSemana"]
     chunk = client.tx["templatesRotina"][eid].create(fields)
-    if fundo_real_id is not None:
-        chunk = chunk.link({"fundo": fundo_real_id})
+    if entidade_real_id is not None:
+        chunk = chunk.link({"entidade": entidade_real_id})
     client.transact(chunk)
     return eid
 
@@ -248,28 +249,28 @@ def test_import_creates_fundos_and_templates_end_to_end_at_meaningful_scale(
     tmp_path: Path,
 ) -> None:
     """Task 1's tracer proof: N fundos + M templatesRotina (including a
-    `$`-fundoId reference, a bare/real-id fundoId reference, an
-    absent-fundoId template, and a 2-3-hop `encadeado` chain listed
+    `$`-entidadeId reference, a bare/real-id entidadeId reference, an
+    absent-entidadeId template, and a 2-3-hop `encadeado` chain listed
     successor-before-antecessor) all land in exactly ONE atomic transact,
     every reference resolving to the REAL id of its sibling record, and the
     account's `instanciasRotina` row count stays unchanged (C-06)."""
     suffix = unique_suffix()
 
-    bare_fundo_result: CliInvocation = run_cli(
-        ["fundo", "criar", "--nome", f"Fundo Bare {suffix}", "--codigo", f"BARE-{suffix}"]
+    bare_entidade_result: CliInvocation = run_cli(
+        ["entidade", "criar", "--nome", f"Fundo Bare {suffix}", "--codigo", f"BARE-{suffix}", "--tipo-entidade", "Fundo"]
     )
-    assert bare_fundo_result.result.exit_code == 0, bare_fundo_result.result.output
-    bare_fundo_id = cast("dict[str, Any]", bare_fundo_result.json_out())["id"]
-    cleanup_records.append(("fundos", bare_fundo_id))
+    assert bare_entidade_result.result.exit_code == 0, bare_entidade_result.result.output
+    bare_entidade_id = cast("dict[str, Any]", bare_entidade_result.json_out())["id"]
+    cleanup_records.append(("entidades", bare_entidade_id))
 
-    fundos = [_fundo_record(f"f{n}", suffix, n) for n in range(1, 5)]
+    fundos = [_entidade_record(f"f{n}", suffix, n) for n in range(1, 5)]
 
     # t6/t5 are deliberately listed BEFORE t4 (their ultimate antecessor) to
     # prove file-order independence of the encadeado chain resolution.
     templates = [
-        _template_record("t1", suffix, 1, offset_dias=5, fundo_id="$f1"),
+        _template_record("t1", suffix, 1, offset_dias=5, entidade_id="$f1"),
         _template_record(
-            "t2", suffix, 2, tipo_geracao="corrido_fixo", offset_dias=10, fundo_id=bare_fundo_id
+            "t2", suffix, 2, tipo_geracao="corrido_fixo", offset_dias=10, entidade_id=bare_entidade_id
         ),
         _template_record("t3", suffix, 3, tipo_geracao="semanal", dia_semana="sexta"),
         _template_record(
@@ -278,8 +279,8 @@ def test_import_creates_fundos_and_templates_end_to_end_at_meaningful_scale(
         _template_record(
             "t5", suffix, 5, tipo_geracao="encadeado", offset_dias=1, antecessor_id="$t4"
         ),
-        _template_record("t4", suffix, 4, fundo_id="$f2"),
-        _template_record("t7", suffix, 7, regra_competencia="M-1", offset_dias=3, fundo_id="$f3"),
+        _template_record("t4", suffix, 4, entidade_id="$f2"),
+        _template_record("t7", suffix, 7, regra_competencia="M-1", offset_dias=3, entidade_id="$f3"),
         _template_record(
             "t8",
             suffix,
@@ -287,13 +288,13 @@ def test_import_creates_fundos_and_templates_end_to_end_at_meaningful_scale(
             tipo_geracao="corrido_fixo",
             regra_competencia="M+1",
             offset_dias=15,
-            fundo_id="$f4",
+            entidade_id="$f4",
         ),
-        _template_record("t9", suffix, 9, offset_dias=-1, fundo_id="$f1"),
-        _template_record("t10", suffix, 10, fundo_id="$f2"),
+        _template_record("t9", suffix, 9, offset_dias=-1, entidade_id="$f1"),
+        _template_record("t10", suffix, 10, entidade_id="$f2"),
     ]
 
-    batch_path = _write_batch(tmp_path, {"fundos": fundos, "templatesRotina": templates})
+    batch_path = _write_batch(tmp_path, {"entidades": fundos, "templatesRotina": templates})
 
     before_count = _instancia_count(run_cli)
 
@@ -301,24 +302,24 @@ def test_import_creates_fundos_and_templates_end_to_end_at_meaningful_scale(
     assert result.result.exit_code == 0, result.result.output
     report = cast("dict[str, Any]", result.json_out())
 
-    assert report["fundos"]["created"] == sorted(f"f{n}" for n in range(1, 5))
-    assert report["fundos"]["existing"] == []
+    assert report["entidades"]["created"] == sorted(f"f{n}" for n in range(1, 5))
+    assert report["entidades"]["existing"] == []
     assert report["templatesRotina"]["created"] == sorted(f"t{n}" for n in range(1, 11))
     assert report["templatesRotina"]["existing"] == []
 
     after_count = _instancia_count(run_cli)
     assert after_count == before_count
 
-    fundo_codigos = {n: f"LOTE-F{n}-{suffix}" for n in range(1, 5)}
-    fundo_rows = _query_fundos_by_codigos(live_client, list(fundo_codigos.values()))
-    assert set(fundo_rows) == set(fundo_codigos.values())
-    fundo_real_ids: dict[str, str] = {}
-    for n, codigo in fundo_codigos.items():
-        row = fundo_rows[codigo]
+    entidade_codigos = {n: f"LOTE-F{n}-{suffix}" for n in range(1, 5)}
+    entidade_rows = _query_entidades_by_codigos(live_client, list(entidade_codigos.values()))
+    assert set(entidade_rows) == set(entidade_codigos.values())
+    entidade_real_ids: dict[str, str] = {}
+    for n, codigo in entidade_codigos.items():
+        row = entidade_rows[codigo]
         assert row["donoId"] == live_session.user_id
         assert row["ativo"] is True
-        fundo_real_ids[f"f{n}"] = row["id"]
-        cleanup_records.append(("fundos", row["id"]))
+        entidade_real_ids[f"f{n}"] = row["id"]
+        cleanup_records.append(("entidades", row["id"]))
 
     template_nomes = {n: f"Template Lote {n} {suffix}" for n in range(1, 11)}
     template_rows = _query_templates_by_nomes(
@@ -333,17 +334,17 @@ def test_import_creates_fundos_and_templates_end_to_end_at_meaningful_scale(
         cleanup_records.append(("templatesRotina", row["id"]))
 
     # $-reference (t1 -> f1) resolves to the real fundo id.
-    t1_fundo = _single(template_rows[template_nomes[1]].get("fundo"))
+    t1_fundo = _single(template_rows[template_nomes[1]].get("entidade"))
     assert t1_fundo is not None
-    assert t1_fundo["id"] == fundo_real_ids["f1"]
+    assert t1_fundo["id"] == entidade_real_ids["f1"]
 
-    # bare/real-id reference (t2 -> bare_fundo_id) resolves unchanged.
-    t2_fundo = _single(template_rows[template_nomes[2]].get("fundo"))
+    # bare/real-id reference (t2 -> bare_entidade_id) resolves unchanged.
+    t2_fundo = _single(template_rows[template_nomes[2]].get("entidade"))
     assert t2_fundo is not None
-    assert t2_fundo["id"] == bare_fundo_id
+    assert t2_fundo["id"] == bare_entidade_id
 
-    # absent fundoId (t3): no `fundo` link key at all.
-    assert "fundo" not in template_rows[template_nomes[3]]
+    # absent entidadeId (t3): no `fundo` link key at all.
+    assert "entidade" not in template_rows[template_nomes[3]]
 
     # encadeado chain: t5.antecessor == t4 (real id), t6.antecessor == t5
     # (real id) — correct even though t6/t5 were listed BEFORE t4 in the file.
@@ -367,10 +368,10 @@ def test_import_rejects_whole_file_on_one_broken_record_among_valid_ones(
     valid records were written (D-04)."""
     suffix = unique_suffix()
 
-    fundos = [_fundo_record("gf1", suffix, 900), _fundo_record("gf2", suffix, 901)]
+    fundos = [_entidade_record("gf1", suffix, 900), _entidade_record("gf2", suffix, 901)]
     templates = [
-        _template_record("gt1", suffix, 900, offset_dias=1, fundo_id="$gf1"),
-        _template_record("gt2", suffix, 901, offset_dias=2, fundo_id="$gf2"),
+        _template_record("gt1", suffix, 900, offset_dias=1, entidade_id="$gf1"),
+        _template_record("gt2", suffix, 901, offset_dias=2, entidade_id="$gf2"),
         _template_record(
             "gt_broken",
             suffix,
@@ -381,7 +382,7 @@ def test_import_rejects_whole_file_on_one_broken_record_among_valid_ones(
         ),
     ]
 
-    batch_path = _write_batch(tmp_path, {"fundos": fundos, "templatesRotina": templates})
+    batch_path = _write_batch(tmp_path, {"entidades": fundos, "templatesRotina": templates})
 
     result: CliInvocation = run_cli(["import", "--from-json", str(batch_path)])
     assert result.result.exit_code == 2, result.result.output
@@ -393,10 +394,10 @@ def test_import_rejects_whole_file_on_one_broken_record_among_valid_ones(
         for e in errors
     )
 
-    fundo_rows = _query_fundos_by_codigos(
+    entidade_rows = _query_entidades_by_codigos(
         live_client, [f"LOTE-F900-{suffix}", f"LOTE-F901-{suffix}"]
     )
-    assert fundo_rows == {}
+    assert entidade_rows == {}
     template_rows = _query_templates_by_nomes(
         live_client, [f"Template Lote 900 {suffix}", f"Template Lote 901 {suffix}"]
     )
@@ -443,7 +444,7 @@ def test_import_collects_all_errors_across_multiple_broken_records(
             "tipoGeracao": "du_fixo",
             "regraCompetencia": "M0",
             "offsetDias": 1,
-            "fundoId": "$nao_existe",
+            "entidadeId": "$nao_existe",
         },
         {
             "_local_id": "cycle_a",
@@ -470,7 +471,7 @@ def test_import_collects_all_errors_across_multiple_broken_records(
         },
     ]
 
-    batch_path = _write_batch(tmp_path, {"fundos": fundos, "templatesRotina": templates})
+    batch_path = _write_batch(tmp_path, {"entidades": fundos, "templatesRotina": templates})
 
     result: CliInvocation = run_cli(["import", "--from-json", str(batch_path)])
     assert result.result.exit_code == 2, result.result.output
@@ -482,14 +483,14 @@ def test_import_collects_all_errors_across_multiple_broken_records(
     for expected_reason in (
         "codigo_ausente",
         "tipo_geracao_invalido",
-        "fundo_id_referencia_local_nao_encontrada",
+        "entidade_id_referencia_local_nao_encontrada",
         "donoId_nao_permitido",
         "antecessor_ciclico",
     ):
         assert expected_reason in reasons, f"missing reason {expected_reason!r} in {errors}"
 
-    fundo_rows = _query_fundos_by_codigos(live_client, [f"VALIDF-{suffix}"])
-    assert fundo_rows == {}
+    entidade_rows = _query_entidades_by_codigos(live_client, [f"VALIDF-{suffix}"])
+    assert entidade_rows == {}
     template_rows = _query_templates_by_nomes(live_client, [f"Valid Template {suffix}"])
     assert template_rows == {}
 
@@ -507,11 +508,11 @@ def test_import_dry_run_reports_created_existing_split_without_writing(
     suffix = unique_suffix()
 
     seed_result: CliInvocation = run_cli(
-        ["fundo", "criar", "--nome", f"Seed Fundo {suffix}", "--codigo", f"SEED-{suffix}"]
+        ["entidade", "criar", "--nome", f"Seed Fundo {suffix}", "--codigo", f"SEED-{suffix}", "--tipo-entidade", "Fundo"]
     )
     assert seed_result.result.exit_code == 0, seed_result.result.output
-    seed_fundo_id = cast("dict[str, Any]", seed_result.json_out())["id"]
-    cleanup_records.append(("fundos", seed_fundo_id))
+    seed_entidade_id = cast("dict[str, Any]", seed_result.json_out())["id"]
+    cleanup_records.append(("entidades", seed_entidade_id))
 
     fundos = [
         {
@@ -523,14 +524,14 @@ def test_import_dry_run_reports_created_existing_split_without_writing(
         {"_local_id": "new_fundo_2", "nome": f"New Fundo 2 {suffix}", "codigo": f"NEWF2-{suffix}"},
     ]
     templates = [
-        _template_record("new_template_1", suffix, 1, offset_dias=1, fundo_id="$existing_fundo"),
+        _template_record("new_template_1", suffix, 1, offset_dias=1, entidade_id="$existing_fundo"),
         _template_record(
             "new_template_2",
             suffix,
             2,
             tipo_geracao="corrido_fixo",
             offset_dias=5,
-            fundo_id="$new_fundo_1",
+            entidade_id="$new_fundo_1",
         ),
         _template_record(
             "new_template_3",
@@ -538,18 +539,18 @@ def test_import_dry_run_reports_created_existing_split_without_writing(
             3,
             tipo_geracao="semanal",
             dia_semana="sexta",
-            fundo_id="$new_fundo_2",
+            entidade_id="$new_fundo_2",
         ),
     ]
 
-    batch_path = _write_batch(tmp_path, {"fundos": fundos, "templatesRotina": templates})
+    batch_path = _write_batch(tmp_path, {"entidades": fundos, "templatesRotina": templates})
 
     result: CliInvocation = run_cli(["import", "--from-json", str(batch_path), "--dry-run"])
     assert result.result.exit_code == 0, result.result.output
     report = cast("dict[str, Any]", result.json_out())
 
-    assert report["fundos"]["existing"] == ["existing_fundo"]
-    assert report["fundos"]["created"] == ["new_fundo_1", "new_fundo_2"]
+    assert report["entidades"]["existing"] == ["existing_fundo"]
+    assert report["entidades"]["created"] == ["new_fundo_1", "new_fundo_2"]
     assert report["templatesRotina"]["existing"] == []
     assert report["templatesRotina"]["created"] == [
         "new_template_1",
@@ -557,8 +558,8 @@ def test_import_dry_run_reports_created_existing_split_without_writing(
         "new_template_3",
     ]
 
-    fundo_rows = _query_fundos_by_codigos(live_client, [f"NEWF1-{suffix}", f"NEWF2-{suffix}"])
-    assert fundo_rows == {}
+    entidade_rows = _query_entidades_by_codigos(live_client, [f"NEWF1-{suffix}", f"NEWF2-{suffix}"])
+    assert entidade_rows == {}
     template_nomes = [f"Template Lote {n} {suffix}" for n in (1, 2, 3)]
     template_rows = _query_templates_by_nomes(live_client, template_nomes)
     assert template_rows == {}
@@ -580,32 +581,32 @@ def test_import_same_file_rerun_reports_everything_existing_no_duplicates(
         {"_local_id": "rerun_f2", "nome": f"Rerun Fundo 2 {suffix}", "codigo": f"RERUNF2-{suffix}"},
     ]
     templates = [
-        _template_record("rerun_t1", suffix, 1, offset_dias=1, fundo_id="$rerun_f1"),
+        _template_record("rerun_t1", suffix, 1, offset_dias=1, entidade_id="$rerun_f1"),
         _template_record(
-            "rerun_t2", suffix, 2, tipo_geracao="corrido_fixo", offset_dias=3, fundo_id="$rerun_f2"
+            "rerun_t2", suffix, 2, tipo_geracao="corrido_fixo", offset_dias=3, entidade_id="$rerun_f2"
         ),
     ]
 
-    batch_path = _write_batch(tmp_path, {"fundos": fundos, "templatesRotina": templates})
+    batch_path = _write_batch(tmp_path, {"entidades": fundos, "templatesRotina": templates})
 
     first: CliInvocation = run_cli(["import", "--from-json", str(batch_path)])
     assert first.result.exit_code == 0, first.result.output
     first_report = cast("dict[str, Any]", first.json_out())
-    assert first_report["fundos"]["created"] == ["rerun_f1", "rerun_f2"]
+    assert first_report["entidades"]["created"] == ["rerun_f1", "rerun_f2"]
     assert first_report["templatesRotina"]["created"] == ["rerun_t1", "rerun_t2"]
 
     second: CliInvocation = run_cli(["import", "--from-json", str(batch_path)])
     assert second.result.exit_code == 0, second.result.output
     second_report = cast("dict[str, Any]", second.json_out())
-    assert second_report["fundos"]["created"] == []
-    assert second_report["fundos"]["existing"] == ["rerun_f1", "rerun_f2"]
+    assert second_report["entidades"]["created"] == []
+    assert second_report["entidades"]["existing"] == ["rerun_f1", "rerun_f2"]
     assert second_report["templatesRotina"]["created"] == []
     assert second_report["templatesRotina"]["existing"] == ["rerun_t1", "rerun_t2"]
 
-    fundo_rows = _query_fundos_by_codigos(live_client, [f"RERUNF1-{suffix}", f"RERUNF2-{suffix}"])
-    assert len(fundo_rows) == 2
-    for row in fundo_rows.values():
-        cleanup_records.append(("fundos", row["id"]))
+    entidade_rows = _query_entidades_by_codigos(live_client, [f"RERUNF1-{suffix}", f"RERUNF2-{suffix}"])
+    assert len(entidade_rows) == 2
+    for row in entidade_rows.values():
+        cleanup_records.append(("entidades", row["id"]))
 
     template_nomes = [f"Template Lote {n} {suffix}" for n in (1, 2)]
     template_rows = _query_templates_by_nomes(live_client, template_nomes)
@@ -616,8 +617,8 @@ def test_import_same_file_rerun_reports_everything_existing_no_duplicates(
     # Exactly one row per natural key on the underlying DB (no duplicate rows
     # created by the second, no-op call).
     for codigo in (f"RERUNF1-{suffix}", f"RERUNF2-{suffix}"):
-        result_rows = live_client.query({"fundos": {"$": {"where": {"codigo": codigo}}}}).get(
-            "fundos", []
+        result_rows = live_client.query({"entidades": {"$": {"where": {"codigo": codigo}}}}).get(
+            "entidades", []
         )
         assert len(result_rows) == 1
     for nome in template_nomes:
@@ -645,8 +646,8 @@ def test_top_level_instanciasrotina_key_rejected_wholesale_c06(
         {"_local_id": "c06_f2", "nome": f"C06 Fundo 2 {suffix}", "codigo": f"C06F2-{suffix}"},
     ]
     templates = [
-        _template_record("c06_t1", suffix, 1, offset_dias=1, fundo_id="$c06_f1"),
-        _template_record("c06_t2", suffix, 2, offset_dias=2, fundo_id="$c06_f2"),
+        _template_record("c06_t1", suffix, 1, offset_dias=1, entidade_id="$c06_f1"),
+        _template_record("c06_t2", suffix, 2, offset_dias=2, entidade_id="$c06_f2"),
     ]
     adversarial_instancias = [
         {
@@ -662,7 +663,7 @@ def test_top_level_instanciasrotina_key_rejected_wholesale_c06(
     batch_path = _write_batch(
         tmp_path,
         {
-            "fundos": fundos,
+            "entidades": fundos,
             "templatesRotina": templates,
             "instanciasRotina": adversarial_instancias,
         },
@@ -679,8 +680,8 @@ def test_top_level_instanciasrotina_key_rejected_wholesale_c06(
         for e in errors
     ), errors
 
-    fundo_rows = _query_fundos_by_codigos(live_client, [f"C06F1-{suffix}", f"C06F2-{suffix}"])
-    assert fundo_rows == {}
+    entidade_rows = _query_entidades_by_codigos(live_client, [f"C06F1-{suffix}", f"C06F2-{suffix}"])
+    assert entidade_rows == {}
     template_nomes = [f"Template Lote {n} {suffix}" for n in (1, 2)]
     template_rows = _query_templates_by_nomes(live_client, template_nomes)
     assert template_rows == {}
@@ -698,30 +699,30 @@ def test_full_onboarding_scale_single_invocation_success_criterion_3(
 ) -> None:
     """ROADMAP Success Criterion 3, literal scale: an 18-fundo/84-template
     batch (the real onboarding shape) — cycling all 4 `tipoGeracao` values
-    and every `regraCompetencia` value, `fundoId` round-robin across the 18
+    and every `regraCompetencia` value, `entidadeId` round-robin across the 18
     fundo local_ids (a handful with none), and 2 disjoint `encadeado`
     chains of 2-3 templates each — completes in exactly ONE
     `apollo import --from-json` invocation, not 102 separate CLI calls."""
     suffix = unique_suffix()
     fundos, templates, chains = _build_scale_batch(suffix, 18, 84)
-    batch_path = _write_batch(tmp_path, {"fundos": fundos, "templatesRotina": templates})
+    batch_path = _write_batch(tmp_path, {"entidades": fundos, "templatesRotina": templates})
 
     result: CliInvocation = run_cli(["import", "--from-json", str(batch_path)])
     assert result.result.exit_code == 0, result.result.output
     report = cast("dict[str, Any]", result.json_out())
 
-    assert len(report["fundos"]["created"]) == 18
-    assert report["fundos"]["existing"] == []
+    assert len(report["entidades"]["created"]) == 18
+    assert report["entidades"]["existing"] == []
     assert len(report["templatesRotina"]["created"]) == 84
     assert report["templatesRotina"]["existing"] == []
 
-    fundo_codigos = [f"LOTE-F{n}-{suffix}" for n in range(1, 19)]
-    fundo_rows = _query_fundos_by_codigos(live_client, fundo_codigos)
-    assert set(fundo_rows) == set(fundo_codigos)
-    for row in fundo_rows.values():
+    entidade_codigos = [f"LOTE-F{n}-{suffix}" for n in range(1, 19)]
+    entidade_rows = _query_entidades_by_codigos(live_client, entidade_codigos)
+    assert set(entidade_rows) == set(entidade_codigos)
+    for row in entidade_rows.values():
         assert row["donoId"] == live_session.user_id
         assert row["ativo"] is True
-        cleanup_records.append(("fundos", row["id"]))
+        cleanup_records.append(("entidades", row["id"]))
 
     template_nomes = [f"Template Lote {n} {suffix}" for n in range(1, 85)]
     template_rows = _query_templates_by_nomes(live_client, template_nomes, with_links=True)
@@ -758,27 +759,27 @@ def test_full_onboarding_scale_rerun_is_fully_existing_success_criterion_2(
     by natural key are unchanged, zero duplicate rows (D-05)."""
     suffix = unique_suffix()
     fundos, templates, _chains = _build_scale_batch(suffix, 18, 84)
-    batch_path = _write_batch(tmp_path, {"fundos": fundos, "templatesRotina": templates})
+    batch_path = _write_batch(tmp_path, {"entidades": fundos, "templatesRotina": templates})
 
     first: CliInvocation = run_cli(["import", "--from-json", str(batch_path)])
     assert first.result.exit_code == 0, first.result.output
     first_report = cast("dict[str, Any]", first.json_out())
-    assert len(first_report["fundos"]["created"]) == 18
+    assert len(first_report["entidades"]["created"]) == 18
     assert len(first_report["templatesRotina"]["created"]) == 84
 
     second: CliInvocation = run_cli(["import", "--from-json", str(batch_path)])
     assert second.result.exit_code == 0, second.result.output
     second_report = cast("dict[str, Any]", second.json_out())
-    assert second_report["fundos"]["created"] == []
-    assert len(second_report["fundos"]["existing"]) == 18
+    assert second_report["entidades"]["created"] == []
+    assert len(second_report["entidades"]["existing"]) == 18
     assert second_report["templatesRotina"]["created"] == []
     assert len(second_report["templatesRotina"]["existing"]) == 84
 
-    fundo_codigos = [f"LOTE-F{n}-{suffix}" for n in range(1, 19)]
-    fundo_rows = _query_fundos_by_codigos(live_client, fundo_codigos)
-    assert len(fundo_rows) == 18
-    for row in fundo_rows.values():
-        cleanup_records.append(("fundos", row["id"]))
+    entidade_codigos = [f"LOTE-F{n}-{suffix}" for n in range(1, 19)]
+    entidade_rows = _query_entidades_by_codigos(live_client, entidade_codigos)
+    assert len(entidade_rows) == 18
+    for row in entidade_rows.values():
+        cleanup_records.append(("entidades", row["id"]))
 
     template_nomes = [f"Template Lote {n} {suffix}" for n in range(1, 85)]
     template_rows = _query_templates_by_nomes(live_client, template_nomes)
@@ -788,7 +789,7 @@ def test_full_onboarding_scale_rerun_is_fully_existing_success_criterion_2(
 
     # Still exactly one row per natural key — the second, no-op call created
     # zero duplicates.
-    _assert_no_duplicate_rows_by_key(live_client, "fundos", "codigo", fundo_codigos)
+    _assert_no_duplicate_rows_by_key(live_client, "entidades", "codigo", entidade_codigos)
     _assert_no_duplicate_rows_by_key(live_client, "templatesRotina", "nome", template_nomes)
 
 
@@ -815,49 +816,49 @@ def test_partial_batch_already_landed_resumes_without_duplication(
     # Pre-seed roughly a third of the batch's natural keys directly,
     # bypassing `apollo import` entirely: 2 of 6 fundos and 5 of 15
     # templates (7 of 21 total natural keys, ~33%) — including one
-    # no-fundoId template (t10) to exercise the (donoId, None, nome) key too.
-    preseeded_fundo_local_ids = ["f1", "f2"]
+    # no-entidadeId template (t10) to exercise the (donoId, None, nome) key too.
+    preseeded_entidade_local_ids = ["f1", "f2"]
     preseeded_template_local_ids = ["t1", "t2", "t7", "t8", "t10"]
 
-    fundo_real_ids: dict[str, str] = {}
-    for local_id in preseeded_fundo_local_ids:
-        fundo_real_ids[local_id] = _seed_fundo(live_client, dono_id, by_local_id[local_id])
+    entidade_real_ids: dict[str, str] = {}
+    for local_id in preseeded_entidade_local_ids:
+        entidade_real_ids[local_id] = _seed_entidade(live_client, dono_id, by_local_id[local_id])
 
     for local_id in preseeded_template_local_ids:
         record = by_local_id[local_id]
-        fundo_ref = record.get("fundoId")
-        fundo_real_id = (
-            fundo_real_ids[fundo_ref[1:]]
-            if isinstance(fundo_ref, str) and fundo_ref.startswith("$")
+        entidade_ref = record.get("entidadeId")
+        entidade_real_id = (
+            entidade_real_ids[entidade_ref[1:]]
+            if isinstance(entidade_ref, str) and entidade_ref.startswith("$")
             else None
         )
-        _seed_template(live_client, dono_id, record, fundo_real_id)
+        _seed_template(live_client, dono_id, record, entidade_real_id)
 
-    batch_path = _write_batch(tmp_path, {"fundos": fundos, "templatesRotina": templates})
+    batch_path = _write_batch(tmp_path, {"entidades": fundos, "templatesRotina": templates})
 
     result: CliInvocation = run_cli(["import", "--from-json", str(batch_path)])
     assert result.result.exit_code == 0, result.result.output
     report = cast("dict[str, Any]", result.json_out())
 
-    all_fundo_local_ids = {f"f{n}" for n in range(1, 7)}
+    all_entidade_local_ids = {f"f{n}" for n in range(1, 7)}
     all_template_local_ids = {f"t{n}" for n in range(1, 16)}
 
-    assert sorted(report["fundos"]["existing"]) == sorted(preseeded_fundo_local_ids)
-    assert sorted(report["fundos"]["created"]) == sorted(
-        all_fundo_local_ids - set(preseeded_fundo_local_ids)
+    assert sorted(report["entidades"]["existing"]) == sorted(preseeded_entidade_local_ids)
+    assert sorted(report["entidades"]["created"]) == sorted(
+        all_entidade_local_ids - set(preseeded_entidade_local_ids)
     )
     assert sorted(report["templatesRotina"]["existing"]) == sorted(preseeded_template_local_ids)
     assert sorted(report["templatesRotina"]["created"]) == sorted(
         all_template_local_ids - set(preseeded_template_local_ids)
     )
 
-    fundo_codigos = [f"LOTE-F{n}-{suffix}" for n in range(1, 7)]
+    entidade_codigos = [f"LOTE-F{n}-{suffix}" for n in range(1, 7)]
     template_nomes = [f"Template Lote {n} {suffix}" for n in range(1, 16)]
 
-    fundo_rows = _query_fundos_by_codigos(live_client, fundo_codigos)
-    assert len(fundo_rows) == 6
-    for row in fundo_rows.values():
-        cleanup_records.append(("fundos", row["id"]))
+    entidade_rows = _query_entidades_by_codigos(live_client, entidade_codigos)
+    assert len(entidade_rows) == 6
+    for row in entidade_rows.values():
+        cleanup_records.append(("entidades", row["id"]))
 
     template_rows = _query_templates_by_nomes(live_client, template_nomes)
     assert len(template_rows) == 15
@@ -867,7 +868,7 @@ def test_partial_batch_already_landed_resumes_without_duplication(
     # Not one natural key (pre-seeded OR newly-created) has more than one
     # matching row — the full-file re-run converged without duplicating a
     # single pre-existing record.
-    _assert_no_duplicate_rows_by_key(live_client, "fundos", "codigo", fundo_codigos)
+    _assert_no_duplicate_rows_by_key(live_client, "entidades", "codigo", entidade_codigos)
     _assert_no_duplicate_rows_by_key(live_client, "templatesRotina", "nome", template_nomes)
 
 
@@ -876,10 +877,10 @@ def test_import_rejects_duplicate_fundo_codigo_within_same_batch(
     live_client: Instant,
     tmp_path: Path,
 ) -> None:
-    """Two fundo records in the SAME batch sharing a `codigo` that doesn't
+    """Two entidade records in the SAME batch sharing a `codigo` that doesn't
     yet exist in the DB are rejected wholesale (CR-01, D-05): without the
     in-batch natural-key check, both would independently resolve as "new" in
-    `_resolve_fundos` and both land in the same `transact()`, creating two
+    `_resolve_entidades` and both land in the same `transact()`, creating two
     rows with an identical `(donoId, codigo)` natural key. Exit 2, zero
     writes, and both colliding `_local_id`s named in the error."""
     suffix = unique_suffix()
@@ -889,7 +890,7 @@ def test_import_rejects_duplicate_fundo_codigo_within_same_batch(
         {"_local_id": "dup_f2", "nome": f"Dup Fundo B {suffix}", "codigo": f"DUPCOD-{suffix}"},
     ]
 
-    batch_path = _write_batch(tmp_path, {"fundos": fundos, "templatesRotina": []})
+    batch_path = _write_batch(tmp_path, {"entidades": fundos, "templatesRotina": []})
 
     result: CliInvocation = run_cli(["import", "--from-json", str(batch_path)])
     assert result.result.exit_code == 2, result.result.output
@@ -900,8 +901,8 @@ def test_import_rejects_duplicate_fundo_codigo_within_same_batch(
     }
     assert colliding_local_ids == {"dup_f1", "dup_f2"}, errors
 
-    fundo_rows = _query_fundos_by_codigos(live_client, [f"DUPCOD-{suffix}"])
-    assert fundo_rows == {}
+    entidade_rows = _query_entidades_by_codigos(live_client, [f"DUPCOD-{suffix}"])
+    assert entidade_rows == {}
 
 
 def test_import_rejects_duplicate_template_natural_key_within_same_batch(
@@ -910,7 +911,7 @@ def test_import_rejects_duplicate_template_natural_key_within_same_batch(
     tmp_path: Path,
 ) -> None:
     """Two templatesRotina records in the SAME batch sharing the identical
-    raw `fundoId` value plus `nome` are rejected wholesale (CR-01, D-05):
+    raw `entidadeId` value plus `nome` are rejected wholesale (CR-01, D-05):
     without the in-batch natural-key check, both would independently resolve
     as "new" in `_resolve_templates` and both land in the same `transact()`,
     creating two rows with an identical resolved `(fundo, nome)` natural
@@ -922,11 +923,11 @@ def test_import_rejects_duplicate_template_natural_key_within_same_batch(
         {"_local_id": "dup_t_fundo", "nome": f"Dup T Fundo {suffix}", "codigo": f"DUPTF-{suffix}"}
     ]
     templates = [
-        _template_record("dup_t1", suffix, 1, offset_dias=1, fundo_id="$dup_t_fundo"),
-        _template_record("dup_t2", suffix, 1, offset_dias=2, fundo_id="$dup_t_fundo"),
+        _template_record("dup_t1", suffix, 1, offset_dias=1, entidade_id="$dup_t_fundo"),
+        _template_record("dup_t2", suffix, 1, offset_dias=2, entidade_id="$dup_t_fundo"),
     ]
 
-    batch_path = _write_batch(tmp_path, {"fundos": fundos, "templatesRotina": templates})
+    batch_path = _write_batch(tmp_path, {"entidades": fundos, "templatesRotina": templates})
 
     result: CliInvocation = run_cli(["import", "--from-json", str(batch_path)])
     assert result.result.exit_code == 2, result.result.output
@@ -937,8 +938,8 @@ def test_import_rejects_duplicate_template_natural_key_within_same_batch(
     }
     assert colliding_local_ids == {"dup_t1", "dup_t2"}, errors
 
-    fundo_rows = _query_fundos_by_codigos(live_client, [f"DUPTF-{suffix}"])
-    assert fundo_rows == {}
+    entidade_rows = _query_entidades_by_codigos(live_client, [f"DUPTF-{suffix}"])
+    assert entidade_rows == {}
     template_rows = _query_templates_by_nomes(live_client, [f"Template Lote 1 {suffix}"])
     assert template_rows == {}
 
@@ -948,9 +949,9 @@ def test_import_rejects_malformed_reference_field_types_as_validation_errors(
     live_client: Instant,
     tmp_path: Path,
 ) -> None:
-    """A non-string `fundoId` (an int) and a non-string `antecessorId` (a
+    """A non-string `entidadeId` (an int) and a non-string `antecessorId` (a
     list) are rejected as clean, zero-write validation errors (WR-01)
-    instead of reaching a live query/transact call (`fundoId`) or silently
+    instead of reaching a live query/transact call (`entidadeId`) or silently
     dropping the intended antecessor chain link (`antecessorId`)."""
     suffix = unique_suffix()
 
@@ -961,7 +962,7 @@ def test_import_rejects_malformed_reference_field_types_as_validation_errors(
             "tipoGeracao": "du_fixo",
             "regraCompetencia": "M0",
             "offsetDias": 1,
-            "fundoId": 123,
+            "entidadeId": 123,
         },
         {
             "_local_id": "bad_antecessor_type",
@@ -973,7 +974,7 @@ def test_import_rejects_malformed_reference_field_types_as_validation_errors(
         },
     ]
 
-    batch_path = _write_batch(tmp_path, {"fundos": [], "templatesRotina": templates})
+    batch_path = _write_batch(tmp_path, {"entidades": [], "templatesRotina": templates})
 
     result: CliInvocation = run_cli(["import", "--from-json", str(batch_path)])
     assert result.result.exit_code == 2, result.result.output
@@ -981,7 +982,7 @@ def test_import_rejects_malformed_reference_field_types_as_validation_errors(
     errors = cast("list[dict[str, Any]]", error_body["errors"])
 
     assert any(
-        e["_local_id"] == "bad_fundo_type" and e["reason"] == "fundo_id_invalido" for e in errors
+        e["_local_id"] == "bad_fundo_type" and e["reason"] == "entidade_id_invalido" for e in errors
     ), errors
     assert any(
         e["_local_id"] == "bad_antecessor_type" and e["reason"] == "antecessor_id_invalido"
@@ -1049,21 +1050,21 @@ def test_import_then_gerar_instancias_end_to_end_integration(
     import-created data is field-compatible with generation, not just
     schema-compatible in isolation."""
     suffix = unique_suffix()
-    fundo = _fundo_record("f1", suffix, 1)
+    fundo = _entidade_record("f1", suffix, 1)
     templates = [
-        _template_record("t-du", suffix, 1, offset_dias=5, fundo_id="$f1"),
+        _template_record("t-du", suffix, 1, offset_dias=5, entidade_id="$f1"),
         _template_record("t-sem", suffix, 2, tipo_geracao="semanal", dia_semana="sexta"),
-        _template_record("t-root", suffix, 3, offset_dias=2, fundo_id="$f1"),
+        _template_record("t-root", suffix, 3, offset_dias=2, entidade_id="$f1"),
         _template_record(
             "t-chain", suffix, 4, tipo_geracao="encadeado", offset_dias=1, antecessor_id="$t-root"
         ),
     ]
-    batch_path = _write_batch(tmp_path, {"fundos": [fundo], "templatesRotina": templates})
+    batch_path = _write_batch(tmp_path, {"entidades": [fundo], "templatesRotina": templates})
 
     import_result: CliInvocation = run_cli(["import", "--from-json", str(batch_path)])
     assert import_result.result.exit_code == 0, import_result.result.output
     import_report = cast("dict[str, Any]", import_result.json_out())
-    assert import_report["fundos"]["created"] == ["f1"]
+    assert import_report["entidades"]["created"] == ["f1"]
     assert set(import_report["templatesRotina"]["created"]) == {
         "t-du",
         "t-sem",
@@ -1071,8 +1072,8 @@ def test_import_then_gerar_instancias_end_to_end_integration(
         "t-chain",
     }
 
-    fundo_row = _query_fundos_by_codigos(live_client, [fundo["codigo"]])[fundo["codigo"]]
-    cleanup_records.append(("fundos", fundo_row["id"]))
+    fundo_row = _query_entidades_by_codigos(live_client, [fundo["codigo"]])[fundo["codigo"]]
+    cleanup_records.append(("entidades", fundo_row["id"]))
     template_nomes = [t["nome"] for t in templates]
     template_rows = _query_templates_by_nomes(live_client, template_nomes)
     template_ids: dict[str, str] = {}
@@ -1128,3 +1129,34 @@ def test_import_then_gerar_instancias_end_to_end_integration(
         # the antecessor link (written by `apollo import`, not `criar`) was
         # correctly followed end-to-end by `gerar-instancias`.
         assert chain_row["dataPrevista"] > root_row["dataPrevista"]
+
+
+def test_import_entidade_without_tipo_entidade_defaults_to_fundo(
+    run_cli: RunCli,
+    live_client: Instant,
+    cleanup_records: list[tuple[str, str]],
+    tmp_path: Path,
+) -> None:
+    """D6 (quick task 260922-vbt): a batch JSON `entidades` record that
+    OMITS `tipoEntidade` entirely still creates successfully, and the
+    resulting entidade's `tipoEntidade` (queried back live) is exactly
+    `"Fundo"` — the one deliberate backward-compat exception for
+    pre-existing batch files written before this rename."""
+    suffix = unique_suffix()
+    entidade = {
+        "_local_id": "d6_no_tipo",
+        "nome": f"D6 Sem Tipo {suffix}",
+        "codigo": f"D6NOTIPO-{suffix}",
+    }
+    assert "tipoEntidade" not in entidade
+
+    batch_path = _write_batch(tmp_path, {"entidades": [entidade], "templatesRotina": []})
+
+    result: CliInvocation = run_cli(["import", "--from-json", str(batch_path)])
+    assert result.result.exit_code == 0, result.result.output
+    report = cast("dict[str, Any]", result.json_out())
+    assert report["entidades"]["created"] == ["d6_no_tipo"]
+
+    row = _query_entidades_by_codigos(live_client, [entidade["codigo"]])[entidade["codigo"]]
+    cleanup_records.append(("entidades", row["id"]))
+    assert row["tipoEntidade"] == "Fundo"

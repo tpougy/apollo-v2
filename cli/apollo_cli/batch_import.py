@@ -1,11 +1,11 @@
-"""`apollo import --from-json <arquivo>` — bulk `fundos` + `templatesRotina`
+"""`apollo import --from-json <arquivo>` — bulk `entidades` + `templatesRotina`
 creation from one JSON batch file (BATCH-01, Phase 31).
 
-Scope is deliberately narrow (D-10): this module creates `fundos` and
+Scope is deliberately narrow (D-10): this module creates `entidades` and
 `templatesRotina` ONLY, never any other entity. In particular it NEVER
 creates an `instanciasRotina` row — it defines no constant referencing that
 entity type anywhere, and `_validate_top_level` rejects any top-level batch
-key other than `fundos`/`templatesRotina` (including a deliberately-crafted
+key other than `entidades`/`templatesRotina` (including a deliberately-crafted
 `instanciasRotina` key) before a single record from ANY list is ever
 processed (T-31-05/C-06). `apollo rotina gerar-instancias` remains the ONLY
 sanctioned creator of `instanciasRotina` records.
@@ -20,13 +20,17 @@ a usage error in kind), and ZERO writes for the whole file, even when only
 one of many records is broken.
 
 Idempotency is by natural key (D-05), never a schema `unique()` constraint
-(neither `fundos.codigo` nor `templatesRotina.nome` has one):
-`fundos`: `(donoId, codigo)`; `templatesRotina`: `(donoId, resolvedFundoId,
-nome)` — `resolvedFundoId` may be `None`, a valid key component, not an
+(neither `entidades.codigo` nor `templatesRotina.nome` has one):
+`entidades`: `(donoId, codigo)`; `templatesRotina`: `(donoId, resolvedEntidadeId,
+nome)` — `resolvedEntidadeId` may be `None`, a valid key component, not an
 error. A matching existing row is reported `existing`, never recreated.
+`tipoEntidade` is OPTIONAL on an `entidades` batch record (quick task
+260922-vbt, CONTEXT.md D6) — defaults to `"Fundo"` at resolution time when
+omitted, never required at validation time; it is never part of the
+`codigo`-only natural key.
 
 Id resolution happens entirely BEFORE any transact (D-06): every `_local_id`
-(fundos and templatesRotina combined) resolves to either an already-existing
+(entidades and templatesRotina combined) resolves to either an already-existing
 real id (natural-key match) or a freshly client-side-`new_id()`-assigned one
 — generalizing `crud_helpers.create_entity`'s single-record idiom to N
 heterogeneous records. This means every `$`-reference, including one
@@ -37,7 +41,7 @@ needed.
 The whole batch's new-only records land in exactly ONE atomic
 `client.transact(chunks)` call (D-07, mirrors `routine_job.py:947-970`'s own
 heterogeneous-chunk + ambiguous-post-send-failure-recovery pattern
-verbatim, substituting `dedupeKey` re-check with `codigo`/`(fundo.id, nome)`
+verbatim, substituting `dedupeKey` re-check with `codigo`/`(entidade.id, nome)`
 re-check): on an ambiguous `(InstantAPIError, httpx.HTTPError)` after
 sending, every attempted natural key is re-queried; if everything attempted
 now resolves, the report is returned as fully `existing` (recovered, not an
@@ -64,9 +68,10 @@ from apollo_cli.routine_job import (
     TIPO_GERACAO_CHOICES,
 )
 
-_ETYPE_FUNDO: Final[str] = "fundos"
+_ETYPE_ENTIDADE: Final[str] = "entidades"
 _ETYPE_TEMPLATE: Final[str] = "templatesRotina"
-_SUPPORTED_TOP_LEVEL_KEYS: Final[frozenset[str]] = frozenset({_ETYPE_FUNDO, _ETYPE_TEMPLATE})
+_SUPPORTED_TOP_LEVEL_KEYS: Final[frozenset[str]] = frozenset({_ETYPE_ENTIDADE, _ETYPE_TEMPLATE})
+_TIPO_ENTIDADE_DEFAULT: Final[str] = "Fundo"
 
 EXIT_VALIDATION_ERROR: Final[int] = 2
 """Deliberately Click's own usage-error value (D-04): a malformed/invalid
@@ -113,10 +118,10 @@ def _validate_top_level(data: object) -> tuple[list[dict[str, Any]], dict[str, l
 
     This is the structural proof this module can never be pointed at
     creating a row of any other entity type (T-31-05/C-06): any key other
-    than `fundos`/`templatesRotina` — including a deliberately-crafted
+    than `entidades`/`templatesRotina` — including a deliberately-crafted
     `instanciasRotina` key — is rejected here, with its own reason code,
     before a single record from ANY list (including the batch's otherwise
-    genuinely-valid `fundos`/`templatesRotina` records) is ever processed.
+    genuinely-valid `entidades`/`templatesRotina` records) is ever processed.
     """
     errors: list[dict[str, Any]] = []
     present: dict[str, list[Any]] = {}
@@ -137,28 +142,36 @@ def _validate_top_level(data: object) -> tuple[list[dict[str, Any]], dict[str, l
     return errors, present
 
 
-def _check_fundo_form(index: int, record: object) -> list[dict[str, Any]]:
+def _check_entidade_form(index: int, record: object) -> list[dict[str, Any]]:
     if not isinstance(record, dict):
-        return [_error(_ETYPE_FUNDO, index, None, "registro_nao_e_objeto")]
+        return [_error(_ETYPE_ENTIDADE, index, None, "registro_nao_e_objeto")]
 
     errors: list[dict[str, Any]] = []
     local_id = _local_id_of(record)
     if local_id is None:
-        errors.append(_error(_ETYPE_FUNDO, index, None, "local_id_ausente"))
+        errors.append(_error(_ETYPE_ENTIDADE, index, None, "local_id_ausente"))
 
     nome = record.get("nome")
     if not isinstance(nome, str) or not nome:
-        errors.append(_error(_ETYPE_FUNDO, index, local_id, "nome_ausente"))
+        errors.append(_error(_ETYPE_ENTIDADE, index, local_id, "nome_ausente"))
 
     codigo = record.get("codigo")
     if not isinstance(codigo, str) or not codigo:
-        errors.append(_error(_ETYPE_FUNDO, index, local_id, "codigo_ausente"))
+        errors.append(_error(_ETYPE_ENTIDADE, index, local_id, "codigo_ausente"))
 
     if "ativo" in record and not isinstance(record["ativo"], bool):
-        errors.append(_error(_ETYPE_FUNDO, index, local_id, "ativo_invalido"))
+        errors.append(_error(_ETYPE_ENTIDADE, index, local_id, "ativo_invalido"))
+
+    # D6: tipoEntidade is OPTIONAL — never required here (the default is
+    # applied at resolution time in `_resolve_entidades`). If present, it
+    # must be a non-empty string.
+    if "tipoEntidade" in record:
+        tipo_entidade = record["tipoEntidade"]
+        if not isinstance(tipo_entidade, str) or not tipo_entidade:
+            errors.append(_error(_ETYPE_ENTIDADE, index, local_id, "tipo_entidade_invalido"))
 
     if "donoId" in record:
-        errors.append(_error(_ETYPE_FUNDO, index, local_id, "donoId_nao_permitido"))
+        errors.append(_error(_ETYPE_ENTIDADE, index, local_id, "donoId_nao_permitido"))
 
     return errors
 
@@ -202,9 +215,11 @@ def _check_template_form(index: int, record: object) -> list[dict[str, Any]]:
     if "propagarAtrasoSoft" in record and not isinstance(record["propagarAtrasoSoft"], bool):
         errors.append(_error(_ETYPE_TEMPLATE, index, local_id, "propagar_atraso_soft_invalido"))
 
-    fundo_id_value = record.get("fundoId")
-    if fundo_id_value is not None and (not isinstance(fundo_id_value, str) or not fundo_id_value):
-        errors.append(_error(_ETYPE_TEMPLATE, index, local_id, "fundo_id_invalido"))
+    entidade_id_value = record.get("entidadeId")
+    if entidade_id_value is not None and (
+        not isinstance(entidade_id_value, str) or not entidade_id_value
+    ):
+        errors.append(_error(_ETYPE_TEMPLATE, index, local_id, "entidade_id_invalido"))
 
     antecessor_id_value = record.get("antecessorId")
     if antecessor_id_value is not None and (
@@ -218,15 +233,15 @@ def _check_template_form(index: int, record: object) -> list[dict[str, Any]]:
     return errors
 
 
-def _check_local_id_uniqueness(fundos: list[Any], templates: list[Any]) -> list[dict[str, Any]]:
+def _check_local_id_uniqueness(entidades: list[Any], templates: list[Any]) -> list[dict[str, Any]]:
     """`_local_id` must be unique across BOTH lists combined (D-03) — any
     value occurring more than once anywhere emits one error PER occurrence,
     not one summary error (D-04's "um erro por registro problemático")."""
     occurrences: dict[str, list[tuple[str, int]]] = defaultdict(list)
-    for index, record in enumerate(fundos):
+    for index, record in enumerate(entidades):
         local_id = _local_id_of(record)
         if local_id is not None:
-            occurrences[local_id].append((_ETYPE_FUNDO, index))
+            occurrences[local_id].append((_ETYPE_ENTIDADE, index))
     for index, record in enumerate(templates):
         local_id = _local_id_of(record)
         if local_id is not None:
@@ -240,16 +255,17 @@ def _check_local_id_uniqueness(fundos: list[Any], templates: list[Any]) -> list[
     return errors
 
 
-def _check_fundo_codigo_uniqueness(fundos: list[Any]) -> list[dict[str, Any]]:
-    """In-batch natural-key collision check (CR-01, D-05): two fundo records
-    sharing a `codigo` that isn't yet in the DB would otherwise both
-    independently resolve as "new" in `_resolve_fundos` and both land in the
-    same `transact()` call, creating two rows with an identical `(donoId,
-    codigo)` natural key. Mirrors `_check_local_id_uniqueness`'s "one error
-    per occurrence" design — every colliding record gets its own error, not
-    a single summary error."""
+def _check_entidade_codigo_uniqueness(entidades: list[Any]) -> list[dict[str, Any]]:
+    """In-batch natural-key collision check (CR-01, D-05): two entidade
+    records sharing a `codigo` that isn't yet in the DB would otherwise both
+    independently resolve as "new" in `_resolve_entidades` and both land in
+    the same `transact()` call, creating two rows with an identical
+    `(donoId, codigo)` natural key (`tipoEntidade` is never part of this
+    key, D2/D5). Mirrors `_check_local_id_uniqueness`'s "one error per
+    occurrence" design — every colliding record gets its own error, not a
+    single summary error."""
     occurrences: dict[str, list[int]] = defaultdict(list)
-    for index, record in enumerate(fundos):
+    for index, record in enumerate(entidades):
         if isinstance(record, dict):
             codigo = record.get("codigo")
             if isinstance(codigo, str) and codigo:
@@ -259,20 +275,20 @@ def _check_fundo_codigo_uniqueness(fundos: list[Any]) -> list[dict[str, Any]]:
     for indices in occurrences.values():
         if len(indices) > 1:
             for index in indices:
-                local_id = _local_id_of(fundos[index])
-                errors.append(_error(_ETYPE_FUNDO, index, local_id, "codigo_duplicado_no_lote"))
+                local_id = _local_id_of(entidades[index])
+                errors.append(_error(_ETYPE_ENTIDADE, index, local_id, "codigo_duplicado_no_lote"))
     return errors
 
 
 def _check_template_natural_key_uniqueness(templates: list[Any]) -> list[dict[str, Any]]:
     """In-batch natural-key collision check (CR-01, D-05) for
-    `templatesRotina`, keyed on the RAW `fundoId` field value as written
+    `templatesRotina`, keyed on the RAW `entidadeId` field value as written
     (a bare/real id string, a `$local_id` reference, or absent) plus `nome`
     — NOT the resolved real id, since this runs in the form-validation pass,
     before `$local_id` resolution happens. Two sibling records writing the
-    identical raw `fundoId` value (the common same-batch-collision shape)
+    identical raw `entidadeId` value (the common same-batch-collision shape)
     still collide correctly under this key. Without this check, two
-    templates sharing a resolved `(fundoId, nome)` pair that isn't yet in
+    templates sharing a resolved `(entidadeId, nome)` pair that isn't yet in
     the DB would both independently resolve as "new" in `_resolve_templates`
     and both land in the same `transact()` call."""
     occurrences: dict[tuple[object, str], list[int]] = defaultdict(list)
@@ -282,12 +298,14 @@ def _check_template_natural_key_uniqueness(templates: list[Any]) -> list[dict[st
         nome = record.get("nome")
         if not isinstance(nome, str) or not nome:
             continue
-        fundo_id_value = record.get("fundoId")
-        # `fundo_id_value` may be an unhashable malformed type (e.g. a
+        entidade_id_value = record.get("entidadeId")
+        # `entidade_id_value` may be an unhashable malformed type (e.g. a
         # list) — WR-01's own form check flags that separately; here it
         # only needs a stable, collision-safe key component, never a crash.
         key_component = (
-            fundo_id_value if isinstance(fundo_id_value, (str, type(None))) else id(fundo_id_value)
+            entidade_id_value
+            if isinstance(entidade_id_value, (str, type(None)))
+            else id(entidade_id_value)
         )
         occurrences[(key_component, nome)].append(index)
 
@@ -301,7 +319,7 @@ def _check_template_natural_key_uniqueness(templates: list[Any]) -> list[dict[st
 
 
 def _check_references(
-    templates: list[Any], fundo_local_ids: set[str], template_local_ids: set[str]
+    templates: list[Any], entidade_local_ids: set[str], template_local_ids: set[str]
 ) -> list[dict[str, Any]]:
     """Defensive against fields a form check already flagged (`.get()`,
     never raises `KeyError`). A `$`-prefixed value must resolve to a
@@ -315,21 +333,23 @@ def _check_references(
             continue
         local_id = _local_id_of(record)
 
-        fundo_ref = _reference_value_kind(record.get("fundoId"))
-        if fundo_ref is not None:
-            kind, ref_value = fundo_ref
+        entidade_ref = _reference_value_kind(record.get("entidadeId"))
+        if entidade_ref is not None:
+            kind, ref_value = entidade_ref
             if kind == "local":
-                if ref_value not in fundo_local_ids:
+                if ref_value not in entidade_local_ids:
                     errors.append(
                         _error(
                             _ETYPE_TEMPLATE,
                             index,
                             local_id,
-                            "fundo_id_referencia_local_nao_encontrada",
+                            "entidade_id_referencia_local_nao_encontrada",
                         )
                     )
-            elif get_entity(etype=_ETYPE_FUNDO, eid=ref_value) is None:
-                errors.append(_error(_ETYPE_TEMPLATE, index, local_id, "fundo_id_nao_encontrado"))
+            elif get_entity(etype=_ETYPE_ENTIDADE, eid=ref_value) is None:
+                errors.append(
+                    _error(_ETYPE_TEMPLATE, index, local_id, "entidade_id_nao_encontrado")
+                )
 
         antecessor_ref = _reference_value_kind(record.get("antecessorId"))
         if antecessor_ref is not None:
@@ -412,21 +432,21 @@ def _emit_validation_errors(errors: list[dict[str, Any]]) -> NoReturn:
 # ---------------------------------------------------------------------------
 
 
-def _resolve_fundos(
-    client: Instant, dono_id: str, fundos: list[dict[str, Any]]
+def _resolve_entidades(
+    client: Instant, dono_id: str, entidades: list[dict[str, Any]]
 ) -> tuple[dict[str, str], list[str], list[str], list[tuple[str, dict[str, Any]]]]:
     """Returns `(local_id_to_real_id, created_local_ids, existing_local_ids,
     to_create)` — `to_create` is `[(new_id, create_fields), ...]`,
     `create_fields` never containing `donoId` (injected once at
     chunk-build time, never per-record)."""
-    codigos = [record["codigo"] for record in fundos]
+    codigos = [record["codigo"] for record in entidades]
     existing_by_codigo: dict[str, str] = {}
     if codigos:
         with instant_errors():
             result = client.query(
-                {"fundos": {"$": {"where": {"codigo": {"$in": codigos}, "donoId": dono_id}}}}
+                {"entidades": {"$": {"where": {"codigo": {"$in": codigos}, "donoId": dono_id}}}}
             )
-        for row in result.get("fundos", []):
+        for row in result.get("entidades", []):
             existing_by_codigo[row["codigo"]] = row["id"]
 
     local_id_to_real_id: dict[str, str] = {}
@@ -434,7 +454,7 @@ def _resolve_fundos(
     existing_local_ids: list[str] = []
     to_create: list[tuple[str, dict[str, Any]]] = []
 
-    for record in fundos:
+    for record in entidades:
         local_id = record["_local_id"]
         codigo = record["codigo"]
         existing_id = existing_by_codigo.get(codigo)
@@ -448,6 +468,7 @@ def _resolve_fundos(
         fields = {
             "nome": record["nome"],
             "codigo": codigo,
+            "tipoEntidade": record.get("tipoEntidade", _TIPO_ENTIDADE_DEFAULT),
             "ativo": record.get("ativo", True),
             "createdAt": now_iso(),
         }
@@ -456,48 +477,48 @@ def _resolve_fundos(
     return local_id_to_real_id, created_local_ids, existing_local_ids, to_create
 
 
-def _resolved_fundo_id(
-    record: dict[str, Any], fundo_local_id_to_real_id: dict[str, str]
+def _resolved_entidade_id(
+    record: dict[str, Any], entidade_local_id_to_real_id: dict[str, str]
 ) -> str | None:
-    fundo_id_value = record.get("fundoId")
-    if fundo_id_value is None:
+    entidade_id_value = record.get("entidadeId")
+    if entidade_id_value is None:
         return None
-    if isinstance(fundo_id_value, str) and fundo_id_value.startswith("$"):
-        return fundo_local_id_to_real_id[fundo_id_value[1:]]
-    return fundo_id_value
+    if isinstance(entidade_id_value, str) and entidade_id_value.startswith("$"):
+        return entidade_local_id_to_real_id[entidade_id_value[1:]]
+    return entidade_id_value
 
 
 def _resolve_templates(
     client: Instant,
     dono_id: str,
     templates: list[dict[str, Any]],
-    fundo_local_id_to_real_id: dict[str, str],
+    entidade_local_id_to_real_id: dict[str, str],
 ) -> tuple[dict[str, str], list[str], list[str], list[tuple[str, dict[str, Any], dict[str, str]]]]:
     """Returns `(local_id_to_real_id, created_local_ids, existing_local_ids,
     to_create)` — `to_create` is `[(new_id, create_fields, links), ...]`.
-    Requires fundos already resolved (`fundo_local_id_to_real_id`): every
-    template's `fundo.id`-scoped existence query depends on it, and a
-    same-batch `antecessorId` reference (to a template that may itself be
+    Requires entidades already resolved (`entidade_local_id_to_real_id`):
+    every template's `entidade.id`-scoped existence query depends on it, and
+    a same-batch `antecessorId` reference (to a template that may itself be
     new OR existing) is resolved in a SECOND pass below, once every
     template's own `local_id_to_real_id` entry is known — no topological
     sort needed (D-06), regardless of file order.
     """
     groups: dict[str | None, list[dict[str, Any]]] = defaultdict(list)
     for record in templates:
-        groups[_resolved_fundo_id(record, fundo_local_id_to_real_id)].append(record)
+        groups[_resolved_entidade_id(record, entidade_local_id_to_real_id)].append(record)
 
     existing_by_key: dict[tuple[str | None, str], str] = {}
 
-    for fundo_id, group_records in groups.items():
+    for entidade_id, group_records in groups.items():
         nomes = [record["nome"] for record in group_records]
-        if fundo_id is not None:
+        if entidade_id is not None:
             with instant_errors():
                 result = client.query(
                     {
                         "templatesRotina": {
                             "$": {
                                 "where": {
-                                    "fundo.id": fundo_id,
+                                    "entidade.id": entidade_id,
                                     "nome": {"$in": nomes},
                                     "donoId": dono_id,
                                 }
@@ -506,21 +527,21 @@ def _resolve_templates(
                     }
                 )
             for row in result.get("templatesRotina", []):
-                existing_by_key[(fundo_id, row["nome"])] = row["id"]
+                existing_by_key[(entidade_id, row["nome"])] = row["id"]
         else:
-            # No-fundo group (D-05's `(donoId, None, nome)` key): fetch every
-            # donoId-scoped template with `fundo` expanded and filter
-            # client-side for an absent link — RESEARCH.md's documented
-            # fallback for the untested `$isNull` operator, the same
-            # falsy-or-absent idiom `rotina.py`'s `limpar_orfas` already
+            # No-entidade group (D-05's `(donoId, None, nome)` key): fetch
+            # every donoId-scoped template with `entidade` expanded and
+            # filter client-side for an absent link — RESEARCH.md's
+            # documented fallback for the untested `$isNull` operator, the
+            # same falsy-or-absent idiom `rotina.py`'s `limpar_orfas` already
             # uses for orphan detection.
             with instant_errors():
                 result = client.query(
-                    {"templatesRotina": {"fundo": {}, "$": {"where": {"donoId": dono_id}}}}
+                    {"templatesRotina": {"entidade": {}, "$": {"where": {"donoId": dono_id}}}}
                 )
             nomes_set = set(nomes)
             for row in result.get("templatesRotina", []):
-                if row.get("fundo"):
+                if row.get("entidade"):
                     continue
                 if row["nome"] in nomes_set:
                     existing_by_key[(None, row["nome"])] = row["id"]
@@ -532,8 +553,8 @@ def _resolve_templates(
 
     for record in templates:
         local_id = record["_local_id"]
-        fundo_id = _resolved_fundo_id(record, fundo_local_id_to_real_id)
-        key = (fundo_id, record["nome"])
+        entidade_id = _resolved_entidade_id(record, entidade_local_id_to_real_id)
+        key = (entidade_id, record["nome"])
         existing_id = existing_by_key.get(key)
         if existing_id is not None:
             local_id_to_real_id[local_id] = existing_id
@@ -561,9 +582,9 @@ def _resolve_templates(
     to_create: list[tuple[str, dict[str, Any], dict[str, str]]] = []
     for eid, fields, record in pending_create:
         links: dict[str, str] = {}
-        fundo_id = _resolved_fundo_id(record, fundo_local_id_to_real_id)
-        if fundo_id is not None:
-            links["fundo"] = fundo_id
+        entidade_id = _resolved_entidade_id(record, entidade_local_id_to_real_id)
+        if entidade_id is not None:
+            links["entidade"] = entidade_id
         antecessor_value = record.get("antecessorId")
         if isinstance(antecessor_value, str) and antecessor_value:
             if antecessor_value.startswith("$"):
@@ -591,7 +612,7 @@ def run_batch_import(
     `EXIT_VALIDATION_ERROR` (2) — zero writes, full error list, never
     fail-fast.
 
-    On success: returns `{"fundos": {"created": [...], "existing": [...]},
+    On success: returns `{"entidades": {"created": [...], "existing": [...]},
     "templatesRotina": {"created": [...], "existing": [...]}}` — every list
     holds sorted `_local_id`s (never real InstantDB ids), for human
     traceability against what the operator wrote (D-08).
@@ -621,39 +642,42 @@ def run_batch_import(
         _emit_validation_errors([_error("_arquivo", None, None, "json_invalido")])
 
     top_level_errors, present = _validate_top_level(data)
-    fundos = present.get(_ETYPE_FUNDO, [])
+    entidades = present.get(_ETYPE_ENTIDADE, [])
     templates = present.get(_ETYPE_TEMPLATE, [])
 
     errors: list[dict[str, Any]] = list(top_level_errors)
-    for index, record in enumerate(fundos):
-        errors.extend(_check_fundo_form(index, record))
+    for index, record in enumerate(entidades):
+        errors.extend(_check_entidade_form(index, record))
     for index, record in enumerate(templates):
         errors.extend(_check_template_form(index, record))
-    errors.extend(_check_local_id_uniqueness(fundos, templates))
-    errors.extend(_check_fundo_codigo_uniqueness(fundos))
+    errors.extend(_check_local_id_uniqueness(entidades, templates))
+    errors.extend(_check_entidade_codigo_uniqueness(entidades))
     errors.extend(_check_template_natural_key_uniqueness(templates))
 
-    fundo_local_ids = {
-        local_id for record in fundos if (local_id := _local_id_of(record)) is not None
+    entidade_local_ids = {
+        local_id for record in entidades if (local_id := _local_id_of(record)) is not None
     }
     template_local_ids = {
         local_id for record in templates if (local_id := _local_id_of(record)) is not None
     }
-    errors.extend(_check_references(templates, fundo_local_ids, template_local_ids))
+    errors.extend(_check_references(templates, entidade_local_ids, template_local_ids))
     errors.extend(_check_antecessor_cycles(templates))
 
     if errors:
         _emit_validation_errors(errors)
 
-    fundo_id_map, fundos_created, fundos_existing, fundos_to_create = _resolve_fundos(
-        client, dono_id, fundos
+    entidade_id_map, entidades_created, entidades_existing, entidades_to_create = (
+        _resolve_entidades(client, dono_id, entidades)
     )
     _template_id_map, templates_created, templates_existing, templates_to_create = (
-        _resolve_templates(client, dono_id, templates, fundo_id_map)
+        _resolve_templates(client, dono_id, templates, entidade_id_map)
     )
 
     report: dict[str, Any] = {
-        "fundos": {"created": sorted(fundos_created), "existing": sorted(fundos_existing)},
+        "entidades": {
+            "created": sorted(entidades_created),
+            "existing": sorted(entidades_existing),
+        },
         "templatesRotina": {
             "created": sorted(templates_created),
             "existing": sorted(templates_existing),
@@ -664,8 +688,8 @@ def run_batch_import(
         return report
 
     chunks: list[Any] = [
-        client.tx[_ETYPE_FUNDO][eid].create(fields | {"donoId": dono_id})
-        for eid, fields in fundos_to_create
+        client.tx[_ETYPE_ENTIDADE][eid].create(fields | {"donoId": dono_id})
+        for eid, fields in entidades_to_create
     ] + [
         (
             client.tx[_ETYPE_TEMPLATE][eid].create(fields | {"donoId": dono_id}).link(links)
@@ -687,17 +711,20 @@ def run_batch_import(
         # `existing`, recovered, never re-raise. Anything still missing is a
         # genuine failure, propagated via instant_errors()'s standard
         # api_error/network JSON + exit 3/4 contract.
-        recheck_fundo_map, _rf_created, _rf_existing, recheck_fundos_to_create = _resolve_fundos(
-            client, dono_id, fundos
+        recheck_entidade_map, _re_created, _re_existing, recheck_entidades_to_create = (
+            _resolve_entidades(client, dono_id, entidades)
         )
         _rt_map, _rt_created, _rt_existing, recheck_templates_to_create = _resolve_templates(
-            client, dono_id, templates, recheck_fundo_map
+            client, dono_id, templates, recheck_entidade_map
         )
-        if recheck_fundos_to_create or recheck_templates_to_create:
+        if recheck_entidades_to_create or recheck_templates_to_create:
             with instant_errors():
                 raise
         return {
-            "fundos": {"created": [], "existing": sorted(fundos_created + fundos_existing)},
+            "entidades": {
+                "created": [],
+                "existing": sorted(entidades_created + entidades_existing),
+            },
             "templatesRotina": {
                 "created": [],
                 "existing": sorted(templates_created + templates_existing),

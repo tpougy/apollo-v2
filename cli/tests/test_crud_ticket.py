@@ -20,21 +20,32 @@ from tests.conftest import CliInvocation, RunCli, unique_suffix
 pytestmark = pytest.mark.live
 
 
-def _query_ticket(client: Instant, eid: str, *, with_fundo: bool = False) -> dict[str, Any] | None:
-    sub_query: dict[str, Any] = {"fundo": {}} if with_fundo else {}
+def _query_ticket(
+    client: Instant, eid: str, *, with_entidade: bool = False
+) -> dict[str, Any] | None:
+    sub_query: dict[str, Any] = {"entidade": {}} if with_entidade else {}
     result = client.query({"tickets": {**sub_query, "$": {"where": {"id": eid}}}})
     rows = result.get("tickets", [])
     return rows[0] if rows else None
 
 
-def _create_fundo(run_cli: RunCli, cleanup_records: list[tuple[str, str]], suffix: str) -> str:
-    fundo_result: CliInvocation = run_cli(
-        ["fundo", "criar", "--nome", f"Fundo p/ Ticket {suffix}", "--codigo", f"TCK-{suffix}"]
+def _create_entidade(run_cli: RunCli, cleanup_records: list[tuple[str, str]], suffix: str) -> str:
+    entidade_result: CliInvocation = run_cli(
+        [
+            "entidade",
+            "criar",
+            "--nome",
+            f"Fundo p/ Ticket {suffix}",
+            "--codigo",
+            f"TCK-{suffix}",
+            "--tipo-entidade",
+            "Fundo",
+        ]
     )
-    assert fundo_result.result.exit_code == 0, fundo_result.result.output
-    fundo_id = cast("dict[str, Any]", fundo_result.json_out())["id"]
-    cleanup_records.append(("fundos", fundo_id))
-    return fundo_id
+    assert entidade_result.result.exit_code == 0, entidade_result.result.output
+    entidade_id = cast("dict[str, Any]", entidade_result.json_out())["id"]
+    cleanup_records.append(("entidades", entidade_id))
+    return entidade_id
 
 
 def test_full_crud_round_trip(
@@ -44,7 +55,7 @@ def test_full_crud_round_trip(
     cleanup_records: list[tuple[str, str]],
 ) -> None:
     suffix = unique_suffix()
-    fundo_id = _create_fundo(run_cli, cleanup_records, suffix)
+    entidade_id = _create_entidade(run_cli, cleanup_records, suffix)
 
     titulo = f"Ticket Teste {suffix}"
     criar_result: CliInvocation = run_cli(
@@ -63,8 +74,8 @@ def test_full_crud_round_trip(
             "hard",
             "--status",
             "novo",
-            "--fundo-id",
-            fundo_id,
+            "--entidade-id",
+            entidade_id,
         ]
     )
     assert criar_result.result.exit_code == 0, criar_result.result.output
@@ -72,8 +83,8 @@ def test_full_crud_round_trip(
     cleanup_records.append(("tickets", eid))
 
     # read back: donoId, all required fields round-trip, no timezone shift,
-    # dataPrevista absent (not null), fundo link resolves
-    record = _query_ticket(live_client, eid, with_fundo=True)
+    # dataPrevista absent (not null), entidade link resolves
+    record = _query_ticket(live_client, eid, with_entidade=True)
     assert record is not None
     assert record["donoId"] == live_session.user_id
     assert record["titulo"] == titulo
@@ -83,19 +94,21 @@ def test_full_crud_round_trip(
     assert record["tipoPrazo"] == "hard"
     assert record["status"] == "novo"
     assert "dataPrevista" not in record
-    linked_fundo = record.get("fundo")
-    if isinstance(linked_fundo, list):
-        assert len(linked_fundo) == 1
-        linked_fundo = linked_fundo[0]
-    assert linked_fundo is not None
-    assert linked_fundo["id"] == fundo_id
+    linked_entidade = record.get("entidade")
+    if isinstance(linked_entidade, list):
+        assert len(linked_entidade) == 1
+        linked_entidade = linked_entidade[0]
+    assert linked_entidade is not None
+    assert linked_entidade["id"] == entidade_id
 
-    # listar --fundo-id and --status filter correctly
-    filtered_by_fundo: CliInvocation = run_cli(["ticket", "listar", "--fundo-id", fundo_id])
-    assert filtered_by_fundo.result.exit_code == 0, filtered_by_fundo.result.output
-    by_fundo = cast("list[dict[str, Any]]", filtered_by_fundo.json_out())
-    assert len(by_fundo) == 1
-    assert by_fundo[0]["id"] == eid
+    # listar --entidade-id and --status filter correctly
+    filtered_by_entidade: CliInvocation = run_cli(
+        ["ticket", "listar", "--entidade-id", entidade_id]
+    )
+    assert filtered_by_entidade.result.exit_code == 0, filtered_by_entidade.result.output
+    by_entidade = cast("list[dict[str, Any]]", filtered_by_entidade.json_out())
+    assert len(by_entidade) == 1
+    assert by_entidade[0]["id"] == eid
 
     filtered_by_status: CliInvocation = run_cli(["ticket", "listar", "--status", "novo"])
     assert filtered_by_status.result.exit_code == 0, filtered_by_status.result.output
@@ -128,7 +141,7 @@ def test_full_crud_round_trip(
     assert _query_ticket(live_client, eid) is None
 
 
-def test_criar_with_unknown_fundo_id_is_parent_not_found(
+def test_criar_with_unknown_entidade_id_is_parent_not_found(
     run_cli: RunCli, live_client: Instant
 ) -> None:
     phantom_id = str(uuid.uuid4())
@@ -149,7 +162,7 @@ def test_criar_with_unknown_fundo_id_is_parent_not_found(
             "soft",
             "--status",
             "novo",
-            "--fundo-id",
+            "--entidade-id",
             phantom_id,
         ]
     )

@@ -58,10 +58,11 @@ def test_guest_write_is_denied_with_permission_denied() -> None:
 
     with pytest.raises(InstantAPIError) as exc_info:
         client.transact(
-            client.tx.fundos[new_id()].create(
+            client.tx.entidades[new_id()].create(
                 {
                     "nome": "Guest Probe",
                     "codigo": "GUEST-PROBE",
+                    "tipoEntidade": "Fundo",
                     "ativo": True,
                     "createdAt": now_iso(),
                     "donoId": "anyone",
@@ -86,10 +87,11 @@ def test_nonexistent_refresh_token_write_is_rejected() -> None:
 
     with pytest.raises(InstantAPIError):
         client.transact(
-            client.tx.fundos[new_id()].create(
+            client.tx.entidades[new_id()].create(
                 {
                     "nome": "Fake Token Probe",
                     "codigo": "FAKE-PROBE",
+                    "tipoEntidade": "Fundo",
                     "ativo": True,
                     "createdAt": now_iso(),
                     "donoId": fake_session.user_id,
@@ -109,10 +111,11 @@ def test_mismatched_donoid_is_denied_even_with_a_real_session(live_session: Sess
 
     with pytest.raises(InstantAPIError) as exc_info:
         client.transact(
-            client.tx.fundos[new_id()].create(
+            client.tx.entidades[new_id()].create(
                 {
                     "nome": "Mismatched Owner Probe",
                     "codigo": "MISMATCH-PROBE",
+                    "tipoEntidade": "Fundo",
                     "ativo": True,
                     "createdAt": now_iso(),
                     "donoId": other_user_id,
@@ -129,7 +132,7 @@ def test_mismatched_donoid_is_denied_even_with_a_real_session(live_session: Sess
 def test_cli_criar_with_no_session_file_exits_1_with_no_session_error(tmp_path: Path) -> None:
     nonexistent = tmp_path / "does-not-exist" / "session"
     completed = subprocess.run(
-        ["uv", "run", "apollo", "fundo", "criar", "--nome", "A", "--codigo", "B"],
+        ["uv", "run", "apollo", "entidade", "criar", "--nome", "A", "--codigo", "B", "--tipo-entidade", "Fundo"],
         cwd=str(_cli_dir()),
         capture_output=True,
         text=True,
@@ -162,7 +165,7 @@ def test_cli_criar_with_invalid_session_rejects_and_creates_nothing(
     unique_nome = f"Invalid Session Probe {uuid.uuid4()}"
 
     completed = subprocess.run(
-        ["uv", "run", "apollo", "fundo", "criar", "--nome", unique_nome, "--codigo", "BOGUS"],
+        ["uv", "run", "apollo", "entidade", "criar", "--nome", unique_nome, "--codigo", "BOGUS", "--tipo-entidade", "Fundo"],
         cwd=str(_cli_dir()),
         capture_output=True,
         text=True,
@@ -174,8 +177,8 @@ def test_cli_criar_with_invalid_session_rejects_and_creates_nothing(
     error_body = json.loads(completed.stderr)
     assert "error" in error_body
 
-    result = live_client.query({"fundos": {"$": {"where": {"nome": unique_nome}}}})
-    assert result.get("fundos", []) == []
+    result = live_client.query({"entidades": {"$": {"where": {"nome": unique_nome}}}})
+    assert result.get("entidades", []) == []
 
 
 # --- 6. Empty-list is NOT proof (documentation-as-test) ---------------------
@@ -189,7 +192,7 @@ def test_listar_with_no_session_exits_1_before_ever_querying(tmp_path: Path) -> 
     # only valid CLI-11 evidence regardless of this command's future shape.
     nonexistent = tmp_path / "does-not-exist" / "session"
     completed = subprocess.run(
-        ["uv", "run", "apollo", "fundo", "listar"],
+        ["uv", "run", "apollo", "entidade", "listar"],
         cwd=str(_cli_dir()),
         capture_output=True,
         text=True,

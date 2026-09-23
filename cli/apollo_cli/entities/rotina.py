@@ -24,7 +24,7 @@ grep-verified to be absent here — because it is injected exclusively by
 `crud_helpers.create_entity`/`update_entity` from the authenticated session,
 never from a CLI flag or a local literal.
 
-`--fundo-id` and `--antecessor-id`, when supplied, are each validated with
+`--entidade-id` and `--antecessor-id`, when supplied, are each validated with
 `get_entity` before being merged into `links` — InstantDB does not check
 link targets exist, so an unchecked link would happily write a dangling
 reference. `--antecessor-id` writes the `templateAntecessor` self-link
@@ -74,7 +74,7 @@ from apollo_cli.routine_job import (
 
 _ETYPE_TEMPLATE = "templatesRotina"
 _ETYPE_INSTANCIA = "instanciasRotina"
-_ETYPE_FUNDO = "fundos"
+_ETYPE_ENTIDADE = "entidades"
 _COMPETENCIA_RE: Final[re.Pattern[str]] = re.compile(r"^\d{4}-\d{2}$")
 # D-01/WR-01: exit code 5 for the "template has linked instancias, --force
 # not passed" guard — deliberately distinct from crud_helpers.EXIT_API_ERROR
@@ -250,9 +250,9 @@ group.add_command(instancia)
     help="Whether the template is active (eligible for generation). Defaults to --ativo.",
 )
 @click.option(
-    "--fundo-id",
+    "--entidade-id",
     default=None,
-    help="Optional id of a `fundo` to link this template to. Must already exist.",
+    help="Optional id of an `entidade` to link this template to. Must already exist.",
 )
 @click.option(
     "--antecessor-id",
@@ -296,7 +296,7 @@ def criar(
     regra_competencia: str,
     propagar_atraso_soft: bool,
     ativo: bool,
-    fundo_id: str | None,
+    entidade_id: str | None,
     antecessor_id: str | None,
     offset_dias: int | None,
     dia_semana: str | None,
@@ -304,7 +304,7 @@ def criar(
     """Create a routine template. The owner comes from the authenticated
     session — it cannot be supplied as a flag."""
     links = _merge_links(
-        _resolve_ref(etype=_ETYPE_FUNDO, eid=fundo_id, link_label="fundo"),
+        _resolve_ref(etype=_ETYPE_ENTIDADE, eid=entidade_id, link_label="entidade"),
         _resolve_ref(etype=_ETYPE_TEMPLATE, eid=antecessor_id, link_label="antecessor"),
     )
     eid = create_entity(
@@ -353,9 +353,9 @@ def criar(
     help="New active/inactive state. Omit to leave unchanged.",
 )
 @click.option(
-    "--fundo-id",
+    "--entidade-id",
     default=None,
-    help="New id of a `fundo` to link this template to. Must already exist.",
+    help="New id of an `entidade` to link this template to. Must already exist.",
 )
 @click.option(
     "--antecessor-id",
@@ -396,7 +396,7 @@ def editar(
     regra_competencia: str | None,
     propagar_atraso_soft: bool | None,
     ativo: bool | None,
-    fundo_id: str | None,
+    entidade_id: str | None,
     antecessor_id: str | None,
     offset_dias: int | None,
     dia_semana: str | None,
@@ -405,7 +405,7 @@ def editar(
     here. Boolean flags default to unset (`None`) so omitting a flag never
     silently resets `ativo` or `propagarAtrasoSoft`."""
     links = _merge_links(
-        _resolve_ref(etype=_ETYPE_FUNDO, eid=fundo_id, link_label="fundo"),
+        _resolve_ref(etype=_ETYPE_ENTIDADE, eid=entidade_id, link_label="entidade"),
         _resolve_ref(etype=_ETYPE_TEMPLATE, eid=antecessor_id, link_label="antecessor"),
     )
     update_entity(
@@ -505,16 +505,16 @@ def deletar(eid: str, force: bool) -> None:
 
 
 @template.command()
-@click.option("--fundo-id", default=None, help="Filter to templates of exactly this fundo.")
+@click.option("--entidade-id", default=None, help="Filter to templates of exactly this entidade.")
 @click.option(
     "--ativo/--inativo",
     default=None,
     help="Filter by active/inactive state. Omit to return both.",
 )
 @click.option("--limit", type=int, default=None, help="Maximum number of records to return.")
-def listar(fundo_id: str | None, ativo: bool | None, limit: int | None) -> None:
+def listar(entidade_id: str | None, ativo: bool | None, limit: int | None) -> None:
     """List routine templates visible to the authenticated session."""
-    where = drop_none({"fundo.id": fundo_id, "ativo": ativo})
+    where = drop_none({"entidade.id": entidade_id, "ativo": ativo})
     records = list_entities(etype=_ETYPE_TEMPLATE, where=where, limit=limit)
     emit(records)
 

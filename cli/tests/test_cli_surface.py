@@ -32,12 +32,23 @@ from apollo_cli.config import find_repo_root
 # `len(names) >= 9` assertion below), never silently match zero entities.
 _ENTITY_RE = re.compile(r"^\s{4}(\w+): i\.entity\(", re.MULTILINE)
 
+# TRANSITIONAL (quick task 260922-vbt): `fundos` is additively kept in
+# `shared/instant.schema.ts` only until this quick task's own Task 4
+# destructive schema push lands (see PLAN.md's `<objective>` sequencing
+# rationale) -- `apollo fundo` no longer exists after this task's rename, but
+# the schema still declares `fundos` through Task 2/3. Filtered out of
+# `_schema_entity_names()`'s returned list below so
+# `test_schema_entity_coverage[fundos]` doesn't fail with "schema entity
+# 'fundos' has no CLI coverage mapping". Remove this constant and its two
+# usages entirely once Task 4's destructive push ships.
+_PENDING_SCHEMA_REMOVAL: frozenset[str] = frozenset({"fundos"})
+
 # entity name -> (click command path under `apollo`, required command names,
 # exact_match). `exact_match=True` means the entity's command set must equal
 # `required` exactly (no criar/deletar may ever be added); otherwise
 # `required` must be a subset of the actual command set.
 EXPECTED_SURFACE: dict[str, tuple[list[str], set[str], bool]] = {
-    "fundos": (["fundo"], {"criar", "editar", "deletar", "listar"}, False),
+    "entidades": (["entidade"], {"criar", "editar", "deletar", "listar"}, False),
     "projetos": (["projeto"], {"criar", "editar", "deletar", "listar"}, False),
     "etapas": (["etapa"], {"criar", "editar", "deletar", "listar"}, False),
     "tarefas": (["tarefa"], {"criar", "editar", "deletar", "listar"}, False),
@@ -61,7 +72,7 @@ def _schema_entity_names() -> list[str]:
         f"expected >= 9 entities in {schema_path} matching {_ENTITY_RE.pattern!r}, "
         f"found {len(names)}: {names} -- the schema's formatting may have changed"
     )
-    return names
+    return [name for name in names if name not in _PENDING_SCHEMA_REMOVAL]
 
 
 def _resolve_group(path: list[str]) -> click.Group:
@@ -110,6 +121,16 @@ def test_expected_surface_has_no_stale_entries() -> None:
     schema_names = set(_schema_entity_names())
     stale = set(EXPECTED_SURFACE) - schema_names
     assert not stale, f"EXPECTED_SURFACE has entries not in the schema: {sorted(stale)}"
+
+
+def test_expected_surface_never_carries_a_pending_removal_key() -> None:
+    """Catches forgetting to also drop the old key when replacing it (e.g.
+    keeping `"fundos"` in `EXPECTED_SURFACE` after adding `"entidades"`)."""
+    leaked = _PENDING_SCHEMA_REMOVAL & set(EXPECTED_SURFACE)
+    assert not leaked, (
+        f"EXPECTED_SURFACE still has transitional-removal keys: {sorted(leaked)} "
+        "-- these must never coexist with their replacement key"
+    )
 
 
 # ---------------------------------------------------------------------------

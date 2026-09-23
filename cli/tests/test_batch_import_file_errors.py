@@ -37,7 +37,7 @@ def test_run_batch_import_reports_permission_error_via_clean_contract(
     module's clean-JSON/exit-2 contract instead of escaping as a raw
     traceback."""
     path = tmp_path / "unreadable.json"
-    path.write_text('{"fundos": []}', encoding="utf-8")
+    path.write_text('{"entidades": []}', encoding="utf-8")
     path.chmod(0o000)
     try:
         with pytest.raises(SystemExit) as exc_info:

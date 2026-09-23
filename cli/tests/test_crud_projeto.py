@@ -20,8 +20,10 @@ from tests.conftest import CliInvocation, RunCli, unique_suffix
 pytestmark = pytest.mark.live
 
 
-def _query_projeto(client: Instant, eid: str, *, with_fundo: bool = False) -> dict[str, Any] | None:
-    sub_query: dict[str, Any] = {"fundo": {}} if with_fundo else {}
+def _query_projeto(
+    client: Instant, eid: str, *, with_entidade: bool = False
+) -> dict[str, Any] | None:
+    sub_query: dict[str, Any] = {"entidade": {}} if with_entidade else {}
     result = client.query({"projetos": {**sub_query, "$": {"where": {"id": eid}}}})
     rows = result.get("projetos", [])
     return rows[0] if rows else None
@@ -78,19 +80,28 @@ def test_full_crud_round_trip(
     assert _query_projeto(live_client, eid) is None
 
 
-def test_criar_with_fundo_link_resolves(
+def test_criar_with_entidade_link_resolves(
     run_cli: RunCli,
     live_client: Instant,
     cleanup_records: list[tuple[str, str]],
 ) -> None:
     suffix = unique_suffix()
 
-    fundo_result: CliInvocation = run_cli(
-        ["fundo", "criar", "--nome", f"Fundo Link {suffix}", "--codigo", f"FLK-{suffix}"]
+    entidade_result: CliInvocation = run_cli(
+        [
+            "entidade",
+            "criar",
+            "--nome",
+            f"Fundo Link {suffix}",
+            "--codigo",
+            f"FLK-{suffix}",
+            "--tipo-entidade",
+            "Fundo",
+        ]
     )
-    assert fundo_result.result.exit_code == 0, fundo_result.result.output
-    fundo_id = cast("dict[str, Any]", fundo_result.json_out())["id"]
-    cleanup_records.append(("fundos", fundo_id))
+    assert entidade_result.result.exit_code == 0, entidade_result.result.output
+    entidade_id = cast("dict[str, Any]", entidade_result.json_out())["id"]
+    cleanup_records.append(("entidades", entidade_id))
 
     projeto_result: CliInvocation = run_cli(
         [
@@ -100,27 +111,27 @@ def test_criar_with_fundo_link_resolves(
             f"Projeto Linkado {suffix}",
             "--status",
             "aberto",
-            "--fundo-id",
-            fundo_id,
+            "--entidade-id",
+            entidade_id,
         ]
     )
     assert projeto_result.result.exit_code == 0, projeto_result.result.output
     projeto_id = cast("dict[str, Any]", projeto_result.json_out())["id"]
     cleanup_records.append(("projetos", projeto_id))
 
-    record = _query_projeto(live_client, projeto_id, with_fundo=True)
+    record = _query_projeto(live_client, projeto_id, with_entidade=True)
     assert record is not None
-    linked_fundo = record.get("fundo")
-    assert linked_fundo is not None
+    linked_entidade = record.get("entidade")
+    assert linked_entidade is not None
     # InstantDB returns linked records as a list regardless of `has: "one"`
     # cardinality on the forward side.
-    if isinstance(linked_fundo, list):
-        assert len(linked_fundo) == 1
-        linked_fundo = linked_fundo[0]
-    assert linked_fundo["id"] == fundo_id
+    if isinstance(linked_entidade, list):
+        assert len(linked_entidade) == 1
+        linked_entidade = linked_entidade[0]
+    assert linked_entidade["id"] == entidade_id
 
 
-def test_criar_with_unknown_fundo_id_is_parent_not_found(
+def test_criar_with_unknown_entidade_id_is_parent_not_found(
     cleanup_records: list[tuple[str, str]],
     run_cli: RunCli,
     live_client: Instant,
@@ -135,7 +146,7 @@ def test_criar_with_unknown_fundo_id_is_parent_not_found(
             f"Projeto Fantasma {suffix}",
             "--status",
             "aberto",
-            "--fundo-id",
+            "--entidade-id",
             phantom_id,
         ]
     )

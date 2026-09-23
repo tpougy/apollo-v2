@@ -29,7 +29,7 @@ def apollo() -> None:
     web SPA: every write available in the browser is also available here.
 
     `auth` (login, logout, whoami) is available. Every entity subcommand
-    group (fundo, projeto, etapa, tarefa, ticket, subtarefa, rotina,
+    group (entidade, projeto, etapa, tarefa, ticket, subtarefa, rotina,
     log-inferencia) is auto-discovered from `apollo_cli/entities/` as each
     module lands — no edit to this file is required per new entity, see
     `apollo_cli.entities.register_entity_groups`.
@@ -78,14 +78,16 @@ def doctor() -> None:
     type=click.Path(exists=True, dir_okay=False, path_type=Path),
     help=(
         "Caminho para o arquivo JSON do lote: um objeto top-level com chaves "
-        '`fundos`/`templatesRotina` (ex.: `{"fundos": [...], '
+        '`entidades`/`templatesRotina` (ex.: `{"entidades": [...], '
         '"templatesRotina": [...]}`), nenhuma outra chave e aceita. Cada '
         "registro tem um `_local_id` (unico no arquivo inteiro) e campos "
-        "espelhando exatamente os --flags de `fundo criar`/`rotina template "
-        "criar`. `templatesRotina[].fundoId`/`antecessorId` aceitam um id "
-        'real ja existente OU `"$<local_id>"` para referenciar outro '
-        "registro do mesmo arquivo (inclusive um antecessor `encadeado` "
-        "listado antes ou depois no arquivo)."
+        "espelhando exatamente os --flags de `entidade criar`/`rotina "
+        "template criar` (`tipoEntidade` e opcional em `entidades[]`, "
+        'default `"Fundo"` quando omitido). `templatesRotina[].entidadeId`/'
+        "`antecessorId` aceitam um id real ja existente OU "
+        '`"$<local_id>"` para referenciar outro registro do mesmo arquivo '
+        "(inclusive um antecessor `encadeado` listado antes ou depois no "
+        "arquivo)."
     ),
 )
 @click.option(
@@ -99,7 +101,7 @@ def doctor() -> None:
     ),
 )
 def import_batch(from_json_path: Path, dry_run: bool) -> None:
-    """Cadastra `fundos` + `templatesRotina` em lote a partir de um unico
+    """Cadastra `entidades` + `templatesRotina` em lote a partir de um unico
     arquivo JSON (`apollo import --from-json <arquivo> [--dry-run]`).
 
     Valida o arquivo INTEIRO antes de escrever qualquer coisa: qualquer
@@ -108,12 +110,12 @@ def import_batch(from_json_path: Path, dry_run: bool) -> None:
     chave `donoId` proibida) faz o comando reportar a lista COMPLETA de
     problemas encontrados, sair com codigo 2, e nao escrever nada — mesmo
     que so um registro dentre muitos esteja quebrado. Registros cuja chave
-    natural ja existir na base (fundos por `codigo`, templatesRotina por
-    `fundoId` resolvido + `nome`) sao reportados como `existing`, nunca
+    natural ja existir na base (entidades por `codigo`, templatesRotina por
+    `entidadeId` resolvido + `nome`) sao reportados como `existing`, nunca
     recriados. Este comando nunca cria uma `instanciasRotina` — apenas
     `apollo rotina gerar-instancias` cria instancias.
 
-    Emite exatamente um documento JSON: `{"fundos": {"created": [...],
+    Emite exatamente um documento JSON: `{"entidades": {"created": [...],
     "existing": [...]}, "templatesRotina": {"created": [...], "existing":
     [...]}}` (listas de `_local_id`, nao ids reais) em caso de sucesso, ou
     `{"errors": [...]}` no stderr (exit 2) em caso de falha de validacao.

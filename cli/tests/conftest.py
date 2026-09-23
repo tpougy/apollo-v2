@@ -67,7 +67,7 @@ def run_cli() -> RunCli:
 
     `CliRunner` (not `subprocess`) so failures produce real tracebacks; a
     dedicated `subprocess`-based smoke test still exists in
-    `test_crud_fundo.py` to prove the installed console script works.
+    `test_crud_entidade.py` to prove the installed console script works.
     """
     runner = CliRunner()
 
