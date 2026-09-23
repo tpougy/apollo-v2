@@ -5,12 +5,19 @@
 // a FieldDef.
 
 export type FieldDef =
-  | { name: string; label: string; required: boolean; kind: "text" }
-  | { name: string; label: string; required: boolean; kind: "textarea" }
-  | { name: string; label: string; required: boolean; kind: "number" }
-  | { name: string; label: string; required: boolean; kind: "boolean" }
-  | { name: string; label: string; required: boolean; kind: "date" }
-  | { name: string; label: string; required: boolean; kind: "select"; options: readonly string[] };
+  | { name: string; label: string; required: boolean; kind: "text"; help?: string }
+  | { name: string; label: string; required: boolean; kind: "textarea"; help?: string }
+  | { name: string; label: string; required: boolean; kind: "number"; help?: string }
+  | { name: string; label: string; required: boolean; kind: "boolean"; help?: string }
+  | { name: string; label: string; required: boolean; kind: "date"; help?: string }
+  | {
+      name: string;
+      label: string;
+      required: boolean;
+      kind: "select";
+      options: readonly string[];
+      help?: string;
+    };
 
 export interface LinkDef {
   label: string; // link label on THIS entity, e.g. "entidade", "projeto", "antecessor"

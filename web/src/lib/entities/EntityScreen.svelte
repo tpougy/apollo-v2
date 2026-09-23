@@ -2,6 +2,7 @@
   import { DateFormatter, type DateValue, getLocalTimeZone, parseDate } from "@internationalized/date";
   import CalendarIcon from "@lucide/svelte/icons/calendar";
   import CircleAlert from "@lucide/svelte/icons/circle-alert";
+  import CircleHelp from "@lucide/svelte/icons/circle-help";
   import Inbox from "@lucide/svelte/icons/inbox";
   import LoaderCircle from "@lucide/svelte/icons/loader-circle";
   import { onDestroy, tick, untrack } from "svelte";
@@ -22,6 +23,7 @@
   import { Skeleton } from "$lib/components/ui/skeleton";
   import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "$lib/components/ui/table";
   import { Textarea } from "$lib/components/ui/textarea";
+  import * as Tooltip from "$lib/components/ui/tooltip";
   import { cn } from "$lib/utils";
   import { db, id } from "../db";
   import type { EntityConfig, LinkDef } from "./types";
@@ -586,9 +588,24 @@
         <Dialog.Description>{config.descricao}</Dialog.Description>
       </Dialog.Header>
       <form onsubmit={handleSubmit} novalidate class="space-y-4">
+        <Tooltip.Provider>
         {#each editableFields() as f (f.name)}
           <div class="space-y-2">
-            <Label for={`field-${f.name}`}>{f.label}{#if f.required}<span class="text-destructive" aria-hidden="true"> *</span>{/if}</Label>
+            <div class="flex items-center gap-1">
+              <Label for={`field-${f.name}`}>{f.label}{#if f.required}<span class="text-destructive" aria-hidden="true"> *</span>{/if}</Label>
+              {#if f.help}
+                <Tooltip.Root>
+                  <Tooltip.Trigger
+                    data-testid={`field-help-${f.name}`}
+                    class="text-muted-foreground hover:text-foreground"
+                  >
+                    <CircleHelp class="size-3.5" />
+                    <span class="sr-only">Ajuda: {f.label}</span>
+                  </Tooltip.Trigger>
+                  <Tooltip.Content>{f.help}</Tooltip.Content>
+                </Tooltip.Root>
+              {/if}
+            </div>
             {#if f.kind === "text"}
               <Input
                 id={`field-${f.name}`}
@@ -711,6 +728,7 @@
             {/if}
           </div>
         {/each}
+        </Tooltip.Provider>
 
         {#each (config.links ?? []).filter((l) => !l.readOnly) as link (link.label)}
           <div class="space-y-2">

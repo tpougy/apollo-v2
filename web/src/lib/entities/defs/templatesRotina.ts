@@ -75,7 +75,13 @@ const templatesRotinaConfig: EntityConfig = {
       required: true,
       kind: "boolean",
     },
-    { name: "ativo", label: "Ativo", required: true, kind: "boolean" },
+    {
+      name: "ativo",
+      label: "Ativo",
+      required: true,
+      kind: "boolean",
+      help: "Somente templates ativos são considerados pelo job de geração de instâncias; templates inativos não geram novas instâncias.",
+    },
   ],
   links: [
     { label: "entidade", targetEtype: "entidades", targetLabelField: "nome", required: false },
