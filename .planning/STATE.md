@@ -111,6 +111,14 @@ None — v1.5 roadmap coverage is 12/12 requirements mapped with no orphans. No 
 - `ProjetosSection.svelte`'s `etapa-kanban-column`/`etapa-kanban-card` are literal nested `<button>` elements — fine in this SSR-free Vite SPA, would need revisiting if SSR is ever adopted (WINDOWS.md #14).
 - A Fundo detail read-only block (rotinas/projetos/tickets vinculados, spec-ui.md §2.5) outside the Dashboard's own Fundo dialog remains unbuilt — low priority, the dialog already covers the same content.
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Status | Directory |
+|---|-------------|------|--------|--------|-----------|
+| 260922-t1l | Limpar dados de teste poluidos: apagar TODOS os registros das entidades templatesRotina e instanciasRotina em producao (via InstantDB admin, usando o app_id/admin token do .env.instantdb do repo). NAO apagar fundos, projetos, etapas, tarefas, tickets, subtarefas, logInferenciaClaude -- so essas duas entidades de rotina. Confirmar contagem antes/depois (query count = 0 apos limpeza para ambas as entidades). | 2026-09-22 | cfdef03 | — | .planning/quick/20260922-limpar-dados-de-teste-poluidos-apagar-todos-os-registros-das |
+| 260922-t1m | Mostrar o nome do template de rotina na listagem de instancias de rotina: hoje a tabela/listagem de instanciasRotina (CLI apollo rotina instancia listar e a tela correspondente na SPA web) mostra competencia, data prevista, status/prazo e acoes, mas nao o nome do templateRotina de origem. Adicionar essa coluna/campo, resolvendo o nome via o link instanciasRotina.template ja existente no schema. Sem mudanca de schema, so de leitura/exibicao (CLI e web). | 2026-09-22 | 5f72b14 | — | .planning/quick/20260922-mostrar-o-nome-do-template-de-rotina-na-listagem-de-instanci |
+| 260922-t1n | Dashboard: kanban de rotinas em tela cheia estilo Trello. Hoje o resumo Kanban do dashboard mostra poucos itens (~3) e cards com so o titulo truncado em 1 linha. Mudar para: (1) ocupar a altura visivel da pagina/viewport disponivel, (2) scroll interno na coluna quando houver mais itens do que cabe, (3) titulo do card em ate 2 linhas (wrap, nao truncar em 1 linha), (4) mostrar no resumo do card o nome do fundo associado a instancia/rotina, quando houver (via o link ja existente instanciasRotina -> template -> fundo, ou o link direto se existir). Escopo e a tela do dashboard ja existente na SPA web, sem mudanca de schema. | 2026-09-22 | c4d58ae | — | .planning/quick/20260922-dashboard-kanban-de-rotinas-em-tela-cheia-estilo-trello |
+
 ## Deferred Items
 
 Items acknowledged and carried forward from previous milestone close:

@@ -11,7 +11,7 @@
       "quick_id": "260922-t1l",
       "client_id": null,
       "description": "Limpar dados de teste poluidos: apagar TODOS os registros das entidades templatesRotina e instanciasRotina em producao (via InstantDB admin, usando o app_id/admin token do .env.instantdb do repo). NAO apagar fundos, projetos, etapas, tarefas, tickets, subtarefas, logInferenciaClaude -- so essas duas entidades de rotina. Confirmar contagem antes/depois (query count = 0 apos limpeza para ambas as entidades).",
-      "status": "pending",
+      "status": "complete",
       "depends_on": [],
       "planned_files": [
         "cli/scripts/cleanup_rotina_test_data.py"
@@ -22,14 +22,14 @@
       "dispatched_branch": null,
       "dispatched_base": null,
       "wave": 0,
-      "commit": null,
+      "commit": "cfdef03",
       "failure_reason": null
     },
     {
       "quick_id": "260922-t1m",
       "client_id": null,
       "description": "Mostrar o nome do template de rotina na listagem de instancias de rotina: hoje a tabela/listagem de instanciasRotina (CLI apollo rotina instancia listar e a tela correspondente na SPA web) mostra competencia, data prevista, status/prazo e acoes, mas nao o nome do templateRotina de origem. Adicionar essa coluna/campo, resolvendo o nome via o link instanciasRotina.template ja existente no schema. Sem mudanca de schema, so de leitura/exibicao (CLI e web).",
-      "status": "pending",
+      "status": "complete",
       "depends_on": [],
       "planned_files": [
         "cli/apollo_cli/entities/rotina.py",
@@ -45,14 +45,14 @@
       "dispatched_branch": null,
       "dispatched_base": null,
       "wave": 0,
-      "commit": null,
+      "commit": "5f72b14",
       "failure_reason": null
     },
     {
       "quick_id": "260922-t1n",
       "client_id": null,
       "description": "Dashboard: kanban de rotinas em tela cheia estilo Trello. Hoje o resumo Kanban do dashboard mostra poucos itens (~3) e cards com so o titulo truncado em 1 linha. Mudar para: (1) ocupar a altura visivel da pagina/viewport disponivel, (2) scroll interno na coluna quando houver mais itens do que cabe, (3) titulo do card em ate 2 linhas (wrap, nao truncar em 1 linha), (4) mostrar no resumo do card o nome do fundo associado a instancia/rotina, quando houver (via o link ja existente instanciasRotina -> template -> fundo, ou o link direto se existir). Escopo e a tela do dashboard ja existente na SPA web, sem mudanca de schema.",
-      "status": "pending",
+      "status": "complete",
       "depends_on": [],
       "planned_files": [
         "web/src/lib/dashboard/Dashboard.svelte",
@@ -65,7 +65,7 @@
       "dispatched_branch": null,
       "dispatched_base": null,
       "wave": 0,
-      "commit": null,
+      "commit": "c4d58ae",
       "failure_reason": null
     }
   ]
