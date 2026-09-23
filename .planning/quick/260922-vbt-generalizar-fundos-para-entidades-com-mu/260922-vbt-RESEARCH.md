@@ -736,9 +736,13 @@ planning, all three already have a live verification checkpoint (D4 step 3,
 D4 step 5-as-verify, or the user's own explicit decision) that would surface
 a wrong assumption before it caused irreversible damage.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Exact `--tipo`/`tipoEntidade` CLI flag naming**
+All three questions below were resolved during planning — see PLAN.md for where each
+resolution landed (noted inline per question).
+
+1. **Exact `--tipo`/`tipoEntidade` CLI flag naming** — RESOLVED: Task 2 uses `--tipo-entidade`,
+   exactly this research's own recommendation.
    - What we know: D2 requires a required-on-create, optional-on-edit
      free-text field. CONTEXT.md's `<specifics>` section explicitly defers
      exact label/flag wording to planner judgment ("Tipo", "Categoria", etc.
@@ -752,24 +756,16 @@ a wrong assumption before it caused irreversible damage.
      every other flag in this codebase (`--regra-competencia` <->
      `regraCompetencia`, `--propagar-atraso-soft` <-> `propagarAtrasoSoft`).
 
-2. **`test_cli_surface.py`'s full assertion logic**
-   - What we know: The fixture dict entry `"fundos": (["fundo"], {...},
-     False)` exists and must be renamed.
-   - What's unclear: This session only grepped the single matching line, not
-     the full test body/assertion logic around it (see Pitfall 3).
-   - Recommendation: Planner should `Read` this file in full before writing
-     the task that touches it, to confirm the exact failure-mode contract.
+2. **`test_cli_surface.py`'s full assertion logic** — RESOLVED: Task 2's action reflects a
+   full read of the file's exhaustiveness-check mechanics, resulting in the documented
+   transitional `_PENDING_SCHEMA_REMOVAL` design (introduced in Task 2, removed again in
+   Task 4).
 
 3. **Whether `web/e2e/entities-rotina-log.spec.ts` and
    `entities-ticket-subtarefa.spec.ts`/`entities-delete-confirmation.spec.ts`'s
-   single incidental "fundo" hits are functional or purely comment/prose**
-   - What we know: Each has only 1 grep hit (case-insensitive), too few to
-     characterize confidently from a grep line alone.
-   - What's unclear: Exact content — could be a stray comment reference or a
-     real (if minor) functional dependency.
-   - Recommendation: Planner's task for these three low-hit-count files
-     should open each and confirm before editing, rather than assume "1 hit
-     = trivial."
+   single incidental "fundo" hits are functional or purely comment/prose** — RESOLVED:
+   Task 4 explicitly instructs opening each of these files and confirming functional vs.
+   incidental before editing, rather than assuming "1 hit = trivial."
 
 ## Environment Availability
 
