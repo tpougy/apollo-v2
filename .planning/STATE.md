@@ -3,10 +3,10 @@ gsd_state_version: "1.0"
 milestone: v1.5
 status: Awaiting next milestone
 stopped_at: Phase 31 complete — all phases complete
-last_updated: "2026-09-24T14:19:41.718Z"
+last_updated: "2026-09-24T14:24:23.792Z"
 last_activity: 2026-09-24
 last_activity_desc: Completed quick task 260924-f7m (docs/ai-usage renomeada + apollo init scaffold command)
-state_head: 9dbee93b612e78ce50df9c689f6ee67b53962ee4
+state_head: 01dccb748e2beec3b0f0959193f4229789eb904f
 milestone_name: Correções descobertas no onboarding real do calendário de rotinas (RBR)
 current_phase: null
 progress:
@@ -124,6 +124,7 @@ None — v1.5 roadmap coverage is 12/12 requirements mapped with no orphans. No 
 | 260923-h35 | Ajustar web/vite.config.ts para permitir build no Cloudflare Pages: fallback para process.env.VITE_INSTANT_APP_ID quando .env.instantdb nao existir, comportamento identico quando o arquivo existir, INSTANT_APP_ADMIN_TOKEN nunca exposto. | 2026-09-23 | 616cc8b | Verified | [260923-h35-ajustar-web-vite-config-ts-para-permitir](./quick/260923-h35-ajustar-web-vite-config-ts-para-permitir/) |
 | 260923-ivg | Tooltips de ajuda em templatesRotina (6 campos, componente Tooltip novo baseado em bits-ui) + fix do bug de nao conseguir desselecionar diaSemana (Select renderer + submit-payload loop, ambos corrigidos). | 2026-09-23 | c8e5ea5 | Verified | [260923-ivg-adicionar-tooltips-de-ajuda-no-formulari](./quick/260923-ivg-adicionar-tooltips-de-ajuda-no-formulari/) |
 | 260924-f7m | Atualizar docs/ai-usage/{README,CLAUDE}.md para fundos->entidades + vendorizar em cli/apollo_cli/data/scaffold/ + novo comando apollo init <path> (scaffold + guarda --force + status de auth sem crashar). | 2026-09-24 | 9dbee93 | Verified | [260924-f7m-duas-entregas-1-atualizar-docs-ai-usage-](./quick/260924-f7m-duas-entregas-1-atualizar-docs-ai-usage-/) |
+| 10 | Atualizar docs/ai-usage/CLAUDE.md (+ copia vendorizada) para cobrir rotina semanal/--dia-semana, --offset-dias estendido, --competencia/--de/--ate, template deletar --force, limpar-orfas, e apollo import. | 2026-09-24 | 01dccb7 | — | — |
 
 ## Deferred Items
 
@@ -145,7 +146,7 @@ Items acknowledged and carried forward from previous milestone close:
 | UI | Fundo detail read-only block (rotinas/projetos/tickets vinculados) outside the Dashboard's Fundo dialog | Deferred — Fundo dialog (nº 5) already covers this in v1.3; standalone Fundos-page block stays deferred | v1.3 kickoff |
 | Config | New config storage mechanism (e.g. `~/.config/apollo-cli/config.toml`) for multiple simultaneous InstantDB apps | Deferred — no real use case today (single-user, single-app) | v1.4 kickoff |
 | Release | Real PyPI publication / automated release CI | Deferred — out of scope for v1.4, which resolves only local `uv tool install` installability | v1.4 kickoff |
-| Docs | `docs/ai-usage/CLAUDE.md` is now known-stale on the rotina/import command surface (semanal periodicity, `--dia-semana`, extended `--offset-dias` semantics, `--competencia`/`--de`/`--ate`, `template deletar --force`, `instancia limpar-orfas`, the whole `apollo import` command — all postdate these docs and are unrelated to the fundo rename this task addressed) | Deferred — explicit out-of-scope per CONTEXT.md D6, future pass should reconcile deliberately | 260924-f7m close |
+| Docs | `docs/ai-usage/CLAUDE.md` was stale on the rotina/import command surface (semanal periodicity, `--dia-semana`, extended `--offset-dias` semantics, `--competencia`/`--de`/`--ate`, `template deletar --force`, `instancia limpar-orfas`, the whole `apollo import` command) | **Resolved** — reconciled in quick task 260924-fast (docs + vendored `cli/apollo_cli/data/scaffold/CLAUDE.md` copy both updated, byte-parity test still green) | 260924-f7m close |
 
 ## Session Continuity
 
