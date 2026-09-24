@@ -3,10 +3,10 @@ gsd_state_version: "1.0"
 milestone: v1.5
 status: Awaiting next milestone
 stopped_at: Phase 31 complete — all phases complete
-last_updated: "2026-09-24T15:08:07.657Z"
+last_updated: "2026-09-24T16:53:18.321Z"
 last_activity: 2026-09-24
 last_activity_desc: Completed quick task 260924-f7m (docs/ai-usage renomeada + apollo init scaffold command)
-state_head: 4cfec3e27420ac9683067c0acfa2093bb6fa2104
+state_head: 736a3e639666b009a2a2047540f363d9c2cc19ec
 milestone_name: Correções descobertas no onboarding real do calendário de rotinas (RBR)
 current_phase: null
 progress:
@@ -126,6 +126,7 @@ None — v1.5 roadmap coverage is 12/12 requirements mapped with no orphans. No 
 | 260924-f7m | Atualizar docs/ai-usage/{README,CLAUDE}.md para fundos->entidades + vendorizar em cli/apollo_cli/data/scaffold/ + novo comando apollo init <path> (scaffold + guarda --force + status de auth sem crashar). | 2026-09-24 | 9dbee93 | Verified | [260924-f7m-duas-entregas-1-atualizar-docs-ai-usage-](./quick/260924-f7m-duas-entregas-1-atualizar-docs-ai-usage-/) |
 | 10 | Atualizar docs/ai-usage/CLAUDE.md (+ copia vendorizada) para cobrir rotina semanal/--dia-semana, --offset-dias estendido, --competencia/--de/--ate, template deletar --force, limpar-orfas, e apollo import. | 2026-09-24 | 01dccb7 | — | — |
 | 260924-gfd | Implementar na CLI um aviso automático de nova versão disponível no GitHub ao inicializar | 2026-09-24 | 4cfec3e | — | [260924-gfd-implementar-na-cli-um-aviso-autom-tico-d](./quick/260924-gfd-implementar-na-cli-um-aviso-autom-tico-d/) |
+| 12 | Kanban principal (agendaPorDia): passou a incluir tickets com prazo soft, não só hard | 2026-09-24 | 736a3e6 | — | — |
 
 ## Deferred Items
 
