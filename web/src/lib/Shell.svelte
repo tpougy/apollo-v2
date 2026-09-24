@@ -1,8 +1,10 @@
 <script lang="ts">
+  import Info from "@lucide/svelte/icons/info";
   import { onMount } from "svelte";
   import { toast } from "svelte-sonner";
   import { Button } from "$lib/components/ui/button";
   import { Separator } from "$lib/components/ui/separator";
+  import * as Tooltip from "$lib/components/ui/tooltip";
   import Dashboard from "./dashboard/Dashboard.svelte";
   import { db } from "./db";
   import EntityScreen from "./entities/EntityScreen.svelte";
@@ -59,7 +61,23 @@
   data-testid="shell-header"
   class="flex items-center justify-between gap-4 px-4 py-3 sm:px-6"
 >
-  <h1 data-testid="shell-app-name" class="text-lg font-semibold">Apollo</h1>
+  <div class="flex items-center gap-1.5">
+    <h1 data-testid="shell-app-name" class="text-lg font-semibold">Apollo</h1>
+    <Tooltip.Provider>
+      <Tooltip.Root>
+        <Tooltip.Trigger
+          data-testid="shell-version-info"
+          class="text-muted-foreground hover:text-foreground"
+        >
+          <Info class="size-3.5" />
+          <span class="sr-only">Versão do build</span>
+        </Tooltip.Trigger>
+        <Tooltip.Content data-testid="shell-version-tooltip">
+          build {import.meta.env.VITE_APP_COMMIT}
+        </Tooltip.Content>
+      </Tooltip.Root>
+    </Tooltip.Provider>
+  </div>
   <div class="flex items-center gap-4">
     {#if !auth.isLoading && auth.user}
       <p class="text-sm text-muted-foreground">autenticado como {auth.user.email}</p>

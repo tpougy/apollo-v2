@@ -1,3 +1,4 @@
+import { execSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
@@ -47,6 +48,25 @@ if (!appId) {
   );
 }
 
+// Build-identifying commit SHA, purely for the header's "which deploy is
+// this?" tooltip -- never used for anything security- or logic-relevant.
+// Cloudflare Pages sets CF_PAGES_COMMIT_SHA in its build environment; local
+// `vite build`/`vite dev` has no such var, so fall back to reading the repo's
+// own current HEAD. Never let this throw and break the build -- an unknown
+// build is a harmless "dev" label, not a build failure.
+let commitSha: string;
+if (process.env.CF_PAGES_COMMIT_SHA) {
+  commitSha = process.env.CF_PAGES_COMMIT_SHA.slice(0, 7);
+} else {
+  try {
+    commitSha = execSync("git rev-parse --short HEAD", { cwd: fileURLToPath(new URL(".", import.meta.url)) })
+      .toString()
+      .trim();
+  } catch {
+    commitSha = "dev";
+  }
+}
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [svelte(), tailwindcss()],
@@ -58,5 +78,6 @@ export default defineConfig({
   },
   define: {
     "import.meta.env.VITE_INSTANT_APP_ID": JSON.stringify(appId),
+    "import.meta.env.VITE_APP_COMMIT": JSON.stringify(commitSha),
   },
 });
