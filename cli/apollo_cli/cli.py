@@ -18,6 +18,7 @@ from apollo_cli.batch_import import run_batch_import
 from apollo_cli.config import load_instant_config
 from apollo_cli.crud_helpers import client_for_session, emit
 from apollo_cli.entities import register_entity_groups
+from apollo_cli.init import run_init
 
 
 @click.group()
@@ -122,6 +123,30 @@ def import_batch(from_json_path: Path, dry_run: bool) -> None:
     """
     client, session = client_for_session()
     report = run_batch_import(client, session.user_id, from_json_path, dry_run=dry_run)
+    emit(report)
+
+
+@apollo.command(name="init")
+@click.argument("path", type=click.Path(file_okay=False, path_type=Path))
+@click.option(
+    "--force/--no-force",
+    default=False,
+    help=(
+        "Overwrite README.md/CLAUDE.md even if their current content differs "
+        "from the vendored scaffold template. Any OTHER file already in the "
+        "folder is never touched. With identical content already present, "
+        "this flag is a silent no-op."
+    ),
+)
+def init(path: Path, force: bool) -> None:
+    """Scaffold an "Apollo Tasks" folder at PATH.
+
+    Creates PATH if it doesn't exist and writes the vendored README.md/
+    CLAUDE.md onboarding template into it, then reports real auth status
+    (authenticated email, or the exact next `apollo auth login` commands to
+    run) so the folder is ready to open directly in Claude Code.
+    """
+    report = run_init(path, force=force)
     emit(report)
 
 

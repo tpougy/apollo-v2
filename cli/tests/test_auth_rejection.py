@@ -211,7 +211,7 @@ _ADMIN_TOKEN_EXEMPT_FILENAMES = {"instant_client.py", "config.py"}
 # corrupted-but-well-formed local session file cannot fake a healthy
 # `whoami` — this is a documented Plan 03-01 design decision, not new scope
 # introduced here.
-_INSTANT_CONSTRUCTOR_EXEMPT_FILENAMES = {"instant_client.py", "auth.py"}
+_INSTANT_CONSTRUCTOR_EXEMPT_FILENAMES = {"instant_client.py", "auth.py", "init.py"}
 # As of phase 25, `auth.py`'s `login()` no longer calls `login_client()` at
 # all (it talks to the public `/runtime/auth/*` endpoints directly via
 # `httpx` instead) -- so it no longer needs this exemption.
@@ -219,6 +219,13 @@ _INSTANT_CONSTRUCTOR_EXEMPT_FILENAMES = {"instant_client.py", "auth.py"}
 # `login_client`, never *calls* it (the `ast.Call` check below never fires
 # on that file either way; keeping it exempt vs. dropping it to `set()` are
 # behaviorally identical).
+# `init.py` (quick task 260924-f7m) deliberately mirrors `auth.py`'s
+# `whoami` mechanism read-only, for the exact same reason: `apollo init`'s
+# auth-status check hits the unauthenticated `verify_token` endpoint
+# directly (never `session_client()`/`login_client()`) so a
+# corrupted-but-well-formed local session file cannot fake a healthy
+# status, and so the check can never raise/exit non-zero on an
+# unauthenticated first-run machine (D4).
 _LOGIN_CLIENT_CALLER_EXEMPT_FILENAMES = {"instant_client.py"}
 
 
