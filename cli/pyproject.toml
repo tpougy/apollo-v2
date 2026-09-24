@@ -1,6 +1,9 @@
 [project]
 name = "apollo-cli"
-version = "0.1.0"
+# Installed-version source of truth: apollo_cli/version_check.py compares
+# this against the latest GitHub tag on tpougy/apollo-v2 to decide whether
+# to warn. Bump this to match each new milestone git tag going forward.
+version = "1.5"
 description = "Apollo v2 CLI — AI-operated channel with full parity with the web SPA"
 readme = "README.md"
 authors = [
@@ -39,6 +42,17 @@ src = ["."]
 
 [tool.ruff.lint]
 extend-select = ["I", "ANN"]
+
+# apollo_cli/cli.py's apollo() group callback wraps version_check.maybe_warn_outdated()
+# in a single deliberate bare try/except Exception: pass — the one absolute last-resort
+# guarantee that this best-effort version-check UX nicety can never block, delay, or
+# fail the real command underneath it, no matter what future bug lands in
+# version_check.py (see cli/.planning/quick/260924-gfd .../260924-gfd-PLAN.md's threat
+# model T-gfd-01). BLE001 (blind except) and S110 (try/except/pass without logging)
+# both correctly flag broad excepts in general — this is the one call site in the
+# codebase where that is the intended, load-bearing behavior, not an oversight.
+[tool.ruff.lint.per-file-ignores]
+"apollo_cli/cli.py" = ["BLE001", "S110"]
 
 [tool.ty.environment]
 python-version = "3.12"

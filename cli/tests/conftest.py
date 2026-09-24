@@ -26,6 +26,19 @@ from apollo_cli.session import MissingSessionError, Session, load_session
 _logger = logging.getLogger(__name__)
 
 
+@pytest.fixture(autouse=True)
+def _disable_version_check_by_default(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Keep every pre-existing test genuinely network-free.
+
+    `apollo()`'s group callback now makes a real GitHub call by default on
+    every invocation (`apollo_cli.version_check`); this autouse fixture
+    disables it for every test in this package. `tests/test_version_check.py`
+    is the one file that explicitly opts back in per-test via
+    `monkeypatch.delenv`.
+    """
+    monkeypatch.setenv("APOLLO_NO_VERSION_CHECK", "1")
+
+
 @pytest.fixture(scope="session")
 def live_session() -> Session:
     """The real, persisted session. Skips the test cleanly when absent."""

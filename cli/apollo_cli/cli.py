@@ -13,7 +13,7 @@ from pathlib import Path
 
 import click
 
-from apollo_cli import auth
+from apollo_cli import auth, version_check
 from apollo_cli.batch_import import run_batch_import
 from apollo_cli.config import load_instant_config
 from apollo_cli.crud_helpers import client_for_session, emit
@@ -34,7 +34,19 @@ def apollo() -> None:
     log-inferencia) is auto-discovered from `apollo_cli/entities/` as each
     module lands — no edit to this file is required per new entity, see
     `apollo_cli.entities.register_entity_groups`.
+
+    On every invocation, also best-effort checks GitHub for a newer version
+    and prints a one-line warning to stderr when one exists. Never blocks,
+    delays, or fails the real command; disable entirely with
+    `APOLLO_NO_VERSION_CHECK`.
     """
+    try:
+        version_check.maybe_warn_outdated()
+    except Exception:
+        # Absolute last-resort guarantee: this best-effort UX nicety must
+        # never fail or delay the real command underneath it, no matter
+        # what future bug lands in version_check.py.
+        pass
 
 
 apollo.add_command(auth.group)
