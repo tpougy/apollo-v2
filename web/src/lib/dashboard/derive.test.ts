@@ -332,7 +332,7 @@ describe("agendaPorDia", () => {
     expect(byId.has("r-outside-window")).toBe(false);
   });
 
-  test("a ticket appears only when tipoPrazo is hard AND dataPrevista is in window; entidadeId from ticket.entidade.id; vencido always concluido=false", () => {
+  test("a ticket appears whenever dataPrevista is in window regardless of tipoPrazo; entidadeId from ticket.entidade.id; vencido always concluido=false", () => {
     const dados = {
       projetos: [],
       tarefas: [],
@@ -377,7 +377,8 @@ describe("agendaPorDia", () => {
     expect(byId.get("tk-hard-in-window")?.entidadeId).toBe("entidade-A");
     expect(byId.get("tk-hard-in-window")?.vencido).toBe(true); // past + concluido=false
 
-    expect(byId.has("tk-soft-in-window")).toBe(false);
+    expect(byId.get("tk-soft-in-window")?.tipo).toBe("ticket");
+    expect(byId.get("tk-soft-in-window")?.entidadeId).toBe("entidade-A");
     expect(byId.has("tk-hard-no-date")).toBe(false);
     expect(byId.has("tk-hard-outside-window")).toBe(false);
   });

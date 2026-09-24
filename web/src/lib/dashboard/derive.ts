@@ -336,7 +336,6 @@ export function agendaPorDia(
   }
 
   for (const ticket of dados.tickets) {
-    if (ticket.tipoPrazo !== "hard") continue;
     if (!ticket.dataPrevista) continue;
     const dia = ticket.dataPrevista.slice(0, 10);
     if (!keySet.has(dia)) continue;
@@ -349,7 +348,7 @@ export function agendaPorDia(
       prazo: ticket.dataPrevista,
       vencido: vencido(ticket.dataPrevista, false, hoje),
       entidadeId,
-      _hard: true, // only hard tickets are ever included
+      _hard: ticket.tipoPrazo === "hard",
     });
   }
 
