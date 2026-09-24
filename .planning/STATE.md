@@ -3,10 +3,10 @@ gsd_state_version: "1.0"
 milestone: v1.5
 status: Awaiting next milestone
 stopped_at: Phase 31 complete — all phases complete
-last_updated: "2026-09-24T14:24:23.792Z"
+last_updated: "2026-09-24T15:08:07.657Z"
 last_activity: 2026-09-24
 last_activity_desc: Completed quick task 260924-f7m (docs/ai-usage renomeada + apollo init scaffold command)
-state_head: 01dccb748e2beec3b0f0959193f4229789eb904f
+state_head: 4cfec3e27420ac9683067c0acfa2093bb6fa2104
 milestone_name: Correções descobertas no onboarding real do calendário de rotinas (RBR)
 current_phase: null
 progress:
@@ -31,7 +31,7 @@ See: .planning/PROJECT.md (updated 2026-09-22)
 Phase: Milestone v1.5 complete
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-09-24 — Completed quick task 260924-f7m: docs/ai-usage/{README,CLAUDE}.md renomeados de fundos para entidades e vendorizados; novo comando `apollo init <path>` faz scaffold de pasta Apollo Tasks e orienta login
+Last activity: 2026-09-24 — Completed quick task 260924-gfd: aviso automático de nova versão da CLI (checagem best-effort no GitHub, cache 24h, `APOLLO_NO_VERSION_CHECK` para desabilitar)
 
 ## Performance Metrics
 
@@ -125,6 +125,7 @@ None — v1.5 roadmap coverage is 12/12 requirements mapped with no orphans. No 
 | 260923-ivg | Tooltips de ajuda em templatesRotina (6 campos, componente Tooltip novo baseado em bits-ui) + fix do bug de nao conseguir desselecionar diaSemana (Select renderer + submit-payload loop, ambos corrigidos). | 2026-09-23 | c8e5ea5 | Verified | [260923-ivg-adicionar-tooltips-de-ajuda-no-formulari](./quick/260923-ivg-adicionar-tooltips-de-ajuda-no-formulari/) |
 | 260924-f7m | Atualizar docs/ai-usage/{README,CLAUDE}.md para fundos->entidades + vendorizar em cli/apollo_cli/data/scaffold/ + novo comando apollo init <path> (scaffold + guarda --force + status de auth sem crashar). | 2026-09-24 | 9dbee93 | Verified | [260924-f7m-duas-entregas-1-atualizar-docs-ai-usage-](./quick/260924-f7m-duas-entregas-1-atualizar-docs-ai-usage-/) |
 | 10 | Atualizar docs/ai-usage/CLAUDE.md (+ copia vendorizada) para cobrir rotina semanal/--dia-semana, --offset-dias estendido, --competencia/--de/--ate, template deletar --force, limpar-orfas, e apollo import. | 2026-09-24 | 01dccb7 | — | — |
+| 260924-gfd | Implementar na CLI um aviso automático de nova versão disponível no GitHub ao inicializar | 2026-09-24 | 4cfec3e | — | [260924-gfd-implementar-na-cli-um-aviso-autom-tico-d](./quick/260924-gfd-implementar-na-cli-um-aviso-autom-tico-d/) |
 
 ## Deferred Items
 
