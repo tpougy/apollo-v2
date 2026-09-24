@@ -170,6 +170,26 @@ server-side session to revoke in this flow.
   authenticated user against the live InstantDB app until it is rotated by
   logging in again.
 
+## Verificação de nova versão
+
+- Toda invocação de `apollo` faz, em melhor esforço, uma checagem no GitHub
+  por uma versão mais nova que a instalada (`cli/pyproject.toml`'s `version`).
+  Este repositório não tem GitHub Releases, então a fonte real da checagem
+  são as git tags do repositório.
+- Quando há atualização disponível, imprime uma linha em **stderr** (nunca
+  stdout, para comandos que emitem JSON continuarem parseáveis) com as duas
+  versões e o comando exato de atualização.
+- Nunca bloqueia, atrasa de forma perceptível, ou falha o comando real —
+  qualquer erro de rede/timeout/parse degrada para silêncio completo.
+- Resultado cacheado em `~/.config/apollo-cli/version_check_cache.json` por
+  24h, então a maioria das invocações não faz nenhuma chamada de rede.
+- `APOLLO_NO_VERSION_CHECK` (qualquer valor não-vazio) desabilita a checagem
+  inteiramente — útil para CI/scripting.
+- `APOLLO_VERSION_CACHE_FILE` sobrescreve o caminho do cache, usado pela
+  própria suíte de testes deste pacote para uma rodada de teste nunca tocar
+  no cache real (mesmo papel de `APOLLO_SESSION_FILE` na seção "Sessão"
+  acima).
+
 ## Saída e códigos de saída
 
 Every `apollo` command prints exactly one JSON document to stdout on
