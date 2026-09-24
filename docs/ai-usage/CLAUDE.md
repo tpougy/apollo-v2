@@ -118,13 +118,14 @@ um resumo, não a fonte de verdade.
 ### `apollo rotina template criar`
 ```
 --nome TEXT (obrigatório)
---tipo-geracao [du_fixo|corrido_fixo|encadeado] (obrigatório)
+--tipo-geracao [du_fixo|corrido_fixo|encadeado|semanal] (obrigatório)
 --regra-competencia [M0|M-1|M-2|M+1] (obrigatório)
---propagar-atraso-soft / --nao-propagar-atraso-soft (default: off)
+--propagar-atraso-soft / --nao-propagar-atraso-soft (default: off — reservado, ainda sem efeito na geração)
 --ativo / --inativo (default: --ativo)
 --entidade-id TEXT
 --antecessor-id TEXT (outro template — usado só quando --tipo-geracao=encadeado)
---offset-dias INTEGER (significado depende de --tipo-geracao: dia útil do mês / dia corrido do mês / dias úteis após o antecessor)
+--offset-dias INTEGER (significado depende de --tipo-geracao: 'du_fixo' = Nº dia útil do mês contando do dia 1 quando >= 1, ou contando de trás pra frente a partir do último dia útil quando <= 0 [0 = último dia útil]; 'corrido_fixo' = Nº dia corrido do mês; 'encadeado' = dias úteis após a instância do antecessor. Não se aplica a 'semanal'.)
+--dia-semana [segunda|terca|quarta|quinta|sexta|sabado|domingo] (obrigatório só quando --tipo-geracao=semanal — ignorado pelos outros tipos; define em qual dia da semana a instância é gerada)
 ```
 
 Rotinas **não têm instância criada manualmente**. Depois de cadastrar os
@@ -133,6 +134,53 @@ templates, rode:
 apollo rotina gerar-instancias --dry-run   # confira o que seria criado
 apollo rotina gerar-instancias             # gera de verdade (idempotente — pode rodar de novo sem duplicar)
 ```
+
+Por padrão o range gerado é `[hoje, fim do próximo mês]`. Para recortar pra
+um período específico (ex. reprocessar um mês fechado), use `--competencia
+AAAA-MM` (mutuamente exclusivo com `--de`/`--ate`) ou `--de YYYY-MM-DD --ate
+YYYY-MM-DD` — o recorte **substitui** o range default inteiro, nunca soma a
+ele.
+
+### Removendo um template de rotina
+
+`apollo rotina template deletar --id <id>` bloqueia por padrão (não deleta)
+se o template tiver `instanciasRotina` já geradas ligadas a ele — nesse caso
+some `--force` para forçar a remoção do template. Isso **nunca** apaga as
+instâncias já geradas junto (elas viram órfãs, ligadas a um template que não
+existe mais). Pra limpar essas órfãs depois:
+```bash
+apollo rotina instancia limpar-orfas                # só lista, nao apaga (default)
+apollo rotina instancia limpar-orfas --confirmar     # apaga de verdade as listadas
+```
+
+## Cadastro em lote (`apollo import`)
+
+Para volumes grandes (ex. dezenas de entidades/templates de uma vez), existe
+uma alternativa a criar um por um: `apollo import --from-json <arquivo>`
+cadastra `entidades` + `templatesRotina` a partir de um único arquivo JSON,
+numa chamada só. Útil quando o usuário já te passou uma lista estruturada
+(planilha colada, e-mail com uma tabela, etc.) em vez de descrever item por
+item.
+
+Formato do arquivo: um objeto com as chaves `entidades`/`templatesRotina`
+(arrays), cada registro com um `_local_id` (único no arquivo, só serve pra
+referência interna) e os mesmos campos de `entidade criar`/`rotina template
+criar` acima. `templatesRotina[].entidadeId`/`antecessorId` aceitam um id
+real já existente OU `"$<local_id>"` pra referenciar outro registro do
+mesmo arquivo (a ordem no arquivo não importa, inclusive pra encadeado).
+
+```bash
+apollo import --from-json lote.json --dry-run   # valida e mostra o que seria criado/já existe, sem escrever
+apollo import --from-json lote.json             # escreve de verdade
+```
+
+Valida o arquivo inteiro antes de escrever qualquer coisa — se um único
+registro estiver quebrado, nada é criado e o comando lista todos os
+problemas encontrados. Registros cuja chave natural já existir (entidade
+por `codigo`, template por entidade+nome) são reportados como `existing`,
+nunca duplicados — rodar de novo com o mesmo arquivo é seguro. Nunca cria
+`instanciasRotina` — depois do import, ainda é preciso rodar `apollo rotina
+gerar-instancias` normalmente.
 
 ## Como conduzir o onboarding
 
