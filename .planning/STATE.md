@@ -3,10 +3,10 @@ gsd_state_version: "1.0"
 milestone: v1.5
 status: Awaiting next milestone
 stopped_at: Phase 31 complete — all phases complete
-last_updated: "2026-09-24T16:53:18.321Z"
+last_updated: "2026-09-24T18:42:38.197Z"
 last_activity: 2026-09-24
 last_activity_desc: Completed quick task 260924-f7m (docs/ai-usage renomeada + apollo init scaffold command)
-state_head: 736a3e639666b009a2a2047540f363d9c2cc19ec
+state_head: b86f2eb2f2bea05d2d56f66d3c4bb8b38645f7d0
 milestone_name: Correções descobertas no onboarding real do calendário de rotinas (RBR)
 current_phase: null
 progress:
@@ -127,6 +127,7 @@ None — v1.5 roadmap coverage is 12/12 requirements mapped with no orphans. No 
 | 10 | Atualizar docs/ai-usage/CLAUDE.md (+ copia vendorizada) para cobrir rotina semanal/--dia-semana, --offset-dias estendido, --competencia/--de/--ate, template deletar --force, limpar-orfas, e apollo import. | 2026-09-24 | 01dccb7 | — | — |
 | 260924-gfd | Implementar na CLI um aviso automático de nova versão disponível no GitHub ao inicializar | 2026-09-24 | 4cfec3e | — | [260924-gfd-implementar-na-cli-um-aviso-autom-tico-d](./quick/260924-gfd-implementar-na-cli-um-aviso-autom-tico-d/) |
 | 12 | Kanban principal (agendaPorDia): passou a incluir tickets com prazo soft, não só hard | 2026-09-24 | 736a3e6 | — | — |
+| 13 | Header: ícone de info ao lado de 'Apollo' mostra o commit SHA do build atual (via VITE_APP_COMMIT), para conferir se o deploy no Cloudflare Pages refletiu um push | 2026-09-24 | b86f2eb | — | — |
 
 ## Deferred Items
 
