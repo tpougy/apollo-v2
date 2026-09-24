@@ -144,6 +144,7 @@ Items acknowledged and carried forward from previous milestone close:
 | UI | Fundo detail read-only block (rotinas/projetos/tickets vinculados) outside the Dashboard's Fundo dialog | Deferred — Fundo dialog (nº 5) already covers this in v1.3; standalone Fundos-page block stays deferred | v1.3 kickoff |
 | Config | New config storage mechanism (e.g. `~/.config/apollo-cli/config.toml`) for multiple simultaneous InstantDB apps | Deferred — no real use case today (single-user, single-app) | v1.4 kickoff |
 | Release | Real PyPI publication / automated release CI | Deferred — out of scope for v1.4, which resolves only local `uv tool install` installability | v1.4 kickoff |
+| Docs | `docs/ai-usage/CLAUDE.md` is now known-stale on the rotina/import command surface (semanal periodicity, `--dia-semana`, extended `--offset-dias` semantics, `--competencia`/`--de`/`--ate`, `template deletar --force`, `instancia limpar-orfas`, the whole `apollo import` command — all postdate these docs and are unrelated to the fundo rename this task addressed) | Deferred — explicit out-of-scope per CONTEXT.md D6, future pass should reconcile deliberately | 260924-f7m close |
 
 ## Session Continuity
 
